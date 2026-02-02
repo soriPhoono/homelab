@@ -88,14 +88,13 @@ in {
         };
 
         includes =
-          builtins.attrValues
-          (lib.mapAttrs (_: identity: {
-              condition = "gitdir:${cfg.projectsDir}/${identity.directory}/";
-              contents.user = {
-                inherit (identity) name email signingKey;
-              };
-            })
-            cfg.extraIdentities);
+          lib.mapAttrsToList (_: identity: {
+            condition = "gitdir:${cfg.projectsDir}/${identity.directory}/";
+            contents.user = {
+              inherit (identity) name email signingKey;
+            };
+          })
+          cfg.extraIdentities;
 
         settings = {
           user = {

@@ -25,7 +25,7 @@ in
       };
 
       home-manager.users =
-        builtins.mapAttrs (_name: _value: {
+        lib.mapAttrs (_name: _value: {
           services.podman.enable = true;
         })
         config.core.users;

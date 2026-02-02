@@ -25,24 +25,31 @@ with lib; {
   };
 
   config = {
-    home.file =
+    home.file = let
+      extraKeys =
+        lib.mapAttrs' (name: contents: {
+          name = ".ssh/${name}_key.pub";
+          value = {text = contents;};
+        })
+        config.core.ssh.extraSSHKeys;
+    in
       {
         ".ssh/id_ed25519.pub".text = config.core.ssh.publicKey;
       }
-      // (lib.mapAttrs (name: contents: {
-          target = ".ssh/${name}_key.pub";
-          text = contents;
-        })
-        config.core.ssh.extraSSHKeys);
+      // extraKeys;
 
-    sops.secrets =
-      lib.mkIf config.core.secrets.enable
-      ({
-          "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
-        }
-        // (lib.genAttrs (map (name: "ssh/${name}_key") (builtins.attrNames config.core.ssh.extraSSHKeys)) (secret: {
-          path = "${config.home.homeDirectory}/.ssh/${builtins.replaceStrings ["ssh/"] [""] secret}";
-        })));
+    sops.secrets = lib.mkIf config.core.secrets.enable (let
+      extraSecrets =
+        lib.mapAttrs' (name: _: {
+          name = "ssh/${name}_key";
+          value = {path = "${config.home.homeDirectory}/.ssh/${name}_key";};
+        })
+        config.core.ssh.extraSSHKeys;
+    in
+      {
+        "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
+      }
+      // extraSecrets);
 
     programs.ssh = {
       enable = true;
@@ -50,10 +57,8 @@ with lib; {
 
       matchBlocks."*" = {
         identityFile =
-          [
-            "${config.home.homeDirectory}/.ssh/id_ed25519"
-          ]
-          ++ (map (name: "${config.home.homeDirectory}/.ssh/${name}_key") (builtins.attrNames config.core.ssh.extraSSHKeys));
+          ["${config.home.homeDirectory}/.ssh/id_ed25519"]
+          ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") config.core.ssh.extraSSHKeys);
       };
     };
 

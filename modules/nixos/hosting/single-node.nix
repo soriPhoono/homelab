@@ -41,17 +41,18 @@ in
       hosting.backends.docker.enable = true;
 
       sops = mkIf (cfg.domainName != null) {
-        secrets = {
-          "hosting/admin/cf_api_token" = {};
-        };
-        templates = {
-          "docker_traefik.env".content = ''
-            CLOUDFLARE_DNS_API_TOKEN=${config.sops.placeholder."hosting/admin/cf_api_token"}
-          '';
-        };
+        secrets."hosting/admin/cf_api_token" = {};
+        templates."docker_traefik.env".content = ''
+          CLOUDFLARE_DNS_API_TOKEN=${config.sops.placeholder."hosting/admin/cf_api_token"}
+        '';
       };
 
-      systemd.services =
+      systemd.services = let
+        allNetworks = unique (
+          flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
+          ++ cfg.networks
+        );
+      in
         {
           docker-create-networks = {
             description = "Create networks required by core docker service layer";
@@ -59,90 +60,74 @@ in
             wantedBy = ["multi-user.target"];
             serviceConfig = {
               Type = "oneshot";
-              ExecStart = "${pkgs.writeShellApplication {
-                name = "docker-create-networks.sh";
-                runtimeInputs = with pkgs; [
-                  docker
-                ];
-                text =
-                  builtins.concatStringsSep
-                  "\n"
-                  (
-                    builtins.map
-                    (network_name: ''
-                      if ! docker network ls | grep "${network_name}"; then
-                        docker network create ${network_name}
-                      fi
-                    '')
-                    ((unique (flatten (mapAttrsToList
-                      (_: container_config: container_config.networks)
-                      config.virtualisation.oci-containers.containers)))
-                    ++ cfg.networks)
-                  );
-              }}/bin/docker-create-networks.sh";
+              ExecStart = "${pkgs.writeShellScriptBin "docker-create-networks" ''
+                ${lib.concatStringsSep "\n" (map (network: ''
+                    if ! ${pkgs.docker}/bin/docker network ls --format '{{.Name}}' | grep -q "^${network}$"; then
+                      ${pkgs.docker}/bin/docker network create ${network}
+                    fi
+                  '')
+                  allNetworks)}
+              ''}/bin/docker-create-networks";
             };
           };
         }
         // (lib.genAttrs
-          (lib.mapAttrsToList
-            (_: container_config: container_config.serviceName)
-            config.virtualisation.oci-containers.containers)
-          (_serviceName: {
+          (lib.mapAttrsToList (_: c: c.serviceName) config.virtualisation.oci-containers.containers)
+          (_: {
             after = ["docker-create-networks.service"];
+            bindsTo = ["docker-create-networks.service"];
           }));
 
-      virtualisation.oci-containers.containers = {
+      virtualisation.oci-containers.containers = let
+        traefikLabels = {
+          name,
+          host,
+          port,
+          extraLabels ? {},
+        }:
+          {
+            "traefik.enable" = "true";
+            "traefik.http.routers.${name}.rule" = "Host(`${host}`)";
+            "traefik.http.routers.${name}.entrypoints" = "websecure";
+            "traefik.http.routers.${name}.tls" = "true";
+            "traefik.http.routers.${name}.tls.certresolver" = "cf-ts";
+            "traefik.http.services.${name}.loadbalancer.server.port" = toString port;
+          }
+          // extraLabels;
+      in {
         admin_portainer-agent = mkMerge [
-          (mkIf ((cfg.portainerMode == "agent") || (cfg.portainerMode == "server")) {
+          (mkIf (builtins.elem cfg.portainerMode ["agent" "server"]) {
             image = "portainer/agent:lts";
-            volumes = [
-              "/var/run/docker.sock:/var/run/docker.sock"
-            ];
-            networks = [
-              "admin_portainer-agent"
-            ];
+            volumes = ["/var/run/docker.sock:/var/run/docker.sock"];
+            networks = ["admin_portainer-agent"];
           })
-          (mkIf ((cfg.portainerMode == "edge-agent") || (cfg.portainerMode == "edge-agent-async")) {
+          (mkIf (builtins.elem cfg.portainerMode ["edge-agent" "edge-agent-async"]) {
             image = "portainer/agent:lts";
             volumes = [
               "/var/run/docker.sock:/var/run/docker.sock"
               "/var/lib/docker/volumes:/var/lib/docker/volumes"
               "/:/host"
-              "admin_portainer-agent"
             ];
+            networks = ["admin_portainer-agent"];
             environment = {
-              EDGE = 1;
+              EDGE = "1";
               EDGE_ID = "";
               EDGE_KEY = "";
-              EDGE_INSECURE_POLL = 0; # TODO: change this after reading https://docs.portainer.io/advanced/edge-agent
+              EDGE_INSECURE_POLL = "0";
             };
           })
         ];
 
         admin_portainer-server = mkIf (cfg.portainerMode == "server") {
           image = "portainer/portainer-ee:latest";
-          dependsOn = [
-            "admin_portainer-agent"
-          ];
-          cmd = [
-            "-H"
-            "tcp://admin_portainer-agent:9001"
-            "--tlsskipverify"
-          ];
-          volumes = [
-            "admin_portainer-data:/data"
-          ];
-          networks = [
-            "admin_portainer-agent"
-            "admin_traefik-public"
-          ];
-          labels = {
-            "traefik.enable" = "true";
-            "traefik.http.routers.portainer.rule" = "Host(`admin.ts.${cfg.domainName}`)";
-            "traefik.http.routers.portainer.entrypoints" = "websecure";
-            "traefik.http.routers.portainer.tls" = "true";
-            "traefik.http.routers.portainer.tls.certresolver" = "cf-ts";
-            "traefik.http.services.portainer.loadbalancer.server.port" = "9000";
+          dependsOn = ["admin_portainer-agent"];
+          cmd = ["-H" "tcp://admin_portainer-agent:9001" "--tlsskipverify"];
+          volumes = ["admin_portainer-data:/data"];
+          networks = ["admin_portainer-agent" "admin_traefik-public"];
+          labels = traefikLabels {
+            name = "portainer";
+            host = "admin.ts.${cfg.domainName}";
+            port = 9000;
           };
         };
 
@@ -151,45 +136,31 @@ in
           cmd = [
             "--entrypoints.web.address=:80"
             "--entrypoints.websecure.address=:443"
-            # - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=24h # For nextcloud long uploads
             "--entrypoints.websecure.http.tls=true"
-            "--entrypoints.traefik.address=:8080" # For the dashboard/API
-            # Docker provider setup
+            "--entrypoints.traefik.address=:8080"
             "--providers.docker=true"
             "--providers.docker.exposedbydefault=false"
             "--providers.docker.network=admin_traefik-public"
-            # API and Dashboard
             "--api.dashboard=true"
-            "--api.insecure=false" # WARNING: Do not use in production without proper BasicAuth middleware
-            # TODO: Check this is working properly (TLS enabled on all domains not just cloudflare but tailscale custom endpoints on domain name as well)
-            # ACME / Let's Encrypt setup (Optional)
+            "--api.insecure=false"
             "--certificatesresolvers.cf-ts.acme.email=admin@${cfg.domainName}"
             "--certificatesresolvers.cf-ts.acme.storage=/acme/acme.json"
             "--certificatesresolvers.cf-ts.acme.dnschallenge=true"
             "--certificatesresolvers.cf-ts.acme.dnschallenge.provider=cloudflare"
-            # Observability
-            "--log.level=INFO" # Set the Log Level e.g INFO, DEBUG
-            "--accesslog=true" # Enable Access Logs
-            "--metrics.prometheus=true" # Enable Prometheus
-            # Optional: Enable redirect middleware for all HTTP to HTTPS traffic
+            "--log.level=INFO"
+            "--accesslog=true"
+            "--metrics.prometheus=true"
             "--entrypoints.web.http.redirections.entrypoint.to=websecure"
             "--entrypoints.web.http.redirections.entrypoint.scheme=https"
             "--entrypoints.web.http.redirections.entrypoint.permanent=true"
           ];
-          environmentFiles = [
-            config.sops.templates."docker_traefik.env".path
-          ];
+          environmentFiles = [config.sops.templates."docker_traefik.env".path];
           volumes = [
             "/var/run/docker.sock:/var/run/docker.sock:ro"
             "admin_traefik-certs:/acme"
           ];
-          networks = [
-            "admin_traefik-public"
-          ];
-          ports = [
-            "80:80"
-            "443:443"
-          ];
+          networks = ["admin_traefik-public"];
+          ports = ["80:80" "443:443"];
         };
       };
     };

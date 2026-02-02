@@ -93,17 +93,15 @@ in {
       };
     };
 
-  config = {
-    programs = {
-      fish.enable = lib.any (user: user.shell == pkgs.fish) (builtins.attrValues cfg.users);
-    };
+  config = lib.mkIf (cfg.users != {}) {
+    programs.fish.enable = lib.any (user: user.shell == pkgs.fish) (builtins.attrValues cfg.users);
 
     services.logind.settings.Login = {
       RuntimeDirectorySize = "25%";
     };
 
     snowfallorg.users =
-      builtins.mapAttrs (_: user: {
+      lib.mapAttrs (_: user: {
         inherit (user) admin;
       })
       cfg.users;
@@ -112,20 +110,18 @@ in {
       mutableUsers = false;
 
       extraUsers =
-        builtins.mapAttrs (_: user: {
+        lib.mapAttrs (_name: user: {
           inherit (user) hashedPassword extraGroups shell subUidRanges subGidRanges;
 
-          openssh.authorizedKeys.keys =
-            lib.mkIf (user.publicKey != null) [user.publicKey];
+          openssh.authorizedKeys.keys = lib.optional (user.publicKey != null) user.publicKey;
         })
         cfg.users;
     };
 
     home-manager.users =
-      builtins.mapAttrs (_: user: {
+      lib.mapAttrs (_: user: {
         core = {
           ssh.publicKey = lib.mkIf (user.publicKey != null) user.publicKey;
-
           shells.fish.enable = user.shell == pkgs.fish;
         };
       })

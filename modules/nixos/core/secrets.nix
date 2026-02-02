@@ -20,35 +20,44 @@ in
       };
     };
 
-    config = lib.mkIf config.core.secrets.enable {
-      systemd.tmpfiles.rules = lib.flatten (map (username:
-        if config.home-manager.users.${username}.core.secrets.enable
-        then [
+    config = lib.mkIf cfg.enable {
+      systemd.tmpfiles.rules = let
+        usersWithSecrets =
+          lib.filterAttrs (
+            name: _:
+              config.home-manager.users.${name}.core.secrets.enable or false
+          )
+          config.core.users;
+      in
+        lib.concatMap (username: [
           "d /home/${username}/.config/ 0755 ${username} users -"
-          "d /home/${username}/.config/sops/ 0755 ${username} users -"
-          "d /home/${username}/.config/sops/age/ 0755 ${username} users -"
-        ]
-        else []) (builtins.attrNames config.core.users));
+          "d /home/${username}/.config/sops/ 0700 ${username} users -"
+          "d /home/${username}/.config/sops/age/ 0700 ${username} users -"
+        ]) (lib.attrNames usersWithSecrets);
 
       sops = {
         defaultSopsFile = lib.mkIf (cfg.defaultSopsFile != null) cfg.defaultSopsFile;
 
         age.sshKeyPaths = map (key: key.path) config.services.openssh.hostKeys;
 
-        secrets =
-          lib.genAttrs
-          (filter (item: item != null) (map (name:
-            if config.home-manager.users.${name}.core.secrets.enable
-            then "users/${name}/age_key"
-            else null) (builtins.attrNames config.core.users)))
-          (name: let
-            username = builtins.elemAt (lib.splitString "/" name) 1;
-          in {
-            path = "/home/${username}/.config/sops/age/keys.txt";
-            mode = "0400";
-            owner = username;
-            group = "users";
-          });
+        secrets = let
+          usersWithSecrets =
+            lib.filterAttrs (
+              name: _:
+                config.home-manager.users.${name}.core.secrets.enable or false
+            )
+            config.core.users;
+        in
+          lib.mapAttrs' (username: _: {
+            name = "users/${username}/age_key";
+            value = {
+              path = "/home/${username}/.config/sops/age/keys.txt";
+              mode = "0400";
+              owner = username;
+              group = "users";
+            };
+          })
+          usersWithSecrets;
       };
     };
   }

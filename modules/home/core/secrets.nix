@@ -1,7 +1,6 @@
 {
   lib,
   config,
-  nixosConfig ? null,
   ...
 }: let
   cfg = config.core.secrets;
@@ -12,6 +11,16 @@ in {
     defaultSopsFile = lib.mkOption {
       type = with lib.types; nullOr path;
       description = "Default sops database";
+    };
+
+    ageKeyFile = lib.mkOption {
+      type = lib.types.path;
+      default = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+      description = ''
+        The path to the age key file.
+        On NixOS, this is automatically provisioned by the system secrets module.
+        On non-NixOS systems, you must ensure this key is present.
+      '';
     };
 
     environment = {
@@ -28,7 +37,8 @@ in {
     sops = {
       inherit (cfg) defaultSopsFile;
 
-      age.keyFile = lib.mkIf (nixosConfig != null) nixosConfig.sops.secrets."users/${config.home.username}/age_key".path;
+      # Use the centrally defined age key file
+      age.keyFile = cfg.ageKeyFile;
 
       secrets.environment = lib.mkIf cfg.environment.enable {
         format = "dotenv";

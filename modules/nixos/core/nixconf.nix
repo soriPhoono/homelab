@@ -22,11 +22,7 @@
       # Workaround for https://github.com/NixOS/nix/issues/9574
       nix-path = config.nix.nixPath;
 
-      trusted-users =
-        builtins.attrNames
-        (lib.filterAttrs
-          (_: content: content.admin)
-          config.core.users);
+      trusted-users = lib.mapAttrsToList (name: _: name) (lib.filterAttrs (_: content: content.admin) config.core.users);
 
       # Limit the number of cores used per build job to prevent OOM
       # during memory-intensive compilations (like browsers).
@@ -36,7 +32,7 @@
     channel.enable = false;
 
     # Opinionated: make flake registry and nix path match flake inputs
-    registry = builtins.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
+    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 }

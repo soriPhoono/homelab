@@ -8,22 +8,40 @@
 in {
   options.core.boot = {
     enable = lib.mkEnableOption "Enable system boot configuration with systemd-boot and ZRAM swap";
+    plymouth = {
+      enable = lib.mkEnableOption "Enable plymouth";
+    };
     secure-boot = {
-      enable = lib.mkEnableOption "Enable bootloader hardening features";
+      enable = lib.mkEnableOption "Enable bootloader hardening features via lanzaboote";
+    };
+    kernel = {
+      package = lib.mkOption {
+        type = lib.types.package;
+        default = pkgs.linuxPackages_zen;
+        description = "Kernel package to use";
+      };
+      params = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default =
+          if cfg.plymouth.enable
+          then [
+            "quiet"
+            "systemd.show_status=false"
+            "udev.log_level=3"
+          ]
+          else [];
+        description = "Kernel parameters to use";
+      };
     };
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     boot = {
-      kernelPackages = pkgs.linuxPackages_zen;
-      kernelParams = [
-        "quiet"
-        "systemd.show_status=false"
-        "udev.log_level=3"
-      ];
+      kernelPackages = cfg.kernel.package;
+      kernelParams = cfg.kernel.params;
 
       initrd = {
-        verbose = false;
+        verbose = !cfg.plymouth.enable;
         systemd.enable = true;
       };
 
@@ -31,8 +49,8 @@ in {
 
       loader = {
         efi.canTouchEfiVariables = true;
-        systemd-boot = lib.mkIf cfg.enable {
-          enable = lib.mkForce (!cfg.secure-boot.enable);
+        systemd-boot = {
+          enable = lib.mkIf cfg.enable (lib.mkForce (!cfg.secure-boot.enable));
           configurationLimit = 10;
         };
       };
@@ -42,11 +60,11 @@ in {
         pkiBundle = "/var/lib/sbctl";
       };
 
-      plymouth.enable = true;
+      plymouth.enable = cfg.plymouth.enable;
     };
 
     zramSwap.enable = true;
 
-    security.sudo.wheelNeedsPassword = false;
+    security.sudo.wheelNeedsPassword = lib.mkDefault false;
   };
 }

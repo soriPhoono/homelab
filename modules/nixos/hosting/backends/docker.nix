@@ -17,13 +17,9 @@ in
       };
 
       users.extraUsers =
-        builtins.mapAttrs (_name: _user: {
-          extraGroups = [
-            "docker"
-          ];
+        lib.mapAttrs (_name: _user: {
+          extraGroups = ["docker"];
         })
-        (filterAttrs
-          (_name: content: content.admin)
-          config.core.users);
+        (lib.filterAttrs (_name: user: user.admin) config.core.users);
     };
   }
