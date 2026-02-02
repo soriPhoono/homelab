@@ -1,14 +1,4 @@
-{
-  inputs,
-  pkgs,
-  modulesPath,
-  ...
-}: {
-  imports = [
-    (modulesPath + "/virtualisation/proxmox-lxc.nix")
-    inputs.nixos-generators.nixosModules.proxmox-lxc
-  ];
-
+{pkgs, ...}: {
   core = {
     secrets = {
       enable = true;

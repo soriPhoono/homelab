@@ -100,12 +100,6 @@ in {
       RuntimeDirectorySize = "25%";
     };
 
-    snowfallorg.users =
-      lib.mapAttrs (_: user: {
-        inherit (user) admin;
-      })
-      cfg.users;
-
     users = {
       mutableUsers = false;
 

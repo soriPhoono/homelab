@@ -13,6 +13,14 @@ with lib; {
     ./users.nix
   ];
 
+  options.core = {
+    timeZone = lib.mkOption {
+      type = types.str;
+      description = "The current system time zone";
+      default = "America/Chicago";
+    };
+  };
+
   config = {
     hardware.enableAllFirmware = true;
 
@@ -25,6 +33,8 @@ with lib; {
     };
 
     i18n.defaultLocale = "en_US.UTF-8";
+
+    time.timeZone = cfg.timeZone;
 
     programs = {
       nix-ld.enable = true;

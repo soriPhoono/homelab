@@ -8,6 +8,7 @@
     ./secrets.nix
     ./ssh.nix
     ./git.nix
+    ./gitops.nix
   ];
 
   home.packages = with pkgs; [
@@ -28,8 +29,6 @@
       createDirectories = true;
     };
   };
-
-  snowfallorg.user.enable = true;
 
   programs = {
     home-manager.enable = true;

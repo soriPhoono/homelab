@@ -1,4 +1,4 @@
-{
+_: {
   settings.hooks = {
     nil.enable = true;
 

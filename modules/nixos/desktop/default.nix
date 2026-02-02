@@ -48,7 +48,6 @@ in
 
       services = {
         geoclue2.enable = true;
-        localtimed.enable = true;
       };
     };
   }

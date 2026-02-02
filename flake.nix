@@ -20,18 +20,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    snowfall = {
-      url = "github:snowfallorg/lib";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -44,7 +34,6 @@
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v0.4.2";
-
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -90,92 +79,143 @@
     self,
     nixpkgs,
     flake-parts,
-    snowfall,
     ...
   }: let
     inherit (nixpkgs) lib;
-  in
-    with lib; let
-      flake-parts-outputs = flake-parts.lib.mkFlake {inherit inputs;} ({...}: {
-        imports = with inputs; [
-          treefmt-nix.flakeModule
-          git-hooks-nix.flakeModule
-          github-actions-nix.flakeModule
-        ];
-        systems = with inputs; import systems;
-        perSystem = args @ {system, ...}: let
-          pkgs = import nixpkgs {
-            inherit system;
-            overlays = [];
-            config.allowUnfree = true;
-          };
-        in {
-          devShells.default = import ./shell.nix (args
-            // {
-              inherit pkgs;
-            });
-          treefmt = import ./treefmt.nix;
-          pre-commit = import ./pre-commit.nix;
-          githubActions = import ./actions.nix {inherit self lib;};
-        };
-      });
 
-      snowfall-outputs =
-        (snowfall.mkLib {
-          inherit inputs;
-          src = ./.;
-          snowfall = {
-            meta = {
-              name = "homelab";
-              title = "Homelab and Personal Devices Configuration";
-            };
-            namespace = "soriphoono";
-          };
-        }).mkFlake {
-          inherit inputs;
+    # Dynamic Discovery: Reads a directory and returns an attrset of { name = path; }
+    # where name is the folder name and path is the absolute path.
+    discover = dir:
+      lib.mapAttrs (name: _: dir + "/${name}")
+      (lib.filterAttrs (_name: type: type == "directory") (builtins.readDir dir));
 
-          src = ./.;
+    # Metadata Reader: Reads meta.json from a path
+    readMeta = path:
+      if builtins.pathExists (path + "/meta.json")
+      then builtins.fromJSON (builtins.readFile (path + "/meta.json"))
+      else {};
 
-          systems = {
-            modules.nixos = with inputs; [
-              nixos-facter-modules.nixosModules.facter
-              disko.nixosModules.disko
-              determinate.nixosModules.default
-              lanzaboote.nixosModules.lanzaboote
-              sops-nix.nixosModules.sops
-              comin.nixosModules.comin
-              nix-index-database.nixosModules.nix-index
-            ];
-          };
+    # --- System Builders --- #
 
-          homes = {
-            modules = with inputs; [
-              sops-nix.homeManagerModules.sops
-              nvf.homeManagerModules.default
-              caelestia-shell.homeManagerModules.default
-            ];
-          };
-
-          channels-config = {
-            allowUnfree = true;
-          };
-
-          templates = {
-            empty.description = ''
-              An empty flake with a basic flake.nix to support a devshell environment.
-              Made with flake-parts and sensable defaults
-            '';
-          };
-        };
+    # Base NixOS System Builder
+    mkSystem = _name: path: let
+      meta = readMeta path;
+      systemArch = meta.system or "x86_64-linux";
     in
-      # Use a shallow merge (//) for the top-level attribute set to avoid traversing
-      # large configurations like nixosConfigurations, while surgically merging
-      # smaller attribute sets like devShells.
-      (flake-parts-outputs // snowfall-outputs)
-      // {
-        devShells = recursiveUpdate (flake-parts-outputs.devShells or {}) (snowfall-outputs.devShells or {});
-        checks = recursiveUpdate (flake-parts-outputs.checks or {}) (snowfall-outputs.checks or {});
-        packages = recursiveUpdate (flake-parts-outputs.packages or {}) (snowfall-outputs.packages or {});
-        formatter = recursiveUpdate (flake-parts-outputs.formatter or {}) (snowfall-outputs.formatter or {});
+      lib.nixosSystem {
+        system = systemArch;
+        specialArgs = {
+          inherit inputs self;
+        };
+        modules = with inputs; [
+          (path + "/default.nix")
+          self.nixosModules.default
+          home-manager.nixosModules.home-manager
+          nixos-facter-modules.nixosModules.facter
+          disko.nixosModules.disko
+          determinate.nixosModules.default
+          lanzaboote.nixosModules.lanzaboote
+          sops-nix.nixosModules.sops
+          comin.nixosModules.comin
+          nix-index-database.nixosModules.nix-index
+          {
+            nixpkgs.overlays = builtins.attrValues self.overlays;
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = {inherit inputs self;};
+              sharedModules = [
+                self.homeModules.default
+                sops-nix.homeManagerModules.sops
+                nvf.homeManagerModules.default
+                caelestia-shell.homeManagerModules.default
+              ];
+            };
+          }
+        ];
       };
+
+    # Standalone Home Manager Builder
+    mkHome = name: path: let
+      meta = readMeta path;
+      systemArch = meta.system or "x86_64-linux";
+      pkgs = import nixpkgs {
+        system = systemArch;
+        config.allowUnfree = true;
+        overlays = builtins.attrValues self.overlays;
+      };
+      # Extract username from folders named "user@host" or just "user"
+      username = lib.head (lib.splitString "@" name);
+    in
+      inputs.home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = {inherit inputs self;};
+        modules = with inputs; [
+          (path + "/default.nix")
+          self.homeModules.default
+          sops-nix.homeManagerModules.sops
+          nvf.homeManagerModules.default
+          caelestia-shell.homeManagerModules.default
+          {
+            home = {
+              inherit username;
+              homeDirectory = lib.mkDefault "/home/${username}";
+              stateVersion = lib.mkDefault "24.11";
+            };
+          }
+        ];
+      };
+  in
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = with inputs; [
+        treefmt-nix.flakeModule
+        git-hooks-nix.flakeModule
+        github-actions-nix.flakeModule
+      ];
+
+      # Supported systems for devShells/checks
+      systems = import inputs.systems;
+
+      perSystem = {
+        config,
+        pkgs,
+        ...
+      }: {
+        devShells.default = import ./shell.nix {
+          inherit lib pkgs;
+          config = {
+            inherit (config) pre-commit;
+          };
+        };
+
+        packages = import ./pkgs {inherit lib pkgs self;};
+
+        treefmt = import ./treefmt.nix {inherit lib pkgs self;};
+        pre-commit = import ./pre-commit.nix {inherit lib pkgs self;};
+      };
+
+      flake = {
+        # Global Module Exports
+        nixosModules.default = import ./modules/nixos;
+        homeModules.default = import ./modules/home;
+
+        # Overlay Exports
+        overlays = import ./overlays {inherit lib;};
+
+        # --- Automatic Discovery & Construction --- #
+
+        # All systems in the /systems folder
+        nixosConfigurations = lib.mapAttrs mkSystem (discover ./systems);
+
+        # All standalone homes in the /homes folder
+        homeConfigurations = lib.mapAttrs mkHome (discover ./homes);
+
+        templates = {
+          empty = {
+            path = ./templates/empty;
+            description = "An empty flake with a basic flake.nix to support a devshell environment.";
+          };
+        };
+      };
+    };
 }
