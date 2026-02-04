@@ -9,6 +9,7 @@
     ./ssh.nix
     ./git.nix
     ./gitops.nix
+    ./shells
   ];
 
   home.packages = with pkgs; [

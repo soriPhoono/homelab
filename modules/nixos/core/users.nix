@@ -104,12 +104,17 @@ in {
       mutableUsers = false;
 
       extraUsers =
-        lib.mapAttrs (_name: user: {
-          inherit (user) hashedPassword extraGroups shell subUidRanges subGidRanges;
+        lib.mapAttrs (name: user: {
+          inherit (user) hashedPassword shell subUidRanges subGidRanges;
+          isNormalUser = true;
+          extraGroups = user.extraGroups ++ lib.optional user.admin "wheel";
+          group = name;
 
           openssh.authorizedKeys.keys = lib.optional (user.publicKey != null) user.publicKey;
         })
         cfg.users;
+
+      groups = lib.mapAttrs (_name: _: {}) cfg.users;
     };
 
     home-manager.users =

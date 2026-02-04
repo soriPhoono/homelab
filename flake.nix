@@ -68,11 +68,6 @@
       url = "github:caelestia-dots/shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    antigravity-nix = {
-      url = "github:jacopone/antigravity-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs @ {
@@ -84,16 +79,55 @@
     inherit (nixpkgs) lib;
 
     # Dynamic Discovery: Reads a directory and returns an attrset of { name = path; }
-    # where name is the folder name and path is the absolute path.
+    # including directories with default.nix and standalone .nix files.
     discover = dir:
-      lib.mapAttrs (name: _: dir + "/${name}")
-      (lib.filterAttrs (_name: type: type == "directory") (builtins.readDir dir));
+      lib.mapAttrs' (name: _: {
+        name = lib.removeSuffix ".nix" name;
+        value = dir + "/${name}";
+      }) (
+        lib.filterAttrs (
+          name: type:
+            (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
+            || (type == "regular" && name != "default.nix" && lib.hasSuffix ".nix" name)
+        ) (builtins.readDir dir)
+      );
 
     # Metadata Reader: Reads meta.json from a path
     readMeta = path:
       if builtins.pathExists (path + "/meta.json")
       then builtins.fromJSON (builtins.readFile (path + "/meta.json"))
       else {};
+
+    # --- System Builder Parameters --- #
+    homeManagerModules = with inputs; [
+      self.homeModules.default
+      sops-nix.homeManagerModules.sops
+      nvf.homeManagerModules.default
+      caelestia-shell.homeManagerModules.default
+    ];
+
+    nixosModules = path:
+      with inputs; [
+        (path + "/default.nix")
+        self.nixosModules.default
+        home-manager.nixosModules.home-manager
+        nixos-facter-modules.nixosModules.facter
+        disko.nixosModules.disko
+        determinate.nixosModules.default
+        lanzaboote.nixosModules.lanzaboote
+        sops-nix.nixosModules.sops
+        comin.nixosModules.comin
+        nix-index-database.nixosModules.nix-index
+        {
+          nixpkgs.overlays = builtins.attrValues self.overlays;
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            extraSpecialArgs = {inherit inputs self;};
+            sharedModules = homeManagerModules;
+          };
+        }
+      ];
 
     # --- System Builders --- #
 
@@ -107,32 +141,7 @@
         specialArgs = {
           inherit inputs self;
         };
-        modules = with inputs; [
-          (path + "/default.nix")
-          self.nixosModules.default
-          home-manager.nixosModules.home-manager
-          nixos-facter-modules.nixosModules.facter
-          disko.nixosModules.disko
-          determinate.nixosModules.default
-          lanzaboote.nixosModules.lanzaboote
-          sops-nix.nixosModules.sops
-          comin.nixosModules.comin
-          nix-index-database.nixosModules.nix-index
-          {
-            nixpkgs.overlays = builtins.attrValues self.overlays;
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = {inherit inputs self;};
-              sharedModules = [
-                self.homeModules.default
-                sops-nix.homeManagerModules.sops
-                nvf.homeManagerModules.default
-                caelestia-shell.homeManagerModules.default
-              ];
-            };
-          }
-        ];
+        modules = nixosModules path;
       };
 
     # Standalone Home Manager Builder
@@ -150,20 +159,18 @@
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {inherit inputs self;};
-        modules = with inputs; [
-          (path + "/default.nix")
-          self.homeModules.default
-          sops-nix.homeManagerModules.sops
-          nvf.homeManagerModules.default
-          caelestia-shell.homeManagerModules.default
-          {
-            home = {
-              inherit username;
-              homeDirectory = lib.mkDefault "/home/${username}";
-              stateVersion = lib.mkDefault "24.11";
-            };
-          }
-        ];
+        modules = with inputs;
+          [
+            (path + "/default.nix")
+            {
+              home = {
+                inherit username;
+                homeDirectory = lib.mkDefault "/home/${username}";
+                stateVersion = lib.mkDefault "24.11";
+              };
+            }
+          ]
+          ++ homeManagerModules;
       };
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -188,19 +195,24 @@
           };
         };
 
-        packages = import ./pkgs {inherit lib pkgs self;};
+        packages =
+          import ./pkgs {inherit lib pkgs self;};
 
-        treefmt = import ./treefmt.nix {inherit lib pkgs self;};
-        pre-commit = import ./pre-commit.nix {inherit lib pkgs self;};
+        treefmt = import ./treefmt.nix {inherit lib pkgs;};
+        pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
       };
 
       flake = {
         # Global Module Exports
-        nixosModules.default = import ./modules/nixos;
-        homeModules.default = import ./modules/home;
+        nixosModules = import ./modules/nixos {inherit lib self;};
+        homeModules = import ./modules/home {inherit lib self;};
 
         # Overlay Exports
-        overlays = import ./overlays {inherit lib;};
+        overlays =
+          import ./overlays {inherit lib self;}
+          // {
+            nur = inputs.nur.overlays.default;
+          };
 
         # --- Automatic Discovery & Construction --- #
 
@@ -210,12 +222,19 @@
         # All standalone homes in the /homes folder
         homeConfigurations = lib.mapAttrs mkHome (discover ./homes);
 
-        templates = {
-          empty = {
-            path = ./templates/empty;
-            description = "An empty flake with a basic flake.nix to support a devshell environment.";
-          };
-        };
+        # All templates in the /templates folder
+        templates =
+          lib.mapAttrs (name: _: let
+            path = ./templates + "/${name}";
+            meta = readMeta path;
+          in {
+            inherit path;
+            description = meta.description or "A flake template";
+          }) (
+            lib.filterAttrs (
+              name: type: type == "directory" && builtins.pathExists (./templates + "/${name}/default.nix")
+            ) (builtins.readDir ./templates)
+          );
       };
     };
 }

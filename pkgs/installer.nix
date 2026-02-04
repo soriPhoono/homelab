@@ -1,1 +1,2 @@
-{self, ...}: self.nixosConfigurations.installer.config.system.build.images.iso
+{self, ...}:
+self.nixosConfigurations.installer.config.system.build.images.iso

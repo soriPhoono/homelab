@@ -4,8 +4,11 @@
   self,
   ...
 }:
-lib.mapAttrs (
-  name: _: import ./. + "/${name}" {inherit lib pkgs self;}
+lib.mapAttrs' (
+  name: _: {
+    name = lib.removeSuffix ".nix" name;
+    value = import (./. + "/${name}") {inherit lib pkgs self;};
+  }
 ) (
   lib.filterAttrs (
     name: type:

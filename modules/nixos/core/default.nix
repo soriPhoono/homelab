@@ -4,13 +4,17 @@
   config,
   ...
 }:
-with lib; {
+with lib; let
+  cfg = config.core;
+in {
   imports = [
     ./boot.nix
     ./gitops.nix
     ./nixconf.nix
     ./secrets.nix
     ./users.nix
+    ./networking
+    ./hardware
   ];
 
   options.core = {
