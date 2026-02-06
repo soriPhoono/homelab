@@ -4,7 +4,10 @@
   ];
 
   core = {
-    boot.enable = true;
+    boot = {
+      enable = true;
+      plymouth.enable = true;
+    };
 
     hardware = {
       enable = true;

@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.agents.claude;
+  cfg = config.userapps.development.agents.claude;
 in
   with lib; {
-    options.userapps.agents.claude = {
+    options.userapps.development.agents.claude = {
       enable = mkEnableOption "Enable Claude AI agent";
     };
 

@@ -1,6 +1,9 @@
 {lib, ...}:
 with lib; {
   imports = [
+    ./backends
+    ./features
+
     ./single-node.nix
   ];
 

@@ -16,7 +16,7 @@ in {
     };
     kernel = {
       package = lib.mkOption {
-        type = lib.types.package;
+        type = lib.types.attrs;
         default = pkgs.linuxPackages_zen;
         description = "Kernel package to use";
       };

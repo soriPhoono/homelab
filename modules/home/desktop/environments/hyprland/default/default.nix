@@ -20,10 +20,11 @@ in {
     caelestia = {
       enable = mkEnableOption "Enable caelestia shell components" // {default = true;};
       settings = mkOption {
-        type = types.submodule {
-          freeformType = types.attrs;
-          options = {};
-        };
+        type = with types;
+          submodule {
+            freeformType = attrs;
+            options = {};
+          };
         default = {};
         description = "Settings to pass to the caelestia shell";
       };
@@ -54,9 +55,9 @@ in {
   };
 
   config = mkIf (core.enable && !core.custom) {
-    desktop.environments.hyprland.default.enable = true;
-
     desktop.environments.hyprland = {
+      default.enable = true;
+
       components = mkIf cfg.caelestia.enable [
         {
           name = "caelestia-shell";
@@ -167,16 +168,12 @@ in {
         ++ [
           # Mouse bindings
           {
+            type = "bindm";
             mods = ["ALT"];
             key = "mouse:272";
             dispatcher = "movewindow";
-            type = "bindm";
           }
         ]);
-    };
-
-    wayland.windowManager.hyprland.settings = {
-      systemd.enable = false;
     };
   };
 }

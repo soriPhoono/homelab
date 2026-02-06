@@ -21,14 +21,14 @@
 
       nix = {
         enable = true;
-        lsp.server = "nixd";
+        lsp.servers = ["nixd"];
       };
       bash.enable = true;
 
       python = {
         enable = true;
-        format.type = "black-and-isort";
-        lsp.server = "python-lsp-server";
+        format.type = ["black" "isort"];
+        lsp.servers = ["python-lsp-server"];
       };
 
       yaml.enable = true;
@@ -36,7 +36,7 @@
 
       markdown = {
         enable = true;
-        format.type = "prettierd";
+        format.type = ["prettierd"];
         extensions = {
           render-markdown-nvim.enable = true;
         };

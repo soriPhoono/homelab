@@ -2,12 +2,13 @@
   lib,
   pkgs,
   self,
+  inputs,
   ...
 }:
 lib.mapAttrs' (
   name: _: {
     name = lib.removeSuffix ".nix" name;
-    value = import (./. + "/${name}") {inherit lib pkgs self;};
+    value = import (./. + "/${name}") {inherit lib pkgs self inputs;};
   }
 ) (
   lib.filterAttrs (

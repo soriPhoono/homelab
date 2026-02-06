@@ -5,11 +5,11 @@
   ...
 }: {
   imports = [
-    ./secrets.nix
-    ./ssh.nix
+    ./shells
     ./git.nix
     ./gitops.nix
-    ./shells
+    ./secrets.nix
+    ./ssh.nix
   ];
 
   home.packages = with pkgs; [
@@ -18,8 +18,8 @@
 
     carlito
     liberation_ttf
-    nerd-fonts.sauce-code-pro
     nerd-fonts.aurulent-sans-mono
+    nerd-fonts.sauce-code-pro
   ];
 
   xdg = {

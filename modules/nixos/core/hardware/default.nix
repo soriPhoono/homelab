@@ -6,6 +6,8 @@
   cfg = config.core.hardware;
 in {
   imports = [
+    ./gpu
+    ./hid
     ./bluetooth.nix
     ./adb.nix
   ];

@@ -45,11 +45,12 @@
       editors = {
         vscode.enable = true;
       };
-    };
-    agents = {
-      gemini = {
-        enable = true;
-        overrideEditor = true;
+      agents = {
+        gemini = {
+          enable = true;
+          overrideEditor = true;
+        };
+        claude.enable = true;
       };
     };
   };

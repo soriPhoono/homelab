@@ -7,11 +7,7 @@
 in
   with lib; {
     imports = [
-      ./environments/display_managers/sddm.nix
-
-      ./environments/cosmic.nix
-      ./environments/kde.nix
-      ./environments/uwsm.nix
+      ./environments
 
       ./features/gaming.nix
       ./features/printing.nix
@@ -48,6 +44,12 @@ in
 
       services = {
         geoclue2.enable = true;
+
+        # Automatically update timezone based on location (uses geoclue2)
+        automatic-timezoned.enable = true;
+
+        # Preserve dbus-broker (Plasma 6 tries to switch to dbus by default)
+        dbus.implementation = "broker";
       };
     };
   }

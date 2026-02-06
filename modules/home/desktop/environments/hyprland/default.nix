@@ -7,76 +7,84 @@
   cfg = config.desktop.environments.hyprland;
 in
   with lib; {
+    imports = [
+      ./default
+    ];
+
     options.desktop.environments.hyprland = {
       enable = mkEnableOption "Enable hyprland core config, ENABLE THIS OPTION IN YOUR CONFIG";
 
       custom = mkEnableOption "Enable recognition for custom hyprland configurations, ENABLE THIS OPTION IN YOUR CONFIG";
 
       components = mkOption {
-        type = types.listOf (types.submodule {
-          options = {
-            name = mkOption {
-              type = types.str;
-              description = "Name of the component";
+        type = with types;
+          listOf (submodule {
+            options = {
+              name = mkOption {
+                type = str;
+                description = "Name of the component";
+              };
+              command = mkOption {
+                type = str;
+                description = "Command to execute";
+              };
+              type = mkOption {
+                type = enum ["app" "service"];
+                default = "app";
+                description = "UWSM execution type";
+              };
+              background = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether to start in background";
+              };
+              reloadBehavior = mkOption {
+                type = enum ["ignore" "restart"];
+                default = "ignore";
+                description = "Whether to restart the component on configuration reload. 'ignore' uses exec-once, 'restart' uses exec.";
+              };
             };
-            command = mkOption {
-              type = types.str;
-              description = "Command to execute";
-            };
-            type = mkOption {
-              type = types.enum ["app" "service"];
-              default = "app";
-              description = "UWSM execution type";
-            };
-            background = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether to start in background";
-            };
-            reloadBehavior = mkOption {
-              type = types.enum ["ignore" "restart"];
-              default = "ignore";
-              description = "Whether to restart the component on configuration reload. 'ignore' uses exec-once, 'restart' uses exec.";
-            };
-          };
-        });
+          });
         default = [];
         description = "Extra components to start with the Hyprland session via UWSM";
       };
 
       binds = mkOption {
-        type = types.listOf (types.submodule {
-          options = {
-            mods = mkOption {
-              type = types.listOf types.str;
-              default = ["$mod"];
-              description = "Modifier keys for the bind";
+        type = with types;
+          listOf (submodule {
+            options = {
+              mods = mkOption {
+                type = listOf str;
+                default = ["$mod"];
+                description = "Modifier keys for the bind";
+              };
+              key = mkOption {
+                type = nullOr str;
+                default = null;
+                description = "The key to bind";
+              };
+              dispatcher = mkOption {
+                type = nullOr str;
+                default = null;
+                description = "Hyprland dispatcher to call";
+              };
+              params = mkOption {
+                type = nullOr str;
+                default = null;
+                description = "Parameters for the dispatcher";
+              };
+              type = mkOption {
+                type = enum ["bind" "binde" "bindm" "bindl" "bindle" "bindi" "bindt"];
+                default = "bind";
+                description = "Hyprland bind type";
+              };
+              description = mkOption {
+                type = nullOr str;
+                default = null;
+                description = "Description of what this bind does";
+              };
             };
-            key = mkOption {
-              type = types.str;
-              description = "The key to bind";
-            };
-            dispatcher = mkOption {
-              type = types.str;
-              description = "Hyprland dispatcher to call";
-            };
-            params = mkOption {
-              type = types.str;
-              default = "";
-              description = "Parameters for the dispatcher";
-            };
-            type = mkOption {
-              type = types.enum ["bind" "binde" "bindm" "bindl" "bindle" "bindi" "bindt"];
-              default = "bind";
-              description = "Hyprland bind type";
-            };
-            description = mkOption {
-              type = types.str;
-              default = "";
-              description = "Description of what this bind does";
-            };
-          };
-        });
+          });
         default = [];
         description = "Structured list of keybindings for Hyprland";
       };
@@ -115,7 +123,15 @@ in
 
           # Format binds into attribute sets per type
           groupedBinds = foldl' (acc: bind: let
-            bindStr = "${concatStringsSep " " bind.mods}, ${bind.key}, ${bind.dispatcher}, ${bind.params}";
+            bindStr = "${
+              if bind.mods != null
+              then concatStringsSep " " bind.mods
+              else " "
+            }, ${bind.key}, ${bind.dispatcher}${
+              if bind.params != null
+              then ", ${bind.params}"
+              else ""
+            }";
           in
             acc // {${bind.type} = (acc.${bind.type} or []) ++ [bindStr];}) {}
           cfg.binds;

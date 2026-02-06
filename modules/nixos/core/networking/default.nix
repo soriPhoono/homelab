@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  hostName,
   ...
 }: let
   cfg = config.core.networking;
@@ -31,6 +32,7 @@ in
     config = {
       networking = mkMerge [
         {
+          inherit hostName;
           nftables.enable = true;
         }
 

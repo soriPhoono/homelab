@@ -7,6 +7,7 @@ with lib; {
   options.core.ssh = {
     publicKey = lib.mkOption {
       type = with lib.types; nullOr str;
+      default = null;
       description = "Public SSH key to use for authentication";
     };
 
@@ -32,11 +33,11 @@ with lib; {
           value = {text = contents;};
         })
         config.core.ssh.extraSSHKeys;
-    in
-      {
+      primaryKey = lib.optionalAttrs (config.core.ssh.publicKey != null) {
         ".ssh/id_ed25519.pub".text = config.core.ssh.publicKey;
-      }
-      // extraKeys;
+      };
+    in
+      primaryKey // extraKeys;
 
     sops.secrets = lib.mkIf config.core.secrets.enable (let
       extraSecrets =
@@ -45,19 +46,20 @@ with lib; {
           value = {path = "${config.home.homeDirectory}/.ssh/${name}_key";};
         })
         config.core.ssh.extraSSHKeys;
-    in
-      {
+      primarySecret = lib.optionalAttrs (config.core.ssh.publicKey != null) {
         "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
-      }
-      // extraSecrets);
+      };
+    in
+      primarySecret // extraSecrets);
 
     programs.ssh = {
       enable = true;
-      addKeysToAgent = "yes";
+      enableDefaultConfig = false;
 
       matchBlocks."*" = {
+        addKeysToAgent = "yes";
         identityFile =
-          ["${config.home.homeDirectory}/.ssh/id_ed25519"]
+          lib.optional (config.core.ssh.publicKey != null) "${config.home.homeDirectory}/.ssh/id_ed25519"
           ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") config.core.ssh.extraSSHKeys);
       };
     };

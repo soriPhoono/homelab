@@ -27,6 +27,15 @@
       colorizer.enable = true;
     };
 
+    # Git signs in gutter
+    git.gitsigns.enable = true;
+
+    # Better notifications
+    notify.nvim-notify.enable = true;
+
+    # Buffer tabs
+    tabline.nvimBufferline.enable = true;
+
     filetree = {
       neo-tree = {
         enable = true;

@@ -19,9 +19,10 @@ in {
 
   options.core = {
     timeZone = lib.mkOption {
-      type = types.str;
+      type = with types; nullOr str;
       description = "The current system time zone";
-      default = "America/Chicago";
+      default = null;
+      example = "America/Chicago";
     };
   };
 

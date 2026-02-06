@@ -6,6 +6,10 @@
   cfg = config.desktop.environments;
 in
   with lib; {
+    imports = [
+      ./hyprland
+    ];
+
     options.desktop.environments = {
       enable = mkEnableOption "Enable desktop environments module";
     };

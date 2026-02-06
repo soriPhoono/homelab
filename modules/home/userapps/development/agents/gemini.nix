@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.agents.gemini;
+  cfg = config.userapps.development.agents.gemini;
 in
   with lib; {
-    options.userapps.agents.gemini = {
+    options.userapps.development.agents.gemini = {
       enable = mkEnableOption "Enable Gemini AI agent";
 
       overrideEditor = mkOption {

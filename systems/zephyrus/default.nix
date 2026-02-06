@@ -4,7 +4,10 @@
   ];
 
   core = {
-    boot.enable = true;
+    boot = {
+      enable = true;
+      plymouth.enable = true;
+    };
 
     hardware = {
       enable = true;
@@ -65,10 +68,7 @@
   };
 
   desktop = {
-    environments = {
-      kde.enable = true;
-      managers.hyprland.enable = true;
-    };
+    environments.kde.enable = true;
     features = {
       virtualisation.enable = true;
       gaming.enable = true;

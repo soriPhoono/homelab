@@ -15,6 +15,7 @@ in
 
       ./development/agents/claude.nix
       ./development/agents/gemini.nix
+
       ./development/editors/vscode.nix
       ./development/editors/neovim.nix
 

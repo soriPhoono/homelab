@@ -6,14 +6,16 @@
   cfg = config.desktop;
 in
   with lib; {
+    imports = [
+      ./environments
+    ];
+
     options.desktop = {
       enable = mkEnableOption "Enable desktop per-user configuration";
     };
 
     config = mkIf cfg.enable {
-      fonts = {
-        fontconfig.enable = true;
-      };
+      fonts.fontconfig.enable = true;
 
       systemd.user.services."create-font-directory" = {
         Unit = {

@@ -2,6 +2,8 @@
   lib,
   pkgs,
   config,
+  self,
+  hostName,
   ...
 }: let
   cfg = config.core;
@@ -11,17 +13,18 @@ in {
       type = with types;
         attrsOf (submodule {
           options = {
-            hashedPassword = mkOption {
-              type = str;
-              description = "The password hash for the user";
-              example = "$6$N9zTq2VII1RiqgFr$IO8lxVRPfDPoDs3qZIqlUtfhtLxx/iNO47hUcx2zbDGHZsw..1sy5k.6.HIxpwkAhDPI7jZnTXKaIKqwiSWZA0";
-            };
-
             admin = mkOption {
               type = bool;
               default = false;
               description = "Whether the user should have admin privileges.";
               example = true;
+            };
+
+            hashedPassword = mkOption {
+              type = nullOr str;
+              default = null;
+              description = "The password hash for the user";
+              example = "$6$N9zTq2VII1RiqgFr$IO8lxVRPfDPoDs3qZIqlUtfhtLxx/iNO47hUcx2zbDGHZsw..1sy5k.6.HIxpwkAhDPI7jZnTXKaIKqwiSWZA0";
             };
 
             extraGroups = mkOption {
@@ -31,13 +34,12 @@ in {
               example = ["wheel" "docker"];
             };
 
-            shell = with pkgs;
-              mkOption {
-                type = package;
-                default = bashInteractive;
-                description = "The shell for the user.";
-                example = zsh;
-              };
+            shell = mkOption {
+              type = package;
+              default = pkgs.bashInteractive;
+              description = "The shell for the user.";
+              example = pkgs.zsh;
+            };
 
             publicKey = mkOption {
               type = nullOr str;
@@ -118,7 +120,14 @@ in {
     };
 
     home-manager.users =
-      lib.mapAttrs (_: user: {
+      lib.mapAttrs (username: user: {
+        imports = let
+          hostHome = self + "/homes/${username}@${hostName}";
+          userHome = self + "/homes/${username}";
+        in
+          lib.optional (builtins.pathExists hostHome) hostHome
+          ++ lib.optional (builtins.pathExists userHome) userHome;
+
         core = {
           ssh.publicKey = lib.mkIf (user.publicKey != null) user.publicKey;
           shells.fish.enable = user.shell == pkgs.fish;

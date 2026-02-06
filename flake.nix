@@ -106,9 +106,8 @@
       caelestia-shell.homeManagerModules.default
     ];
 
-    nixosModules = path:
+    nixosModules = hostName:
       with inputs; [
-        (path + "/default.nix")
         self.nixosModules.default
         home-manager.nixosModules.home-manager
         nixos-facter-modules.nixosModules.facter
@@ -123,7 +122,7 @@
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            extraSpecialArgs = {inherit inputs self;};
+            extraSpecialArgs = {inherit inputs self hostName;};
             sharedModules = homeManagerModules;
           };
         }
@@ -132,16 +131,20 @@
     # --- System Builders --- #
 
     # Base NixOS System Builder
-    mkSystem = _name: path: let
+    mkSystem = hostName: path: let
       meta = readMeta path;
       systemArch = meta.system or "x86_64-linux";
     in
       lib.nixosSystem {
         system = systemArch;
         specialArgs = {
-          inherit inputs self;
+          inherit inputs self hostName;
         };
-        modules = nixosModules path;
+        modules =
+          (nixosModules hostName)
+          ++ [
+            (path + "/default.nix")
+          ];
       };
 
     # Standalone Home Manager Builder
@@ -153,16 +156,22 @@
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;
       };
-      # Extract username from folders named "user@host" or just "user"
-      username = lib.head (lib.splitString "@" name);
+      # Extract username and host from folders named "user@host" or just "user"
+      nameParts = lib.splitString "@" name;
+      username = lib.head nameParts;
+      hostName =
+        if lib.length nameParts > 1
+        then lib.last nameParts
+        else "generic";
     in
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {inherit inputs self;};
+        extraSpecialArgs = {inherit inputs self hostName;};
         modules = with inputs;
           [
             (path + "/default.nix")
             {
+              nixpkgs.overlays = builtins.attrValues self.overlays;
               home = {
                 inherit username;
                 homeDirectory = lib.mkDefault "/home/${username}";
@@ -195,8 +204,14 @@
           };
         };
 
-        packages =
-          import ./pkgs {inherit lib pkgs self;};
+        packages = import ./pkgs {
+          inherit
+            inputs
+            lib
+            pkgs
+            self
+            ;
+        };
 
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};

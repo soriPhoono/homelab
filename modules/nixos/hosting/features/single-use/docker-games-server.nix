@@ -36,9 +36,9 @@ in
 
       systemd.services.run-gow = {
         description = "Launch games-on-whales";
-        after = [];
-        wants = [];
-        wantedBy = [];
+        after = ["network-online.target" "podman.service"];
+        wants = ["network-online.target"];
+        wantedBy = ["multi-user.target"];
         script = "${pkgs.writeShellApplication {
           name = "run-gow.sh";
           runtimeInputs = with pkgs; [
@@ -48,7 +48,7 @@ in
             podman
           ];
           text = ''
-            if [[ ! -f ${cfg.gpuRenderNode} ]]; then return 0; fi
+            if [[ ! -f ${cfg.gpuRenderNode} ]]; then exit 1; fi
 
             NODE="$(basename ${cfg.gpuRenderNode})"
             case $(cat /sys/class/drm/"$NODE"/device/vendor) in
