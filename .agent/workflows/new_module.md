@@ -1,43 +1,45 @@
----
-description: Create a new NixOS or Home Manager module
----
+______________________________________________________________________
 
-1.  **Determine Scope**:
-    -   System-level: `modules/nixos/<name>`
-    -   User-level: `modules/home/<name>`
+## description: Create a new NixOS or Home Manager module
 
-2.  **Create Directory & File**:
-    ```bash
-    mkdir -p modules/nixos/<name>
-    touch modules/nixos/<name>/default.nix
-    ```
+1. **Determine Scope**:
 
-3.  **Implement Standard Pattern**:
-    Use the `lib.mkEnableOption` pattern.
+   - System-level: `modules/nixos/<name>`
+   - User-level: `modules/home/<name>`
 
-    ```nix
-    {
-      options,
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
-    with lib;
-    let
-      cfg = config.modules.nixos.<name>; # Adjust path accordingly
-    in {
-      options.modules.nixos.<name> = {
-        enable = mkEnableOption "Enable <name> module";
-      };
+1. **Create Directory & File**:
 
-      config = mkIf cfg.enable {
-        # Implementation
-      };
-    }
-    ```
+   ```bash
+   mkdir -p modules/nixos/<name>
+   touch modules/nixos/<name>/default.nix
+   ```
 
-4.  **Auto-Import**:
-    The `modules/nixos/default.nix` (or `pkgs` equivalent) usually auto-imports these. *Verify if manual import is needed in `modules/nixos/default.nix` if it's not using discovery.*
+1. **Implement Standard Pattern**:
+   Use the `lib.mkEnableOption` pattern.
 
-    *(Self-Correction: `modules` directories in this repo often utilize `default.nix` that manually imports children or uses discovery. Check `modules/nixos/default.nix` to be sure. If it uses `readDir`, nothing else needed.)*
+   ```nix
+   {
+     options,
+     config,
+     lib,
+     pkgs,
+     ...
+   }:
+   with lib;
+   let
+     cfg = config.modules.nixos.<name>; # Adjust path accordingly
+   in {
+     options.modules.nixos.<name> = {
+       enable = mkEnableOption "Enable <name> module";
+     };
+
+     config = mkIf cfg.enable {
+       # Implementation
+     };
+   }
+   ```
+
+1. **Auto-Import**:
+   The `modules/nixos/default.nix` (or `pkgs` equivalent) usually auto-imports these. *Verify if manual import is needed in `modules/nixos/default.nix` if it's not using discovery.*
+
+   *(Self-Correction: `modules` directories in this repo often utilize `default.nix` that manually imports children or uses discovery. Check `modules/nixos/default.nix` to be sure. If it uses `readDir`, nothing else needed.)*

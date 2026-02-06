@@ -5,18 +5,24 @@
 We follow a **Trunk-Based Development** model with a strict **Issue-First** policy.
 
 ### 1. Issue First
+
 Every change must map explicitly to a GitHub Issue. This allows tracking on the project Kanban board.
--   **Bug Reports**: Create an issue describing what is broken.
--   **Feature Requests**: Create an issue describing the new capability.
+
+- **Bug Reports**: Create an issue describing what is broken.
+- **Feature Requests**: Create an issue describing the new capability.
 
 ### 2. Branching
+
 Create short-lived branches from `main` using the format:
+
 ```bash
 git checkout -b dev-<issue-name>
 ```
+
 *Example*: `dev-fix-zsh-typo` or `dev-add-k8s-cluster`
 
 ### 3. Commit Conventions
+
 We use **Conventional Commits** to keep history clean and automatable.
 
 | Type | Description |
@@ -33,8 +39,10 @@ We use **Conventional Commits** to keep history clean and automatable.
 *Example*: `feat: add sunshine module for gaming VM`
 
 ### 4. Validation
+
 Before pushing, ensure the fortress can compile for integration and deployment. The `pre-commit` hooks (managed by `git-hooks` in the flake) should handle this automatically.
 To run checks manually:
+
 ```bash
 nix flake check
 ```

@@ -1,48 +1,52 @@
----
-description: Create a new NixOS system configuration
----
+______________________________________________________________________
 
-1.  **Create Directory**: 
-    Create a new directory in `systems/` matching the hostname.
-    ```bash
-    mkdir -p systems/<hostname>
-    ```
+## description: Create a new NixOS system configuration
 
-2.  **Create Meta File**:
-    Create `systems/<hostname>/meta.json` to define the architecture.
-    ```json
-    {
-      "system": "x86_64-linux"
-    }
-    ```
-    *(Adjust "system" if deploying to a Raspberry Pi: "aarch64-linux")*
+1. **Create Directory**:
+   Create a new directory in `systems/` matching the hostname.
 
-3.  **Create Default Config**:
-    Create `systems/<hostname>/default.nix`.
-    ```nix
-    {
-      pkgs,
-      lib,
-      config,
-      ...
-    }: {
-      imports = [
-        # Include hardware config if available, or generate it
-        # ./hardware-configuration.nix
-      ];
+   ```bash
+   mkdir -p systems/<hostname>
+   ```
 
-      # Basic Network Config
-      networking.hostName = "<hostname>";
+1. **Create Meta File**:
+   Create `systems/<hostname>/meta.json` to define the architecture.
 
-      # Enable core modules
-      # modules.nixos.core.enable = true; 
+   ```json
+   {
+     "system": "x86_64-linux"
+   }
+   ```
 
-      system.stateVersion = "24.11";
-    }
-    ```
+   *(Adjust "system" if deploying to a Raspberry Pi: "aarch64-linux")*
 
-4.  **Register**:
-    No manual registration needed. `flake.nix` will automatically pick it up.
+1. **Create Default Config**:
+   Create `systems/<hostname>/default.nix`.
 
-5.  **Check**:
-    Run `nix flake check` to verify.
+   ```nix
+   {
+     pkgs,
+     lib,
+     config,
+     ...
+   }: {
+     imports = [
+       # Include hardware config if available, or generate it
+       # ./hardware-configuration.nix
+     ];
+
+     # Basic Network Config
+     networking.hostName = "<hostname>";
+
+     # Enable core modules
+     # modules.nixos.core.enable = true; 
+
+     system.stateVersion = "24.11";
+   }
+   ```
+
+1. **Register**:
+   No manual registration needed. `flake.nix` will automatically pick it up.
+
+1. **Check**:
+   Run `nix flake check` to verify.

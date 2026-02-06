@@ -1,44 +1,47 @@
----
-description: Create a new Home Manager configuration
----
+______________________________________________________________________
 
-1.  **Identify Target**:
-    Determine if this is for a specific user on a specific host (`user@host`) or a generic user config (`user`).
+## description: Create a new Home Manager configuration
 
-2.  **Create Directory**:
-    ```bash
-    mkdir -p homes/<user>@<host>
-    # OR
-    mkdir -p homes/<user>
-    ```
+1. **Identify Target**:
+   Determine if this is for a specific user on a specific host (`user@host`) or a generic user config (`user`).
 
-3.  **Create Meta File**:
-    Create `homes/<target>/meta.json`.
-    ```json
-    {
-      "system": "x86_64-linux"
-    }
-    ```
+1. **Create Directory**:
 
-4.  **Create Default Config**:
-    Create `homes/<target>/default.nix`.
-    ```nix
-    {
-      pkgs,
-      lib,
-      config,
-      ...
-    }: {
-      imports = [
-        # Import user modules
-      ];
+   ```bash
+   mkdir -p homes/<user>@<host>
+   # OR
+   mkdir -p homes/<user>
+   ```
 
-      home.username = "<user>";
-      home.homeDirectory = "/home/<user>";
+1. **Create Meta File**:
+   Create `homes/<target>/meta.json`.
 
-      system.stateVersion = "24.11";
-    }
-    ```
+   ```json
+   {
+     "system": "x86_64-linux"
+   }
+   ```
 
-5.  **Validate**:
-    `nix flake check`
+1. **Create Default Config**:
+   Create `homes/<target>/default.nix`.
+
+   ```nix
+   {
+     pkgs,
+     lib,
+     config,
+     ...
+   }: {
+     imports = [
+       # Import user modules
+     ];
+
+     home.username = "<user>";
+     home.homeDirectory = "/home/<user>";
+
+     system.stateVersion = "24.11";
+   }
+   ```
+
+1. **Validate**:
+   `nix flake check`

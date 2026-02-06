@@ -1,41 +1,44 @@
----
-description: Create a new custom package
----
+______________________________________________________________________
 
-1.  **Create Directory**:
-    ```bash
-    mkdir -p pkgs/<name>
-    ```
+## description: Create a new custom package
 
-2.  **Create Expression**:
-    Create `pkgs/<name>/default.nix`.
-    ```nix
-    {
-      lib,
-      stdenv,
-      fetchFromGitHub,
-      ...
-    }:
-    stdenv.mkDerivation rec {
-      pname = "<name>";
-      version = "0.0.1";
+1. **Create Directory**:
 
-      src = fetchFromGitHub {
-        owner = "<owner>";
-        repo = "<repo>";
-        rev = "v${version}";
-        hash = lib.fakeHash;
-      };
+   ```bash
+   mkdir -p pkgs/<name>
+   ```
 
-      # ... build inputs and phases
-    }
-    ```
+1. **Create Expression**:
+   Create `pkgs/<name>/default.nix`.
 
-3.  **Auto-Discovery**:
-    `pkgs/default.nix` uses `builtins.readDir`, so no manual registration is required.
+   ```nix
+   {
+     lib,
+     stdenv,
+     fetchFromGitHub,
+     ...
+   }:
+   stdenv.mkDerivation rec {
+     pname = "<name>";
+     version = "0.0.1";
 
-4.  **Build**:
-    Test the build:
-    ```bash
-    nix build .#<name>
-    ```
+     src = fetchFromGitHub {
+       owner = "<owner>";
+       repo = "<repo>";
+       rev = "v${version}";
+       hash = lib.fakeHash;
+     };
+
+     # ... build inputs and phases
+   }
+   ```
+
+1. **Auto-Discovery**:
+   `pkgs/default.nix` uses `builtins.readDir`, so no manual registration is required.
+
+1. **Build**:
+   Test the build:
+
+   ```bash
+   nix build .#<name>
+   ```

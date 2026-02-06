@@ -1,20 +1,21 @@
----
-description: Create a new package overlay
----
+______________________________________________________________________
 
-1.  **File Creation**:
-    Create `overlays/<name>.nix`.
+## description: Create a new package overlay
 
-2.  **Content**:
-    ```nix
-    { lib, self, ... }:
-    final: prev: {
-      # Example: Override a package version
-      # hello = prev.hello.overrideAttrs (old: {
-      #   src = ...;
-      # });
-    }
-    ```
+1. **File Creation**:
+   Create `overlays/<name>.nix`.
 
-3.  **Auto-Discovery**:
-    `overlays/default.nix` automatically picks up any `.nix` file in the directory.
+1. **Content**:
+
+   ```nix
+   { lib, self, ... }:
+   final: prev: {
+     # Example: Override a package version
+     # hello = prev.hello.overrideAttrs (old: {
+     #   src = ...;
+     # });
+   }
+   ```
+
+1. **Auto-Discovery**:
+   `overlays/default.nix` automatically picks up any `.nix` file in the directory.
