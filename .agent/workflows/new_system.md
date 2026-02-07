@@ -50,3 +50,9 @@ ______________________________________________________________________
 
 1. **Check**:
    Run `nix flake check` to verify.
+
+1. **Document**:
+   Create a documentation entry.
+   - Read Template: `view_file docs/Templates/System.md`
+   - Copy Template: `cp docs/Templates/System.md docs/Systems/<hostname>.md`
+   - Fill in details: Hardware specs, Role, Unique Configurations.
