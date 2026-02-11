@@ -31,17 +31,21 @@
     ...
   }: let
     inherit (nixpkgs) lib;
-
-    components = [
-      (flake-parts.lib.mkFlake {inherit inputs;} {
+  in
+    with lib;
+      flake-parts.lib.mkFlake {inherit inputs;} {
         imports = with inputs; [
           agenix-shell.flakeModules.default
           treefmt-nix.flakeModule
           git-hooks-nix.flakeModule
         ];
         systems = import inputs.systems;
-        agenix-shell.secrets = (import ./secrets.nix).agenix-shell-secrets;
-        perSystem = args @ {system, ...}: let
+        agenix-shell.secrets = (import ./secrets.nix {inherit lib;}).agenix-shell-secrets;
+        perSystem = {
+          config,
+          system,
+          ...
+        }: let
           pkgs = import nixpkgs {
             inherit system;
             overlays = [
@@ -52,16 +56,18 @@
             config.allowUnfree = true;
           };
         in {
-          devShells.default = import ./shell.nix (args
-            // {
-              inherit pkgs;
-            });
-          treefmt = import ./treefmt.nix;
-          pre-commit = import ./pre-commit.nix;
+          devShells.default = import ./shell.nix {
+            inherit lib pkgs;
+            config = {
+              inherit (config) pre-commit;
+            };
+          };
+          treefmt = import ./treefmt.nix {
+            inherit lib pkgs;
+          };
+          pre-commit = import ./pre-commit.nix {
+            inherit lib pkgs;
+          };
         };
-      })
-    ];
-  in
-    with lib;
-      foldl' recursiveUpdate {} components;
+      };
 }

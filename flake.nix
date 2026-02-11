@@ -7,6 +7,14 @@
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*";
     flake-parts.url = "github:hercules-ci/flake-parts";
 
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    agenix-shell = {
+      url = "github:aciceri/agenix-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -63,17 +71,13 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
-
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
     flake-parts,
+    agenix,
     ...
   }: let
     inherit (nixpkgs) lib;
@@ -103,7 +107,6 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       nvf.homeManagerModules.default
-      caelestia-shell.homeManagerModules.default
     ];
 
     nixosModules = hostName:
@@ -167,7 +170,7 @@
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {inherit inputs self hostName;};
-        modules = with inputs;
+        modules =
           [
             (path + "/default.nix")
             {
@@ -184,6 +187,7 @@
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = with inputs; [
+        agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
         github-actions-nix.flakeModule
@@ -192,11 +196,23 @@
       # Supported systems for devShells/checks
       systems = import inputs.systems;
 
+      agenix-shell.secrets = (import ./secrets.nix {inherit lib;}).agenix-shell-secrets;
+
       perSystem = {
         config,
-        pkgs,
+        system,
         ...
-      }: {
+      }: let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [
+            (_: _: {
+              agenix = agenix.packages.${system}.default;
+            })
+          ];
+          config.allowUnfree = true;
+        };
+      in {
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
@@ -241,13 +257,12 @@
         templates =
           lib.mapAttrs (name: _: let
             path = ./templates + "/${name}";
-            meta = readMeta path;
           in {
             inherit path;
-            description = meta.description or "A flake template";
+            inherit ((import "${path}/flake.nix")) description;
           }) (
             lib.filterAttrs (
-              name: type: type == "directory" && builtins.pathExists (./templates + "/${name}/default.nix")
+              name: type: type == "directory" && builtins.pathExists (./templates + "/${name}/flake.nix")
             ) (builtins.readDir ./templates)
           );
       };

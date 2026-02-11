@@ -10,6 +10,7 @@ Welcome to the **Data Fortress** documentation vault.
 
 - \[[Philosophy]\] - Core tenets and design principles.
 - \[[Meta/AI_CONTEXT|AI Context]\] - Context prompts for AI agents.
+- \[[Meta/MCP_Integration|MCP Integration]\] - Guide for AI agent tooling.
 - \[[Meta/CONTRIBUTING|Contributing]\] - Development workflow and standards.
 
 ## 🏗️ Architecture

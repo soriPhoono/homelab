@@ -1,0 +1,142 @@
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}: let
+  cfg = config.hosting.blocks.features.docker-games-server;
+
+  # Determine hosting backend
+  backend = config.hosting.blocks.backends.type;
+  isPodman = backend == "podman";
+  socketPath =
+    if isPodman
+    then "/run/podman/podman.sock"
+    else "/var/run/docker.sock";
+  containerCmd =
+    if isPodman
+    then "podman"
+    else "docker";
+
+  launcherScript = pkgs.writeShellApplication {
+    name = "wolf-launcher";
+    runtimeInputs = with pkgs; [
+      curl
+      (
+        if isPodman
+        then podman
+        else docker
+      )
+      coreutils
+      gawk
+      gnused
+    ];
+    text = ''
+      RENDER_NODE="${cfg.gpuRenderNode}"
+      if [[ ! -e "$RENDER_NODE" ]]; then
+        echo "Error: GPU render node $RENDER_NODE not found."
+        exit 1
+      fi
+
+      NODE_NAME=$(basename "$RENDER_NODE")
+      VENDOR_ID=$(cat "/sys/class/drm/$NODE_NAME/device/vendor")
+
+      # Common arguments
+      ARGS=(
+        run --rm
+        --name wolf
+        -v "${cfg.dataDir}:/etc/wolf"
+        -v "${socketPath}:/var/run/docker.sock"
+        -v /dev:/dev
+        -v /run/udev:/run/udev
+        -p 47984:47984/tcp -p 47989:47989/tcp -p 48010:48010/tcp
+        -p 47999:47999/udp -p 48100:48100/udp -p 48200:48200/udp
+        --security-opt label=disable
+        --device-cgroup-rule='c 13:* rmw'
+        --device "$RENDER_NODE"
+        --device /dev/uinput
+        --device /dev/uhid
+        --device /dev/dri
+        -e WOLF_STOP_CONTAINER_ON_EXIT=TRUE
+        -e WOLF_RENDER_NODE="$RENDER_NODE"
+      )
+
+      if [[ "$VENDOR_ID" == "0x10de" ]]; then
+        echo "Detected Nvidia GPU on $RENDER_NODE"
+
+        # Prepare Nvidia Driver Volume
+        if [ -d "/sys/module/nvidia" ]; then
+          NV_VERSION=$(cat /sys/module/nvidia/version)
+          echo "Building Nvidia driver container for version $NV_VERSION..."
+
+          curl -s https://raw.githubusercontent.com/games-on-whales/gow/master/images/nvidia-driver/Dockerfile \
+            | sed 's/FROM scratch/FROM alpine:latest/' \
+            | ${containerCmd} build -t gow/nvidia-driver:latest -f - --build-arg NV_VERSION="$NV_VERSION" .
+
+          ${containerCmd} run --rm \
+            --mount "source=nvidia-driver-vol,destination=/usr/nvidia" \
+            gow/nvidia-driver:latest true
+
+          ARGS+=(
+            --mount "source=nvidia-driver-vol,destination=/usr/nvidia"
+            -e NVIDIA_DRIVER_VOLUME_NAME=nvidia-driver-vol
+            --device /dev/nvidia-uvm
+            --device /dev/nvidia-uvm-tools
+            --device /dev/nvidiactl
+            --device /dev/nvidia0
+            --device /dev/nvidia-modeset
+          )
+        else
+          echo "Nvidia kernel module not loaded. Nvidia features may not work."
+        fi
+      else
+        echo "Detected AMD/Intel GPU on $RENDER_NODE (Vendor: $VENDOR_ID)"
+      fi
+
+      echo "Starting Wolf container..."
+      exec ${containerCmd} "''${ARGS[@]}" ghcr.io/games-on-whales/wolf:stable
+    '';
+  };
+in
+  with lib; {
+    options.hosting.blocks.features.docker-games-server = {
+      enable = mkEnableOption "Enable self-hosted game streaming server";
+      openFirewall = mkEnableOption "Enable modifications to firewall for server port exposure";
+
+      dataDir = mkOption {
+        type = types.str;
+        default = "/etc/wolf";
+        description = "The location for the game server's data/config";
+      };
+
+      gpuRenderNode = mkOption {
+        type = types.str;
+        default = "/dev/dri/renderD128";
+        description = "The path to the GPU render node (e.g., /dev/dri/renderD128)";
+      };
+    };
+
+    config = mkIf cfg.enable {
+      hosting.enable = true;
+
+      networking.firewall = mkIf cfg.openFirewall {
+        allowedTCPPorts = [48010 47989 47984];
+        allowedUDPPorts = [47999 48100 48200];
+      };
+
+      systemd.services.wolf = {
+        description = "Games on Whales (Wolf) Service";
+        after = ["network-online.target" "${backend}.service"];
+        wants = ["network-online.target"];
+        wantedBy = ["multi-user.target"];
+
+        serviceConfig = {
+          Restart = "always";
+          ExecStartPre = [
+            "${pkgs.coreutils}/bin/mkdir -p ${cfg.dataDir}"
+          ];
+          ExecStart = "${launcherScript}/bin/wolf-launcher";
+        };
+      };
+    };
+  }

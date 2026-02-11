@@ -45,6 +45,7 @@ ______________________________________________________________________
 
 1. **Document**:
    Create a documentation entry.
+
    - Read Template: `view_file docs/Templates/Module.md`
    - Copy Template: `cp docs/Templates/Module.md docs/Modules/Pkgs/<name>.md` (Create Pkgs directory if missing `mkdir -p docs/Modules/Pkgs`)
    - Fill in details: Version, Source, Usage.

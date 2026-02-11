@@ -4,6 +4,7 @@ ______________________________________________________________________
 
 1. **Identify Component Type**:
    Determine what you are documenting:
+
    - **System** (Machine config): `docs/Systems/<hostname>.md`
    - **NixOS Module**: `docs/Modules/NixOS/<name>.md`
    - **Home Manager Module**: `docs/Modules/Home/<name>.md`
@@ -12,6 +13,7 @@ ______________________________________________________________________
 
 1. **Read Template**:
    Read the appropriate template to understand the structure.
+
    - System: `docs/Templates/System.md`
    - Module: `docs/Templates/Module.md`
    - Decision: `docs/Templates/Decision.md`
@@ -31,6 +33,7 @@ ______________________________________________________________________
 
 1. **Populate Content**:
    Fill in the YAML frontmatter and the sections.
+
    - `type`: `module`, `system`, etc.
    - `status`: `wip`, `stable`
    - `tags`: Add relevant tags.

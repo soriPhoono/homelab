@@ -46,6 +46,7 @@ ______________________________________________________________________
 
 1. **Document**:
    Create a documentation entry.
+
    - Read Template: `view_file docs/Templates/Module.md`
    - Copy Template: `cp docs/Templates/Module.md docs/Modules/NixOS/<name>.md` (or `docs/Modules/Home/<name>.md`)
    - Fill in details: Description, Options, Dependencies.

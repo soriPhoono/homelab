@@ -10,15 +10,15 @@
   core = {
     hardware.gpu.dedicated.amd.enable = true;
 
-    networking = {
-      network-manager.enable = true;
-      tailscale.enable = true;
-    };
-
     gitops = {
       enable = true;
       repo = "https://github.com/soriphoono/homelab.git";
       name = "moonlight";
+    };
+
+    networking = {
+      network-manager.enable = true;
+      tailscale.enable = true;
     };
 
     users = {
@@ -32,9 +32,12 @@
     };
   };
 
-  hosting.features.single-use.docker-games-server = {
+  hosting = {
     enable = true;
-    openFirewall = true;
-    dataDir = "/mnt/games";
+    blocks.features.docker-games-server = {
+      enable = true;
+      openFirewall = true;
+      dataDir = "/mnt/games";
+    };
   };
 }

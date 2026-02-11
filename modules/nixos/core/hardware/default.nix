@@ -8,8 +8,8 @@ in {
   imports = [
     ./gpu
     ./hid
-    ./bluetooth.nix
     ./adb.nix
+    ./bluetooth.nix
   ];
 
   options.core.hardware = {

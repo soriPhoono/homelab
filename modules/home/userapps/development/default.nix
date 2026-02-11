@@ -1,0 +1,7 @@
+{
+  imports = [
+    ./agents
+    ./editors
+    ./terminal
+  ];
+}

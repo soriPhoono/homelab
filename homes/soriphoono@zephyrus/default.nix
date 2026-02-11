@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   imports = [
     ./nvim
   ];
@@ -51,6 +55,23 @@
           overrideEditor = true;
         };
         claude.enable = true;
+
+        mcp-servers = {
+          github = {
+            command = "${pkgs.mcp-server-github}/bin/github-mcp-server";
+            args = ["stdio"];
+            env.GITHUB_PERSONAL_ACCESS_TOKEN = "\${GITHUB_PERSONAL_ACCESS_TOKEN}";
+          };
+          git.command = "${pkgs.mcp-server-git}/bin/mcp-server-git";
+          fetch.command = "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch";
+          filesystem = {
+            command = "${pkgs.mcp-server-filesystem}/bin/mcp-server-filesystem";
+            args = ["/home/soriphoono"];
+          };
+          memory.command = "${pkgs.mcp-server-memory}/bin/mcp-server-memory";
+          sequential-thinking.command = "${pkgs.mcp-server-sequential-thinking}/bin/mcp-server-sequential-thinking";
+          mermaid.command = "${pkgs.mcp-server-mermaid}/bin/mermaid-mcp-server";
+        };
       };
     };
   };

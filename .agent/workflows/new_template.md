@@ -1,6 +1,6 @@
----
-description: 
----
+______________________________________________________________________
+
+## description:
 
 ______________________________________________________________________
 
@@ -34,5 +34,6 @@ ______________________________________________________________________
 
 1. **Document**:
    Update Contributing docs or add a note.
+
    - Update `docs/Meta/CONTRIBUTING.md` if this is a major development template.
    - Or create `docs/Modules/Templates/<name>.md` if extensive documentation is needed.

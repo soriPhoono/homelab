@@ -12,7 +12,7 @@ in
 
       package = mkOption {
         type = types.package;
-        default = pkgs.vscode;
+        default = pkgs.vscodium;
         description = "The vscode package to use.";
       };
 

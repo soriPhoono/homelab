@@ -1,5 +1,5 @@
 {
   imports = [
-    ./single-use
+    ./cloudflare.nix
   ];
 }

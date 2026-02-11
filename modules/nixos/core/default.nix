@@ -8,13 +8,13 @@ with lib; let
   cfg = config.core;
 in {
   imports = [
+    ./hardware
+    ./networking
     ./boot.nix
     ./gitops.nix
     ./nixconf.nix
     ./secrets.nix
     ./users.nix
-    ./networking
-    ./hardware
   ];
 
   options.core = {

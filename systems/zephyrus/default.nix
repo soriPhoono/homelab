@@ -70,14 +70,16 @@
   desktop = {
     environments.kde.enable = true;
     features = {
+      printing.enable = true;
       virtualisation.enable = true;
       gaming.enable = true;
     };
     services.asusd.enable = true;
   };
 
-  hosting.features.single-use.docker-games-server = {
+  hosting.blocks.features.docker-games-server = {
     enable = true;
+    openFirewall = true;
     gpuRenderNode = "/dev/dri/renderD129";
   };
 }

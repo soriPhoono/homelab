@@ -21,13 +21,7 @@
 
     networking = {
       network-manager.enable = true;
-      tailscale = {
-        enable = true;
-        auth = {
-          enable = true;
-          internal = true;
-        };
-      };
+      tailscale.enable = true;
     };
 
     users = {
@@ -41,10 +35,19 @@
   };
 
   hosting = {
-    mode = "single-node";
-    configuration.single-node = {
-      domainName = "cryptic-coders.net";
-      portainerMode = "server";
+    enable = true;
+    blocks = {
+      reverse-proxy = {
+        type = "traefik";
+        domain = {
+          fqdn = "cryptic-coders.net";
+          provider.type = "cloudflare";
+        };
+      };
+      backends.management = {
+        type = "portainer";
+        portainer.mode = "server";
+      };
     };
   };
 }

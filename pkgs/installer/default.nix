@@ -17,7 +17,6 @@
     self.homeModules.default
     sops-nix.homeManagerModules.sops
     nvf.homeManagerModules.default
-    caelestia-shell.homeManagerModules.default
   ];
 
   nixosModules = with inputs; [

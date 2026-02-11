@@ -7,7 +7,7 @@
 in
   with lib; {
     imports = [
-      ./hyprland
+      ./hyprland.nix
     ];
 
     options.desktop.environments.managers = {
@@ -15,8 +15,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      desktop = {
-        environments.uwsm.enable = true;
-      };
+      desktop.environments.uwsm.enable = true;
     };
   }

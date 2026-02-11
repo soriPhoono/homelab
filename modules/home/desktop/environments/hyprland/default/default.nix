@@ -5,30 +5,15 @@
   ...
 }:
 with lib; let
-  cfg = config.desktop.environments.hyprland.default;
   core = config.desktop.environments.hyprland;
 in {
   imports = [
     ./conf/hypr.nix
     ./conf/binds.nix
-    ./shell.nix
   ];
 
   options.desktop.environments.hyprland.default = {
     enable = mkEnableOption "Enable default hyprland desktop";
-
-    caelestia = {
-      enable = mkEnableOption "Enable caelestia shell components" // {default = true;};
-      settings = mkOption {
-        type = with types;
-          submodule {
-            freeformType = attrs;
-            options = {};
-          };
-        default = {};
-        description = "Settings to pass to the caelestia shell";
-      };
-    };
 
     appearance = {
       rounding = mkOption {
@@ -57,16 +42,6 @@ in {
   config = mkIf (core.enable && !core.custom) {
     desktop.environments.hyprland = {
       default.enable = true;
-
-      components = mkIf cfg.caelestia.enable [
-        {
-          name = "caelestia-shell";
-          command = "caelestia-shell";
-          type = "service";
-          background = true;
-          reloadBehavior = "restart";
-        }
-      ];
 
       binds = flatten (let
         directions = {

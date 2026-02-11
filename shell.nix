@@ -15,6 +15,7 @@ with pkgs;
 
       disko
       nixos-facter
+      nodejs
     ];
 
     shellHook = ''
