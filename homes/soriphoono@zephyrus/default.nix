@@ -48,31 +48,6 @@
           overrideEditor = true;
         };
         claude.enable = true;
-
-        mcp-servers = {
-          github = {
-            command = "@modelcontextprotocol/server-github";
-          };
-          git = {
-            command = "@modelcontextprotocol/server-git";
-          };
-          fetch = {
-            command = "@modelcontextprotocol/server-fetch";
-          };
-          filesystem = {
-            command = "@modelcontextprotocol/server-filesystem";
-            args = ["/home/soriphoono"];
-          };
-          memory = {
-            command = "@modelcontextprotocol/server-memory";
-          };
-          sequential-thinking = {
-            command = "@modelcontextprotocol/server-sequential-thinking";
-          };
-          mermaid = {
-            command = "@lepion/mcp-server-mermaid";
-          };
-        };
       };
     };
   };

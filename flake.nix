@@ -4,6 +4,7 @@
   inputs = {
     systems.url = "github:nix-systems/default";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+    mcps.url = "github:roman/mcps.nix";
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*";
     flake-parts.url = "github:hercules-ci/flake-parts";
 
