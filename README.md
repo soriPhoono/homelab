@@ -1,55 +1,83 @@
 # Homelab: The Data Fortress
 
-## Project Overview
+## 🏰 Project Overview
 
-This repository serves as an all-in-one "Data Fortress," a comprehensive declarative configuration for my personal infrastructure. It is built to evolve into a self-hosted GitOps-powered Kubernetes cluster along with other devices designed to integrate with it, managing everything from single-board computers (Raspberry Pis) to primary edge devices and virtualized gaming systems (like "Gaming on Whales" via Sunshine/Moonlight).
+This repository is the "Data Fortress," a comprehensive, declarative configuration for my personal infrastructure. It manages everything from physical servers and desktops to virtualized environments and single-board computers.
 
-## Philosophy: Single Command Invocation
+Built on **NixOS** and **Home Manager**, it leverages **Nix Flakes** for reproducibility and hermetic builds.
 
-The core philosophy of this project is **"Single Command Invocation"**.
+## 🧠 Core Philosophy
 
-- **No manual scripts**: If a task requires more than a standard Nix command, the flake needs to be fixed.
-- **Stability**: `nix flake check` serves as the gold standard for repository health. If the check passes, the system is considered stable for iteration.
-- **Declarative**: Every aspect of the infrastructure is defined in code.
+1. **Declarative everything**: If it's not in code, it doesn't exist.
+1. **Single Command Invocation**: Deployment and updates should be one command.
+1. **Dynamic Discovery**: The system automatically finds code. You shouldn't have to manually import every new file.
+1. **Stability**: `nix flake check` is the law.
 
-## Directory Structure
+## 🏗️ Architecture
 
-| Directory | Description |
-| :--- | :--- |
-| **`systems/`** | Top-level NixOS configurations for physical and virtual machines. |
-| **`homes/`** | Home Manager configurations for user environments (desktop, terminal, apps). |
-| **`modules/`** | Reusable NixOS and Home Manager modules. |
-| **`pkgs/`** | Custom packages not found in upstream Nixpkgs. |
-| **`overlays/`** | Modifications to upstream packages to alter their behavior or versions. |
-| **`templates/`** | Scaffolding for creating new systems, modules, or packages. |
+This repository uses a modern Flake-based structure with automatic discovery logic.
 
-## Quick Start
+### Directory Structure
 
-The development environment is automatically managed via `direnv`.
+| Directory | Role | Description |
+| :--- | :--- | :--- |
+| **`systems/`** | **Hosts** | Top-level NixOS configurations for machines. Each folder is a host. |
+| **`homes/`** | **Users** | Home Manager configurations. Can be standalone or integrated. |
+| **`modules/`** | **Logic** | Reusable modules. `distro/` for OS-level, `home/` for user-level. |
+| **`pkgs/`** | **Software** | Custom packages and overrides. |
+| **`lib/`** | **Helpers** | Utility functions used throughout the flake. |
+| **`templates/`** | **Scaffolding** | Boilerplate for creating new systems or modules. |
 
-1. **Enter the Shell**:
-   Simply `cd` into the directory. If you have `direnv` and `nix` installed, the environment will load automatically:
+### Dynamic Discovery
 
-   ```bash
-   direnv allow
-   ```
+The `flake.nix` file includes custom logic to automatically import configurations:
 
-   Alternatively, use:
+- **Systems**: Any directory in `systems/` with a `default.nix` is automatically exposed as a `nixosConfiguration`.
+- **Homes**: Any directory in `homes/` is exposed as a `homeManagerConfiguration`.
 
-   ```bash
-   nix develop
-   ```
+## 🚀 Quick Start
 
-1. **Validate the Codebase**:
-   Run the standard check to ensure everything is correct:
+### Prerequisites
 
-   ```bash
-   nix flake check
-   ```
+- Nix installed with Flakes enabled.
+- `direnv` (recommended) for automatic dev shell loading.
 
-## Dependencies
+### Development Environment
 
-- **Nix**: The package manager and build tool.
-- **Direnv**: For automatic environment loading.
+Simply `cd` into the directory. `direnv` will automatically load a dev shell with all necessary tools (`nix`, `colmena`, `sops`, `age`, etc.).
 
-Everything else is provided by the flake devShell.
+```bash
+direnv allow
+# or
+nix develop
+```
+
+### Validating Changes
+
+Always run the flake check before pushing or deploying.
+
+```bash
+nix flake check
+```
+
+### Deployment
+
+**Deploy a NixOS System:**
+
+```bash
+nixos-rebuild switch --flake .#<hostname>
+```
+
+**Deploy a Home Manager Configuration:**
+
+```bash
+home-manager switch --flake .#<username>@<hostname>
+```
+
+## 🔐 Secrets Management
+
+Secrets are managed using `sops-nix` and `agenix`. Encrypted secrets are stored in the repo, and keys are derived from host SSH keys or user keys.
+
+## 🤝 Contributing
+
+See [docs/Meta/CONTRIBUTING](docs/Meta/CONTRIBUTING.md) for detailed guidelines.

@@ -7,6 +7,8 @@
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
 
+  documentation.nixos.enable = false;
+
   core = {
     secrets = {
       enable = true;
@@ -50,4 +52,21 @@
       };
     };
   };
+
+  # Fix high memory usage during build by forcing single-threaded xz
+  nixpkgs.overlays = [
+    (final: _prev: {
+      pixz = final.writeShellScriptBin "pixz" ''
+        # pixz wrapper to force low memory usage via xz
+        # proxmox-lxc passes -t (tarball mode) which xz doesn't support in the same way
+        params=()
+        for arg in "$@"; do
+          if [ "$arg" != "-t" ]; then
+            params+=("$arg")
+          fi
+        done
+        exec ${final.xz}/bin/xz -T1 "''${params[@]}"
+      '';
+    })
+  ];
 }

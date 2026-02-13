@@ -1,3 +1,13 @@
+# Secrets Configuration
+#
+# This file defines the "Access Control List" for secrets managed by agenix/sops.
+# It maps secrets to users and teams, determining who can decrypt what.
+#
+# To add a new secret:
+# 1. Add the public key of the user/host to `users` (if not already present).
+# 2. Add the secret name to `userSecrets` or a team in `teams`.
+# 3. Create the secret file: `agenix -e secrets/<name>.age`
+#
 {lib, ...}: let
   users = {
     soriphoono = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgxxFcqHVwYhY0TjbsqByOYpmWXqzlVyGzpKjqS8mO7";
