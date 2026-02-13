@@ -4,21 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "20adba6dae90df8c",
+        "id": "2d1be5299ebcbede",
         "type": "tabs",
         "children": [
           {
-            "id": "86dcbe0cc3e17d50",
+            "id": "b4ea470a9a6438f1",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Templates/Decision.md",
-                "mode": "source",
-                "source": false
+                "file": "Untitled.canvas",
+                "viewState": {
+                  "x": 0,
+                  "y": 25.24078125,
+                  "zoom": -0.8718176775508455
+                }
               },
-              "icon": "lucide-file",
-              "title": "Decision"
+              "icon": "lucide-layout-dashboard",
+              "title": "Untitled"
             }
           }
         ]
@@ -183,8 +186,10 @@
       "bases:Create new base": false
     }
   },
-  "active": "86dcbe0cc3e17d50",
+  "active": "b4ea470a9a6438f1",
   "lastOpenFiles": [
+    "Untitled.canvas",
+    "Templates/Decision.md",
     "Meta/CONTRIBUTING.md",
     "Meta/AI_CONTEXT.md",
     "Architecture/Overview.md",

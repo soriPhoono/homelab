@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{config, ...}: {
   imports = [
     ./nvim
   ];
@@ -43,9 +39,6 @@
       chrome.enable = true;
     };
     development = {
-      terminal = {
-        ghostty.enable = true;
-      };
       editors = {
         vscode.enable = true;
       };
@@ -58,19 +51,27 @@
 
         mcp-servers = {
           github = {
-            command = "${pkgs.mcp-server-github}/bin/github-mcp-server";
-            args = ["stdio"];
-            env.GITHUB_PERSONAL_ACCESS_TOKEN = "\${GITHUB_PERSONAL_ACCESS_TOKEN}";
+            command = "@modelcontextprotocol/server-github";
           };
-          git.command = "${pkgs.mcp-server-git}/bin/mcp-server-git";
-          fetch.command = "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch";
+          git = {
+            command = "@modelcontextprotocol/server-git";
+          };
+          fetch = {
+            command = "@modelcontextprotocol/server-fetch";
+          };
           filesystem = {
-            command = "${pkgs.mcp-server-filesystem}/bin/mcp-server-filesystem";
+            command = "@modelcontextprotocol/server-filesystem";
             args = ["/home/soriphoono"];
           };
-          memory.command = "${pkgs.mcp-server-memory}/bin/mcp-server-memory";
-          sequential-thinking.command = "${pkgs.mcp-server-sequential-thinking}/bin/mcp-server-sequential-thinking";
-          mermaid.command = "${pkgs.mcp-server-mermaid}/bin/mermaid-mcp-server";
+          memory = {
+            command = "@modelcontextprotocol/server-memory";
+          };
+          sequential-thinking = {
+            command = "@modelcontextprotocol/server-sequential-thinking";
+          };
+          mermaid = {
+            command = "@lepion/mcp-server-mermaid";
+          };
         };
       };
     };

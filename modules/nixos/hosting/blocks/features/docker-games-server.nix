@@ -64,31 +64,21 @@
       if [[ "$VENDOR_ID" == "0x10de" ]]; then
         echo "Detected Nvidia GPU on $RENDER_NODE"
 
-        # Prepare Nvidia Driver Volume
-        if [ -d "/sys/module/nvidia" ]; then
-          NV_VERSION=$(cat /sys/module/nvidia/version)
-          echo "Building Nvidia driver container for version $NV_VERSION..."
-
-          curl -s https://raw.githubusercontent.com/games-on-whales/gow/master/images/nvidia-driver/Dockerfile \
-            | sed 's/FROM scratch/FROM alpine:latest/' \
-            | ${containerCmd} build -t gow/nvidia-driver:latest -f - --build-arg NV_VERSION="$NV_VERSION" .
-
-          ${containerCmd} run --rm \
-            --mount "source=nvidia-driver-vol,destination=/usr/nvidia" \
-            gow/nvidia-driver:latest true
-
+        # Check if we are running podman or docker and apply correct flags
+        ${
+        if isPodman
+        then ''
           ARGS+=(
-            --mount "source=nvidia-driver-vol,destination=/usr/nvidia"
-            -e NVIDIA_DRIVER_VOLUME_NAME=nvidia-driver-vol
-            --device /dev/nvidia-uvm
-            --device /dev/nvidia-uvm-tools
-            --device /dev/nvidiactl
-            --device /dev/nvidia0
-            --device /dev/nvidia-modeset
+              --device nvidia.com/gpu=all
+              --security-opt=label=disable
           )
-        else
-          echo "Nvidia kernel module not loaded. Nvidia features may not work."
-        fi
+        ''
+        else ''
+          ARGS+=(
+              --gpus all
+          )
+        ''
+      }
       else
         echo "Detected AMD/Intel GPU on $RENDER_NODE (Vendor: $VENDOR_ID)"
       fi
@@ -131,7 +121,7 @@ in
         wantedBy = ["multi-user.target"];
 
         serviceConfig = {
-          Restart = "always";
+          Restart = "no";
           ExecStartPre = [
             "${pkgs.coreutils}/bin/mkdir -p ${cfg.dataDir}"
           ];

@@ -20,7 +20,7 @@ in
       home.packages = with pkgs; [
         nextcloud-client
         bitwarden-desktop
-        obsidian
+        logseq
         onlyoffice-desktopeditors
 
         discord
