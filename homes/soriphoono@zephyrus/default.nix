@@ -3,6 +3,8 @@
     ./nvim
   ];
 
+  sops.secrets."github/token" = {};
+
   core = {
     secrets = {
       enable = true;
@@ -35,7 +37,6 @@
   userapps = {
     enable = true;
     browsers = {
-      librewolf.enable = true;
       chrome.enable = true;
     };
     development = {

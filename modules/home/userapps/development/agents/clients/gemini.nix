@@ -20,7 +20,9 @@ in
     config = mkIf cfg.enable (
       mkMerge [
         {
-          home.packages = [pkgs.gemini-cli];
+          programs.gemini-cli = {
+            enable = true;
+          };
         }
         (mkIf cfg.overrideEditor {
           # Override default editor with Antigravity

@@ -4,9 +4,13 @@
   inputs = {
     systems.url = "github:nix-systems/default";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
-    mcps.url = "github:roman/mcps.nix";
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*";
     flake-parts.url = "github:hercules-ci/flake-parts";
+
+    nixtest = {
+      url = "github:jetify-com/nixtest";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     agenix = {
       url = "github:ryantm/agenix";
@@ -72,6 +76,16 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
+
+    "mcps.nix" = {
+      url = "github:soriphoono/mcps.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    mcp-nixos = {
+      url = "github:utensils/mcp-nixos/v1.0.3";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -79,6 +93,7 @@
     nixpkgs,
     flake-parts,
     agenix,
+    nixtest,
     ...
   }: let
     inherit (nixpkgs) lib;
@@ -94,6 +109,18 @@
           name: type:
             (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
             || (type == "regular" && name != "default.nix" && lib.hasSuffix ".nix" name)
+        ) (builtins.readDir dir)
+      );
+
+    # Discovery for Tests: specifically just find .nix files in tests/
+    discoverTests = args: dir:
+      lib.mapAttrs' (name: _: {
+        name = lib.removeSuffix ".nix" name;
+        value = import (dir + "/${name}") args;
+      }) (
+        lib.filterAttrs (
+          name: type:
+            type == "regular" && lib.hasSuffix ".nix" name
         ) (builtins.readDir dir)
       );
 
@@ -230,6 +257,13 @@
             ;
         };
 
+        checks =
+          discoverTests {
+            inherit pkgs;
+            inherit (inputs) nixtest;
+          }
+          ./tests;
+
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
       };
@@ -244,6 +278,7 @@
           import ./overlays {inherit lib self;}
           // {
             nur = inputs.nur.overlays.default;
+            mcps = inputs."mcps.nix".overlays.default;
           };
 
         # --- Automatic Discovery & Construction --- #
