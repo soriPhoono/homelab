@@ -3,8 +3,6 @@
     ./nvim
   ];
 
-  sops.secrets."github/token" = {};
-
   core = {
     secrets = {
       enable = true;
