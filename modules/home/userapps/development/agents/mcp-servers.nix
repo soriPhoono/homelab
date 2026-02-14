@@ -2,7 +2,6 @@
   lib,
   pkgs,
   config,
-  inputs,
   ...
 }: let
   cfg = config.userapps.development.agents.mcp-servers;
@@ -88,43 +87,7 @@ in
             };
           };
         });
-      default = let
-        mcps = inputs.mcps.packages.${pkgs.system};
-      in {
-        "git" = {
-          command = "${mcps.mcp-servers}/bin/mcp-server-git";
-        };
-        "filesystem" = {
-          command = "${mcps.mcp-servers}/bin/mcp-server-filesystem";
-          args = ["/home/soriphoono"];
-        };
-        "fetch" = {
-          command = "${mcps.mcp-servers}/bin/mcp-server-fetch";
-        };
-        "memory" = {
-          command = "${mcps.mcp-servers}/bin/mcp-server-memory";
-        };
-        "sequential-thinking" = {
-          command = "${mcps.mcp-servers}/bin/mcp-server-sequentialthinking";
-        };
-        "time" = {
-          command = "${mcps.mcp-servers}/bin/mcp-server-time";
-        };
-        "ast-grep" = {
-          command = "${mcps.ast-grep-mcp}/bin/ast-grep-mcp";
-        };
-        "obsidian" = {
-          command = "${mcps.mcp-obsidian}/bin/mcp-obsidian";
-          args = ["/home/soriphoono/Documents/Vault"];
-        };
-        "grafana" = {
-          command = "${mcps.mcp-grafana}/bin/mcp-grafana";
-        };
-        "asana" = {
-          command = "${mcps.mcp-server-asana}/bin/mcp-server-asana";
-        };
-        # "github" - mcp-server-github not found in mcps.nix
-      };
+      default = {};
       description = "The MCP servers to run";
     };
 
