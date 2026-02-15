@@ -46,7 +46,7 @@
         run --name wolf ${
         if isPodman
         then "--replace"
-        else ""
+        else "--rm"
       }
         -v "${cfg.dataDir}:/etc/wolf"
         -v "${socketPath}:/var/run/docker.sock"
