@@ -56,17 +56,78 @@
   programs.gemini-cli = {
     enable = true;
 
-    mcps = {
-      git.enable = true;
-      filesystem = {
-        enable = true;
-        allowedPaths = ["${config.home.homeDirectory}/Projects"];
-      };
+    mcps = let
+      inherit (config.home) homeDirectory;
+      projectsDirectory = "${homeDirectory}/Documents/Projects";
+    in {
       github = {
         enable = true;
         baseURL = null; # not using GitHub Enterprise
         tokenFilepath = config.sops.secrets."github/api-key".path;
       };
+
+      # Enabled Servers without secrets
+      git.enable = true;
+      filesystem = {
+        enable = true;
+        allowedPaths = [homeDirectory];
+      };
+      sequential-thinking.enable = true;
+      time = {
+        enable = true;
+        localTimezone = "America/Chicago"; # Updated to match user's apparent timezone (based on earlier metadata or safe default)
+      };
+      nixos.enable = true;
+      fetch = {
+        enable = true;
+        ignoreRobotsTxt = false;
+      };
+      ast-grep.enable = true;
+
+      # Language Servers (LSPs)
+      lsp-nix = {
+        enable = true;
+        workspace = projectsDirectory;
+      };
+      lsp-python = {
+        enable = true;
+        workspace = projectsDirectory;
+      };
+      lsp-typescript = {
+        enable = true;
+        workspace = projectsDirectory;
+      };
+      lsp-golang = {
+        enable = true;
+        workspace = projectsDirectory;
+      };
+      lsp-rust = {
+        enable = true;
+        workspace = projectsDirectory;
+      };
+
+      # Servers requiring secrets (Configured with placeholders/instructions)
+      /*
+      asana = {
+        enable = true;
+        tokenFilepath = config.sops.secrets."asana/api-key".path;
+      };
+      buildkite = {
+        enable = true;
+        apiKeyFilepath = config.sops.secrets."buildkite/api-key".path;
+      };
+      grafana = {
+        enable = true;
+        baseURL = "http://localhost:3000"; # Modify as needed
+        apiKeyFilepath = config.sops.secrets."grafana/api-key".path;
+      };
+      obsidian = {
+        enable = true;
+        host = "127.0.0.1";
+        port = 27124;
+        apiKeyFilepath = config.sops.secrets."obsidian/api-key".path;
+      };
+      */
     };
   };
 }
