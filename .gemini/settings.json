@@ -51,6 +51,53 @@
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       }
+    },
+    "lsp-nix": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@isaacphi/mcp-language-server",
+        "--workspace",
+        ".",
+        "--lsp",
+        "nil"
+      ]
+    },
+    "ast-grep": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        ".:/workspace",
+        "-w",
+        "/workspace",
+        "mcp/ast-grep"
+      ]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ]
+    },
+    "nixos": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "ghcr.io/utensils/mcp-nixos"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     }
   },
   "tools": {
