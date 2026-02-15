@@ -1205,11 +1205,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1771128459,
-        "narHash": "sha256-tNSHLqzLtxOxRnkInz8mlfaW3TXwcMrAaD8htGBPL6g=",
+        "lastModified": 1771135676,
+        "narHash": "sha256-puPxlvhf9tAUqYT+otSN4R837gb1dz/eq9tig1UQTtw=",
         "owner": "soriphoono",
         "repo": "mcps.nix",
-        "rev": "49fe2dd0744268fccd24416a90e288f55020f293",
+        "rev": "7412e2dfeab6d1c1c092aa5dd7eb851ec9b01871",
         "type": "github"
       },
       "original": {

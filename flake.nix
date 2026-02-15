@@ -129,8 +129,9 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       nvf.homeManagerModules.default
-      mcps.homeManagerModules.gemini-install
+      mcps.homeManagerModules.gemini-cli
       mcps.homeManagerModules.claude
+      mcps.homeManagerModules.antigravity
     ];
 
     nixosModules = hostName:

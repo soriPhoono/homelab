@@ -7,6 +7,8 @@
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
 
+  nix.settings.sandbox = false;
+
   core = {
     hardware.gpu.dedicated.amd.enable = true;
 
@@ -17,7 +19,7 @@
     };
 
     networking = {
-      network-manager.enable = true;
+      lxc.enable = true;
       tailscale.enable = true;
     };
 
