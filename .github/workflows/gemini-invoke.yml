@@ -58,5 +58,108 @@ jobs:
           use_vertex_ai: "${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}"
           upload_artifacts: "${{ vars.UPLOAD_ARTIFACTS }}"
           workflow_name: "gemini-invoke"
-          settings: "{\n  \"model\": {\n    \"maxSessionTurns\": 100\n  },\n  \"telemetry\": {\n    \"enabled\": true,\n    \"target\": \"local\",\n    \"outfile\": \".gemini/telemetry.log\"\n  },\n  \"mcpServers\": {\n    \"github\": {\n    \"command\": \"docker\",\n    \"args\": [\n      \"run\",\n      \"-i\",\n      \"--rm\",\n      \"-e\",\n      \"GITHUB_PERSONAL_ACCESS_TOKEN\",\n        \"ghcr.io/github/github-mcp-server :v0.27.0\"  \n    ],\n    \"includeTools\": [ \n      \"add_issue_comment\",\n      \"issue_read\",\n      \"list_issues\",\n      \"search_issues\",\n      \"create_pull_request\",\n      \"pull_request_read\",\n      \"list_pull_requests\",\n      \"search_pull_requests\",\n      \"create_branch\",\n      \"create_or_update_file\",\n      \"delete_file\",\n      \"fork_repository\",\n      \"get_commit\",\n      \"get_file_contents\",\n      \"list_commits\",\n      \"push_files\",\n      \"search_code\"\n    ],\n    \"env\": {\n      \"GITHUB_PERSONAL_ACCESS_TOKEN\": \"${GITHUB_TOKEN}\"\n    }\n  },\n  \"lsp-nix\": {\n    \"command\": \"npx\",\n    \"args\": [\n      \"-y\",\n      \"@isaacphi/mcp-language-server\",\n      \"--workspace\",\n      \".\",\n      \"--lsp\",\n      \"nil\"\n    ]\n  },\n  \"ast-grep\": {\n    \"command\": \"docker\",\n    \"args\": [\n      \"run\",\n      \"--rm\",\n      \"-i\",\n      \"-v\",\n      \".:/workspace\",\n      \"-w\",\n      \"/workspace\",\n      \"mcp/ast-grep\"\n    ]\n  },\n  \"fetch\": {\n    \"command\": \"npx\",\n    \"args\": [\n      \"-y\",\n      \"@modelcontextprotocol/server-fetch\"\n    ]\n  },\n  \"nixos\": {\n    \"command\": \"docker\",\n    \"args\": [\n      \"run\",\n      \"--rm\",\n      \"-i\",\n      \"ghcr.io/utensils/mcp-nixos\"\n    ]\n  },\n  \"sequential-thinking\": {\n    \"command\": \"npx\",\n    \"args\": [\n      \"-y\",\n      \"@modelcontextprotocol/server-sequential-thinking\"\n    ]\n  }\n}\n\"tools\": {\n  \"core\": [\n    \"run_shell_command(cat)\",\n    \"run_shell_command(echo)\",\n    \"run_shell_command(grep)\",\n    \"run_shell_command(head)\",\n    \"run_shell_command(tail)\"\n  ]\n}"
+          settings: |
+            {
+              "model": {
+                "maxSessionTurns": 100
+              },
+              "telemetry": {
+                "enabled": true,
+                "target": "local",
+                "outfile": ".gemini/telemetry.log"
+              },
+              "mcpServers": {
+                "github": {
+                  "command": "docker",
+                  "args": [
+                    "run",
+                    "-i",
+                    "--rm",
+                    "-e",
+                    "GITHUB_PERSONAL_ACCESS_TOKEN",
+                    "ghcr.io/github/github-mcp-server:v0.27.0"
+                  ],
+                  "includeTools": [
+                    "add_issue_comment",
+                    "issue_read",
+                    "list_issues",
+                    "search_issues",
+                    "create_pull_request",
+                    "pull_request_read",
+                    "list_pull_requests",
+                    "search_pull_requests",
+                    "create_branch",
+                    "create_or_update_file",
+                    "delete_file",
+                    "fork_repository",
+                    "get_commit",
+                    "get_file_contents",
+                    "list_commits",
+                    "push_files",
+                    "search_code"
+                  ],
+                  "env": {
+                    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+                  }
+                },
+                "lsp-nix": {
+                  "command": "npx",
+                  "args": [
+                    "-y",
+                    "@isaacphi/mcp-language-server",
+                    "--workspace",
+                    ".",
+                    "--lsp",
+                    "nil"
+                  ]
+                },
+                "ast-grep": {
+                  "command": "docker",
+                  "args": [
+                    "run",
+                    "--rm",
+                    "-i",
+                    "-v",
+                    ".:/workspace",
+                    "-w",
+                    "/workspace",
+                    "mcp/ast-grep"
+                  ]
+                },
+                "fetch": {
+                  "command": "npx",
+                  "args": [
+                    "-y",
+                    "@modelcontextprotocol/server-fetch"
+                  ]
+                },
+                "nixos": {
+                  "command": "docker",
+                  "args": [
+                    "run",
+                    "--rm",
+                    "-i",
+                    "ghcr.io/utensils/mcp-nixos"
+                  ]
+                },
+                "sequential-thinking": {
+                  "command": "npx",
+                  "args": [
+                    "-y",
+                    "@modelcontextprotocol/server-sequential-thinking"
+                  ]
+                }
+              },
+              "tools": {
+                "core": [
+                  "run_shell_command(cat)",
+                  "run_shell_command(echo)",
+                  "run_shell_command(grep)",
+                  "run_shell_command(head)",
+                  "run_shell_command(tail)"
+                ]
+              }
+            }
+          prompt: "/gemini-invoke"
+
           prompt: "/gemini-invoke"
