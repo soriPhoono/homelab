@@ -1,0 +1,62 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: Which OS are you using? (e.g. NixOS, macOS, Linux)
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device/System
+      description: Which system is affected? (e.g. 'workstation', 'server')
+  - type: input
+    id: flake-revision
+    attributes:
+      label: Flake Revision
+      description: The git revision of this flake you are using.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Please provide any relevant logs.
+      render: shell
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here.
