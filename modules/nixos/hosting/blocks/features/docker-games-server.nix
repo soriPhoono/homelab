@@ -43,17 +43,14 @@
 
       # Common arguments
       ARGS=(
-        run --rm
-        --name wolf
+        run --name wolf
         -v "${cfg.dataDir}:/etc/wolf"
         -v "${socketPath}:/var/run/docker.sock"
-        -v /dev:/dev
-        -v /run/udev:/run/udev
+        -v /dev:/dev:rw
+        -v /run/udev:/run/udev:rw
         -p 47984:47984/tcp -p 47989:47989/tcp -p 48010:48010/tcp
         -p 47999:47999/udp -p 48100:48100/udp -p 48200:48200/udp
-        --security-opt label=disable
         --device-cgroup-rule='c 13:* rmw'
-        --device "$RENDER_NODE"
         --device /dev/uinput
         --device /dev/uhid
         --device /dev/dri
@@ -71,6 +68,8 @@
           ARGS+=(
               --device nvidia.com/gpu=all
               --security-opt=label=disable
+              -e NVIDIA_DRIVER_CAPABILITIES=all
+              -e NVIDIA_VISIBLE_DEVICES=all
           )
         ''
         else ''
