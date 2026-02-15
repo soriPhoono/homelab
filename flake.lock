@@ -1205,11 +1205,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1771135676,
-        "narHash": "sha256-puPxlvhf9tAUqYT+otSN4R837gb1dz/eq9tig1UQTtw=",
+        "lastModified": 1771144861,
+        "narHash": "sha256-PFLZA7w2Wtnyg7sw7Ra1cPlYxnFXV4DB8WuVUR2Dz7s=",
         "owner": "soriphoono",
         "repo": "mcps.nix",
-        "rev": "7412e2dfeab6d1c1c092aa5dd7eb851ec9b01871",
+        "rev": "14278224a5735aa0d8b096a45e6dbcc1b1ad4f0d",
         "type": "github"
       },
       "original": {
@@ -1830,11 +1830,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1771133978,
-        "narHash": "sha256-bCJPdRHNz+hwnD7wlq5MwXViGMq9buyAauisu/mhNn8=",
+        "lastModified": 1771141565,
+        "narHash": "sha256-Vguwm0PlDiMviRorrRMI5yY0ABgo1g1tHICKtvWskiU=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "ec769cfd16b45d91e869efe65336438334e966f8",
+        "rev": "d4ab8136d1ecda3855fb1a2460ccdc59cf1c91cd",
         "type": "github"
       },
       "original": {
