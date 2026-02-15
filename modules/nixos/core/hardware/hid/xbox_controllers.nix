@@ -11,6 +11,7 @@ in {
     hardware = {
       uinput.enable = true;
       xone.enable = true;
+      xpad-noone.enable = true;
     };
   };
 }

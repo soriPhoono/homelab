@@ -129,7 +129,7 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       nvf.homeManagerModules.default
-      mcps.homeManagerModules.gemini-cli
+      mcps.homeManagerModules.gemini-install
       mcps.homeManagerModules.claude
     ];
 
