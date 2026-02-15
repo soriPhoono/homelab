@@ -1,6 +1,6 @@
 {
   "model": {
-    "maxSessionTurns": 100,
+    "maxSessionTurns": 30,
     "compressionThreshold": 0.5
   },
   "telemetry": {
@@ -8,15 +8,14 @@
     "target": "local",
     "outfile": ".gemini/telemetry.log"
   },
+  "experimental": {
+    "plan": true
+  },
   "output": {
     "format": "text"
   },
   "ui": {
-    "showLineNumbers": true,
-    "showSpinner": true
-  },
-  "experimental": {
-    "plan": true
+    "showLineNumbers": true
   },
   "mcpServers": {
     "github": {
@@ -60,8 +59,6 @@
       "run_shell_command(grep)",
       "run_shell_command(head)",
       "run_shell_command(tail)"
-    ],
-    "truncateToolOutputThreshold": 4000000,
-    "truncateToolOutputLines": 1000
+    ]
   }
 }
