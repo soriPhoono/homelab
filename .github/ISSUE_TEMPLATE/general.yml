@@ -1,0 +1,10 @@
+name: 📝 General Task / Question
+description: General tasks, questions, or anything else.
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please describe the task or question.
+    validations:
+      required: true
