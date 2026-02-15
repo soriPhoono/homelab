@@ -87,6 +87,9 @@
         echo "Detected AMD/Intel GPU on $RENDER_NODE (Vendor: $VENDOR_ID)"
       fi
 
+      # Clean up any existing container to prevent conflicts
+      ${containerCmd} rm -f wolf || true
+
       echo "Starting Wolf container..."
       exec ${containerCmd} "''${ARGS[@]}" ghcr.io/games-on-whales/wolf:stable
     '';
