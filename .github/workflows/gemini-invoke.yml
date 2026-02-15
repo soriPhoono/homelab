@@ -161,5 +161,3 @@ jobs:
               }
             }
           prompt: "/gemini-invoke"
-
-          prompt: "/gemini-invoke"
