@@ -53,13 +53,11 @@
     };
   };
 
-  programs.gemini-cli = {
-    enable = true;
+  programs = let
+    inherit (config.home) homeDirectory;
+    projectsDirectory = "${homeDirectory}/Documents/Projects";
 
-    mcps = let
-      inherit (config.home) homeDirectory;
-      projectsDirectory = "${homeDirectory}/Documents/Projects";
-    in {
+    mcps = {
       github = {
         enable = true;
         baseURL = null; # not using GitHub Enterprise
@@ -128,6 +126,16 @@
         apiKeyFilepath = config.sops.secrets."obsidian/api-key".path;
       };
       */
+    };
+  in {
+    gemini-cli = {
+      enable = true;
+      inherit mcps;
+    };
+
+    antigravity = {
+      enable = true;
+      inherit mcps;
     };
   };
 }

@@ -57,7 +57,7 @@ in
 
       programs.vscode = {
         enable = true;
-        inherit (cfg) package;
+        package = mkDefault cfg.package;
       };
     };
   }

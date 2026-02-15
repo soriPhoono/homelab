@@ -24,6 +24,7 @@
     nvf.homeManagerModules.default
     mcps.homeManagerModules.gemini-cli
     mcps.homeManagerModules.claude
+    mcps.homeManagerModules.antigravity
   ];
 
   # ================================================================
