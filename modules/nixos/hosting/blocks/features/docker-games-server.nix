@@ -43,7 +43,11 @@
 
       # Common arguments
       ARGS=(
-        run --name wolf
+        run --name wolf ${
+        if isPodman
+        then "--replace"
+        else ""
+      }
         -v "${cfg.dataDir}:/etc/wolf"
         -v "${socketPath}:/var/run/docker.sock"
         -v /dev:/dev:rw

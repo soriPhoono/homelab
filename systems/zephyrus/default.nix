@@ -77,9 +77,12 @@
     services.asusd.enable = true;
   };
 
-  hosting.blocks.features.docker-games-server = {
-    enable = true;
-    openFirewall = true;
-    gpuRenderNode = "/dev/dri/renderD129";
+  hosting.blocks = {
+    backends.type = "docker";
+    features.docker-games-server = {
+      enable = true;
+      openFirewall = true;
+      gpuRenderNode = "/dev/dri/renderD129";
+    };
   };
 }
