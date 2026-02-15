@@ -6,31 +6,31 @@ keys:
   - &system_adams age1dgx0h5q5suuy6h9dzg2uk8fxq5k7ljcwr0sptckfua024v0p04jqt0d4u9
   - &system_builder age1e8cj64dcjk6jgu37y597hnqs8ymazvq7fmv3qazlmkq3crnvndpsd392a6
 creation_rules:
-  - path_regex: homes/.*/soriphoono@.*/[^/]+\.(yaml|json|env|ini)$
+  - path_regex: homes/soriphoono(@[^/]+)?/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono
-  - path_regex: homes/.*/spookyskelly@.*/[^/]+\.(yaml|json|env|ini)$
+  - path_regex: homes/spookyskelly(@[^/]+)?/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono
           - *admin_spookyskelly
-  - path_regex: systems/.*/adams/[^/]+\.(yaml|json|env|ini)$
+  - path_regex: systems/adams/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono
           - *system_adams
-  - path_regex: systems/.*/builder/[^/]+\.(yaml|json|env|ini)$
+  - path_regex: systems/builder/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono
           - *system_builder
-  - path_regex: systems/.*/lg-laptop/[^/]+\.(yaml|json|env|ini)$
+  - path_regex: systems/lg-laptop/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono
           - *system_lg_laptop
-  - path_regex: systems/.*/zephyrus/[^/]+\.(yaml|json|env|ini)$
+  - path_regex: systems/zephyrus/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono

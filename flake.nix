@@ -77,14 +77,8 @@
       };
     };
 
-    "mcps.nix" = {
+    mcps = {
       url = "github:soriphoono/mcps.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    mcp-nixos = {
-      url = "github:utensils/mcp-nixos/v1.0.3";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -135,6 +129,8 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       nvf.homeManagerModules.default
+      mcps.homeManagerModules.gemini-cli
+      mcps.homeManagerModules.claude
     ];
 
     nixosModules = hostName:
@@ -155,6 +151,7 @@
             useUserPackages = true;
             extraSpecialArgs = {inherit inputs self hostName;};
             sharedModules = homeManagerModules;
+            backupFileExtension = "backup";
           };
         }
       ];
@@ -259,7 +256,7 @@
 
         checks =
           discoverTests {
-            inherit pkgs;
+            inherit pkgs inputs self;
             inherit (inputs) nixtest;
           }
           ./tests;
@@ -274,12 +271,11 @@
         homeModules = import ./modules/home {inherit lib self;};
 
         # Overlay Exports
-        overlays =
-          import ./overlays {inherit lib self;}
+        overlays = with inputs; ((import ./overlays {inherit lib self;})
           // {
-            nur = inputs.nur.overlays.default;
-            mcps = inputs."mcps.nix".overlays.default;
-          };
+            nur = nur.overlays.default;
+            mcps = mcps.overlays.default;
+          });
 
         # --- Automatic Discovery & Construction --- #
 

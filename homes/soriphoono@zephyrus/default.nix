@@ -3,6 +3,8 @@
     ./nvim
   ];
 
+  sops.secrets."github/api-key" = {};
+
   core = {
     secrets = {
       enable = true;
@@ -47,6 +49,23 @@
           overrideEditor = true;
         };
         claude.enable = true;
+      };
+    };
+  };
+
+  programs.gemini-cli = {
+    enable = true;
+
+    mcps = {
+      git.enable = true;
+      filesystem = {
+        enable = true;
+        allowedPaths = ["${config.home.homeDirectory}/Projects"];
+      };
+      github = {
+        enable = true;
+        baseURL = null; # not using GitHub Enterprise
+        tokenFilepath = config.sops.secrets."github/api-key".path;
       };
     };
   };

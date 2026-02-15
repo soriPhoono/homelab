@@ -39,7 +39,7 @@ in {
 
     i18n.defaultLocale = "en_US.UTF-8";
 
-    time.timeZone = cfg.timeZone;
+    time.timeZone = lib.mkIf (cfg.timeZone != null) cfg.timeZone;
 
     programs = {
       nix-ld.enable = true;
