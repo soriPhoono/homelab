@@ -82,7 +82,7 @@
     };
 
     nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/release-24.05";
+      url = "github:nix-community/nix-on-droid/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
@@ -228,29 +228,31 @@
         overlays = builtins.attrValues self.overlays;
       };
       # Extract username and host from folders named "user@host" or just "user"
-      # For Droid, typically strict single-user context, but we can reuse logic or simplify
       nameParts = lib.splitString "@" name;
       username = lib.head nameParts;
+      hostName =
+        if lib.length nameParts > 1
+        then lib.last nameParts
+        else "generic";
       homeDir = ./homes + "/${username}";
       hostDir = ./homes + "/${name}";
     in
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
+        extraSpecialArgs = {inherit inputs self hostName;};
         modules = [
           (path + "/default.nix")
+          nix-on-droid.nixOnDroidModules.home-manager
           {
-            _module.args = {inherit inputs self;};
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
               backupFileExtension = "backup";
-              extraSpecialArgs = {inherit inputs self;};
+              extraSpecialArgs = {inherit inputs self hostName;};
               sharedModules = homeManagerModules;
               config = {
                 imports =
-                  [
-                    (path + "/home.nix")
-                  ]
+                  lib.optional (builtins.pathExists (path + "/home.nix")) (path + "/home.nix")
                   ++ lib.optional (builtins.pathExists (homeDir + "/default.nix")) homeDir
                   ++ lib.optional (builtins.pathExists (hostDir + "/default.nix")) hostDir;
               };
