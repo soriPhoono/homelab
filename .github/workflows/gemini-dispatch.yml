@@ -56,7 +56,7 @@ jobs:
       )
     runs-on: 'ubuntu-latest'
     permissions:
-      contents: 'write' 
+      contents: 'read'
       issues: 'write'
       pull-requests: 'write'
     outputs:
