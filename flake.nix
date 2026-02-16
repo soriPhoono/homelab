@@ -80,6 +80,12 @@
     mcps = {
       url = "github:soriphoono/mcps.nix";
     };
+
+    nix-on-droid = {
+      url = "github:nix-community/nix-on-droid/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
   };
 
   outputs = inputs @ {
@@ -88,6 +94,7 @@
     flake-parts,
     agenix,
     nixtest,
+    nix-on-droid,
     ...
   }: let
     inherit (nixpkgs) lib;
@@ -210,6 +217,49 @@
           ]
           ++ homeManagerModules;
       };
+
+    # Nix-on-Droid Builder
+    mkDroid = name: path: let
+      meta = readMeta path;
+      systemArch = meta.system or "aarch64-linux";
+      pkgs = import nixpkgs {
+        system = systemArch;
+        config.allowUnfree = true;
+        overlays = builtins.attrValues self.overlays;
+      };
+      # Extract username and host from folders named "user@host" or just "user"
+      nameParts = lib.splitString "@" name;
+      username = lib.head nameParts;
+      hostName =
+        if lib.length nameParts > 1
+        then lib.last nameParts
+        else "generic";
+      homeDir = ./homes + "/${username}";
+      hostDir = ./homes + "/${name}";
+    in
+      nix-on-droid.lib.nixOnDroidConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = {inherit inputs self hostName;};
+        modules = [
+          (path + "/default.nix")
+          nix-on-droid.nixOnDroidModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              backupFileExtension = "backup";
+              extraSpecialArgs = {inherit inputs self hostName;};
+              sharedModules = homeManagerModules;
+              config = {
+                imports =
+                  lib.optional (builtins.pathExists (path + "/home.nix")) (path + "/home.nix")
+                  ++ lib.optional (builtins.pathExists (homeDir + "/default.nix")) homeDir
+                  ++ lib.optional (builtins.pathExists (hostDir + "/default.nix")) hostDir;
+              };
+            };
+          }
+        ];
+      };
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = with inputs; [
@@ -285,6 +335,9 @@
 
         # All standalone homes in the /homes folder
         homeConfigurations = lib.mapAttrs mkHome (discover ./homes);
+
+        # All nix-on-droid configurations in the /droids folder
+        nixOnDroidConfigurations = lib.mapAttrs mkDroid (discover ./droids);
 
         # All templates in the /templates folder
         templates =
