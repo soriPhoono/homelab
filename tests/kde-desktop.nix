@@ -11,9 +11,11 @@
   pkgs,
   inputs,
   self,
+  nixtest,
   ...
 }: let
   inherit (inputs.nixpkgs) lib;
+  nixtestLib = import (nixtest + "/src/nixtest.nix");
 
   hostName = "test-kde-desktop";
 
@@ -393,17 +395,7 @@
   ];
 
   # Validate assertions at eval time by checking each one
-  assertionReport = let
-    failures = builtins.filter (t: t.actual != t.expected) assertions;
-    numTests = builtins.length assertions;
-    numFailed = builtins.length failures;
-    failureMsg = builtins.concatStringsSep "\n" (
-      map (t: "  [FAIL] ${t.name}\n    Got:      ${builtins.toJSON t.actual}\n    Expected: ${builtins.toJSON t.expected}") failures
-    );
-  in
-    if numFailed == 0
-    then "[PASS] ${toString numTests}/${toString numTests} assertions passed"
-    else throw "${toString numFailed}/${toString numTests} assertions failed:\n${failureMsg}";
+  assertionReport = nixtestLib.assertTests (nixtestLib.runTests assertions);
 in
   # Produce a derivation for `nix flake check`.
   # The assertion report above is strict — evaluation aborts on failure

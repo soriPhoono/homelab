@@ -8,6 +8,7 @@ with pkgs;
     packages = [
       nil
       alejandra
+      vulnix
 
       age
       sops
@@ -15,7 +16,6 @@ with pkgs;
 
       disko
       nixos-facter
-      nodejs
     ];
 
     shellHook = ''

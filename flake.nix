@@ -1,6 +1,18 @@
 {
   description = "A system flake for my homelab and personal devices";
 
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://numtide.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigyw8tcMo="
+    ];
+    allow-import-from-derivation = "true";
+  };
+
   inputs = {
     systems.url = "github:nix-systems/default";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
@@ -97,39 +109,12 @@
     nix-on-droid,
     ...
   }: let
-    inherit (nixpkgs) lib;
-
-    # Dynamic Discovery: Reads a directory and returns an attrset of { name = path; }
-    # including directories with default.nix and standalone .nix files.
-    discover = dir:
-      lib.mapAttrs' (name: _: {
-        name = lib.removeSuffix ".nix" name;
-        value = dir + "/${name}";
-      }) (
-        lib.filterAttrs (
-          name: type:
-            (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
-            || (type == "regular" && name != "default.nix" && lib.hasSuffix ".nix" name)
-        ) (builtins.readDir dir)
-      );
-
-    # Discovery for Tests: specifically just find .nix files in tests/
-    discoverTests = args: dir:
-      lib.mapAttrs' (name: _: {
-        name = lib.removeSuffix ".nix" name;
-        value = import (dir + "/${name}") args;
-      }) (
-        lib.filterAttrs (
-          name: type:
-            type == "regular" && lib.hasSuffix ".nix" name
-        ) (builtins.readDir dir)
-      );
-
-    # Metadata Reader: Reads meta.json from a path
-    readMeta = path:
-      if builtins.pathExists (path + "/meta.json")
-      then builtins.fromJSON (builtins.readFile (path + "/meta.json"))
-      else {};
+    # Extend lib with our custom functions
+    lib = nixpkgs.lib.extend (final: prev:
+      (import ./lib/default.nix {inherit inputs;}) final prev
+      // {
+        inherit (inputs.home-manager.lib) hm;
+      });
 
     # --- System Builder Parameters --- #
     homeManagerModules = with inputs; [
@@ -157,7 +142,7 @@
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            extraSpecialArgs = {inherit inputs self hostName;};
+            extraSpecialArgs = {inherit inputs self hostName lib;};
             sharedModules = homeManagerModules;
             backupFileExtension = "backup";
           };
@@ -168,13 +153,13 @@
 
     # Base NixOS System Builder
     mkSystem = hostName: path: let
-      meta = readMeta path;
+      meta = lib.readMeta path;
       systemArch = meta.system or "x86_64-linux";
     in
       lib.nixosSystem {
         system = systemArch;
         specialArgs = {
-          inherit inputs self hostName;
+          inherit inputs self hostName lib;
         };
         modules =
           (nixosModules hostName)
@@ -185,7 +170,7 @@
 
     # Standalone Home Manager Builder
     mkHome = name: path: let
-      meta = readMeta path;
+      meta = lib.readMeta path;
       systemArch = meta.system or "x86_64-linux";
       pkgs = import nixpkgs {
         system = systemArch;
@@ -202,7 +187,7 @@
     in
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {inherit inputs self hostName;};
+        extraSpecialArgs = {inherit inputs self hostName lib;};
         modules =
           [
             (path + "/default.nix")
@@ -219,42 +204,31 @@
       };
 
     # Nix-on-Droid Builder
-    mkDroid = name: path: let
-      meta = readMeta path;
+    mkDroid = _name: path: let
+      meta = lib.readMeta path;
       systemArch = meta.system or "aarch64-linux";
       pkgs = import nixpkgs {
         system = systemArch;
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;
       };
-      # Extract username and host from folders named "user@host" or just "user"
-      nameParts = lib.splitString "@" name;
-      username = lib.head nameParts;
-      hostName =
-        if lib.length nameParts > 1
-        then lib.last nameParts
-        else "generic";
-      homeDir = ./homes + "/${username}";
-      hostDir = ./homes + "/${name}";
     in
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {inherit inputs self hostName;};
+        extraSpecialArgs = {inherit inputs self lib;};
         modules = [
           (path + "/default.nix")
+          self.droidModules.default
           nix-on-droid.nixOnDroidModules.home-manager
           {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
               backupFileExtension = "backup";
-              extraSpecialArgs = {inherit inputs self hostName;};
+              extraSpecialArgs = {inherit inputs self lib;};
               sharedModules = homeManagerModules;
               config = {
-                imports =
-                  lib.optional (builtins.pathExists (path + "/home.nix")) (path + "/home.nix")
-                  ++ lib.optional (builtins.pathExists (homeDir + "/default.nix")) homeDir
-                  ++ lib.optional (builtins.pathExists (hostDir + "/default.nix")) hostDir;
+                imports = lib.optional (builtins.pathExists (path + "/home.nix")) (path + "/home.nix");
               };
             };
           }
@@ -296,6 +270,13 @@
           };
         };
 
+        checks =
+          lib.discoverTests {
+            inherit pkgs inputs self;
+            inherit (inputs) nixtest;
+          }
+          ./tests;
+
         packages = import ./pkgs {
           inherit
             inputs
@@ -305,13 +286,6 @@
             ;
         };
 
-        checks =
-          discoverTests {
-            inherit pkgs inputs self;
-            inherit (inputs) nixtest;
-          }
-          ./tests;
-
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
       };
@@ -319,6 +293,7 @@
       flake = {
         # Global Module Exports
         nixosModules = import ./modules/nixos {inherit lib self;};
+        droidModules = import ./modules/droid {inherit lib self;};
         homeModules = import ./modules/home {inherit lib self;};
 
         # Overlay Exports
@@ -331,13 +306,13 @@
         # --- Automatic Discovery & Construction --- #
 
         # All systems in the /systems folder
-        nixosConfigurations = lib.mapAttrs mkSystem (discover ./systems);
-
-        # All standalone homes in the /homes folder
-        homeConfigurations = lib.mapAttrs mkHome (discover ./homes);
+        nixosConfigurations = lib.mapAttrs mkSystem (lib.discover ./systems);
 
         # All nix-on-droid configurations in the /droids folder
-        nixOnDroidConfigurations = lib.mapAttrs mkDroid (discover ./droids);
+        nixOnDroidConfigurations = lib.mapAttrs mkDroid (lib.discover ./droids);
+
+        # All standalone homes in the /homes folder
+        homeConfigurations = lib.mapAttrs mkHome (lib.discover ./homes);
 
         # All templates in the /templates folder
         templates =
