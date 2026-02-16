@@ -83,6 +83,22 @@
         "@modelcontextprotocol/server-fetch"
       ]
     },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    },
+    "git": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-git",
+        "."
+      ]
+    },
     "nixos": {
       "command": "docker",
       "args": [

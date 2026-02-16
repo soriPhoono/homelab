@@ -126,81 +126,69 @@
       mcps.homeManagerModules.antigravity
     ];
 
-    nixosModules = hostName:
-      with inputs; [
-        self.nixosModules.default
-        home-manager.nixosModules.home-manager
-        nixos-facter-modules.nixosModules.facter
-        disko.nixosModules.disko
-        determinate.nixosModules.default
-        lanzaboote.nixosModules.lanzaboote
-        sops-nix.nixosModules.sops
-        comin.nixosModules.comin
-        nix-index-database.nixosModules.nix-index
-        {
-          nixpkgs.overlays = builtins.attrValues self.overlays;
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            extraSpecialArgs = {inherit inputs self hostName lib;};
-            sharedModules = homeManagerModules;
-            backupFileExtension = "backup";
-          };
-        }
-      ];
+    droidModules = [
+      self.droidModules.default
+      {
+        home-manager = {
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          backupFileExtension = "bak";
+        };
+      }
+    ];
+
+    nixosModules = with inputs; [
+      self.nixosModules.default
+      home-manager.nixosModules.home-manager
+      nixos-facter-modules.nixosModules.facter
+      disko.nixosModules.disko
+      determinate.nixosModules.default
+      lanzaboote.nixosModules.lanzaboote
+      sops-nix.nixosModules.sops
+      comin.nixosModules.comin
+      nix-index-database.nixosModules.nix-index
+      {
+        nixpkgs.overlays = builtins.attrValues self.overlays;
+        home-manager = {
+          useGlobalPkgs = true;
+          startAsUserService = true;
+          extraSpecialArgs = {inherit inputs self lib;};
+          sharedModules = homeManagerModules;
+          backupFileExtension = "bak";
+        };
+      }
+    ];
 
     # --- System Builders --- #
 
-    # Base NixOS System Builder
-    mkSystem = hostName: path: let
-      meta = lib.readMeta path;
-      systemArch = meta.system or "x86_64-linux";
-    in
-      lib.nixosSystem {
-        system = systemArch;
-        specialArgs = {
-          inherit inputs self hostName lib;
-        };
-        modules =
-          (nixosModules hostName)
-          ++ [
-            (path + "/default.nix")
-          ];
-      };
-
     # Standalone Home Manager Builder
-    mkHome = name: path: let
+    mkHome = username: path: let
       meta = lib.readMeta path;
       systemArch = meta.system or "x86_64-linux";
       pkgs = import nixpkgs {
         system = systemArch;
         config.allowUnfree = true;
-        overlays = builtins.attrValues self.overlays;
       };
-      # Extract username and host from folders named "user@host" or just "user"
-      nameParts = lib.splitString "@" name;
-      username = lib.head nameParts;
-      hostName =
-        if lib.length nameParts > 1
-        then lib.last nameParts
-        else "generic";
     in
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {inherit inputs self hostName lib;};
+        extraSpecialArgs = {inherit inputs self lib;};
         modules =
-          [
+          homeManagerModules
+          ++ [
             (path + "/default.nix")
             {
-              nixpkgs.overlays = builtins.attrValues self.overlays;
+              nixpkgs = {
+                config.allowUnfree = true;
+                overlays = builtins.attrValues self.overlays;
+              };
               home = {
                 inherit username;
                 homeDirectory = lib.mkDefault "/home/${username}";
                 stateVersion = lib.mkDefault "24.11";
               };
             }
-          ]
-          ++ homeManagerModules;
+          ];
       };
 
     # Nix-on-Droid Builder
@@ -216,23 +204,42 @@
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
         extraSpecialArgs = {inherit inputs self lib;};
-        modules = [
-          (path + "/default.nix")
-          self.droidModules.default
-          nix-on-droid.nixOnDroidModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              backupFileExtension = "backup";
-              extraSpecialArgs = {inherit inputs self lib;};
-              sharedModules = homeManagerModules;
-              config = {
-                imports = lib.optional (builtins.pathExists (path + "/home.nix")) (path + "/home.nix");
+        modules =
+          droidModules
+          ++ [
+            (path + "/default.nix")
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                backupFileExtension = "bak";
+                extraSpecialArgs = {inherit inputs self lib;};
+                sharedModules = homeManagerModules;
+                config = {
+                  imports = lib.optional (builtins.pathExists (path + "/home.nix")) (path + "/home.nix");
+                };
               };
-            };
-          }
-        ];
+            }
+          ];
+      };
+
+    # Base NixOS System Builder
+    mkSystem = hostName: path: let
+      meta = lib.readMeta path;
+      systemArch = meta.system or "x86_64-linux";
+    in
+      lib.nixosSystem {
+        system = systemArch;
+        specialArgs = {
+          inherit inputs self lib hostName;
+        };
+        modules =
+          nixosModules
+          ++ [
+            (path + "/default.nix")
+            {
+              networking.hostName = hostName;
+            }
+          ];
       };
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -249,11 +256,12 @@
       agenix-shell.secrets = (import ./secrets.nix {inherit lib;}).agenix-shell-secrets;
 
       perSystem = {
+        pkgs,
         config,
         system,
         ...
-      }: let
-        pkgs = import nixpkgs {
+      }: {
+        _module.args.pkgs = import nixpkgs {
           inherit system;
           overlays = [
             (_: _: {
@@ -262,7 +270,7 @@
           ];
           config.allowUnfree = true;
         };
-      in {
+
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
