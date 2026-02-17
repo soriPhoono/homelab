@@ -248,6 +248,7 @@
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
         github-actions-nix.flakeModule
+        ./actions.nix
       ];
 
       # Supported systems for devShells/checks
