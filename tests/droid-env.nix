@@ -1,0 +1,41 @@
+{
+  pkgs,
+  lib,
+  self,
+  nixtest,
+  ...
+}: let
+  nixtestLib = import (nixtest + "/src/nixtest.nix");
+
+  # Iterate over all defined Droid configurations
+  droidConfigs = self.nixOnDroidConfigurations or {};
+
+  # For each configuration, run assertions
+  assertions = lib.flatten (lib.mapAttrsToList (name: config: [
+      {
+        name = "Droid '${name}': Activation package exists";
+        expected = true;
+        actual = config ? activationPackage || config.config.build ? activationPackage;
+      }
+      {
+        name = "Droid '${name}': Home Manager is enabled";
+        expected = true;
+        actual = config.config.home-manager.useGlobalPkgs or false;
+      }
+    ])
+    droidConfigs);
+
+  report = nixtestLib.assertTests (nixtestLib.runTests assertions);
+in
+  if (droidConfigs == {})
+  then
+    pkgs.runCommand "droid-env-check-skip" {} ''
+      echo "No Nix-on-Droid configurations found. Skipping."
+      touch $out
+    ''
+  else
+    pkgs.runCommand "droid-env-check" {} ''
+      echo "Checking Nix-on-Droid environments..."
+      echo "${report}"
+      touch $out
+    ''

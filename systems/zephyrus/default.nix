@@ -78,7 +78,10 @@
   };
 
   hosting.blocks = {
-    backends.type = "docker";
+    backends = {
+      type = "docker";
+      nvidiaSupport = true;
+    };
     features.docker-games-server = {
       enable = true;
       openFirewall = true;

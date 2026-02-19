@@ -18,6 +18,8 @@ in
         description = "The container engine to use for hosting blocks.";
         example = "docker";
       };
+
+      nvidiaSupport = mkEnableOption "NVIDIA support for hosting blocks.";
     };
 
     config = mkIf config.hosting.enable (mkMerge [

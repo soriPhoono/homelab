@@ -20,7 +20,33 @@ This directory contains Home Manager configurations for users. These can be stan
 
 ## Discovery
 
-The `flake.nix` automatically discovers these directories.
+### Standalone Home Configurations (`homeConfigurations`)
 
-- If the directory is named `user`, it creates a home configuration named `user`.
-- If the directory is named `user@host`, it creates a home configuration named `user@host`, and injects `hostName = "host"` into special args.
+The `flake.nix` automatically discovers user configurations for standalone Home Manager installation.
+It combines:
+
+1. `homes/<user>` (Base configuration)
+1. `homes/<user>@global` (Supplementary configuration for non-NixOS systems, if present)
+
+These are exported as `homeConfigurations.<user>`.
+
+### Nix-on-Droid Configurations
+
+For Nix-on-Droid systems, the `modules/droid/users.nix` module handles user configuration.
+It automatically imports:
+
+1. `homes/<user>` (Base configuration)
+1. `homes/<user>@droid` (Supplementary configuration for Droid environment, if present)
+
+### System-Bound Homes
+
+Configurations named `user@hostname` (e.g., `soriphoono@zephyrus`) are **system-bound supplementary configurations**.
+These are **not** standalone; they are imported **in addition to** the base `homes/<user>` configuration by the NixOS system's `core.users` module.
+This allows `homes/soriphoono` to provide the universal base (shell, common apps), while `homes/soriphoono@zephyrus` provides machine-specific overrides (monitors, keybindings, specific hardware settings).
+These are NOT exported as `homeConfigurations` in the flake.
+
+## Future Plans: System Manager
+
+We plan to integrate **System Manager** for non-NixOS Linux distributions (e.g., Debian, Ubuntu servers).
+These configurations will reside in `environments/` and will function similarly to Droid or NixOS systems, providing system-level configuration management without full OS replacement.
+Homes for these systems will likely follow a similar pattern: `user` + `user@<environment-name>`. The `user` directory will contain the base configuration, and `user@<environment-name>` will contain the environment-specific configuration. Like system services and etc entries.

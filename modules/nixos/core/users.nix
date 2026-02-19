@@ -122,11 +122,11 @@ in {
     home-manager.users =
       lib.mapAttrs (username: user: {
         imports = let
-          hostHome = self + "/homes/${username}@${hostName}";
           userHome = self + "/homes/${username}";
+          hostHome = self + "/homes/${username}@${hostName}";
         in
-          lib.optional (builtins.pathExists hostHome) hostHome
-          ++ lib.optional (builtins.pathExists userHome) userHome;
+          lib.optional (builtins.pathExists userHome) userHome
+          ++ lib.optional (builtins.pathExists hostHome) hostHome;
 
         core = {
           ssh.publicKey = lib.mkIf (user.publicKey != null) user.publicKey;

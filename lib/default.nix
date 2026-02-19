@@ -17,7 +17,7 @@ _: self: _super: {
   discoverTests = args: dir:
     self.mapAttrs' (name: _: {
       name = self.removeSuffix ".nix" name;
-      value = import (dir + "/${name}") args;
+      value = import (dir + "/${name}") (args // {lib = self;});
     }) (
       self.filterAttrs (
         name: type:

@@ -1,27 +1,18 @@
 {
   description = "A system flake for my homelab and personal devices";
 
-  nixConfig = {
-    extra-substituters = [
-      "https://nix-community.cachix.org"
-      "https://numtide.cachix.org"
-    ];
-    extra-trusted-public-keys = [
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigyw8tcMo="
-    ];
-    allow-import-from-derivation = "true";
-  };
-
   inputs = {
     systems.url = "github:nix-systems/default";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-compat = {
+      url = "github:NixOS/flake-compat";
+      flake = false;
+    };
 
     nixtest = {
       url = "github:jetify-com/nixtest";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     agenix = {
@@ -116,6 +107,15 @@
         inherit (inputs.home-manager.lib) hm;
       });
 
+    # --- System Support & Package Cache --- #
+    supportedSystems = import inputs.systems;
+    pkgsFor = lib.genAttrs supportedSystems (system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = builtins.attrValues self.overlays;
+      });
+
     # --- System Builder Parameters --- #
     homeManagerModules = with inputs; [
       self.homeModules.default
@@ -148,7 +148,6 @@
       comin.nixosModules.comin
       nix-index-database.nixosModules.nix-index
       {
-        nixpkgs.overlays = builtins.attrValues self.overlays;
         home-manager = {
           useGlobalPkgs = true;
           startAsUserService = true;
@@ -162,26 +161,34 @@
     # --- System Builders --- #
 
     # Standalone Home Manager Builder
-    mkHome = username: path: let
-      meta = lib.readMeta path;
+    mkHome = username: let
+      basePath = ./homes + "/${username}";
+      globalPath = ./homes + "/${username}@global";
+
+      # Determine if paths exist
+      hasBase = builtins.pathExists basePath;
+      hasGlobal = builtins.pathExists globalPath;
+
+      # Read meta from base first, then global, fallback to empty
+      meta =
+        if hasBase
+        then lib.readMeta basePath
+        else if hasGlobal
+        then lib.readMeta globalPath
+        else {};
+
       systemArch = meta.system or "x86_64-linux";
-      pkgs = import nixpkgs {
-        system = systemArch;
-        config.allowUnfree = true;
-      };
+      pkgs = pkgsFor.${systemArch};
     in
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {inherit inputs self lib;};
         modules =
           homeManagerModules
+          ++ lib.optional hasBase (basePath + "/default.nix")
+          ++ lib.optional hasGlobal (globalPath + "/default.nix")
           ++ [
-            (path + "/default.nix")
             {
-              nixpkgs = {
-                config.allowUnfree = true;
-                overlays = builtins.attrValues self.overlays;
-              };
               home = {
                 inherit username;
                 homeDirectory = lib.mkDefault "/home/${username}";
@@ -195,11 +202,7 @@
     mkDroid = _name: path: let
       meta = lib.readMeta path;
       systemArch = meta.system or "aarch64-linux";
-      pkgs = import nixpkgs {
-        system = systemArch;
-        config.allowUnfree = true;
-        overlays = builtins.attrValues self.overlays;
-      };
+      pkgs = pkgsFor.${systemArch};
     in
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
@@ -214,9 +217,6 @@
                 backupFileExtension = "bak";
                 extraSpecialArgs = {inherit inputs self lib;};
                 sharedModules = homeManagerModules;
-                config = {
-                  imports = lib.optional (builtins.pathExists (path + "/home.nix")) (path + "/home.nix");
-                };
               };
             }
           ];
@@ -226,9 +226,10 @@
     mkSystem = hostName: path: let
       meta = lib.readMeta path;
       systemArch = meta.system or "x86_64-linux";
+      pkgs = pkgsFor.${systemArch};
     in
       lib.nixosSystem {
-        system = systemArch;
+        inherit pkgs;
         specialArgs = {
           inherit inputs self lib hostName;
         };
@@ -252,7 +253,7 @@
       ];
 
       # Supported systems for devShells/checks
-      systems = import inputs.systems;
+      systems = supportedSystems;
 
       agenix-shell.secrets = (import ./secrets.nix {inherit lib;}).agenix-shell-secrets;
 
@@ -279,12 +280,28 @@
           };
         };
 
-        checks =
-          lib.discoverTests {
-            inherit pkgs inputs self;
-            inherit (inputs) nixtest;
-          }
-          ./tests;
+        checks = let
+          # Structure and Unit Tests
+          unitTests =
+            lib.discoverTests {
+              inherit pkgs inputs self;
+              inherit (inputs) nixtest;
+            }
+            ./tests;
+          # Dynamic Build Checks
+        in
+          unitTests;
+
+        apps = {
+          audit = {
+            type = "app";
+            program = lib.getExe (pkgs.writeShellScriptBin "audit" ''
+              ${pkgs.vulnix}/bin/vulnix --whitelist ${./vulnix-whitelist.toml} --system
+            '');
+            meta.description = "Run security audit with vulnix";
+          };
+          default = config.apps.audit;
+        };
 
         packages = import ./pkgs {
           inherit
@@ -321,7 +338,28 @@
         nixOnDroidConfigurations = lib.mapAttrs mkDroid (lib.discover ./droids);
 
         # All standalone homes in the /homes folder
-        homeConfigurations = lib.mapAttrs mkHome (lib.discover ./homes);
+        # All standalone homes in the /homes folder
+        # Scans for <user> and <user>@global, combines them if both exist.
+        homeConfigurations = let
+          allEntries = builtins.readDir ./homes;
+          homeDirs = builtins.attrNames (lib.filterAttrs (_n: v: v == "directory") allEntries);
+
+          # identify valid user directories (no @, or ending in @global)
+          validUsers =
+            lib.filter (
+              name:
+                (! lib.hasInfix "@" name) || (lib.hasSuffix "@global" name)
+            )
+            homeDirs;
+
+          # normalize to username
+          usernames = lib.unique (map (
+              name:
+                lib.removeSuffix "@global" name
+            )
+            validUsers);
+        in
+          lib.genAttrs usernames mkHome;
 
         # All templates in the /templates folder
         templates =

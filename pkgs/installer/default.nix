@@ -2,17 +2,9 @@
   self,
   lib,
   inputs,
+  pkgs,
   ...
 }: let
-  # Metadata Reader
-  readMeta = path:
-    if builtins.pathExists (path + "/meta.json")
-    then builtins.fromJSON (builtins.readFile (path + "/meta.json"))
-    else {};
-
-  meta = readMeta ./.;
-  systemArch = meta.system or "x86_64-linux";
-
   homeManagerModules = with inputs; [
     self.homeModules.default
     sops-nix.homeManagerModules.sops
@@ -36,10 +28,11 @@
     comin.nixosModules.comin
     nix-index-database.nixosModules.nix-index
 
-    # Required for ISO production
-    "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+    (_: {
+      image.modules.installation-cd-minimal = {
+        imports = ["${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"];
+      };
 
-    {
       nixpkgs.overlays = builtins.attrValues self.overlays;
       home-manager = {
         useGlobalPkgs = true;
@@ -50,15 +43,24 @@
         };
         sharedModules = homeManagerModules;
       };
-    }
+    })
   ];
 in
-  (lib.nixosSystem {
-    system = systemArch;
-    specialArgs = {
-      inherit inputs self;
-      hostName = "installer";
-    };
-    modules = nixosModules;
-  })
-  .config.system.build.images.iso
+  if pkgs.stdenv.hostPlatform.system == "x86_64-linux"
+  then
+    (lib.nixosSystem {
+      inherit pkgs;
+      specialArgs = {
+        inherit inputs self;
+        hostName = "installer";
+      };
+      modules = nixosModules;
+    })
+    .config.system.build.images.iso
+    // {
+      meta.platforms = lib.platforms.linux;
+    }
+  else
+    pkgs.runCommand "installer-iso-dummy" {} ''
+      echo "Installer ISO is only available on Linux." > $out
+    ''

@@ -10,6 +10,8 @@ with pkgs;
       alejandra
       vulnix
 
+      nodejs
+
       age
       sops
       ssh-to-age

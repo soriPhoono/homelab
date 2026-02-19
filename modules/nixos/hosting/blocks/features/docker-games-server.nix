@@ -79,7 +79,9 @@
         ''
         else ''
           ARGS+=(
-              --gpus all
+              --device nvidia.com/gpu=all
+              -e NVIDIA_DRIVER_CAPABILITIES=all
+              -e NVIDIA_VISIBLE_DEVICES=all
           )
         ''
       }
