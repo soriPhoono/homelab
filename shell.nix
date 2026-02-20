@@ -18,8 +18,7 @@ with pkgs;
       ssh-to-age
 
       disko
-      nixos-facter
-    ];
+    ] ++ lib.optional pkgs.stdenv.isLinux nixos-facter;
 
     shellHook = ''
       ${config.pre-commit.shellHook}
