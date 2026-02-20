@@ -119,9 +119,6 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       nvf.homeManagerModules.default
-      mcps.homeManagerModules.gemini-cli
-      mcps.homeManagerModules.claude
-      mcps.homeManagerModules.antigravity
     ];
 
     droidModules = [
@@ -333,7 +330,6 @@
         overlays = with inputs; ((import ./overlays {inherit lib self;})
           // {
             nur = nur.overlays.default;
-            mcps = mcps.overlays.default;
           });
 
         # --- Automatic Discovery & Construction --- #
