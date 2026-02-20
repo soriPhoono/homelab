@@ -23,9 +23,6 @@ in
           programs.gemini-cli.enable = true;
         }
         (mkIf cfg.overrideEditor {
-          # Enable Antigravity (VSCode fork with Gemini)
-          programs.antigravity.enable = true;
-
           # Override default editor with Antigravity
           userapps.development.editors.vscode = {
             package = mkDefault pkgs.antigravity;
