@@ -6,20 +6,21 @@
 }:
 with pkgs;
   mkShell {
-    packages = [
-      nil
-      alejandra
-      vulnix
+    packages =
+      [
+        nil
+        alejandra
+        vulnix
 
-      nodejs
+        nodejs
 
-      age
-      sops
-      ssh-to-age
+        age
+        sops
+        ssh-to-age
 
-      disko
-      nixos-facter
-    ];
+        disko
+      ]
+      ++ lib.optional stdenv.isLinux nixos-facter;
 
     shellHook = ''
       ${config.pre-commit.shellHook}
