@@ -35,7 +35,6 @@ in
             (mkIf (builtins.elem cfg.mode ["edge-agent" "edge-agent-async"]) {
               volumes = [
                 "/var/lib/docker/volumes:/var/lib/docker/volumes"
-                "/:/host"
               ];
               environment = {
                 EDGE = "1";
