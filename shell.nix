@@ -17,10 +17,11 @@ with pkgs;
         age
         sops
         ssh-to-age
-
-        disko
       ]
-      ++ lib.optional stdenv.isLinux nixos-facter;
+      ++ lib.optional stdenv.isLinux [
+        disko
+        nixos-facter
+      ];
 
     shellHook = ''
       ${config.pre-commit.shellHook}
