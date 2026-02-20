@@ -1,7 +1,6 @@
 {
   lib,
   config,
-  self,
   ...
 }: let
   cfg = config.desktop;
