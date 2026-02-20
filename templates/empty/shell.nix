@@ -13,5 +13,7 @@ with pkgs;
 
     shellHook = ''
       ${config.pre-commit.shellHook}
+
+      alias s="EDITOR=nvim sops"
     '';
   }

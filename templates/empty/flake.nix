@@ -3,8 +3,12 @@
 
   inputs = {
     systems.url = "github:nix-systems/default";
-    nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+
+    nixtest = {
+      url = "github:jetify-com/nixtest";
+    };
 
     agenix = {
       url = "github:ryantm/agenix";
@@ -42,11 +46,12 @@
         systems = import inputs.systems;
         agenix-shell.secrets = (import ./secrets.nix {inherit lib;}).agenix-shell-secrets;
         perSystem = {
+          pkgs,
           config,
           system,
           ...
-        }: let
-          pkgs = import nixpkgs {
+        }: {
+          _module.args.pkgs = import nixpkgs {
             inherit system;
             overlays = [
               (_: _: {
@@ -55,13 +60,24 @@
             ];
             config.allowUnfree = true;
           };
-        in {
+
           devShells.default = import ./shell.nix {
             inherit lib pkgs;
             config = {
               inherit (config) pre-commit;
             };
           };
+
+          checks = let
+            unitTests =
+              lib.discoverTests {
+                inherit pkgs inputs self;
+                inherit (inputs) nixtest;
+              }
+              ./tests;
+          in
+            unitTests;
+
           treefmt = import ./treefmt.nix {
             inherit lib pkgs;
           };
