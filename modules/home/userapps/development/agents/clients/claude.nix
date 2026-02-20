@@ -12,7 +12,7 @@ in
 
     config = mkIf cfg.enable {
       programs.claude-code = {
-        enable = true;
+        # enable = true;
       };
     };
   }
