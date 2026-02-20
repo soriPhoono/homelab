@@ -27,7 +27,7 @@ in {
       google-chrome
     ];
 
-    xdg.mimeApps.defaultApplications = let
+    xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
       browser = ["google-chrome.desktop"];
     in
       lib.mkOverride cfg.priority {
@@ -37,6 +37,6 @@ in {
         "x-scheme-handler/https" = browser;
         "x-scheme-handler/about" = browser;
         "x-scheme-handler/unknown" = browser;
-      };
+      });
   };
 }

@@ -3,8 +3,6 @@
     ./nvim
   ];
 
-  sops.secrets."github/api-key" = {};
-
   core = {
     secrets = {
       enable = true;
@@ -14,8 +12,6 @@
     shells.shellAliases.v = "nvim";
 
     git = {
-      userName = "soriphoono";
-      userEmail = "soriphoono@gmail.com";
       projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
       extraIdentities = {
         school = {
@@ -37,8 +33,8 @@
   userapps = {
     enable = true;
     browsers = {
-      librewolf.enable = true;
       chrome.enable = true;
+      librewolf.enable = true;
     };
     development = {
       editors = {
