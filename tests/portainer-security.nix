@@ -19,20 +19,23 @@
         };
 
         config = {
-          hosting.blocks.backends.management.type = "portainer";
-          hosting.blocks.backends.management.portainer.mode = "edge-agent";
-          hosting.blocks.backends.type = "docker";
+          hosting.blocks.backends = {
+            management = {
+              type = "portainer";
+              portainer.mode = "edge-agent";
+            };
+            type = "docker";
+          };
         };
       }
     ];
   };
 
   # Extract the volumes
-  volumes = eval.config.virtualisation.oci-containers.containers.admin_portainer-agent.volumes;
+  inherit (eval.config.virtualisation.oci-containers.containers.admin_portainer-agent) volumes;
 
   # Check if vulnerable mount exists
   hasVulnerableMount = builtins.elem "/:/host" volumes;
-
 in
   pkgs.runCommand "test-portainer-security" {} ''
     if [ "${toString hasVulnerableMount}" = "1" ]; then
