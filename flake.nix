@@ -100,7 +100,6 @@
     agenix,
     nixtest,
     nix-on-droid,
-    mcps,
     ...
   }: let
     # Extend lib with our custom functions
@@ -338,7 +337,7 @@
         overlays = with inputs; ((import ./overlays {inherit lib self;})
           // {
             nur = nur.overlays.default;
-            mcps = mcps.overlays.default;
+            # mcps = mcps.overlays.default;
           });
 
         # --- Automatic Discovery & Construction --- #
