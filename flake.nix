@@ -346,7 +346,6 @@
         nixOnDroidConfigurations = lib.mapAttrs mkDroid (lib.discover ./droids);
 
         # All standalone homes in the /homes folder
-        # All standalone homes in the /homes folder
         # Scans for <user> and <user>@global, combines them if both exist.
         homeConfigurations = let
           allEntries = builtins.readDir ./homes;
