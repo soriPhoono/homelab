@@ -17,13 +17,15 @@ let
         options.sops = lib.mkOption { type = lib.types.attrs; default = {}; };
 
         # Config
-        core.secrets.enable = true;
-        core.users = {
-            alice = {};
-            bob = {};
+        config = {
+            core.secrets.enable = true;
+            core.users = {
+                alice = {};
+                bob = {};
+            };
+            home-manager.users.alice.core.secrets.enable = true;
+            home-manager.users.bob.core.secrets.enable = false;
         };
-        home-manager.users.alice.core.secrets.enable = true;
-        home-manager.users.bob.core.secrets.enable = false;
       }
     ];
   };
