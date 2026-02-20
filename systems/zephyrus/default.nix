@@ -44,10 +44,6 @@
       defaultSopsFile = ./secrets.yaml;
     };
 
-    sops.secrets."users/soriphoono/password" = {
-      neededForUsers = true;
-    };
-
     networking = {
       network-manager.enable = true;
       tailscale.enable = true;
@@ -55,7 +51,7 @@
 
     users = {
       soriphoono = {
-        passwordFile = config.sops.secrets."users/soriphoono/password".path;
+        hashedPasswordFile = config.sops.secrets."users/soriphoono/password".path;
         admin = true;
         shell = pkgs.fish;
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgxxFcqHVwYhY0TjbsqByOYpmWXqzlVyGzpKjqS8mO7";
@@ -101,5 +97,9 @@
       openFirewall = true;
       gpuRenderNode = "/dev/dri/renderD129";
     };
+  };
+
+  sops.secrets."users/soriphoono/password" = {
+    neededForUsers = true;
   };
 }
