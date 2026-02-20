@@ -12,19 +12,18 @@
     lowerIdName = lib.toLower idName;
   in
     lib.mkOption {
-      type = with lib.types;
-        listOf (submodule {
-          options = {
-            "start${idName}" = lib.mkOption {
-              type = int;
-              description = "The start ${lowerIdName} of the range.";
-            };
-            count = lib.mkOption {
-              type = int;
-              description = "The number of ${lowerIdName}s in the range.";
-            };
+      type = lib.types.listOf (lib.types.submodule {
+        options = {
+          "start${idName}" = lib.mkOption {
+            type = lib.types.int;
+            description = "The start ${lowerIdName} of the range.";
           };
-        });
+          count = lib.mkOption {
+            type = lib.types.int;
+            description = "The number of ${lowerIdName}s in the range.";
+          };
+        };
+      });
       default = [];
       description = "The sub-${lowerIdName} ranges for the user.";
     };
