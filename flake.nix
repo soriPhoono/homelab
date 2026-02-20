@@ -123,9 +123,9 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       nvf.homeManagerModules.default
-      mcps.homeManagerModules.gemini-cli
-      mcps.homeManagerModules.claude
-      mcps.homeManagerModules.antigravity
+      # mcps.homeManagerModules.gemini-cli
+      # mcps.homeManagerModules.claude
+      # mcps.homeManagerModules.antigravity
     ];
 
     droidModules = [
