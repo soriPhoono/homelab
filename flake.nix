@@ -4,7 +4,8 @@
   inputs = {
     systems.url = "github:nix-systems/default";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
-    nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
       url = "github:NixOS/flake-compat";
@@ -94,6 +95,7 @@
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-unstable,
     flake-parts,
     agenix,
     nixtest,
@@ -109,12 +111,21 @@
 
     # --- System Support & Package Cache --- #
     supportedSystems = import inputs.systems;
-    pkgsFor = lib.genAttrs supportedSystems (system:
-      import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = builtins.attrValues self.overlays;
-      });
+    pkgsFor = prefer-stable:
+      lib.genAttrs supportedSystems (system:
+        if prefer-stable
+        then
+          import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+            overlays = builtins.attrValues self.overlays;
+          }
+        else
+          import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfree = true;
+            overlays = builtins.attrValues self.overlays;
+          });
 
     # --- System Builder Parameters --- #
     homeManagerModules = with inputs; [
