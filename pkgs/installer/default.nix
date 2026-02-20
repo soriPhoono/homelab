@@ -5,28 +5,8 @@
   pkgs,
   ...
 }: let
-  homeManagerModules = with inputs; [
-    self.homeModules.default
-    sops-nix.homeManagerModules.sops
-    nvf.homeManagerModules.default
-    mcps.homeManagerModules.gemini-cli
-    mcps.homeManagerModules.claude
-    mcps.homeManagerModules.antigravity
-  ];
-
   nixosModules = with inputs; [
     ./config.nix
-
-    self.nixosModules.default
-
-    home-manager.nixosModules.home-manager
-    nixos-facter-modules.nixosModules.facter
-    disko.nixosModules.disko
-    determinate.nixosModules.default
-    lanzaboote.nixosModules.lanzaboote
-    sops-nix.nixosModules.sops
-    comin.nixosModules.comin
-    nix-index-database.nixosModules.nix-index
 
     (_: {
       image.modules.installation-cd-minimal = {
@@ -34,15 +14,7 @@
       };
 
       nixpkgs.overlays = builtins.attrValues self.overlays;
-      home-manager = {
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        extraSpecialArgs = {
-          inherit inputs self;
-          hostName = "installer";
-        };
-        sharedModules = homeManagerModules;
-      };
+      home-manager.extraSpecialArgs.hostName = "installer";
     })
   ];
 in
@@ -54,7 +26,7 @@ in
         inherit inputs self;
         hostName = "installer";
       };
-      modules = nixosModules;
+      modules = self.nixosModules.default ++ nixosModules;
     })
     .config.system.build.images.iso
     // {

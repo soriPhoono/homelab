@@ -64,6 +64,68 @@
             ];
           };
         };
+
+        # --- Build Installer ISO ---
+        build-installer-iso = {
+          name = "Build Installer ISO";
+
+          on = {
+            push = {
+              branches = ["main"];
+              paths = ["pkgs/installer/version.nix"];
+            };
+            workflowDispatch = {};
+          };
+
+          permissions = {
+            contents = "write";
+          };
+
+          jobs.build-iso = {
+            runsOn = "ubuntu-latest";
+            steps = [
+              {
+                uses = "actions/checkout@v4";
+              }
+              {
+                uses = "DeterminateSystems/nix-installer-action@main";
+              }
+              {
+                name = "Read installer version";
+                id = "version";
+                run = ''
+                  VERSION=$(nix eval --raw --file pkgs/installer/version.nix)
+                  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+                  echo "Installer version: $VERSION"
+                '';
+              }
+              {
+                name = "Build installer ISO";
+                run = "nix build .#packages.x86_64-linux.installer --out-link result-iso";
+              }
+              {
+                name = "Locate ISO file";
+                id = "iso";
+                run = ''
+                  ISO=$(find result-iso/ -name '*.iso' -type f | head -1)
+                  echo "path=$ISO" >> "$GITHUB_OUTPUT"
+                  echo "Found ISO: $ISO"
+                '';
+              }
+              {
+                name = "Create GitHub Release";
+                uses = "softprops/action-gh-release@v2";
+                with_ = {
+                  tag_name = "installer-v\${{ steps.version.outputs.version }}";
+                  name = "Installer v\${{ steps.version.outputs.version }}";
+                  body = "Automated installer ISO build for version \${{ steps.version.outputs.version }}.";
+                  files = "\${{ steps.iso.outputs.path }}";
+                  make_latest = "true";
+                };
+              }
+            ];
+          };
+        };
       };
     };
   };

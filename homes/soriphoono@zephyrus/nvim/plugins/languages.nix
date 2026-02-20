@@ -1,5 +1,6 @@
 {
   programs.nvf.settings.vim = {
+    debugger.nvim-dap.enable = true;
     lsp = {
       enable = true;
       formatOnSave = true;
@@ -7,6 +8,8 @@
         enable = true;
         setupOpts.mode = "symbol";
       };
+      trouble.enable = true;
+      lsplines.enable = true;
     };
 
     autocomplete.blink-cmp = {
@@ -23,6 +26,12 @@
         enable = true;
         lsp.servers = ["nixd"];
       };
+
+      clang = {
+        enable = true;
+        dap.debugger = "lldb-dap";
+      };
+
       bash.enable = true;
 
       python = {

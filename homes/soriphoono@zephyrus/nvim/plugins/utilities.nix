@@ -71,6 +71,8 @@
       mkdir.enable = true;
       multicursors.enable = true;
       surround.enable = true;
+      diffview-nvim.enable = true;
+      undotree.enable = true;
 
       # Motion plugin
       motion.flash-nvim.enable = true;

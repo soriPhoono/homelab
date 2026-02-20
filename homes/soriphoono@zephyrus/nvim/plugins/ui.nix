@@ -51,6 +51,11 @@
     dashboard.dashboard-nvim.enable = true;
     statusline.lualine.enable = true;
 
-    visuals.rainbow-delimiters.enable = true;
+    visuals = {
+      rainbow-delimiters.enable = true;
+      fidget-nvim.enable = true;
+    };
+
+    ui.illuminate.enable = true;
   };
 }
