@@ -53,17 +53,36 @@
     };
   };
 
-  # Fix high memory usage during build by forcing single-threaded xz
+  # Workaround: prevent high memory usage during build by forcing single-threaded xz
+  # This is needed because pixz can consume excessive RAM during parallel compression in proxmox-lxc builds.
   nixpkgs.overlays = [
     (final: _prev: {
       pixz = final.writeShellScriptBin "pixz" ''
         # pixz wrapper to force low memory usage via xz
-        # proxmox-lxc passes -t (tarball mode) which xz doesn't support in the same way
+        # proxmox-lxc passes -t (tarball mode) which xz doesn't support
+        # proxmox-lxc might pass -p (parallelism) which xz doesn't support as -p
         params=()
-        for arg in "$@"; do
-          if [ "$arg" != "-t" ]; then
-            params+=("$arg")
-          fi
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            -t)
+              shift
+              ;;
+            -p)
+              shift
+              # Consume thread count argument if present
+              if [[ $# -gt 0 ]]; then
+                shift
+              fi
+              ;;
+            -p*)
+              # Handle -p<number>
+              shift
+              ;;
+            *)
+              params+=("$1")
+              shift
+              ;;
+          esac
         done
         exec ${final.xz}/bin/xz -T1 "''${params[@]}"
       '';
