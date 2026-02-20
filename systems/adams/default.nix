@@ -78,7 +78,15 @@
               # Handle -p<number>
               shift
               ;;
+            --)
+              shift
+              params+=("$@")
+              break
+              ;;
             *)
+              params+=("$1")
+              shift
+              ;;
               params+=("$1")
               shift
               ;;
