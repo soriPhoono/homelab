@@ -301,7 +301,16 @@
             '');
             meta.description = "Run security audit with vulnix";
           };
-          default = config.apps.audit;
+          droid-builds = {
+            type = "app";
+            program = lib.getExe (pkgs.writeShellScriptBin "droid-builds" ''
+              echo "Evaluating all Nix-on-Droid configurations..."
+              nix build --impure --no-link --print-out-paths \
+                --file ${./tests/manual/droid-builds.nix} \
+                --argstr flakePath "$PWD"
+            '');
+            meta.description = "Build all Nix-on-Droid configurations";
+          };
         };
 
         packages =
