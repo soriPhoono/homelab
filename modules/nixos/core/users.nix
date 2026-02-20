@@ -128,6 +128,10 @@ in {
           lib.optional (builtins.pathExists userHome) userHome
           ++ lib.optional (builtins.pathExists hostHome) hostHome;
 
+        home = {
+          inherit username;
+        };
+
         core = {
           ssh.publicKey = lib.mkIf (user.publicKey != null) user.publicKey;
           shells.fish.enable = user.shell == pkgs.fish;

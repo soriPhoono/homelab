@@ -1,8 +1,4 @@
 {config, ...}: {
-  imports = [
-    ./nvim
-  ];
-
   core = {
     secrets = {
       enable = true;
@@ -38,6 +34,7 @@
     };
     development = {
       editors = {
+        neovim.enable = true;
         vscode.enable = true;
       };
       agents = {
