@@ -27,6 +27,13 @@ in {
               example = "$6$N9zTq2VII1RiqgFr$IO8lxVRPfDPoDs3qZIqlUtfhtLxx/iNO47hUcx2zbDGHZsw..1sy5k.6.HIxpwkAhDPI7jZnTXKaIKqwiSWZA0";
             };
 
+            passwordFile = mkOption {
+              type = nullOr str;
+              default = null;
+              description = "The path to the password file for the user";
+              example = "/run/secrets/users/john/password";
+            };
+
             extraGroups = mkOption {
               type = listOf str;
               default = [];
@@ -107,7 +114,7 @@ in {
 
       extraUsers =
         lib.mapAttrs (name: user: {
-          inherit (user) hashedPassword shell subUidRanges subGidRanges;
+          inherit (user) hashedPassword passwordFile shell subUidRanges subGidRanges;
           isNormalUser = true;
           extraGroups = user.extraGroups ++ lib.optional user.admin "wheel";
           group = name;
