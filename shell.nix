@@ -32,7 +32,8 @@ with pkgs;
       # detects the changed shell derivation, reloads, and this hook re-runs.
       mkdir -p .github/workflows
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: drv: ''
-          ln -sf ${drv} .github/workflows/${name}
+          cp -L ${drv} .github/workflows/${name}
+          chmod u+w .github/workflows/${name}
         '')
         config.workflowFiles)}
     '';
