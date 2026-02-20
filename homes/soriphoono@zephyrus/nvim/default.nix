@@ -11,7 +11,6 @@
       vimAlias = true;
 
       hideSearchHighlight = true;
-      useSystemClipboard = true;
       extraPackages = with pkgs; [
         ripgrep
         wl-clipboard

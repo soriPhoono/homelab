@@ -9,7 +9,6 @@
         setupOpts.mode = "symbol";
       };
       trouble.enable = true;
-      lsplines.enable = true;
     };
 
     autocomplete.blink-cmp = {
