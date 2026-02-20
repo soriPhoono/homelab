@@ -5,6 +5,7 @@
     systems.url = "github:nix-systems/default";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-unstable-droid.url = "github:NixOS/nixpkgs/88d3861";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
       url = "github:NixOS/flake-compat";
@@ -94,6 +95,7 @@
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-unstable-droid,
     flake-parts,
     agenix,
     nixtest,
@@ -131,7 +133,8 @@
       {
         home-manager = {
           useGlobalPkgs = true;
-          useUserPackages = true;
+          extraSpecialArgs = {inherit inputs self lib;};
+          sharedModules = homeManagerModules;
           backupFileExtension = "bak";
         };
       }
@@ -200,26 +203,13 @@
 
     # Nix-on-Droid Builder
     mkDroid = _name: path: let
-      meta = lib.readMeta path;
-      systemArch = meta.system or "aarch64-linux";
-      pkgs = pkgsFor.${systemArch};
+      systemArch = "aarch64-linux";
+      pkgs = nixpkgs-unstable-droid.legacyPackages.${systemArch};
     in
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
         extraSpecialArgs = {inherit inputs self lib;};
-        modules =
-          droidModules
-          ++ [
-            (path + "/default.nix")
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                backupFileExtension = "bak";
-                extraSpecialArgs = {inherit inputs self lib;};
-                sharedModules = homeManagerModules;
-              };
-            }
-          ];
+        modules = droidModules ++ [path];
       };
 
     # Base NixOS System Builder
@@ -236,7 +226,7 @@
         modules =
           nixosModules
           ++ [
-            (path + "/default.nix")
+            path
             {
               networking.hostName = hostName;
             }

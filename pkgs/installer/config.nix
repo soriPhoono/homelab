@@ -1,5 +1,7 @@
 {pkgs, ...}: {
   core = {
+    boot.plymouth.enable = true;
+
     networking = {
       network-manager.enable = true;
       tailscale.enable = true;
@@ -14,4 +16,6 @@
       };
     };
   };
+
+  desktop.environments.kde.enable = true;
 }

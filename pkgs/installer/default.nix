@@ -24,6 +24,7 @@
       nixpkgs.overlays = builtins.attrValues self.overlays;
       home-manager = {
         useGlobalPkgs = true;
+        startAsUserService = true;
         extraSpecialArgs = {inherit inputs self lib;};
         sharedModules = [
           self.homeModules.default
