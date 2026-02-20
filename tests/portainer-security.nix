@@ -18,12 +18,6 @@
           default = "podman";
         };
 
-        # Stub for virtualisation options since we don't import full NixOS
-        options.virtualisation.oci-containers.containers = lib.mkOption {
-            type = lib.types.attrsOf lib.types.anything;
-            default = {};
-        };
-
         config = {
           hosting.blocks.backends.management.type = "portainer";
           hosting.blocks.backends.management.portainer.mode = "edge-agent";
