@@ -54,6 +54,7 @@ in
 
       home-manager.users =
         lib.mapAttrs (_name: _user: {
+          imports = [../../home/desktop];
           desktop.enable = true;
         })
         config.core.users;
