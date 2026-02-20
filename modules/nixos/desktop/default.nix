@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  self,
   ...
 }: let
   cfg = config.desktop;
@@ -54,7 +55,7 @@ in
 
       home-manager.users =
         lib.mapAttrs (_name: _user: {
-          imports = [../../home/desktop];
+          imports = [(self + /modules/home/desktop)];
           desktop.enable = true;
         })
         config.core.users;
