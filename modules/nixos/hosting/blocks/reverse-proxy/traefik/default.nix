@@ -13,14 +13,30 @@ in
     config = mkIf (config.hosting.enable && cfg.type == "traefik" && cfg.domain.fqdn != null) {
       virtualisation.oci-containers.containers = mkMerge [
         {
+          traefik-socket-proxy = {
+            image = "tecnativa/docker-socket-proxy:latest";
+            volumes = [
+              "/var/run/docker.sock:/var/run/docker.sock:ro"
+            ];
+            environment = {
+              CONTAINERS = "1";
+              NETWORKS = "1";
+              EVENTS = "1";
+              PING = "1";
+              VERSION = "1";
+            };
+            networks = ["admin_traefik-public"];
+          };
           traefik = {
             image = "traefik:latest";
+            dependsOn = ["traefik-socket-proxy"];
             cmd = [
               "--entrypoints.web.address=:80"
               "--entrypoints.websecure.address=:443"
               "--entrypoints.websecure.http.tls=true"
               "--providers.docker=true"
               "--providers.docker.exposedbydefault=false"
+              "--providers.docker.endpoint=tcp://traefik-socket-proxy:2375"
               "--providers.docker.network=admin_traefik-public"
               "--api.dashboard=true"
               "--api.insecure=false"
@@ -37,7 +53,6 @@ in
               "--certificatesresolvers.${cfg.domain.provider.name}.acme.${cfg.domain.provider.challengeType}challenge.provider=${cfg.domain.provider.type}"
             ];
             volumes = [
-              "/var/run/docker.sock:/var/run/docker.sock:ro"
               "admin_traefik-certs:/acme"
             ];
             networks = ["admin_traefik-public"];
