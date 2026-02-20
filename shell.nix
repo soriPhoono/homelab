@@ -17,6 +17,8 @@ with pkgs;
       sops
       ssh-to-age
 
+    ]
+    ++ lib.optionals pkgs.stdenv.isLinux [
       disko
       nixos-facter
     ];

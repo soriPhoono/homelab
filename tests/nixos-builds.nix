@@ -15,7 +15,13 @@
     })
     nixosConfigs;
 in
-  if (entries == [])
+  if (!pkgs.stdenv.isLinux)
+  then
+    pkgs.runCommand "nixos-builds-skip-darwin" {} ''
+      echo "NixOS builds are Linux-only. Skipping on this platform."
+      touch $out
+    ''
+  else if (entries == [])
   then
     pkgs.runCommand "nixos-builds-skip" {} ''
       echo "No NixOS configurations found. Skipping."
