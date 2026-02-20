@@ -7,6 +7,24 @@
   ...
 }: let
   cfg = config.core;
+
+  mkSubIdRangeOption = idName: description:
+    lib.mkOption {
+      type = lib.types.listOf (lib.types.submodule {
+        options = {
+          "start${idName}" = lib.mkOption {
+            type = lib.types.int;
+            description = "The start ${lib.toLower idName} of the range.";
+          };
+          count = lib.mkOption {
+            type = lib.types.int;
+            description = "The number of ${lib.toLower idName}s in the range.";
+          };
+        };
+      });
+      default = [];
+      inherit description;
+    };
 in {
   options.core.users = with lib;
     mkOption {
@@ -48,41 +66,9 @@ in {
               example = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...";
             };
 
-            subUidRanges = mkOption {
-              type = with types;
-                listOf (submodule {
-                  options = {
-                    startUid = mkOption {
-                      type = int;
-                      description = "The start uid of the range.";
-                    };
-                    count = mkOption {
-                      type = int;
-                      description = "The number of uids in the range.";
-                    };
-                  };
-                });
-              default = [];
-              description = "The sub-uid ranges for the user.";
-            };
+            subUidRanges = mkSubIdRangeOption "Uid" "The sub-uid ranges for the user.";
 
-            subGidRanges = mkOption {
-              type = with types;
-                listOf (submodule {
-                  options = {
-                    startGid = mkOption {
-                      type = int;
-                      description = "The start gid of the range.";
-                    };
-                    count = mkOption {
-                      type = int;
-                      description = "The number of gids in the range.";
-                    };
-                  };
-                });
-              default = [];
-              description = "The sub-gid ranges for the user.";
-            };
+            subGidRanges = mkSubIdRangeOption "Gid" "The sub-gid ranges for the user.";
           };
         });
 
