@@ -42,12 +42,15 @@ in
               serviceConfig = {
                 Type = "oneshot";
                 ExecStart = "${pkgs.writeShellScriptBin "${serviceName}" ''
-                  ${lib.concatStringsSep "\n" (map (network: ''
-                      if ! ${invocation}/bin/${cfg.type} network ls --format '{{.Name}}' | grep -q "^${network}$"; then
-                        ${invocation}/bin/${cfg.type} network create ${network}
-                      fi
-                    '')
-                    networks)}
+                  ${lib.optionalString (networks != []) ''
+                    EXISTING_NETWORKS=$(${invocation}/bin/${cfg.type} network ls --format '{{.Name}}')
+                    ${lib.concatStringsSep "\n" (lib.map (network: ''
+                        if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${network}"; then
+                          ${invocation}/bin/${cfg.type} network create "${network}"
+                        fi
+                      '')
+                      networks)}
+                  ''}
                 ''}/bin/${serviceName}";
               };
             };
