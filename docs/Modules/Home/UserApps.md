@@ -2,6 +2,10 @@
 
 The `modules/home/userapps` directory configures user-facing applications.
 
+## Options
+
+- **`userapps.defaultApplications.enable`** (default: `false`): When enabled, Nix will manage the user's default applications (e.g., setting the default browser via `xdg.mimeApps`). Opt-in by design — leave disabled to let the user set defaults themselves.
+
 ## Structure
 
 - `default.nix`: Main entry point.

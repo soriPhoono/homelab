@@ -2,7 +2,7 @@
 
 This document outlines the plan for enhancing the testing framework and automation pipelines for the `homelab` repository.
 
-## 1. Strict Repository Structure Checks
+## 1. Strict Repository Structure Checks ✅ Implemented
 
 **Goal**: Enforce a strict directory structure for home configurations to ensure clarity and modularity.
 
@@ -12,33 +12,23 @@ This document outlines the plan for enhancing the testing framework and automati
 - Home configurations MUST NOT reside in `homes/<user>@<system>/`.
 - **Clarification**: System-specific home configurations (e.g., for `droids` or `system-manager`) should be managed within their respective system modules (`droids/` or `systemConfigs/`), NOT by creating separate top-level directories in `homes/`.
 
-**Implementation Plan**:
-
-- Create a new test suite (e.g., `tests/structure.nix`) using the `nixtest` framework.
-- The test will walk the `homes/` directory.
-- It will assert that no directory name contains the `@` character.
-- **Fail Condition**: Presence of any `homes/*@*` directory.
+**Status**: Implemented in `tests/structure.nix`. Runs as part of `nix flake check`.
 
 ## 2. Specialized System Environments (Nix-on-Droid & System Manager)
 
-**Goal**: Verify that non-NixOS but system-managed environments (`nix-on-droid` and `system-manager`) export a functional and consistent environment.
+### 2.1 Nix-on-Droid Environment Checks ✅ Implemented
 
-**Context**: These systems are distinct from standard NixOS but are still considered "systems" with their own configuration nuances (e.g., restricted `config` options outside of Home Manager).
+**Goal**: Verify that the Nix-on-Droid configuration exports a functional and consistent environment.
 
-### 2.1 Nix-on-Droid Environment Checks
+**Status**: Implemented in `tests/droid-env.nix`. Checks:
 
-**Requirement**:
+- Existence of `config.build.activationPackage`.
+- Key attributes in `config.environment.variables`.
+- Presence of expected packages in `config.environment.systemPackages`.
 
-- Ensure critical environment variables (e.g., `PATH`, `SHELL`, `TERM`) are correctly set.
-- specific packages expected in the Android environment are present.
+Runs as part of `nix flake check`.
 
-**Implementation Plan**:
-
-- Extend the testing suite to evaluate `nixOnDroidConfigurations`.
-- Check for the existence of:
-  - `config.build.activationPackage`
-  - Specific attributes in `config.environment.variables`.
-  - Key packages in `config.environment.systemPackages` (e.g., `git`, `vim`, `openssh`).
+> **Note**: Full *builds* of Nix-on-Droid configurations require `--impure` due to `builtins.storePath` usage. See [testing.md](../testing.md) for the build command.
 
 ## 3. Future Automation (GitHub Actions)
 
@@ -64,7 +54,7 @@ We intend to introduce Nix-controlled GitHub Actions to automate maintenance and
     - Install Nix (via `cachix/install-nix-action` or `DeterminateSystems/nix-installer-action`).
     - Check flake (`nix flake check`).
     - Build all hosts (`nix build .#nixosConfigurations.HOST.config.system.build.toplevel`).
-    - Build all homes (`nix build .#homeConfigurations.USER@HOST.activationPackage`).
+    - Build all homes (`nix build .#homeConfigurations.USER.activationPackage`).
     - Cache results to Cachix or generic GitHub Actions cache.
 
 ## 4. Non-NixOS System Management via System Manager
@@ -76,6 +66,6 @@ We intend to introduce Nix-controlled GitHub Actions to automate maintenance and
 **Plan**:
 
 - Integrate `system-manager` as a flake input.
-- Create a new top-level output group (e.g., `systemConfigs` or reuse `nixosConfigurations` with a special builder).
+- Create a new top-level output group stored in `environments/`.
 - Define modules that can apply system-level configuration (services, users, etc.) without replacing the host OS kernel/bootloader.
 - Allow these systems to coexist with full NixOS systems in the repository.

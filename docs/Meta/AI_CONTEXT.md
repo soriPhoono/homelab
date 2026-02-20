@@ -30,14 +30,21 @@
 This repository uses a custom discovery mechanism in `flake.nix`.
 
 - **Systems**: defined in `systems/<host>/default.nix`.
-- **Homes**: defined in `homes/<user>@<host>/default.nix` or `homes/<user>/default.nix`.
-- **Meta**: `meta.json` in the directory defines the architecture (e.g., `{"system": "x86_64-linux"}`).
+- **Droids**: defined in `droids/<name>/default.nix`.
+- **Homes**: defined in `homes/<user>/default.nix` — three patterns:
+  - `homes/user` — Base config, used everywhere.
+  - `homes/user@global` — Supplementary for non-NixOS; combined with base into `homeConfigurations.user`.
+  - `homes/user@hostname` — Machine-specific overrides; imported by the NixOS system, **not** a standalone `homeConfiguration`.
+- **Meta**: `meta.json` in each directory defines the architecture (e.g., `{"system": "x86_64-linux"}`).
 
 ## 4. Map of the Fortress
 
-- `homes/` -> user-level configs (zsh, neovim, git).
-- `modules/nixos/` -> system-level services (docker, k8s, ssh).
-- `modules/home/` -> user-level configs (zsh, neovim, git).
-- `overlays/` -> Patches to upstream nixpkgs.
-- `pkgs/` -> Custom software compiled from source.
-- `systems/` -> hardware specific configs.
+- `homes/` → user-level configs (zsh, neovim, git).
+- `droids/` → Nix-on-Droid configurations (Android devices).
+- `environments/` → (planned) System Manager configs for non-NixOS Linux hosts.
+- `modules/nixos/` → system-level services (docker, k8s, ssh).
+- `modules/home/` → user-level Home Manager modules.
+- `modules/droid/` → Android/Nix-on-Droid specific modules.
+- `overlays/` → Patches to upstream nixpkgs.
+- `pkgs/` → Custom software compiled from source.
+- `systems/` → hardware specific configs.

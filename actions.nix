@@ -9,7 +9,7 @@
           name = "Update flake.lock";
 
           on = {
-            workflow_dispatch = {};
+            workflowDispatch = {};
             schedule = [{cron = "0 0 * * 0";}]; # Weekly on Sunday at midnight
           };
 
