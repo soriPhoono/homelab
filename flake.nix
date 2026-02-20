@@ -204,7 +204,11 @@
     # Nix-on-Droid Builder
     mkDroid = _name: path: let
       systemArch = "aarch64-linux";
-      pkgs = nixpkgs-unstable-droid.legacyPackages.${systemArch};
+      pkgs = import nixpkgs-unstable-droid {
+        system = systemArch;
+        config.allowUnfree = true;
+        overlays = builtins.attrValues self.overlays;
+      };
     in
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
