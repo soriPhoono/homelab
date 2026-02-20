@@ -51,11 +51,5 @@ in
         # Preserve dbus-broker (Plasma 6 tries to switch to dbus by default)
         dbus.implementation = "broker";
       };
-
-      home-manager.users =
-        lib.mapAttrs (_name: _user: {
-          desktop.enable = true;
-        })
-        config.core.users;
     };
   }
