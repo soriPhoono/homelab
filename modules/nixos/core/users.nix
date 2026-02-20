@@ -7,26 +7,6 @@
   ...
 }: let
   cfg = config.core;
-
-  mkIdRangeOption = idName: let
-    lowerIdName = lib.toLower idName;
-  in
-    lib.mkOption {
-      type = lib.types.listOf (lib.types.submodule {
-        options = {
-          "start${idName}" = lib.mkOption {
-            type = lib.types.int;
-            description = "The start ${lowerIdName} of the range.";
-          };
-          count = lib.mkOption {
-            type = lib.types.int;
-            description = "The number of ${lowerIdName}s in the range.";
-          };
-        };
-      });
-      default = [];
-      description = "The sub-${lowerIdName} ranges for the user.";
-    };
 in {
   options.core.users = with lib;
     mkOption {
@@ -68,9 +48,41 @@ in {
               example = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...";
             };
 
-            subUidRanges = mkIdRangeOption "Uid";
+            subUidRanges = mkOption {
+              type = with types;
+                listOf (submodule {
+                  options = {
+                    startUid = mkOption {
+                      type = int;
+                      description = "The start uid of the range.";
+                    };
+                    count = mkOption {
+                      type = int;
+                      description = "The number of uids in the range.";
+                    };
+                  };
+                });
+              default = [];
+              description = "The sub-uid ranges for the user.";
+            };
 
-            subGidRanges = mkIdRangeOption "Gid";
+            subGidRanges = mkOption {
+              type = with types;
+                listOf (submodule {
+                  options = {
+                    startGid = mkOption {
+                      type = int;
+                      description = "The start gid of the range.";
+                    };
+                    count = mkOption {
+                      type = int;
+                      description = "The number of gids in the range.";
+                    };
+                  };
+                });
+              default = [];
+              description = "The sub-gid ranges for the user.";
+            };
           };
         });
 
