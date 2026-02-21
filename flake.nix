@@ -126,7 +126,10 @@
       {
         home-manager = {
           useGlobalPkgs = true;
-          extraSpecialArgs = {inherit inputs self lib;};
+          extraSpecialArgs = {
+            inherit inputs self lib;
+            isDroid = true;
+          };
           sharedModules = homeManagerModules;
           backupFileExtension = "bak";
         };
@@ -147,7 +150,10 @@
         home-manager = {
           useGlobalPkgs = true;
           startAsUserService = true;
-          extraSpecialArgs = {inherit inputs self lib;};
+          extraSpecialArgs = {
+            inherit inputs self lib;
+            isDroid = false;
+          };
           sharedModules = homeManagerModules;
           backupFileExtension = "bak";
         };
@@ -178,7 +184,10 @@
     in
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {inherit inputs self lib;};
+        extraSpecialArgs = {
+          inherit inputs self lib;
+          isDroid = false;
+        };
         modules =
           homeManagerModules
           ++ lib.optional hasBase (basePath + "/default.nix")

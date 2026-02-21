@@ -42,7 +42,7 @@ in {
         ${shellAliases}
 
         if not set -q SSH_CLIENT
-          fastfetch
+          ${lib.optionalString config.programs.fastfetch.enable "fastfetch"}
         end
       '';
     };

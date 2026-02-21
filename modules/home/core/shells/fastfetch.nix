@@ -1,6 +1,9 @@
 {
+  isDroid ? false,
+  ...
+}: {
   programs.fastfetch = {
-    enable = true;
+    enable = !isDroid;
 
     settings = {
       logo = {
