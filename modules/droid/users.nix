@@ -19,15 +19,10 @@ in {
     user.shell = lib.getExe cfg.shell;
 
     home-manager.config = {
-      imports =
-        lib.flatten
-        (lib.mapAttrsToList (username: _user: let
-          base = self + "/homes/${username}";
-          droid = self + "/homes/${username}@droid";
-        in
-          lib.optional (builtins.pathExists base) base
-          ++ lib.optional (builtins.pathExists droid) droid)
-        cfg.users);
+      imports = let
+        base = self + "/homes/${user.userName}";
+        droid = self + "/homes/${user.userName}@droid";
+      in (lib.optional (builtins.pathExists base) base) ++ (lib.optional (builtins.pathExists droid) droid)
     };
   };
 }
