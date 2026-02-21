@@ -65,6 +65,48 @@
           };
         };
 
+        # --- Fix Formatting ---
+        fix-formatting = {
+          name = "Fix Formatting";
+
+          on = "pull_request";
+
+          permissions = {
+            contents = "write";
+          };
+
+          jobs.fix = {
+            runsOn = "ubuntu-latest";
+            steps = [
+              {
+                uses = "actions/checkout@v4";
+                with_ = {
+                  ref = "\${{ github.head_ref }}";
+                };
+              }
+              {
+                uses = "DeterminateSystems/nix-installer-action@main";
+              }
+              {
+                name = "Fix formatting";
+                run = "nix fmt";
+              }
+              {
+                name = "Commit and push";
+                run = ''
+                  if [[ -n $(git status --porcelain) ]]; then
+                    git config user.name "github-actions[bot]"
+                    git config user.email "github-actions[bot]@users.noreply.github.com"
+                    git add .
+                    git commit -m "style: fix formatting"
+                    git push
+                  fi
+                '';
+              }
+            ];
+          };
+        };
+
         # --- Build Installer ISO ---
         build-installer-iso = {
           name = "Build Installer ISO";
