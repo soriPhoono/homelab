@@ -31,7 +31,7 @@ in {
       };
 
       core = {
-        shells.fish.enable = cfg.shell == pkgs.fish;
+        shells.fish.enable = (lib.getName cfg.shell) == "fish";
       };
     };
   };
