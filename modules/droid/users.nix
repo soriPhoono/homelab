@@ -1,7 +1,8 @@
 {
-  lib,
-  config,
   self,
+  lib,
+  pkgs,
+  config,
   ...
 }: let
   cfg = config.core.user;
@@ -24,6 +25,14 @@ in {
         droid = self + "/homes/${config.user.userName}@droid";
       in
         (lib.optional (builtins.pathExists base) base) ++ (lib.optional (builtins.pathExists droid) droid);
+
+      home = {
+        username = config.user.userName;
+      };
+
+      core = {
+        shells.fish.enable = cfg.shell == pkgs.fish;
+      };
     };
   };
 }

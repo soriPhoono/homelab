@@ -206,15 +206,17 @@
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
         extraSpecialArgs = {inherit inputs self lib;};
-        modules = droidModules ++ [
-          path
-          {
-            user = {
-              userName = name;
-              group = name;
-            };
-          }
-        ];
+        modules =
+          droidModules
+          ++ [
+            path
+            {
+              user = {
+                userName = name;
+                group = name;
+              };
+            }
+          ];
       };
 
     # Base NixOS System Builder

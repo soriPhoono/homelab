@@ -8,7 +8,7 @@
 
   # We test the module in isolation using evalModules
   eval = lib.evalModules {
-    specialArgs = { inherit pkgs; };
+    specialArgs = {inherit pkgs;};
     modules = [
       ../modules/nixos/core/networking/netbird.nix
 
