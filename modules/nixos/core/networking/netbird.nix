@@ -12,6 +12,7 @@ in
 
     config = mkIf cfg.enable {
       services.netbird.enable = true;
+      # services.netbird.openFirewall = true; # Uncomment if supported
 
       # Allow necessary firewall traffic
       # Netbird uses a random port for peer-to-peer connection, but WireGuard standard is 51820.
