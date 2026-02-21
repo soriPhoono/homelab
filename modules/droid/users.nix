@@ -8,7 +8,7 @@
 in {
   options.core.user = with lib; {
     shell = mkOption {
-      type = package;
+      type = types.package;
       default = pkgs.bashInteractive;
       description = "The shell for the user.";
       example = pkgs.zsh;
