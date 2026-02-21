@@ -195,7 +195,7 @@
       };
 
     # Nix-on-Droid Builder
-    mkDroid = _name: path: let
+    mkDroid = name: path: let
       systemArch = "aarch64-linux";
       pkgs = import nixpkgs-unstable-droid {
         system = systemArch;
@@ -206,7 +206,15 @@
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
         extraSpecialArgs = {inherit inputs self lib;};
-        modules = droidModules ++ [path];
+        modules = droidModules ++ [
+          path
+          {
+            user = {
+              userName = name;
+              group = name;
+            };
+          }
+        ];
       };
 
     # Base NixOS System Builder
