@@ -20,8 +20,8 @@ in {
 
     home-manager.config = {
       imports = let
-        base = self + "/homes/${user.userName}";
-        droid = self + "/homes/${user.userName}@droid";
+        base = self + "/homes/${config.user.userName}";
+        droid = self + "/homes/${config.user.userName}@droid";
       in (lib.optional (builtins.pathExists base) base) ++ (lib.optional (builtins.pathExists droid) droid);
     };
   };
