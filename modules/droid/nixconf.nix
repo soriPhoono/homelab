@@ -5,8 +5,6 @@
   config,
   ...
 }: {
-  environment.systemPackages = with pkgs; [git];
-
   nix = let
     flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
   in {
