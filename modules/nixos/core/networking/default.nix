@@ -11,6 +11,7 @@ in
       ./openssh.nix
       ./network-manager.nix
       ./tailscale.nix
+      ./netbird.nix
       ./lxc.nix
     ];
 
