@@ -1,7 +1,4 @@
-{
-  isDroid ? false,
-  ...
-}: {
+{isDroid ? false, ...}: {
   programs.fastfetch = {
     enable = !isDroid;
 
