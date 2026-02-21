@@ -25,7 +25,10 @@
       home-manager = {
         useGlobalPkgs = true;
         startAsUserService = true;
-        extraSpecialArgs = {inherit inputs self lib;};
+        extraSpecialArgs = {
+          inherit inputs self lib;
+          isDroid = false;
+        };
         sharedModules = [
           self.homeModules.default
           sops-nix.homeManagerModules.sops
