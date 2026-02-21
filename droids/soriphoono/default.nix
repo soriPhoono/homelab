@@ -1,11 +1,13 @@
 {pkgs, ...}: {
   system.stateVersion = "24.05";
 
-  core.users.soriphoono = {};
+  core.user.shell = pkgs.fish;
 
-  # Simple default configuration
-  environment.packages = with pkgs; [
-    vim
-    git
-  ];
+  android-integration = {
+    am.enable = true;
+    termux-open-url.enable = true;
+    termux-reload-settings.enable = true;
+    termux-setup-storage.enable = true;
+    xdg-open.enable = true;
+  };
 }

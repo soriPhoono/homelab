@@ -4,22 +4,20 @@
   self,
   ...
 }: let
-  cfg = config.core;
+  cfg = config.core.user;
 in {
-  options.core.users = with lib;
-    mkOption {
-      type = with types;
-        attrsOf (submodule {
-          options = {
-            # We can add more options here if needed, matching NixOS module
-            # For now, just existence is enough trigger imports
-          };
-        });
-      default = {};
-      description = "List of users to configure for Nix-on-Droid.";
+  options.core.user = with lib; {
+    shell = mkOption {
+      type = package;
+      default = pkgs.bashInteractive;
+      description = "The shell for the user.";
+      example = pkgs.zsh;
     };
+  };
 
-  config = lib.mkIf (cfg.users != {}) {
+  config = {
+    user.shell = lib.getExe cfg.shell;
+
     home-manager.config = {
       imports =
         lib.flatten
