@@ -7,8 +7,6 @@
 }: {
   environment.systemPackages = with pkgs; [git];
 
-  determinate.enable = true;
-
   nix = let
     flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
   in {
