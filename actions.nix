@@ -88,6 +88,18 @@
                 uses = "actions/checkout@v4";
               }
               {
+                uses = "jlumbroso/free-disk-space@main";
+                with_ = {
+                  tool-cache = true;
+                  android = true;
+                  dotnet = true;
+                  haskell = true;
+                  large-packages = true;
+                  docker-images = true;
+                  swap-storage = false;
+                };
+              }
+              {
                 uses = "DeterminateSystems/nix-installer-action@main";
               }
               {
@@ -111,6 +123,16 @@
                   echo "path=$ISO" >> "$GITHUB_OUTPUT"
                   echo "Found ISO: $ISO"
                 '';
+              }
+              {
+                name = "Upload installer ISO artifact";
+                uses = "actions/upload-artifact@v4";
+                with_ = {
+                  name = "installer-iso";
+                  path = "\${{ steps.iso.outputs.path }}";
+                  retention-days = 5;
+                  compression-level = 0;
+                };
               }
               {
                 name = "Create GitHub Release";
