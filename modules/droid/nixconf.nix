@@ -16,7 +16,9 @@
       # Workaround for https://github.com/NixOS/nix/issues/9574
       nix-path = config.nix.nixPath;
 
-      trusted-users = lib.mapAttrsToList (name: _: name) (lib.filterAttrs (_: content: content.admin) config.core.users);
+      trusted-users = [
+        config.user.userName
+      ];
 
       # Limit the number of cores used per build job to prevent OOM
       # during memory-intensive compilations (like browsers).
