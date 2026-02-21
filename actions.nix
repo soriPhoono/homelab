@@ -88,7 +88,7 @@
                 uses = "actions/checkout@v4";
               }
               {
-                uses = "jlumbroso/free-disk-space@main";
+                uses = "jlumbroso/free-disk-space@v1.3.1";
                 with_ = {
                   tool-cache = true;
                   android = true;
