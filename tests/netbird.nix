@@ -12,15 +12,19 @@
     modules = [
       ../modules/nixos/core/networking/netbird.nix
       {
-        core.networking.netbird.enable = true;
-        # Mock services.netbird options
-        options.services.netbird.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
+        # Define mock options explicitly
+        options = {
+          services.netbird.enable = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+          };
+          networking.firewall.checkReversePath = lib.mkOption {
+            type = lib.types.anything;
+          };
         };
-        # Mock networking.firewall options
-        options.networking.firewall.checkReversePath = lib.mkOption {
-          type = lib.types.anything;
+
+        config = {
+          core.networking.netbird.enable = true;
         };
       }
     ];
