@@ -53,12 +53,21 @@
       }
     },
     "lsp-nix": {
-      "command": "npx",
+      "command": "docker",
       "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        ".:/workspace",
+        "-w",
+        "/workspace",
+        "node:lts",
+        "npx",
         "-y",
         "@isaacphi/mcp-language-server",
         "--workspace",
-        ".",
+        "/workspace",
         "--lsp",
         "nil"
       ]
@@ -77,23 +86,44 @@
       ]
     },
     "fetch": {
-      "command": "npx",
+      "command": "docker",
       "args": [
+        "run",
+        "--rm",
+        "-i",
+        "node:lts",
+        "npx",
         "-y",
         "@modelcontextprotocol/server-fetch"
       ]
     },
     "filesystem": {
-      "command": "npx",
+      "command": "docker",
       "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        ".:/data",
+        "node:lts",
+        "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "."
+        "/data"
       ]
     },
     "git": {
-      "command": "npx",
+      "command": "docker",
       "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        ".:/repo",
+        "-w",
+        "/repo",
+        "node:lts",
+        "npx",
         "-y",
         "@modelcontextprotocol/server-git",
         "."
@@ -109,8 +139,13 @@
       ]
     },
     "sequential-thinking": {
-      "command": "npx",
+      "command": "docker",
       "args": [
+        "run",
+        "--rm",
+        "-i",
+        "node:lts",
+        "npx",
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ]
