@@ -11,18 +11,20 @@
     specialArgs = { inherit pkgs; };
     modules = [
       ../modules/nixos/core/networking/netbird.nix
-      {
-        # Define mock options explicitly
-        options = {
-          services.netbird.enable = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-          };
-          networking.firewall.checkReversePath = lib.mkOption {
-            type = lib.types.anything;
-          };
-        };
 
+      # Mock options separately
+      {
+        options.services.netbird.enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+        };
+        options.networking.firewall.checkReversePath = lib.mkOption {
+          type = lib.types.anything;
+        };
+      }
+
+      # Module configuration separately
+      {
         config = {
           core.networking.netbird.enable = true;
         };
