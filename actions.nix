@@ -69,7 +69,7 @@
         fix-formatting = {
           name = "Fix Formatting";
 
-          on = "pull_request";
+          on = ["pull_request"];
 
           permissions = {
             contents = "write";
