@@ -22,7 +22,7 @@ in {
       imports = let
         base = self + "/homes/${user.userName}";
         droid = self + "/homes/${user.userName}@droid";
-      in (lib.optional (builtins.pathExists base) base) ++ (lib.optional (builtins.pathExists droid) droid)
+      in (lib.optional (builtins.pathExists base) base) ++ (lib.optional (builtins.pathExists droid) droid);
     };
   };
 }
