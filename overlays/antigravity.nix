@@ -1,4 +1,4 @@
-_: final: prev: {
+_: _final: prev: {
   antigravity = prev.stdenv.mkDerivation rec {
     pname = "antigravity";
     version = "1.18.4";
@@ -88,7 +88,7 @@ _: final: prev: {
       description = "Antigravity Editor";
       homepage = "https://antigravity.google/";
       license = licenses.unfree;
-      platforms = [ "x86_64-linux" ];
+      platforms = ["x86_64-linux"];
       mainProgram = "antigravity";
     };
   };
