@@ -15,7 +15,6 @@ jobs:
       - name: Format code
         run: nix fmt
       - name: Commit and push
-        if: github.event_name == 'pull_request'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
