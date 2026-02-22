@@ -13,5 +13,6 @@
     };
 
     actionlint.enable = true;
+    action-validator.enable = true;
   };
 }
