@@ -54,13 +54,18 @@ with lib; {
 
     programs.ssh = {
       enable = true;
-      enableDefaultConfig = false;
+      extraConfig = ''
+        AddKeysToAgent yes
+      '';
 
-      matchBlocks."*" = {
-        addKeysToAgent = "yes";
-        identityFile =
-          lib.optional (config.core.ssh.publicKey != null) "${config.home.homeDirectory}/.ssh/id_ed25519"
-          ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") config.core.ssh.extraSSHKeys);
+      matchBlocks = {
+        "*" = {
+          identityFile = [
+            "~/.ssh/id_ed25519"
+            "~/.ssh/school_key"
+            "~/.ssh/work_key"
+          ];
+        };
       };
     };
 
