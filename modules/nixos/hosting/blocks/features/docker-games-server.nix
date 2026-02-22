@@ -7,7 +7,10 @@
   cfg = config.hosting.blocks.features.docker-games-server;
 
   # Determine hosting backend
-  backend = config.hosting.blocks.backends.type;
+  backend =
+    if config.hosting.blocks.backends.podman.enable
+    then "podman"
+    else "docker";
   isPodman = backend == "podman";
   socketPath =
     if isPodman

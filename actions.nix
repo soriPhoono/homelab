@@ -48,20 +48,56 @@
 
           on = ["push" "pull_request"];
 
-          jobs.checks = {
-            runsOn = "ubuntu-latest";
-            steps = [
-              {
-                uses = "actions/checkout@v4";
-              }
-              {
-                uses = "DeterminateSystems/nix-installer-action@main";
-              }
-              {
-                name = "Run flake checks";
-                run = "nix flake check --all-systems";
-              }
-            ];
+          permissions = {
+            contents = "write";
+          };
+
+          jobs = {
+            fmt = {
+              runsOn = "ubuntu-latest";
+              steps = [
+                {
+                  uses = "actions/checkout@v4";
+                  with_ = {
+                    ref = "\${{ github.head_ref || github.ref }}";
+                  };
+                }
+                {
+                  uses = "DeterminateSystems/nix-installer-action@main";
+                }
+                {
+                  name = "Format code";
+                  run = "nix fmt";
+                }
+                {
+                  name = "Commit and push";
+                  if = "github.event_name == 'pull_request'";
+                  run = ''
+                    git config --global user.name "github-actions[bot]"
+                    git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                    git commit -am "style: format code with nix fmt" || echo "No changes to commit"
+                    git push
+                  '';
+                }
+              ];
+            };
+
+            checks = {
+              runsOn = "ubuntu-latest";
+              needs = "fmt";
+              steps = [
+                {
+                  uses = "actions/checkout@v4";
+                }
+                {
+                  uses = "DeterminateSystems/nix-installer-action@main";
+                }
+                {
+                  name = "Run flake checks";
+                  run = "nix flake check --all-systems";
+                }
+              ];
+            };
           };
         };
 

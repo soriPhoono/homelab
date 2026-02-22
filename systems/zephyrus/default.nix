@@ -85,8 +85,7 @@
 
   hosting.blocks = {
     backends = {
-      type = "docker";
-      nvidiaSupport = true;
+      docker.enable = true;
     };
     features.docker-games-server = {
       enable = true;
