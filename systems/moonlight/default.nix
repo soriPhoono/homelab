@@ -36,7 +36,7 @@
 
   hosting = {
     enable = true;
-    blocks.backends.type = "docker";
+    blocks.backends.docker.enable = true;
     blocks.features.docker-games-server = {
       enable = true;
       openFirewall = true;

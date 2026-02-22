@@ -16,10 +16,7 @@
     development = {
       editors.neovim.enable = true;
       agents = {
-        gemini = {
-          enable = true;
-          overrideEditor = false; # Don't pull in VSCode/Antigravity on Droid
-        };
+        gemini.enable = true;
         claude.enable = true;
       };
     };

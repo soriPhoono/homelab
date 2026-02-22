@@ -1,7 +1,6 @@
 {
   imports = [
-    ./backends
     ./features
-    ./reverse-proxy
+    ./backends
   ];
 }

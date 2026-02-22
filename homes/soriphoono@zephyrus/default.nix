@@ -35,13 +35,10 @@
     development = {
       editors = {
         neovim.enable = true;
-        vscode.enable = true;
+        antigravity.enable = true;
       };
       agents = {
-        gemini = {
-          enable = true;
-          overrideEditor = true;
-        };
+        gemini.enable = true;
         claude.enable = true;
       };
     };
