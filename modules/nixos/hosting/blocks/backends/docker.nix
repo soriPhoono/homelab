@@ -5,23 +5,21 @@
   ...
 }: let
   cfg = config.hosting.blocks.backends.docker;
-in
-  with lib; {
-    options.hosting.blocks.backends.docker = {
-      enable = mkEnableOption "docker backend";
+in with lib; {
+  options.hosting.blocks.backends.docker = {
+    enable = lib.mkEnableOption "docker backend";
 
-      extraSettings = mkOption {
-        type = types.attrsOf types.any;
-        default = {};
-        description = "Extra settings for docker backend";
-      };
+    extraSettings = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = {};
+      description = "Extra settings for docker backend";
     };
+  };
 
-    config = let
+  config = lib.mkIf cfg.enable (let
       invocation = pkgs.docker;
       serviceName = "docker-create-networks";
-    in
-      mkIf cfg.enable {
+    in {
         systemd.services =
           {
             "${serviceName}" = let
@@ -29,16 +27,16 @@ in
                 flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
               );
             in {
-              after = ["${cfg.type}.service"];
+              after = ["docker.service"];
               wantedBy = ["multi-user.target"];
               serviceConfig = {
                 Type = "oneshot";
                 ExecStart = "${pkgs.writeShellScriptBin "${serviceName}" ''
                   ${lib.optionalString (networks != []) ''
-                    EXISTING_NETWORKS=$(${invocation}/bin/${cfg.type} network ls --format '{{.Name}}')
+                    EXISTING_NETWORKS=$(${invocation}/bin/docker network ls --format '{{.Name}}')
                     ${lib.concatStringsSep "\n" (lib.map (network: ''
                         if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${network}"; then
-                          ${invocation}/bin/${cfg.type} network create "${network}"
+                          ${invocation}/bin/docker network create "${network}"
                         fi
                       '')
                       networks)}
@@ -48,7 +46,7 @@ in
             };
           }
           // (lib.listToAttrs (lib.mapAttrsToList (name: _: {
-              name = "${cfg.type}-${name}";
+              name = "docker-${name}";
               value = {
                 after = ["${serviceName}.service"];
                 bindsTo = ["${serviceName}.service"];
@@ -67,5 +65,5 @@ in
             extraGroups = ["docker"];
           })
           (lib.filterAttrs (_name: user: user.admin) config.core.users);
-      };
-  }
+      });
+}
