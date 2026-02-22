@@ -32,10 +32,6 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    github-actions-nix = {
-      url = "github:synapdeck/github-actions-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     nix-on-droid = {
       url = "github:nix-community/nix-on-droid/master";
@@ -262,7 +258,6 @@
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
-        github-actions-nix.flakeModule
       ];
 
       # Supported systems for devShells/checks
@@ -290,7 +285,6 @@
           inherit lib pkgs;
           config = {
             inherit (config) pre-commit agenix-shell;
-            inherit (config.githubActions) workflowFiles;
           };
         };
 
