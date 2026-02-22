@@ -11,7 +11,7 @@ in
       enable = mkEnableOption "docker backend";
 
       extraSettings = mkOption {
-        type = types.attrsOf types.any;
+        type = types.attrs;
         default = {};
         description = "Extra settings for docker backend";
       };
