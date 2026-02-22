@@ -5,23 +5,21 @@
   ...
 }: let
   cfg = config.hosting.blocks.backends.docker;
-in
-  with lib; {
-    options.hosting.blocks.backends.docker = {
-      enable = mkEnableOption "docker backend";
+in {
+  options.hosting.blocks.backends.docker = {
+    enable = lib.mkEnableOption "docker backend";
 
-      extraSettings = mkOption {
-        type = types.attrs;
-        default = {};
-        description = "Extra settings for docker backend";
-      };
+    extraSettings = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = {};
+      description = "Extra settings for docker backend";
     };
+  };
 
-    config = let
+  config = lib.mkIf cfg.enable (let
       invocation = pkgs.docker;
       serviceName = "docker-create-networks";
-    in
-      mkIf cfg.enable {
+    in {
         systemd.services =
           {
             "${serviceName}" = let
@@ -67,5 +65,5 @@ in
             extraGroups = ["docker"];
           })
           (lib.filterAttrs (_name: user: user.admin) config.core.users);
-      };
-  }
+      });
+}
