@@ -2,31 +2,32 @@
   lib,
   config,
   ...
-}:
-with lib; {
-  options.core.ssh = {
-    publicKey = lib.mkOption {
-      type = with lib.types; nullOr str;
-      default = null;
-      description = "Public SSH key to use for authentication";
-    };
+}: let
+  cfg = config.core.ssh;
+in
+  with lib; {
+    options.core.ssh = {
+      publicKey = lib.mkOption {
+        type = with lib.types; nullOr str;
+        default = null;
+        description = "Public SSH key to use for authentication";
+      };
 
-    extraSSHKeys = mkOption {
-      type = with types; attrsOf str;
-      description = ''
-        An attrset of path on disk/secret in vault containing
-        the private key for this ssh key, will also be appended
-        with .pub for public key
-      '';
-      default = {};
-      example = {
-        "school" = "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+      extraSSHKeys = mkOption {
+        type = with types; attrsOf str;
+        description = ''
+          An attrset of path on disk/secret in vault containing
+          the private key for this ssh key, will also be appended
+          with .pub for public key
+        '';
+        default = {};
+        example = {
+          "school" = "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        };
       };
     };
-  };
 
-  config = {
-    home.file = let
+    config = let
       extraKeys =
         lib.mapAttrs' (name: contents: {
           name = ".ssh/${name}_key.pub";
@@ -36,10 +37,6 @@ with lib; {
       primaryKey = lib.optionalAttrs (config.core.ssh.publicKey != null) {
         ".ssh/id_ed25519.pub".text = config.core.ssh.publicKey;
       };
-    in
-      primaryKey // extraKeys;
-
-    sops.secrets = lib.mkIf config.core.secrets.enable (let
       extraSecrets =
         lib.mapAttrs' (name: _: {
           name = "ssh/${name}_key";
@@ -49,26 +46,28 @@ with lib; {
       primarySecret = lib.optionalAttrs (config.core.ssh.publicKey != null) {
         "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
       };
-    in
-      primarySecret // extraSecrets);
+    in {
+      home.file = lib.mkIf config.core.secrets.enable (primaryKey // extraKeys);
 
-    programs.ssh = {
-      enable = true;
-      extraConfig = ''
-        AddKeysToAgent yes
-      '';
+      sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
 
-      matchBlocks = {
-        "*" = {
-          identityFile = [
-            "~/.ssh/id_ed25519"
-            "~/.ssh/school_key"
-            "~/.ssh/work_key"
-          ];
+      programs.ssh = {
+        enable = true;
+        extraConfig = ''
+          AddKeysToAgent yes
+        '';
+
+        matchBlocks = {
+          "*" = {
+            identityFile =
+              [
+                "${config.home.homeDirectory}/.ssh/id_ed25519"
+              ]
+              ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") cfg.extraSSHKeys);
+          };
         };
       };
-    };
 
-    services.ssh-agent.enable = true;
-  };
-}
+      services.ssh-agent.enable = true;
+    };
+  }
