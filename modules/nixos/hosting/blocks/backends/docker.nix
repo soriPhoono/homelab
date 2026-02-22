@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.hosting.blocks.backends.docker;
-in with lib; {
+in {
   options.hosting.blocks.backends.docker = {
     enable = lib.mkEnableOption "docker backend";
 

@@ -42,6 +42,45 @@
           };
         };
 
+        # --- Fix Formatting ---
+        fix-formatting = {
+          name = "Fix Formatting";
+
+          on = ["pull_request"];
+
+          permissions = {
+            contents = "write";
+          };
+
+          jobs.fmt = {
+            runsOn = "ubuntu-latest";
+            steps = [
+              {
+                uses = "actions/checkout@v4";
+                with_ = {
+                  ref = "\${{ github.head_ref }}";
+                };
+              }
+              {
+                uses = "DeterminateSystems/nix-installer-action@main";
+              }
+              {
+                name = "Format code";
+                run = "nix fmt";
+              }
+              {
+                name = "Commit and push";
+                run = ''
+                  git config --global user.name "github-actions[bot]"
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                  git commit -am "style: format code with nix fmt" || echo "No changes to commit"
+                  git push
+                '';
+              }
+            ];
+          };
+        };
+
         # --- CI Checks ---
         ci = {
           name = "CI";
