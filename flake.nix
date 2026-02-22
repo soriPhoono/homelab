@@ -326,21 +326,14 @@
           };
         };
 
-        packages =
-          {
-            workflows = pkgs.runCommand "github-actions-workflows" {} ''
-              mkdir -p $out/.github/workflows
-              cp -r ${config.githubActions.workflowsDir}/* $out/.github/workflows/
-            '';
-          }
-          // (import ./pkgs {
-            inherit
-              inputs
-              lib
-              pkgs
-              self
-              ;
-          });
+        packages = import ./pkgs {
+          inherit
+            inputs
+            lib
+            pkgs
+            self
+            ;
+        };
 
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
