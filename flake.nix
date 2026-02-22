@@ -282,7 +282,7 @@
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
-            inherit (config) pre-commit;
+            inherit (config) pre-commit agenix-shell;
             inherit (config.githubActions) workflowFiles;
           };
         };

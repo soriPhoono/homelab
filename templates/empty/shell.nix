@@ -13,6 +13,7 @@ with pkgs;
 
     shellHook = ''
       ${config.pre-commit.shellHook}
+      source ${config.agenix-shell.installationScript}/bin/install-agenix-shell
 
       # Deploy gemini mcp servers to antigravity if `antigravity` is the current editor
       # Both VS Code and antigravity set TERM_PROGRAM=vscode, but antigravity's GIT_ASKPASS path
