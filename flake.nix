@@ -219,7 +219,7 @@
     in
       nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {inherit inputs self lib;};
+        extraSpecialArgs = {inherit inputs self lib; isDroid = true;};
         modules =
           droidModules
           ++ [
