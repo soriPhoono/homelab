@@ -28,6 +28,8 @@ _: final: prev: {
       glib
       gtk3
       libdrm
+      libsecret
+      libsoup_3
       libuuid
       libxkbcommon
       mesa
@@ -35,6 +37,7 @@ _: final: prev: {
       nss
       pango
       systemd
+      webkitgtk_4_1
       xorg.libX11
       xorg.libXcomposite
       xorg.libXcursor
@@ -47,6 +50,7 @@ _: final: prev: {
       xorg.libXScrnSaver
       xorg.libXtst
       xorg.libxcb
+      xorg.libxkbfile
       xorg.libxshmfence
     ];
 
@@ -71,7 +75,7 @@ _: final: prev: {
       ln -s $out/bin/antigravity $out/bin/code
 
       # Attempt to install desktop file if it exists in the standard location for electron apps
-      if [ -d $out/lib/antigravity/resources/app/resources/linux/code.desktop ]; then
+      if [ -f $out/lib/antigravity/resources/app/resources/linux/code.desktop ]; then
          mkdir -p $out/share/applications
          install -D $out/lib/antigravity/resources/app/resources/linux/code.desktop $out/share/applications/antigravity.desktop
          sed -i 's|Exec=.*|Exec=antigravity|' $out/share/applications/antigravity.desktop
