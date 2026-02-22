@@ -74,15 +74,19 @@ final: prev: {
       # Symlink for code compatibility
       ln -s $out/bin/antigravity $out/bin/code
 
-      # Install desktop file
-      if [ -f $out/lib/antigravity/resources/app/resources/linux/code.desktop ]; then
-         mkdir -p $out/share/applications
-         install -D $out/lib/antigravity/resources/app/resources/linux/code.desktop $out/share/applications/antigravity.desktop
-         sed -i "s|Exec=.*|Exec=$out/bin/antigravity %F|" $out/share/applications/antigravity.desktop
-         sed -i 's|Icon=.*|Icon=antigravity|' $out/share/applications/antigravity.desktop
-         sed -i 's|Name=.*|Name=Antigravity|' $out/share/applications/antigravity.desktop
-         sed -i 's|StartupWMClass=.*|StartupWMClass=antigravity|' $out/share/applications/antigravity.desktop
-      fi
+      # Create desktop file
+      mkdir -p $out/share/applications
+      cat > $out/share/applications/antigravity.desktop <<EOF
+      [Desktop Entry]
+      Name=Antigravity
+      Comment=Antigravity Editor
+      Exec=$out/bin/antigravity %F
+      Icon=antigravity
+      Type=Application
+      Categories=Development;TextEditor;
+      StartupWMClass=antigravity
+      MimeType=text/plain;inode/directory;
+      EOF
 
       # Install icon
       if [ -f $out/lib/antigravity/resources/app/resources/linux/code.png ]; then
