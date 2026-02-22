@@ -32,10 +32,6 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    github-actions-nix = {
-      url = "github:synapdeck/github-actions-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     nix-on-droid = {
       url = "github:nix-community/nix-on-droid/master";
@@ -259,8 +255,6 @@
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
-        github-actions-nix.flakeModule
-        ./actions.nix
       ];
 
       # Supported systems for devShells/checks
@@ -288,7 +282,6 @@
           inherit lib pkgs;
           config = {
             inherit (config) pre-commit agenix-shell;
-            inherit (config.githubActions) workflowFiles;
           };
         };
 
@@ -324,21 +317,14 @@
           };
         };
 
-        packages =
-          {
-            workflows = pkgs.runCommand "github-actions-workflows" {} ''
-              mkdir -p $out/.github/workflows
-              cp -r ${config.githubActions.workflowsDir}/* $out/.github/workflows/
-            '';
-          }
-          // (import ./pkgs {
-            inherit
-              inputs
-              lib
-              pkgs
-              self
-              ;
-          });
+        packages = import ./pkgs {
+          inherit
+            inputs
+            lib
+            pkgs
+            self
+            ;
+        };
 
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
