@@ -16,18 +16,12 @@
     actionlint.enable = true;
 
     action-validator = {
+    action-validator = {
       enable = true;
       name = "action-validator";
       description = "Validate GitHub Action workflows";
-      files = "^.github/workflows/";
-      entry = let
-        script = pkgs.writeShellScript "action-validator-wrapper" ''
-          set -e
-          for file in "$@"; do
-            ${pkgs.action-validator}/bin/action-validator "$file"
-          done
-        '';
-      in "${script}";
+      files = "^.github/workflows/.*\\.ya?ml$";
+      entry = "${pkgs.action-validator}/bin/action-validator";
+      require_serial = true;
     };
-  };
 }
