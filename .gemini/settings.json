@@ -52,6 +52,44 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       }
     },
+    "terraform": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "TFE_ADDRESS=<<PASTE_TFE_ADDRESS_HERE>>",
+        "-e",
+        "TFE_TOKEN=<<PASTE_TFE_TOKEN_HERE>>",
+        "hashicorp/terraform-mcp-server:0.4.0"
+      ]
+    },
+    "dockerhub": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "HUB_PAT_TOKEN",
+        "mcp/dockerhub",
+        "--transport=stdio",
+        "--username={{dockerhub.username}}"
+      ],
+      "env": {
+        "HUB_PAT_TOKEN": "your_hub_pat_token"
+      }
+    },
+    "nixos": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "ghcr.io/utensils/mcp-nixos"
+      ]
+    },
     "ast-grep": {
       "command": "docker",
       "args": [
@@ -78,15 +116,6 @@
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "/data"
-      ]
-    },
-    "nixos": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "ghcr.io/utensils/mcp-nixos"
       ]
     },
     "sequential-thinking": {
