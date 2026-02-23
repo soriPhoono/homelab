@@ -6,3 +6,9 @@ result
 
 .gemini/
 gha-creds-*.json
+
+.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate*
+
+plan.out

@@ -1,3 +1,3 @@
 {inputs, ...}: _final: prev: {
-  inherit (inputs.nixpkgs.legacyPackages.${prev.stdenv.hostPlatform.system}) antigravity;
+  antigravity = inputs.antigravity-nix.packages.${prev.stdenv.hostPlatform.system}.default;
 }

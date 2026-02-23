@@ -96,6 +96,13 @@ in {
     };
 
   config = lib.mkIf (cfg.users != {}) {
+    assertions =
+      lib.mapAttrsToList (name: user: {
+        assertion = user.hashedPassword != null || user.publicKey != null;
+        message = "At least one authentication method must be present for user ${name}.";
+      })
+      cfg.users;
+
     programs.fish.enable = lib.any (user: user.shell == pkgs.fish) (builtins.attrValues cfg.users);
 
     services.logind.settings.Login = {

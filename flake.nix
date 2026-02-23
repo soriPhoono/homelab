@@ -4,7 +4,6 @@
   inputs = {
     systems.url = "github:nix-systems/default";
 
-    nixpkgs.url = "github:soriphoono/nixpkgs/nixpkgs-unstable";
     nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.946843";
     nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
 
@@ -20,77 +19,85 @@
 
     agenix = {
       url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
     agenix-shell = {
       url = "github:aciceri/agenix-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
     git-hooks-nix = {
       url = "github:cachix/git-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
+    };
+    github-actions-nix = {
+      url = "github:synapdeck/github-actions-nix";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     nix-on-droid = {
       url = "github:nix-community/nix-on-droid/master";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
       inputs.home-manager.follows = "home-manager";
     };
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
 
     disko = {
       url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v0.4.2";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     comin = {
       url = "github:nlewo/comin";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     nur = {
       url = "github:nix-community/NUR";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
 
     nvf = {
       url = "github:notashelf/nvf";
       inputs = {
-        nixpkgs.follows = "nixpkgs";
+        nixpkgs.follows = "nixpkgs-weekly";
       };
+    };
+
+    antigravity-nix = {
+      url = "github:jacopone/antigravity-nix";
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
   };
 
   outputs = inputs @ {
     self,
-    nixpkgs,
     nixpkgs-weekly,
     nixpkgs-droid,
     flake-parts,
@@ -100,7 +107,7 @@
     ...
   }: let
     # Extend lib with our custom functions
-    lib = nixpkgs.lib.extend (final: prev:
+    lib = nixpkgs-weekly.lib.extend (final: prev:
       (import ./lib/default.nix {inherit inputs;}) final prev
       // {
         inherit (inputs.home-manager.lib) hm;
@@ -258,6 +265,7 @@
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
+        github-actions-nix.flakeModule
       ];
 
       # Supported systems for devShells/checks
@@ -271,7 +279,7 @@
         system,
         ...
       }: {
-        _module.args.pkgs = import nixpkgs {
+        _module.args.pkgs = import nixpkgs-weekly {
           inherit system;
           overlays = [
             (_: _: {
@@ -281,10 +289,12 @@
           config.allowUnfree = true;
         };
 
+        githubActions = import ./actions.nix {inherit self lib;};
+
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
-            inherit (config) pre-commit agenix-shell;
+            inherit (config) pre-commit agenix-shell githubActions;
           };
         };
 
@@ -340,7 +350,7 @@
         homeModules = import ./modules/home {inherit lib self;};
 
         # Overlay Exports
-        overlays = with inputs; ((import ./overlays {inherit lib self;})
+        overlays = with inputs; ((import ./overlays {inherit self inputs lib;})
           // {
             nur = nur.overlays.default;
           });
