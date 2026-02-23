@@ -847,6 +847,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-droid": {
+      "locked": {
+        "lastModified": 1769018530,
+        "narHash": "sha256-MJ27Cy2NtBEV5tsK+YraYr2g851f3Fl1LpNHDzDX15c=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "88d3861acdd3d2f0e361767018218e51810df8a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "88d3861",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-for-bootstrap": {
       "locked": {
         "lastModified": 1720244366,
@@ -925,20 +941,18 @@
         "type": "github"
       }
     },
-    "nixpkgs-unstable-droid": {
+    "nixpkgs-weekly": {
       "locked": {
-        "lastModified": 1769018530,
-        "narHash": "sha256-MJ27Cy2NtBEV5tsK+YraYr2g851f3Fl1LpNHDzDX15c=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "88d3861acdd3d2f0e361767018218e51810df8a1",
-        "type": "github"
+        "lastModified": 1771177547,
+        "narHash": "sha256-trTtk3WTOHz7hSw89xIIvahkgoFJYQ0G43IlqprFoMA=",
+        "rev": "ac055f38c798b0d87695240c7b761b82fc7e5bc2",
+        "revCount": 946843,
+        "type": "tarball",
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.946843%2Brev-ac055f38c798b0d87695240c7b761b82fc7e5bc2/019c6a25-fd20-733f-936e-6487e2957fe4/source.tar.gz"
       },
       "original": {
-        "owner": "NixOS",
-        "ref": "88d3861",
-        "repo": "nixpkgs",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.946843"
       }
     },
     "nixpkgs_2": {
@@ -1113,7 +1127,8 @@
         "nix-on-droid": "nix-on-droid",
         "nixos-facter-modules": "nixos-facter-modules",
         "nixpkgs": "nixpkgs_3",
-        "nixpkgs-unstable-droid": "nixpkgs-unstable-droid",
+        "nixpkgs-droid": "nixpkgs-droid",
+        "nixpkgs-weekly": "nixpkgs-weekly",
         "nixtest": "nixtest",
         "nur": "nur",
         "nvf": "nvf",
