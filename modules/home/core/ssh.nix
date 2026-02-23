@@ -47,7 +47,22 @@ in
         "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
       };
     in {
-      home.file = lib.mkIf config.core.secrets.enable (primaryKey // extraKeys);
+      home = {
+        file = lib.mkIf config.core.secrets.enable (primaryKey // extraKeys);
+
+        activation = {
+          copySSHConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
+            # By default home-manager creates a symlink to a Nix store file owned by nobody.
+            # This breaks openSSH's strict permission requirements.
+            if [ -L ${config.home.homeDirectory}/.ssh/config ]; then
+              real_config=$(readlink -f ${config.home.homeDirectory}/.ssh/config)
+              rm ${config.home.homeDirectory}/.ssh/config
+              cp $real_config ${config.home.homeDirectory}/.ssh/config
+              chmod 0600 ${config.home.homeDirectory}/.ssh/config
+            fi
+          '';
+        };
+      };
 
       sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
 
