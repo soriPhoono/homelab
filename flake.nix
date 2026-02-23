@@ -3,9 +3,11 @@
 
   inputs = {
     systems.url = "github:nix-systems/default";
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-unstable-droid.url = "github:NixOS/nixpkgs/88d3861";
+
+    nixpkgs.url = "github:soriphoono/nixpkgs/nixos-unstable";
+    nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.946843";
+    nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
+
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
       url = "github:NixOS/flake-compat";
@@ -56,6 +58,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -82,17 +86,13 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
-
-    antigravity-nix = {
-      url = "github:jacopone/antigravity-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
-    nixpkgs-unstable-droid,
+    nixpkgs-weekly,
+    nixpkgs-droid,
     flake-parts,
     agenix,
     nixtest,
@@ -109,7 +109,7 @@
     # --- System Support & Package Cache --- #
     supportedSystems = import inputs.systems;
     pkgsFor = lib.genAttrs supportedSystems (system:
-      import nixpkgs {
+      import nixpkgs-weekly {
         inherit system;
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;
@@ -207,7 +207,7 @@
     # Nix-on-Droid Builder
     mkDroid = name: path: let
       systemArch = "aarch64-linux";
-      pkgs = import nixpkgs-unstable-droid {
+      pkgs = import nixpkgs-droid {
         system = systemArch;
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;

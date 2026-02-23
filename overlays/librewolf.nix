@@ -5,7 +5,7 @@ _: final: prev: {
 
     src = prev.fetchurl {
       url = "https://codeberg.org/api/packages/librewolf/generic/librewolf/${version}/librewolf-${version}-linux-x86_64-package.tar.xz";
-      hash = "sha256-zqWq8FgdSLWAaoWvmCnIc9FlTmQtcCgLoK9XuXsWS4M=";
+      hash = "sha256-BBrZUlbA569mktjDMayR4Nb05ilhbsANKZ6yY2jZZ34=";
     };
 
     # The .tar.xz from Codeberg contains the exploded browser directory.
