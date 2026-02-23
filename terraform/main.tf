@@ -62,6 +62,12 @@ resource "proxmox_virtual_environment_container" "nixos_lxc" {
   node_name = var.proxmox_node_name
   vm_id     = each.value.vmid
 
+  unprivileged = true
+
+  features {
+    nesting = true
+  }
+
   tags = var.lxc_tags
 
   initialization {

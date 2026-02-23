@@ -5,6 +5,7 @@
     systems.url = "github:nix-systems/default";
 
     nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.946843";
+    nixpkgs-master.url = "github:NixOS/nixpkgs";
     nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
 
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -89,11 +90,6 @@
         nixpkgs.follows = "nixpkgs-weekly";
       };
     };
-
-    antigravity-nix = {
-      url = "github:jacopone/antigravity-nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
-    };
   };
 
   outputs = inputs @ {
@@ -102,7 +98,6 @@
     nixpkgs-droid,
     flake-parts,
     agenix,
-    nixtest,
     nix-on-droid,
     ...
   }: let
