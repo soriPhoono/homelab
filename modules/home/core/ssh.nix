@@ -51,6 +51,11 @@ in
         file = lib.mkIf config.core.secrets.enable (primaryKey // extraKeys);
 
         activation = {
+          removeSSHConfig = lib.hm.dag.entryBefore ["linkGeneration"] ''
+            # Remove the existing config so Home Manager can create a fresh symlink
+            rm -f ${config.home.homeDirectory}/.ssh/config
+          '';
+
           copySSHConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
             # By default home-manager creates a symlink to a Nix store file owned by nobody.
             # This breaks openSSH's strict permission requirements.
@@ -66,6 +71,12 @@ in
 
       sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
 
+      home.sessionVariables = {
+        SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+        SSH_ASKPASS = "ksshaskpass";
+        GIT_ASKPASS = "ksshaskpass";
+      };
+
       programs.ssh = {
         enable = true;
 
@@ -80,7 +91,7 @@ in
               ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") cfg.extraSSHKeys);
 
             forwardAgent = false;
-            addKeysToAgent = "confirm 30m";
+            addKeysToAgent = "yes";
             compression = false;
             serverAliveInterval = 0;
             serverAliveCountMax = 3;
@@ -94,7 +105,7 @@ in
       };
 
       services.ssh-agent = {
-        enable = true;
+        enable = false;
       };
     };
   }

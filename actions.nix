@@ -94,7 +94,7 @@
             name = "build-droid-${name}";
             value = {
               needs = ["fmt"];
-              runsOn = "ubuntu-latest";
+              runsOn = "ubuntu-24.04-arm";
               steps = [
                 {
                   name = "Checkout code";
