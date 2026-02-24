@@ -37,7 +37,7 @@
     };
     development = {
       terminal = {
-        ghostty.enable = true;
+        warp.enable = true;
       };
       editors = {
         neovim.enable = true;
@@ -45,7 +45,9 @@
       };
       agents = {
         gemini.enable = true;
-        claude.enable = true;
+      };
+      knowledge-management = {
+        obsidian.enable = true;
       };
     };
   };

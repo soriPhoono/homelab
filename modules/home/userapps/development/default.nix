@@ -3,6 +3,7 @@
     ./agents
     ./editors
     ./terminal
+    ./knowledge-management
   ];
 
   config = {
