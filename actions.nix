@@ -106,7 +106,7 @@
                 }
                 {
                   name = "Build";
-                  run = "nix build .#nixOnDroidConfigurations.${name}.activationPackage";
+                  run = "nix build --impure .#nixOnDroidConfigurations.${name}.activationPackage";
                 }
               ];
             };
