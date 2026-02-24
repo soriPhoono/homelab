@@ -18,6 +18,10 @@ in
     };
 
     config = mkIf cfg.enable {
+      home.sessionVariables = {
+        PATH = "$PATH:${config.home.homeDirectory}/.npm";
+      };
+
       programs = {
         npm.enable = true;
         uv.enable = true;
