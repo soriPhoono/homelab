@@ -152,6 +152,7 @@
       {
         home-manager = {
           useGlobalPkgs = true;
+          useUserPackages = true;
           startAsUserService = true;
           extraSpecialArgs = {
             inherit inputs self lib;

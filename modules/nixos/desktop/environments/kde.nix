@@ -35,12 +35,5 @@ in
       services = {
         desktopManager.plasma6.enable = true;
       };
-
-      home-manager.users =
-        lib.mapAttrs
-        (_: _: {
-          userapps.development.terminal.ghostty.enable = true;
-        })
-        config.core.users;
     };
   }

@@ -133,5 +133,34 @@ in {
       # ── On-access scanner (clamonacc) ─────────────────────────────────────
       clamonacc.enable = true;
     };
+
+    # ── Directory creation for logging, PIDs, and sockets ─────────────────
+    systemd = {
+      tmpfiles.rules = [
+        "d /var/log/clamav 0750 clamav clamav -"
+        "d /run/clamav 0755 clamav clamav -"
+        "d /var/lib/clamav 0755 clamav clamav -"
+      ];
+
+      services = {
+        clamav-daemon.serviceConfig = {
+          RuntimeDirectory = "clamav";
+          RuntimeDirectoryMode = "0755";
+          LogsDirectory = "clamav";
+          LogsDirectoryMode = "0750";
+          StateDirectory = "clamav";
+          StateDirectoryMode = "0755";
+        };
+
+        clamav-freshclam.serviceConfig = {
+          RuntimeDirectory = "clamav";
+          RuntimeDirectoryMode = "0755";
+          LogsDirectory = "clamav";
+          LogsDirectoryMode = "0750";
+          StateDirectory = "clamav";
+          StateDirectoryMode = "0755";
+        };
+      };
+    };
   };
 }

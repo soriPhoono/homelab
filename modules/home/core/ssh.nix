@@ -71,10 +71,6 @@ in
 
         enableDefaultConfig = false;
 
-        extraConfig = ''
-          AddKeysToAgent yes
-        '';
-
         matchBlocks = {
           "*" = {
             identityFile =
@@ -84,7 +80,7 @@ in
               ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") cfg.extraSSHKeys);
 
             forwardAgent = false;
-            addKeysToAgent = "no";
+            addKeysToAgent = "confirm 30m";
             compression = false;
             serverAliveInterval = 0;
             serverAliveCountMax = 3;
@@ -97,6 +93,8 @@ in
         };
       };
 
-      services.ssh-agent.enable = true;
+      services.ssh-agent = {
+        enable = true;
+      };
     };
   }

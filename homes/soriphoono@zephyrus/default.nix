@@ -32,7 +32,13 @@
       chrome.enable = true;
       librewolf.enable = true;
     };
+    communication = {
+      discord.enable = true;
+    };
     development = {
+      terminal = {
+        ghostty.enable = true;
+      };
       editors = {
         neovim.enable = true;
         antigravity.enable = true;
