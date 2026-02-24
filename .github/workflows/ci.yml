@@ -11,7 +11,7 @@ jobs:
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Build
-        run: nix build .#droidConfigurations.soriphoono.activationPackage
+        run: nix build .#nixOnDroidConfigurations.soriphoono.activationPackage
   build-home-soriphoono:
     needs:
       - fmt
