@@ -9,6 +9,7 @@
   config = {
     programs = {
       npm.enable = true;
+      uv.enable = true;
     };
   };
 }

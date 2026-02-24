@@ -37,7 +37,7 @@
     };
     development = {
       terminal = {
-        warp.enable = true;
+        ghostty.enable = true;
       };
       editors = {
         neovim.enable = true;
