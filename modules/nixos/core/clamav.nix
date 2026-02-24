@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 with lib; let
@@ -61,6 +62,14 @@ in {
         Whether clamonacc blocks file access until scanning completes.
         Set to true for stricter security (may impact performance).
       '';
+    };
+
+    desktopNotifications = {
+      enable =
+        (mkEnableOption "desktop notifications for ClamAV events")
+        // {
+          default = true;
+        };
     };
   };
 
@@ -134,7 +143,7 @@ in {
       clamonacc.enable = true;
     };
 
-    # ── Directory creation for logging, PIDs, and sockets ─────────────────
+    # ── Systemd Configuration (Logging, PIDs, Sockets, and Notifications) ──
     systemd = {
       tmpfiles.rules = [
         "d /var/log/clamav 0750 clamav clamav -"
@@ -142,14 +151,34 @@ in {
         "d /var/lib/clamav 0755 clamav clamav -"
       ];
 
-      services = {
-        clamav-daemon.serviceConfig = {
-          RuntimeDirectory = "clamav";
-          RuntimeDirectoryMode = "0755";
-          LogsDirectory = "clamav";
-          LogsDirectoryMode = "0750";
-          StateDirectory = "clamav";
-          StateDirectoryMode = "0755";
+      services = let
+        # Common notification function for reuse
+        sendNotify = title: msg: icon: urgency: ''
+          for SESSION in $(/run/current-system/sw/bin/loginctl list-sessions --no-legend | awk '{print $1}'); do
+            UID_VAL=$(/run/current-system/sw/bin/loginctl show-session $SESSION -p User --value)
+            if [ -S "/run/user/$UID_VAL/bus" ]; then
+              /run/current-system/sw/bin/sudo -u "#$UID_VAL" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID_VAL/bus" \
+                ${pkgs.libnotify}/bin/notify-send \
+                --icon=${icon} \
+                --urgency=${urgency} \
+                "${title}" "${msg}"
+            fi
+          done
+        '';
+      in {
+        clamav-daemon = {
+          serviceConfig =
+            {
+              RuntimeDirectory = "clamav";
+              RuntimeDirectoryMode = "0755";
+              LogsDirectory = "clamav";
+              LogsDirectoryMode = "0750";
+              StateDirectory = "clamav";
+              StateDirectoryMode = "0755";
+            }
+            // (lib.optionalAttrs cfg.desktopNotifications.enable {
+              PassEnvironment = "DBUS_SESSION_BUS_ADDRESS";
+            });
         };
 
         clamav-freshclam.serviceConfig = {
@@ -160,7 +189,49 @@ in {
           StateDirectory = "clamav";
           StateDirectoryMode = "0755";
         };
+
+        clamav-scanner = mkIf cfg.desktopNotifications.enable {
+          serviceConfig = {
+            ExecStartPre = [
+              "+${pkgs.writeShellScript "clamav-scan-start" (sendNotify "ClamAV Scan" "Antivirus scan started." "security-high" "normal")}"
+            ];
+            ExecStartPost = [
+              "+${pkgs.writeShellScript "clamav-scan-complete" ''
+                if [ "$SERVICE_RESULT" = "success" ]; then
+                  MSG="Antivirus scan completed successfully."
+                  ICON="security-high"
+                else
+                  MSG="Antivirus scan failed: $SERVICE_RESULT ($EXIT_STATUS)"
+                  ICON="security-low"
+                fi
+                ${sendNotify "ClamAV Scan" "$MSG" "$ICON" "normal"}
+              ''}"
+            ];
+          };
+        };
       };
     };
+
+    # ── VirusEvent Script ─────────────────────────────────────────────────
+    services.clamav.daemon.settings.VirusEvent = mkIf cfg.desktopNotifications.enable (
+      let
+        # We need to escape %f and %v for the shell script but clamd provides them as arguments
+        virusScript = pkgs.writeShellScript "clamav-virus-event" ''
+          FILENAME="$1"
+          VIRUS="$2"
+
+          for SESSION in $(/run/current-system/sw/bin/loginctl list-sessions --no-legend | awk '{print $1}'); do
+            UID_VAL=$(/run/current-system/sw/bin/loginctl show-session $SESSION -p User --value)
+            if [ -S "/run/user/$UID_VAL/bus" ]; then
+              /run/current-system/sw/bin/sudo -u "#$UID_VAL" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID_VAL/bus" \
+                ${pkgs.libnotify}/bin/notify-send \
+                --urgency=critical \
+                --icon=security-low \
+                "ClamAV Threat Detected" "Virus found: $VIRUS\nFile: $FILENAME"
+            fi
+          done
+        '';
+      in "${virusScript} %f %v"
+    );
   };
 }
