@@ -44,7 +44,7 @@ jobs:
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Build
-        run: nix build .#nixosConfigurations.lg-laptop.options.system.build.toplevel
+        run: nix build .#nixosConfigurations.lg-laptop.config.system.build.toplevel
   build-nixos-moonlight:
     needs:
       - fmt
@@ -55,7 +55,7 @@ jobs:
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Build
-        run: nix build .#nixosConfigurations.moonlight.options.system.build.toplevel
+        run: nix build .#nixosConfigurations.moonlight.config.system.build.toplevel
   build-nixos-node:
     needs:
       - fmt
@@ -66,7 +66,7 @@ jobs:
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Build
-        run: nix build .#nixosConfigurations.node.options.system.build.toplevel
+        run: nix build .#nixosConfigurations.node.config.system.build.toplevel
   build-nixos-zephyrus:
     needs:
       - fmt
@@ -77,7 +77,7 @@ jobs:
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Build
-        run: nix build .#nixosConfigurations.zephyrus.options.system.build.toplevel
+        run: nix build .#nixosConfigurations.zephyrus.config.system.build.toplevel
   fmt:
     runs-on: ubuntu-latest
     steps:

@@ -62,7 +62,7 @@
                 }
                 {
                   name = "Build";
-                  run = "nix build .#nixosConfigurations.${name}.options.system.build.toplevel";
+                  run = "nix build .#nixosConfigurations.${name}.config.system.build.toplevel";
                 }
               ];
             };
