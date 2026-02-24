@@ -9,7 +9,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#droidConfigurations.soriphoono.activationPackage
   build-home-soriphoono:
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#homeConfigurations.soriphoono.activationPackage
   build-home-spookyskelly:
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#homeConfigurations.spookyskelly.activationPackage
   build-nixos-lg-laptop:
@@ -42,7 +42,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#nixosConfigurations.lg-laptop.options.system.build.toplevel
   build-nixos-moonlight:
@@ -53,7 +53,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#nixosConfigurations.moonlight.options.system.build.toplevel
   build-nixos-node:
@@ -64,7 +64,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#nixosConfigurations.node.options.system.build.toplevel
   build-nixos-zephyrus:
@@ -75,7 +75,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#nixosConfigurations.zephyrus.options.system.build.toplevel
   fmt:
@@ -86,7 +86,7 @@ jobs:
         with:
           ref: ${{github.head_ref || github.ref}}
       - name: Setup Nix
-        uses: DeterminateSystems/nix-action@v10
+        uses: DeterminateSystems/nix-installer-action@main
       - name: Format code
         run: nix fmt
       - name: Commit and push

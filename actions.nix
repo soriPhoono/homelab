@@ -28,7 +28,7 @@
               }
               {
                 name = "Setup Nix";
-                uses = "DeterminateSystems/nix-action@v10";
+                uses = "DeterminateSystems/nix-installer-action@main";
               }
               {
                 name = "Format code";
@@ -58,7 +58,7 @@
                 }
                 {
                   name = "Setup Nix";
-                  uses = "DeterminateSystems/nix-action@v10";
+                  uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
                   name = "Build";
@@ -80,7 +80,7 @@
                 }
                 {
                   name = "Setup Nix";
-                  uses = "DeterminateSystems/nix-action@v10";
+                  uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
                   name = "Build";
@@ -102,7 +102,7 @@
                 }
                 {
                   name = "Setup Nix";
-                  uses = "DeterminateSystems/nix-action@v10";
+                  uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
                   name = "Build";

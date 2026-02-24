@@ -1,15 +1,26 @@
 {
-  imports = [
-    ./agents
-    ./editors
-    ./terminal
-    ./knowledge-management
-  ];
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.userapps.development;
+in
+  with lib; {
+    imports = [
+      ./agents
+      ./editors
+      ./terminal
+      ./knowledge-management
+    ];
 
-  config = {
-    programs = {
-      npm.enable = true;
-      uv.enable = true;
+    options.userapps.development = {
+      enable = mkEnableOption "Development tools";
     };
-  };
-}
+
+    config = mkIf cfg.enable {
+      programs = {
+        npm.enable = true;
+        uv.enable = true;
+      };
+    };
+  }

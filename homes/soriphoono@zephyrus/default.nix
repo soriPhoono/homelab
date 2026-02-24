@@ -1,12 +1,5 @@
 {config, ...}: {
   core = {
-    secrets = {
-      enable = true;
-      defaultSopsFile = ./secrets.yaml;
-    };
-
-    shells.shellAliases.v = "nvim";
-
     git = {
       projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
       extraIdentities = {
@@ -36,19 +29,11 @@
       discord.enable = true;
     };
     development = {
-      terminal = {
-        ghostty.enable = true;
-      };
-      editors = {
-        neovim.enable = true;
-        antigravity.enable = true;
-      };
-      agents = {
-        gemini.enable = true;
-      };
-      knowledge-management = {
-        obsidian.enable = true;
-      };
+      enable = true;
+      terminal.ghostty.enable = true;
+      editors.antigravity.enable = true;
+      agents.gemini.enable = true;
+      knowledge-management.obsidian.enable = true;
     };
   };
 }
