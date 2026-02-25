@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "jnoortheen.nix-ide",
+    "mkhl.direnv",
+    "redhat.vscode-yaml",
+    "signageos.signageos-vscode-sops",
+    "ms-azuretools.vscode-docker",
+    "github.vscode-github-actions",
+    "eamodio.gitlens",
+    "editorconfig.editorconfig",
+    "tamasfe.even-better-toml",
+  ]
+}

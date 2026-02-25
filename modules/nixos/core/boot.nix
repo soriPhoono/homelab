@@ -39,6 +39,7 @@ in {
     boot = {
       kernelPackages = cfg.kernel.package;
       kernelParams = cfg.kernel.params;
+      kernel.sysctl."fs.inotify.max_user_watches" = 524288;
 
       initrd = {
         verbose = !cfg.plymouth.enable;
