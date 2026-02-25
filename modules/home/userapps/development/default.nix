@@ -18,9 +18,9 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.sessionVariables = {
-        PATH = "$PATH:${config.home.homeDirectory}/.npm";
-      };
+      home.sessionPath = [
+        "${config.home.homeDirectory}/.npm/bin"
+      ];
 
       programs = {
         npm.enable = true;
