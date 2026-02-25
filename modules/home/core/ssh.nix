@@ -60,48 +60,48 @@ in
           fi
         '';
       };
-    };
 
-    sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
+      sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
 
-    home.sessionVariables = {
-      home.sessionVariables = lib.mkIf config.services.ssh-agent.enable {
-        SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+      home.sessionVariables = {
+        home.sessionVariables = lib.mkIf config.services.ssh-agent.enable {
+          SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+          SSH_ASKPASS = "ksshaskpass";
+          GIT_ASKPASS = "ksshaskpass";
+        };
         SSH_ASKPASS = "ksshaskpass";
         GIT_ASKPASS = "ksshaskpass";
       };
-      SSH_ASKPASS = "ksshaskpass";
-      GIT_ASKPASS = "ksshaskpass";
-    };
 
-    programs.ssh = {
-      enable = true;
+      programs.ssh = {
+        enable = true;
 
-      enableDefaultConfig = false;
+        enableDefaultConfig = false;
 
-      matchBlocks = {
-        "*" = {
-          identityFile =
-            [
-              "${config.home.homeDirectory}/.ssh/id_ed25519"
-            ]
-            ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") cfg.extraSSHKeys);
+        matchBlocks = {
+          "*" = {
+            identityFile =
+              [
+                "${config.home.homeDirectory}/.ssh/id_ed25519"
+              ]
+              ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") cfg.extraSSHKeys);
 
-          forwardAgent = false;
-          addKeysToAgent = "yes";
-          compression = false;
-          serverAliveInterval = 0;
-          serverAliveCountMax = 3;
-          hashKnownHosts = false;
-          userKnownHostsFile = "~/.ssh/known_hosts";
-          controlMaster = "no";
-          controlPath = "~/.ssh/master-%r@%n:%p";
-          controlPersist = "no";
+            forwardAgent = false;
+            addKeysToAgent = "yes";
+            compression = false;
+            serverAliveInterval = 0;
+            serverAliveCountMax = 3;
+            hashKnownHosts = false;
+            userKnownHostsFile = "~/.ssh/known_hosts";
+            controlMaster = "no";
+            controlPath = "~/.ssh/master-%r@%n:%p";
+            controlPersist = "no";
+          };
         };
       };
-    };
 
-    services.ssh-agent = {
-      enable = !(osConfig.programs.ssh.startAgent or false);
+      services.ssh-agent = {
+        enable = !(osConfig.programs.ssh.startAgent or false);
+      };
     };
   }
