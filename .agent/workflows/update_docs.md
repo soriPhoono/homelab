@@ -1,34 +1,39 @@
 ______________________________________________________________________
 
+## description:
+
+______________________________________________________________________
+
 ## description: Update or create documentation for an existing component
 
 1. **Identify Component Type**:
    Determine what you are documenting:
 
+   - **Library** (Internal helper functions): `docs/Library.md`
    - **System** (Machine config): `docs/Systems/<hostname>.md`
+   - **Droid** (Android NixOnDroid config): `docs/Droids/<username>.md`
+   - **Environments** (System-manager controlled environment config): `docs/Environments/<hostname>.md`
+   - **Homes** (Home manager config): `docs/Homes/<username>.md`
    - **NixOS Module**: `docs/Modules/NixOS/<name>.md`
+   - **Droid Module**: `docs/Modules/Droid/<name>.md`
    - **Home Manager Module**: `docs/Modules/Home/<name>.md`
+   - **Overlays**: `docs/Overlays/<name>.md`
    - **Package**: `docs/Modules/Pkgs/<name>.md`
-   - **Architecture Decision**: `docs/Architecture/Decisions/<name>.md`
+   - **Templates**: `docs/Templates/<name>.md`
 
-1. **Read Template**:
-   Read the appropriate template to understand the structure.
-
-   - System: `docs/Templates/System.md`
-   - Module: `docs/Templates/Module.md`
-   - Decision: `docs/Templates/Decision.md`
-   - Note: `docs/Templates/Note.md`
+1. **Read Index**:
+   Read the appropriate index to understand the structure of the item you're working with.
 
    ```bash
-   cat docs/Templates/Module.md # Example
+   cat docs/<subpath>/00_index.md # Example
    ```
 
 1. **Create/Update File**:
-   Create the file in the correct directory. **Importantly**, use the template content as a base if creating a new file.
+   Create the file in the correct directory.
 
    ```bash
    # Example
-   cp docs/Templates/Module.md docs/Modules/NixOS/my-module.md
+   touch docs/<subpath>/<filename>.md
    ```
 
 1. **Populate Content**:

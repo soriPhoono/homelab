@@ -13,7 +13,9 @@ in
     };
 
     config = mkIf cfg.enable {
-      programs.gemini-cli.enable = true;
-      home.packages = mkIf cfg.enableJules [pkgs.jules-cli];
+      programs.gemini-cli = {
+        enable = true;
+        package = mkIf cfg.enableJules pkgs.gemini-cli-jules;
+      };
     };
   }

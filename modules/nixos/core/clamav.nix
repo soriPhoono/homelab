@@ -4,9 +4,9 @@
   ...
 }:
 with lib; let
-  cfg = config.homelab.services.clamav;
+  cfg = config.core.clamav;
 in {
-  options.homelab.services.clamav = {
+  options.core.clamav = {
     enable = mkEnableOption "ClamAV antivirus daemon, updater, scanner, fangfrisch, and on-access scanner";
 
     scanDirectories = mkOption {

@@ -28,3 +28,6 @@ ______________________________________________________________________
 
 1. Push changes to remote
    git push
+
+1. **Archive Collective Knowledge**:
+   Identify any new patterns, fixes, or research discovered during this task and archive them in the Obsidian vault `/home/soriphoono/Nextcloud/Notes/Home Lab` using the **Obsidian MCP server**.
