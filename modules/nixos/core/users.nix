@@ -2,12 +2,13 @@
   lib,
   pkgs,
   config,
-  osConfig ? config,
   self,
   hostName,
   ...
 }: let
   cfg = config.core;
+
+  osConfig = config;
 in {
   options.core.users = with lib;
     mkOption {
