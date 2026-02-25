@@ -52,6 +52,11 @@ in
 
         activation = {
           removeSSHConfig = lib.hm.dag.entryBefore ["linkGeneration"] ''
+            # Check if config is a regular file before removing
+            if [ -f ${config.home.homeDirectory}/.ssh/config ] && [ ! -L ${config.home.homeDirectory}/.ssh/config ]; then
+              mv ${config.home.homeDirectory}/.ssh/config ${config.home.homeDirectory}/.ssh/config.bak
+            fi
+          '';
             # Remove the existing config so Home Manager can create a fresh symlink
             rm -f ${config.home.homeDirectory}/.ssh/config
           '';
