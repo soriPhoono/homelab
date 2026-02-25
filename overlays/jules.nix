@@ -1,9 +1,9 @@
-final: _prev: {
-  jules-cli = final.buildNpmPackage {
+final: prev: {
+  jules-cli = prev.buildNpmPackage {
     pname = "jules-cli";
     version = "0.0.1";
 
-    src = final.fetchNpm {
+    src = prev.fetchNpm {
       packageName = "@google/jules"; # TODO: Verify exact package name
       version = "0.0.1"; # TODO: Update to latest version
       hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # TODO: Update hash

@@ -1,7 +1,7 @@
 {flakePath}: let
   flake = builtins.getFlake flakePath;
-  inherit (flake.inputs.nixpkgs-weekly) lib;
-  pkgs = flake.inputs.nixpkgs-weekly.legacyPackages.x86_64-linux;
+  inherit (flake.inputs.nixpkgs) lib;
+  pkgs = flake.inputs.nixpkgs.legacyPackages.x86_64-linux;
 
   droidConfigs = flake.nixOnDroidConfigurations or {};
 

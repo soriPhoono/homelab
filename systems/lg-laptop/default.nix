@@ -61,6 +61,4 @@
       gaming.enable = true;
     };
   };
-
-  homelab.services.clamav.enable = true;
 }

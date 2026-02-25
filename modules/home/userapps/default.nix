@@ -9,7 +9,6 @@ in
   with lib; {
     imports = [
       ./browsers
-      ./communication
       ./development
     ];
 
@@ -23,6 +22,8 @@ in
         bitwarden-desktop
         logseq
         onlyoffice-desktopeditors
+
+        discord
       ];
 
       services = {
@@ -31,7 +32,5 @@ in
           resyncTimer = "10m";
         };
       };
-
-      userapps.communication.discord.enable = true;
     };
   }

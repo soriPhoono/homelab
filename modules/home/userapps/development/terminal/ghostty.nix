@@ -31,6 +31,7 @@ in
       programs.ghostty = {
         enable = true;
         settings = {
+          theme = "dark:catppuccin-frappe,light:catppuccin-latte";
           font-family = "SauceCodePro Nerd Font";
           font-size = 12;
           window-decoration = false;

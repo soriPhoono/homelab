@@ -25,11 +25,6 @@ in
           kdePackages.discover
           kdePackages.ksystemlog
         ];
-
-        plasma6.excludePackages = with pkgs.kdePackages; [
-          plasma-browser-integration
-          konsole
-        ];
       };
 
       services = {

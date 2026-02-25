@@ -3,11 +3,9 @@
 
   inputs = {
     systems.url = "github:nix-systems/default";
-
-    nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.946843";
-    nixpkgs-master.url = "github:NixOS/nixpkgs";
-    nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
-
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-unstable-droid.url = "github:NixOS/nixpkgs/88d3861";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
       url = "github:NixOS/flake-compat";
@@ -20,89 +18,89 @@
 
     agenix = {
       url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     agenix-shell = {
       url = "github:aciceri/agenix-shell";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     git-hooks-nix = {
       url = "github:cachix/git-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
-    };
-    github-actions-nix = {
-      url = "github:synapdeck/github-actions-nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nix-on-droid = {
       url = "github:nix-community/nix-on-droid/master";
-      inputs.nixpkgs.follows = "nixpkgs-droid";
+      inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
 
     disko = {
       url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v0.4.2";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     comin = {
       url = "github:nlewo/comin";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nur = {
       url = "github:nix-community/NUR";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nvf = {
       url = "github:notashelf/nvf";
       inputs = {
-        nixpkgs.follows = "nixpkgs-weekly";
+        nixpkgs.follows = "nixpkgs";
       };
+    };
+
+    antigravity-nix = {
+      url = "github:jacopone/antigravity-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs = inputs @ {
     self,
-    nixpkgs-weekly,
-    nixpkgs-droid,
+    nixpkgs,
+    nixpkgs-unstable-droid,
     flake-parts,
     agenix,
+    nixtest,
     nix-on-droid,
     ...
   }: let
     # Extend lib with our custom functions
-    lib = nixpkgs-weekly.lib.extend (final: prev:
+    lib = nixpkgs.lib.extend (final: prev:
       (import ./lib/default.nix {inherit inputs;}) final prev
       // {
         inherit (inputs.home-manager.lib) hm;
@@ -111,7 +109,7 @@
     # --- System Support & Package Cache --- #
     supportedSystems = import inputs.systems;
     pkgsFor = lib.genAttrs supportedSystems (system:
-      import nixpkgs-weekly {
+      import nixpkgs {
         inherit system;
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;
@@ -152,7 +150,6 @@
       {
         home-manager = {
           useGlobalPkgs = true;
-          useUserPackages = true;
           startAsUserService = true;
           extraSpecialArgs = {
             inherit inputs self lib;
@@ -210,7 +207,7 @@
     # Nix-on-Droid Builder
     mkDroid = name: path: let
       systemArch = "aarch64-linux";
-      pkgs = import nixpkgs-droid {
+      pkgs = import nixpkgs-unstable-droid {
         system = systemArch;
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;
@@ -261,7 +258,6 @@
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
-        github-actions-nix.flakeModule
       ];
 
       # Supported systems for devShells/checks
@@ -275,7 +271,7 @@
         system,
         ...
       }: {
-        _module.args.pkgs = import nixpkgs-weekly {
+        _module.args.pkgs = import nixpkgs {
           inherit system;
           overlays = [
             (_: _: {
@@ -285,12 +281,10 @@
           config.allowUnfree = true;
         };
 
-        githubActions = import ./actions.nix {inherit self lib;};
-
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
-            inherit (config) pre-commit agenix-shell githubActions;
+            inherit (config) pre-commit agenix-shell;
           };
         };
 
@@ -346,7 +340,7 @@
         homeModules = import ./modules/home {inherit lib self;};
 
         # Overlay Exports
-        overlays = with inputs; ((import ./overlays {inherit self inputs lib;})
+        overlays = with inputs; ((import ./overlays {inherit lib self;})
           // {
             nur = nur.overlays.default;
           });
