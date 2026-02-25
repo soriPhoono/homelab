@@ -50,11 +50,13 @@ in
     in {
       home = {
         file = lib.mkIf config.core.secrets.enable (primaryKey // extraKeys);
-
-        activation = {
           removeSSHConfig = lib.hm.dag.entryBefore ["linkGeneration"] ''
-            # Remove the existing config so Home Manager can create a fresh symlink
-            rm -f ${config.home.homeDirectory}/.ssh/config
+            # Consider checking if it's a symlink before removing, 
+            # or simply rely on Home Manager's conflict handling.
+            if [ -L ${config.home.homeDirectory}/.ssh/config ]; then
+              rm -f ${config.home.homeDirectory}/.ssh/config
+            fi
+          '';
           '';
 
           copySSHConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
