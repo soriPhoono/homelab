@@ -1,5 +1,4 @@
 {
-  inputs,
   lib,
   pkgs,
   config,
@@ -13,7 +12,7 @@ in
 
       package = mkOption {
         type = types.package;
-        inherit (inputs.antigravity-nix.packages.${pkgs.stdenv.hostPlatform.system}) default;
+        default = pkgs.antigravity;
         description = "The antigravity package to use.";
       };
 
