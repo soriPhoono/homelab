@@ -21,7 +21,6 @@ in
       home.packages = with pkgs; [
         nextcloud-client
         bitwarden-desktop
-        logseq
         onlyoffice-desktopeditors
       ];
 

@@ -16,7 +16,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    xdg.mimeApps.defaultApplications = let
+    xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
       browser = ["floorp.desktop"];
     in
       lib.mkOverride cfg.priority {
@@ -26,7 +26,7 @@ in {
         "x-scheme-handler/https" = browser;
         "x-scheme-handler/about" = browser;
         "x-scheme-handler/unknown" = browser;
-      };
+      });
 
     programs = {
       floorp = {

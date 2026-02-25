@@ -18,18 +18,7 @@ in
 
       desktop = mkOption {
         type = types.str;
-        default = let
-          appsDir = "${cfg.package}/share/applications";
-        in
-          if pathExists appsDir
-          then let
-            entries = builtins.readDir appsDir;
-            desktopFiles = filter (name: hasSuffix ".desktop" name) (attrNames entries);
-          in
-            if desktopFiles != []
-            then head desktopFiles
-            else "code.desktop"
-          else "code.desktop";
+        default = "codium.desktop";
         description = "The desktop file name for the editor.";
       };
 
@@ -42,18 +31,18 @@ in
 
     config = mkIf cfg.enable {
       home.sessionVariables = {
-        EDITOR = mkOverride cfg.priority (getExe cfg.package);
-        VISUAL = mkOverride cfg.priority (getExe cfg.package);
+        EDITOR = mkOverride cfg.priority (lib.getExe cfg.package);
+        VISUAL = mkOverride cfg.priority (lib.getExe cfg.package);
       };
 
-      xdg.mimeApps.defaultApplications = let
+      xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
         editor = [cfg.desktop];
       in
         mkOverride cfg.priority {
           "text/plain" = editor;
           "text/markdown" = editor;
           "application/x-shellscript" = editor;
-        };
+        });
 
       programs.vscode = {
         enable = true;

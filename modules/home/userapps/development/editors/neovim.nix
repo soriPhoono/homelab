@@ -28,14 +28,14 @@ in
         VISUAL = mkOverride cfg.priority "nvim";
       };
 
-      xdg.mimeApps.defaultApplications = let
+      xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
         editor = ["nvim.desktop"];
       in
         mkOverride cfg.priority {
           "text/plain" = editor;
           "text/markdown" = editor;
           "application/x-shellscript" = editor;
-        };
+        });
 
       programs.nvf = {
         enable = true;

@@ -52,6 +52,8 @@
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEe5elK6ZPxVfoUBM1Ytd9/15OjdTeIfyUU61qR3osP8";
       };
     };
+
+    clamav.enable = true;
   };
 
   desktop = {
@@ -61,6 +63,4 @@
       gaming.enable = true;
     };
   };
-
-  homelab.services.clamav.enable = true;
 }
