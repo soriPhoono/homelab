@@ -50,7 +50,7 @@ in {
 
     onAccessPaths = mkOption {
       type = with types; listOf str;
-      default = ["/home"];
+      default = flatten (mapAttrsToList (_name: user: builtins.attrValues (filterAttrs (_name: value: builtins.isString value && hasPrefix "/" value) user.xdg.userDirs)) config.home-manager.users);
       description = "Paths for clamonacc on-access scanning.";
       example = ["/home" "/srv"];
     };
@@ -176,7 +176,7 @@ in {
               StateDirectory = "clamav";
               StateDirectoryMode = "0755";
             }
-            // (lib.optionalAttrs cfg.desktopNotifications.enable {
+            // (optionalAttrs cfg.desktopNotifications.enable {
               PassEnvironment = "DBUS_SESSION_BUS_ADDRESS";
             });
         };
