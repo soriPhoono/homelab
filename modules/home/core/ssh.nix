@@ -38,37 +38,44 @@ in
       primaryKey = lib.optionalAttrs (config.core.ssh.publicKey != null) {
         ".ssh/id_ed25519.pub".text = config.core.ssh.publicKey;
       };
+      extraSecrets =
+        lib.mapAttrs' (name: _: {
+          name = "ssh/${name}_key";
+          value = {path = "${config.home.homeDirectory}/.ssh/${name}_key";};
+        })
+        config.core.ssh.extraSSHKeys;
+      primarySecret = lib.optionalAttrs (config.core.ssh.publicKey != null) {
+        "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
+      };
     in {
       home = {
         file = lib.mkIf config.core.secrets.enable (primaryKey // extraKeys);
-        removeSSHConfig = lib.hm.dag.entryBefore ["linkGeneration"] ''
-          # Consider checking if it's a symlink before removing,
-          # or simply rely on Home Manager's conflict handling.
-          if [ -L ${config.home.homeDirectory}/.ssh/config ]; then
-            rm -f ${config.home.homeDirectory}/.ssh/config
-          fi
-        '';
+        activation = {
+          removeSSHConfig = lib.hm.dag.entryBefore ["linkGeneration"] ''
+            # Consider checking if it's a symlink before removing,
+            # or simply rely on Home Manager's conflict handling.
+            if [ -L ${config.home.homeDirectory}/.ssh/config ]; then
+              rm -f ${config.home.homeDirectory}/.ssh/config
+            fi
+          '';
 
-        copySSHConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
-          # By default home-manager creates a symlink to a Nix store file owned by nobody.
-          # This breaks openSSH's strict permission requirements.
-          if [ -L ${config.home.homeDirectory}/.ssh/config ]; then
-            real_config=$(readlink -f ${config.home.homeDirectory}/.ssh/config)
-            rm ${config.home.homeDirectory}/.ssh/config
-            cp $real_config ${config.home.homeDirectory}/.ssh/config
-            chmod 0600 ${config.home.homeDirectory}/.ssh/config
-          fi
-        '';
+          copySSHConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
+            # By default home-manager creates a symlink to a Nix store file owned by nobody.
+            # This breaks openSSH's strict permission requirements.
+            if [ -L ${config.home.homeDirectory}/.ssh/config ]; then
+              real_config=$(readlink -f ${config.home.homeDirectory}/.ssh/config)
+              rm ${config.home.homeDirectory}/.ssh/config
+              cp $real_config ${config.home.homeDirectory}/.ssh/config
+              chmod 0600 ${config.home.homeDirectory}/.ssh/config
+            fi
+          '';
+        };
       };
 
       sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
 
-      home.sessionVariables = {
-        home.sessionVariables = lib.mkIf config.services.ssh-agent.enable {
-          SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
-          SSH_ASKPASS = "ksshaskpass";
-          GIT_ASKPASS = "ksshaskpass";
-        };
+      home.sessionVariables = lib.mkIf config.services.ssh-agent.enable {
+        SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
         SSH_ASKPASS = "ksshaskpass";
         GIT_ASKPASS = "ksshaskpass";
       };
