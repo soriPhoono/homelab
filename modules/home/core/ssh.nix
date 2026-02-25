@@ -75,7 +75,11 @@ in
       sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
 
       home.sessionVariables = {
+      home.sessionVariables = lib.mkIf (config.services.ssh-agent.enable) {
         SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+        SSH_ASKPASS = "ksshaskpass";
+        GIT_ASKPASS = "ksshaskpass";
+      };
         SSH_ASKPASS = "ksshaskpass";
         GIT_ASKPASS = "ksshaskpass";
       };
