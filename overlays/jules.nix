@@ -1,4 +1,4 @@
-final: prev: {
+final: _prev: {
   jules-cli = final.buildNpmPackage {
     pname = "jules-cli";
     version = "0.0.1";
