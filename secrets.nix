@@ -8,6 +8,7 @@ let
     userSecrets = {
       # example = [ "soriphoono" ];
       github-token = ["soriphoono"];
+      proxmox_api_token = ["soriphoono"];
     };
 
     # Team secrets: for shared access across multiple users

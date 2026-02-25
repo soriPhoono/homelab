@@ -1,6 +1,6 @@
 name: Build Installer ISO
 on:
-  push:
+  pull_request:
     branches:
       - main
     paths:

@@ -1,13 +1,30 @@
 {
-  imports = [
-    ./agents
-    ./editors
-    ./terminal
-  ];
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.userapps.development;
+in
+  with lib; {
+    imports = [
+      ./agents
+      ./editors
+      ./terminal
+      ./knowledge-management
+    ];
 
-  config = {
-    programs = {
-      npm.enable = true;
+    options.userapps.development = {
+      enable = mkEnableOption "Development tools";
     };
-  };
-}
+
+    config = mkIf cfg.enable {
+      home.sessionPath = [
+        "${config.home.homeDirectory}/.npm/bin"
+      ];
+
+      programs = {
+        npm.enable = true;
+        uv.enable = true;
+      };
+    };
+  }

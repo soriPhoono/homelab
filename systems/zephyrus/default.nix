@@ -93,4 +93,6 @@
       gpuRenderNode = "/dev/dri/renderD129";
     };
   };
+
+  homelab.services.clamav.enable = true;
 }

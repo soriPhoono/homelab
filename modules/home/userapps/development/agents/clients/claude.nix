@@ -11,8 +11,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      programs.claude-code = {
-        enable = true;
-      };
+      programs.claude-code.enable = true;
     };
   }

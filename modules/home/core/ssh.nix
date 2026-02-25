@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  osConfig ? {},
   ...
 }: let
   cfg = config.core.ssh;
@@ -49,8 +50,15 @@ in
     in {
       home = {
         file = lib.mkIf config.core.secrets.enable (primaryKey // extraKeys);
-
         activation = {
+          removeSSHConfig = lib.hm.dag.entryBefore ["linkGeneration"] ''
+            # Consider checking if it's a symlink before removing,
+            # or simply rely on Home Manager's conflict handling.
+            if [ -L ${config.home.homeDirectory}/.ssh/config ]; then
+              rm -f ${config.home.homeDirectory}/.ssh/config
+            fi
+          '';
+
           copySSHConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
             # By default home-manager creates a symlink to a Nix store file owned by nobody.
             # This breaks openSSH's strict permission requirements.
@@ -66,14 +74,16 @@ in
 
       sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
 
+      home.sessionVariables = lib.mkIf config.services.ssh-agent.enable {
+        SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+        SSH_ASKPASS = "ksshaskpass";
+        GIT_ASKPASS = "ksshaskpass";
+      };
+
       programs.ssh = {
         enable = true;
 
         enableDefaultConfig = false;
-
-        extraConfig = ''
-          AddKeysToAgent yes
-        '';
 
         matchBlocks = {
           "*" = {
@@ -84,7 +94,7 @@ in
               ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") cfg.extraSSHKeys);
 
             forwardAgent = false;
-            addKeysToAgent = "no";
+            addKeysToAgent = "yes";
             compression = false;
             serverAliveInterval = 0;
             serverAliveCountMax = 3;
@@ -97,6 +107,8 @@ in
         };
       };
 
-      services.ssh-agent.enable = true;
+      services.ssh-agent = {
+        enable = !(osConfig.programs.ssh.startAgent or false);
+      };
     };
   }

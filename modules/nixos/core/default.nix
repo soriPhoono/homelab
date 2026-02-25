@@ -11,6 +11,7 @@ in {
     ./hardware
     ./networking
     ./boot.nix
+    ./clamav.nix
     ./gitops.nix
     ./nixconf.nix
     ./secrets.nix
