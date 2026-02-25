@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  osConfig ? config,
   self,
   hostName,
   ...
@@ -145,5 +146,9 @@ in {
         };
       })
       cfg.users;
+
+    home-manager.extraSpecialArgs = {
+      inherit osConfig;
+    };
   };
 }

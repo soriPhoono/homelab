@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  osConfig ? {},
   ...
 }: let
   cfg = config.core.ssh;
@@ -105,7 +106,7 @@ in
       };
 
       services.ssh-agent = {
-        enable = false;
+        enable = !(osConfig.programs.ssh.startAgent or false);
       };
     };
   }
