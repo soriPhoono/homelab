@@ -28,6 +28,8 @@ in {
   };
 
   config = {
+    environment.systemPackages = with pkgs; [wget];
+
     hardware.enableAllFirmware = true;
 
     console = {
