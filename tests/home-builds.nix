@@ -14,6 +14,42 @@
       path = config.activationPackage;
     })
     homeConfigs;
+
+  # Create a sequential chain of derivations to force one-by-one building
+  buildSequential = items: let
+    chain =
+      lib.foldl (acc: item: let
+        prev = acc.last or null;
+        sequentialPath =
+          pkgs.runCommand "seq-${item.name}" {
+            prevPath = lib.optionalString (prev != null) prev;
+          } ''
+            echo "Building ${item.name} after ${
+              if prev != null
+              then "previous"
+              else "nothing"
+            }..."
+            ln -s ${item.path} $out
+          '';
+      in {
+        last = sequentialPath;
+        list =
+          acc.list
+          ++ [
+            {
+              inherit (item) name;
+              path = sequentialPath;
+            }
+          ];
+      }) {
+        last = null;
+        list = [];
+      }
+      items;
+  in
+    chain.list;
+
+  sequentialEntries = buildSequential entries;
 in
   if (entries == [])
   then
@@ -21,4 +57,4 @@ in
       echo "No Home Manager configurations found. Skipping."
       touch $out
     ''
-  else pkgs.linkFarm "home-builds" entries
+  else pkgs.linkFarm "home-builds" sequentialEntries

@@ -27,6 +27,34 @@
       }
     '')
     droidConfigs);
+  # Chain evaluations sequentially using an accumulator that builds on previous results
+  # Note: Since this is mostly evaluation-heavy, we force a dependency chain
+  # by having each subsequent check "wait" for the previous one to complete
+  # via a shared report or sequential derivation triggers.
+
+  # Group configs and build a report derivation that depends on each sequentially
+  droidList = lib.mapAttrsToList (name: config: {inherit name config;}) droidConfigs;
+
+  sequentialEval =
+    lib.foldl (acc: item: let
+      prev = acc.last or null;
+      evalDerivation =
+        pkgs.runCommand "eval-droid-${item.name}" {
+          prev = lib.optionalString (prev != null) prev;
+        } ''
+          echo "Evaluating droid/${item.name}..."
+          # Force evaluation of activation package and other key attributes
+          echo "${item.config.activationPackage or "no-activation"}" > /dev/null
+          echo "${item.name} evaluated" > $out
+        '';
+    in {
+      last = evalDerivation;
+      list = acc.list ++ [evalDerivation];
+    }) {
+      last = null;
+      list = [];
+    }
+    droidList;
 in
   if (droidConfigs == {})
   then
@@ -37,6 +65,8 @@ in
   else
     pkgs.runCommand "droid-eval" {
       passAsFile = ["report"];
+      # Depend on all sequential evals to force ordering
+      buildInputs = sequentialEval.list;
       report = ''
         Nix-on-Droid evaluation report
         ================================

@@ -1,6 +1,6 @@
 {config, ...}: {
   core = {
-    shell.fish.generateCompletions = true;
+    shells.fish.generateCompletions = true;
 
     git = {
       projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
@@ -37,6 +37,7 @@
       };
       knowledge-management.obsidian.enable = true;
       editors.antigravity.enable = true;
+      domain_specific.k8s.enable = true;
     };
   };
 }

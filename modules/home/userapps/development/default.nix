@@ -9,6 +9,7 @@ in
     imports = [
       ./agents
       ./editors
+      ./domain_specific
       ./terminal
       ./knowledge-management
     ];

@@ -5,7 +5,7 @@
       defaultSopsFile = ./secrets.yaml;
     };
 
-    shell.fish.generateCompletions = true;
+    shells.fish.generateCompletions = true;
   };
 
   userapps = {
