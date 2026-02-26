@@ -16,6 +16,8 @@ in
     };
 
     config = {
-      hardware.nvidia-container-toolkit.enable = cfg.enableNvidiaSupport && config.core.hardware.gpu.dedicated.nvidia.enable;
+    config = mkIf (cfg.enableNvidiaSupport && config.core.hardware.gpu.dedicated.nvidia.enable) {
+      hardware.nvidia-container-toolkit.enable = true;
+    };
     };
   }
