@@ -1,4 +1,4 @@
 {lib, ...}:
 with lib; {
-  userapps.development.editor.neovim.enable = mkForce false;
+  userapps.development.editors.neovim.enable = mkForce false;
 }
