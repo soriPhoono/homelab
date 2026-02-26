@@ -1,5 +1,7 @@
 {config, ...}: {
   core = {
+    shell.fish.generateCompletions = true;
+
     git = {
       projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
       extraIdentities = {

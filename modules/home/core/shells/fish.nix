@@ -4,48 +4,50 @@
   ...
 }: let
   cfg = config.core.shells.fish;
-in {
-  options.core.shells.fish = {
-    enable = lib.mkEnableOption "Enable the fish shell";
+in
+  with lib; {
+    options.core.shells.fish = {
+      enable = mkEnableOption "Enable the fish shell";
 
-    shellInit = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "The extra commands to run on a fish login shell";
-      example = "fastfetch";
+      generateCompletions = mkEnableOption "Generate completions for fish";
+
+      shellInit = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        description = "The extra commands to run on a fish login shell";
+        example = "fastfetch";
+      };
     };
-  };
 
-  config = lib.mkIf cfg.enable {
-    programs.fish = {
-      enable = true;
-      generateCompletions = false;
+    config = lib.mkIf cfg.enable {
+      programs.fish = {
+        inherit (cfg) enable generateCompletions;
 
-      shellInitLast = let
-        sessionVariables =
-          builtins.concatStringsSep
-          "\n"
-          (lib.mapAttrsToList
-            (name: value: "set ${name} \"${value}\"")
-            config.core.shells.sessionVariables);
+        shellInitLast = let
+          sessionVariables =
+            builtins.concatStringsSep
+            "\n"
+            (lib.mapAttrsToList
+              (name: value: "set ${name} \"${value}\"")
+              config.core.shells.sessionVariables);
 
-        shellAliases =
-          builtins.concatStringsSep
-          "\n"
-          (lib.mapAttrsToList
-            (name: command: "alias ${name}=\"${command}\"")
-            config.core.shells.shellAliases);
-      in ''
-        set fish_greeting
+          shellAliases =
+            builtins.concatStringsSep
+            "\n"
+            (lib.mapAttrsToList
+              (name: command: "alias ${name}=\"${command}\"")
+              config.core.shells.shellAliases);
+        in ''
+          set fish_greeting
 
-        ${sessionVariables}
+          ${sessionVariables}
 
-        ${shellAliases}
+          ${shellAliases}
 
-        if not set -q SSH_CLIENT
-          ${lib.optionalString config.programs.fastfetch.enable "fastfetch"}
-        end
-      '';
+          if not set -q SSH_CLIENT
+            ${lib.optionalString config.programs.fastfetch.enable "fastfetch"}
+          end
+        '';
+      };
     };
-  };
-}
+  }
