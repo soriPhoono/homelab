@@ -19,6 +19,7 @@ in {
   config = lib.mkIf cfg.enable {
     programs.fish = {
       enable = true;
+      generateCompletions = false;
 
       shellInitLast = let
         sessionVariables =
