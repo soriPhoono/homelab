@@ -15,7 +15,7 @@ in
       enableNvidiaSupport = mkEnableOption "Enable nvidia support for blocks";
     };
 
-    config = mkIf cfg.enable {
-      hardware.nvidia-container-toolkit.enable = mkIf config.core.hardware.gpu.dedicated.nvidia.enable true;
+    config = {
+      hardware.nvidia-container-toolkit.enable = cfg.enableNvidiaSupport && config.core.hardware.gpu.dedicated.nvidia.enable;
     };
   }
