@@ -4,5 +4,5 @@
     config.allowUnfree = true;
   };
 in {
-  inherit (pkgs) antigravity;
+  inherit (pkgs) warp-terminal;
 }

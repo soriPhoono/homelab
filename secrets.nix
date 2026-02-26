@@ -7,13 +7,12 @@ let
     # Per-user secrets: simple mapping of secret name -> list of users
     userSecrets = {
       # example = [ "soriphoono" ];
-      github-token = ["soriphoono"];
-      proxmox_api_token = ["soriphoono"];
+      github_token = ["soriphoono"];
     };
 
     # Team secrets: for shared access across multiple users
     teams = {
-      cloud = {
+      default = {
         users = ["soriphoono"];
         secrets = [];
       };

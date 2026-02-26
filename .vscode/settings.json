@@ -1,0 +1,56 @@
+{
+    "nix.enableLanguageServer": true,
+    "nix.serverPath": "nil",
+    "nix.serverSettings": {
+        "nil": {
+            "formatting": {
+                "command": [
+                    "alejandra"
+                ]
+            },
+            "diagnostics": {
+                "ignored": [
+                    "unused_binding",
+                    "unused_parameter"
+                ]
+            }
+        }
+    },
+    "direnv.restart.automatic": true,
+    "editor.formatOnSave": true,
+    "[nix]": {
+        "editor.defaultFormatter": "jnoortheen.nix-ide",
+        "editor.formatOnSave": true
+    },
+    "[yaml]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+        "editor.formatOnSave": true
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "marp-team.marp-vscode",
+        "editor.formatOnSave": true
+    },
+    "yaml.format.enable": true,
+    "yaml.validate": true,
+    "yaml.schemaStore.enable": true,
+    "files.exclude": {
+        "result": true,
+        "result-*": true,
+        ".direnv/": true,
+        ".git": true
+    },
+    "search.exclude": {
+        "result": true,
+        "result-*": true,
+        ".direnv/": true
+    },
+    "files.watcherExclude": {
+        "result": true,
+        "result-*": true,
+        ".direnv/": true
+    },
+    "telemetry.telemetryLevel": "off",
+    "editor.inlineSuggest.enabled": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active"
+}
