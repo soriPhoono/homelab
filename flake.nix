@@ -4,7 +4,7 @@
   inputs = {
     systems.url = "github:nix-systems/default";
 
-    nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.946843";
+    nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.948651";
     nixpkgs-master.url = "github:NixOS/nixpkgs";
     nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
 

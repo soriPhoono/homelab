@@ -32,7 +32,6 @@
       enable = true;
       terminal = {
         ghostty.enable = true;
-        warp.enable = true;
       };
       knowledge-management.obsidian.enable = true;
       editors.antigravity.enable = true;

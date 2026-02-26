@@ -16,9 +16,6 @@ with pkgs;
         agenix
         sops
         ssh-to-age
-
-        terraform
-        jq
       ]
       ++ lib.optional stdenv.isLinux [
         disko
