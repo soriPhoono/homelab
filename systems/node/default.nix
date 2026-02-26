@@ -31,16 +31,6 @@
   };
 
   hosting = {
-    enable = true;
-    blocks.backends.docker = {
-      enable = true;
-      plugins = [
-        {
-          name = "rclone";
-          image = "rclone/docker-volume-rclone:1.73.1";
-          grantAllPermissions = true;
-        }
-      ];
-    };
+    blocks.backends.docker.enable = true;
   };
 }

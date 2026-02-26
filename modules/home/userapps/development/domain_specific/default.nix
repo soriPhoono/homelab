@@ -1,5 +1,5 @@
 {
   imports = [
-    ./blocks
+    ./k8s.nix
   ];
 }

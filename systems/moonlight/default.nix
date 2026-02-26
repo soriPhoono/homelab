@@ -35,12 +35,16 @@
   };
 
   hosting = {
-    enable = true;
-    blocks.backends.docker.enable = true;
-    blocks.features.docker-games-server = {
-      enable = true;
-      openFirewall = true;
-      dataDir = "/mnt/games";
+    blocks = {
+      backends = {
+        enableNvidiaSupport = true;
+        docker.enable = true;
+      };
+      features.docker-games-server = {
+        enable = true;
+        openFirewall = true;
+        dataDir = "/mnt/games";
+      };
     };
   };
 }

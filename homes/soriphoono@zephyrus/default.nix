@@ -1,5 +1,7 @@
 {config, ...}: {
   core = {
+    shells.fish.generateCompletions = true;
+
     git = {
       projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
       extraIdentities = {
@@ -35,6 +37,7 @@
       };
       knowledge-management.obsidian.enable = true;
       editors.antigravity.enable = true;
+      domain_specific.k8s.enable = true;
     };
   };
 }
