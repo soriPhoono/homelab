@@ -31,8 +31,9 @@
   };
 
   hosting = {
-    single-node.backends.docker.enable = true;
-
-    standalone.adguard-home.enable = true;
+    single-node = {
+      backends.docker.enable = true;
+      standalone.adguard-home.enable = true;
+    };
   };
 }
