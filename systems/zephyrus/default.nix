@@ -76,7 +76,10 @@
     environments.kde.enable = true;
     features = {
       printing.enable = true;
-      virtualisation.enable = true;
+      virtualisation = {
+        enable = true;
+        talos.enable = true;
+      };
       gaming.enable = true;
     };
     services.asusd.enable = true;
