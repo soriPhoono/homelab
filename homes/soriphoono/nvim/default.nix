@@ -17,6 +17,7 @@
       ripgrep
       wl-clipboard
       tree-sitter
+      bacon
     ];
 
     globals = {

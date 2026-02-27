@@ -24,7 +24,6 @@
           enable = true;
           enableJules = true;
         };
-        claude.enable = true;
       };
     };
   };

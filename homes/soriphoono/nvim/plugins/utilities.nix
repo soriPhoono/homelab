@@ -54,6 +54,14 @@
       action = "<cmd>nohlsearch<CR>";
       desc = "Clear search";
     }
+
+    # Aerial (Document Outline)
+    {
+      key = "<leader>oa";
+      mode = "n";
+      action = "<cmd>AerialToggle!<CR>";
+      desc = "Toggle document outline";
+    }
   ];
 
   binds.whichKey = {
@@ -72,9 +80,17 @@
     surround.enable = true;
     diffview-nvim.enable = true;
     undotree.enable = true;
+    outline.aerial-nvim = {
+      enable = true;
+      setupOpts.attach_mode = "global";
+    };
 
     # Motion plugin
-    motion.flash-nvim.enable = true;
+    motion.flash-nvim = {
+      enable = true;
+      setupOpts.modes.search.enabled = true;
+      mappings.jump = "s";
+    };
   };
 
   terminal.toggleterm.enable = true;
