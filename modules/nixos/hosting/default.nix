@@ -8,6 +8,7 @@ in
   with lib; {
     imports = [
       ./single-node
+      ./clustering
     ];
 
     options.hosting = {

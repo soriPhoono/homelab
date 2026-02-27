@@ -4,7 +4,6 @@
     "mkhl.direnv",
     "redhat.vscode-yaml",
     "ms-azuretools.vscode-docker",
-    "github.vscode-github-actions",
     "eamodio.gitlens",
     "editorconfig.editorconfig",
     "tamasfe.even-better-toml",

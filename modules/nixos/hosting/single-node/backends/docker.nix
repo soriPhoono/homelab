@@ -114,6 +114,8 @@ in
         daemon.settings = cfg.extraSettings;
       };
 
+      virtualisation.oci-containers.backend = "docker";
+
       users.extraUsers =
         lib.mapAttrs (_name: _user: {
           extraGroups = ["docker"];
