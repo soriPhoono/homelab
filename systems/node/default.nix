@@ -31,6 +31,6 @@
   };
 
   hosting = {
-    blocks.backends.docker.enable = true;
+    single-node.backends.docker.enable = true;
   };
 }

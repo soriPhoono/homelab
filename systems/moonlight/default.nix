@@ -35,9 +35,8 @@
   };
 
   hosting = {
-    blocks = {
+    single-node = {
       backends = {
-        enableNvidiaSupport = true;
         docker.enable = true;
       };
       features.docker-games-server = {

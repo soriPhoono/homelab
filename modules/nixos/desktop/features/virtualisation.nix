@@ -10,6 +10,12 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+
+    networking.firewall.trustedInterfaces = [
+      "virbr0"
+    ];
+
     virtualisation = {
       libvirtd.enable = true;
       spiceUSBRedirection.enable = true;
@@ -18,10 +24,6 @@ in {
     programs.virt-manager = {
       enable = true;
     };
-
-    networking.firewall.trustedInterfaces = [
-      "virbr0"
-    ];
 
     users.extraUsers =
       builtins.mapAttrs (_: _: {

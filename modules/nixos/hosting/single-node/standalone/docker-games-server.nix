@@ -4,11 +4,11 @@
   config,
   ...
 }: let
-  cfg = config.hosting.blocks.features.docker-games-server;
+  cfg = config.hosting.single-node.features.docker-games-server;
 
   # Determine hosting backend
   backend =
-    if config.hosting.blocks.backends.podman.enable
+    if config.hosting.single-node.backends.podman.enable
     then "podman"
     else "docker";
   isPodman = backend == "podman";
@@ -101,7 +101,7 @@
   };
 in
   with lib; {
-    options.hosting.blocks.features.docker-games-server = {
+    options.hosting.single-node.features.docker-games-server = {
       enable = mkEnableOption "Enable self-hosted game streaming server";
       openFirewall = mkEnableOption "Enable modifications to firewall for server port exposure";
 
@@ -119,7 +119,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      hosting.blocks.backends.docker.enable = true;
+      hosting.single-node.backends.docker.enable = true;
 
       networking.firewall = mkIf cfg.openFirewall {
         allowedTCPPorts = [48010 47989 47984];
