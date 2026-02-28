@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.hosting.blocks.backends.docker;
+  cfg = config.hosting.single-node.backends.docker;
 in
   with lib; {
-    options.hosting.blocks.backends.docker = {
+    options.hosting.single-node.backends.docker = {
       enable = lib.mkEnableOption "docker backend";
 
       extraSettings = lib.mkOption {
@@ -44,6 +44,13 @@ in
       networkServiceName = "docker-create-networks";
       pluginServiceName = "docker-install-plugins";
     in {
+      assertions = [
+        {
+          assertion = !config.hosting.single-node.backends.podman.enable;
+          message = "Cannot enable both docker and podman backends";
+        }
+      ];
+
       systemd.services =
         {
           "${networkServiceName}" = let
@@ -106,6 +113,8 @@ in
         autoPrune.enable = true;
         daemon.settings = cfg.extraSettings;
       };
+
+      virtualisation.oci-containers.backend = "docker";
 
       users.extraUsers =
         lib.mapAttrs (_name: _user: {

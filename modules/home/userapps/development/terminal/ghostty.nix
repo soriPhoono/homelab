@@ -32,8 +32,8 @@ in
         enable = true;
         settings = {
           font-family = "SauceCodePro Nerd Font";
-          font-size = 12;
-          window-decoration = false;
+          font-size = 16;
+          window-decoration = true;
           window-padding-x = 8;
           window-padding-y = 8;
           confirm-close-surface = false;

@@ -1,4 +1,11 @@
 {pkgs, ...}: {
+  # nix-on-droid cache — needed to build/evaluate droid activation packages locally
+  # TODO: migrate this to it's own module and create personal CI/CD runner for gh actions/gitlab CI to build nix on droid test release evals
+  nix.settings = {
+    extra-substituters = ["https://nix-on-droid.cachix.org"];
+    extra-trusted-public-keys = ["nix-on-droid.cachix.org-1:56snoMJTXmDRC1Ei24CmKoUqvHJ9XCp+nidK7qkMQrU="];
+  };
+
   imports = [
     ./disko.nix
   ];
@@ -25,6 +32,7 @@
 
       hid = {
         xbox_controllers.enable = true;
+        logitech.enable = true;
       };
 
       adb.enable = true;
@@ -75,27 +83,12 @@
     environments.kde.enable = true;
     features = {
       printing.enable = true;
-      virtualisation.enable = true;
+      virtualisation = {
+        enable = true;
+        talos.enable = true;
+      };
       gaming.enable = true;
     };
     services.asusd.enable = true;
-  };
-
-  # nix-on-droid cache — needed to build/evaluate droid activation packages locally
-  nix.settings = {
-    extra-substituters = ["https://nix-on-droid.cachix.org"];
-    extra-trusted-public-keys = ["nix-on-droid.cachix.org-1:56snoMJTXmDRC1Ei24CmKoUqvHJ9XCp+nidK7qkMQrU="];
-  };
-
-  hosting.blocks = {
-    backends = {
-      enableNvidiaSupport = true;
-      docker.enable = true;
-    };
-    features.docker-games-server = {
-      enable = true;
-      openFirewall = true;
-      gpuRenderNode = "/dev/dri/renderD129";
-    };
   };
 }

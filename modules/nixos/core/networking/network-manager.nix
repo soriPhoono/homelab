@@ -10,6 +10,17 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !config.core.networking.lxc.enable;
+        message = "NetworkManager and LXC cannot be enabled at the same time";
+      }
+      {
+        assertion = !config.core.networking.qemu.enable;
+        message = "NetworkManager and QEMU cannot be enabled at the same time";
+      }
+    ];
+
     systemd.network.wait-online.enable = lib.mkForce false;
 
     networking.networkmanager = {

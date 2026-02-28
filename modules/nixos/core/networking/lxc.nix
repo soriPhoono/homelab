@@ -10,6 +10,17 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !config.core.networking.network-manager.enable;
+        message = "NetworkManager cannot be enabled with this module";
+      }
+      {
+        assertion = !config.core.networking.qemu.enable;
+        message = "QEMU cannot be enabled with this module";
+      }
+    ];
+
     # LXC containers often don't support standard NetworkManager features well
     # or don't need them. systemd-networkd is lighter and more suitable.
     networking = {
@@ -29,8 +40,5 @@ in {
     };
 
     services.resolved.enable = true;
-
-    # Ensure NetworkManager is disabled if this is enabled
-    core.networking.network-manager.enable = false;
   };
 }

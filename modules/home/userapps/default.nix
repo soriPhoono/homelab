@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }: let
@@ -11,6 +10,8 @@ in
       ./browsers
       ./communication
       ./development
+      ./data-fortress
+      ./office
     ];
 
     options.userapps = {
@@ -18,12 +19,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.packages = with pkgs; [
-        nextcloud-client
-        bitwarden-desktop
-        onlyoffice-desktopeditors
-      ];
-
       services = {
         psd = {
           enable = true;

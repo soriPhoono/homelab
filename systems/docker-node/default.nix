@@ -11,7 +11,7 @@
     gitops = {
       enable = true;
       repo = "https://github.com/soriphoono/homelab.git";
-      name = "node";
+      name = "adguard-home";
     };
 
     networking = {
@@ -30,7 +30,5 @@
     };
   };
 
-  hosting = {
-    blocks.backends.docker.enable = true;
-  };
+  hosting.single-node.backends.docker.enable = true;
 }

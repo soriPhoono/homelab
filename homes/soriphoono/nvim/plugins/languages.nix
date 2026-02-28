@@ -13,6 +13,7 @@
   autocomplete.blink-cmp = {
     enable = true;
     friendly-snippets.enable = true;
+    setupOpts.completion.sources.default = ["lsp" "path" "snippets" "buffer"];
   };
 
   languages = {
@@ -42,6 +43,33 @@
     terraform.enable = true;
     css.enable = true;
     html.enable = true;
+    rust = {
+      enable = true;
+      lsp.opts = ''
+        ['rust-analyzer'] = {
+          cargo = { allFeatures = true },
+          checkOnSave = {
+            command = "bacon",
+          },
+        },
+      '';
+    };
+    zig.enable = true;
+    csharp = {
+      enable = true;
+      lsp = {
+        enable = true;
+        servers = ["omnisharp"];
+      };
+    };
+    java = {
+      enable = true;
+      lsp = {
+        enable = true;
+        servers = ["jdtls"];
+      };
+    };
+    nu.enable = true;
 
     markdown = {
       enable = true;
