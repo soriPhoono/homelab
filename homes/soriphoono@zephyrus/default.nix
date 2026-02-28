@@ -30,6 +30,13 @@
     communication = {
       discord.enable = true;
     };
+    data-fortress = {
+      nextcloud.enable = true;
+      bitwarden.enable = true;
+    };
+    office = {
+      onlyoffice.enable = true;
+    };
     development = {
       enable = true;
       terminal = {

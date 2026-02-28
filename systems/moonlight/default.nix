@@ -1,6 +1,23 @@
 {pkgs, ...}: {
+  imports = [
+    ./disko.nix
+  ];
+
   core = {
-    hardware.gpu.dedicated.amd.enable = true;
+    nixconf.determinate-nix.enable = true;
+
+    boot.enable = true;
+
+    hardware = {
+      enable = true;
+      reportPath = ./facter.json;
+
+      gpu.dedicated.amd.enable = true;
+
+      hid = {
+        xbox_controllers.enable = true;
+      };
+    };
 
     gitops = {
       enable = true;
@@ -9,7 +26,7 @@
     };
 
     networking = {
-      # TODO: give networking abilities to machine
+      qemu.enable = true;
       tailscale.enable = true;
     };
 

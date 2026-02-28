@@ -10,9 +10,10 @@ in
     imports = [
       ./openssh.nix
       ./network-manager.nix
+      ./lxc.nix
+      ./qemu.nix
       ./tailscale.nix
       ./netbird.nix
-      ./lxc.nix
     ];
 
     options.core.networking = {
