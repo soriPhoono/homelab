@@ -5,7 +5,7 @@
     systems.url = "github:nix-systems/default";
 
     nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.948651";
-    nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
+    nixpkgs-droid.url = "github:NixOS/nixpkgs/nixos-24.05";
 
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
@@ -39,7 +39,7 @@
     };
 
     nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/master";
+      url = "github:nix-community/nix-on-droid/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs-droid";
       inputs.home-manager.follows = "home-manager";
     };
