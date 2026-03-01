@@ -23,8 +23,9 @@ in {
       imports = let
         base = self + "/homes/${config.user.userName}";
         droid = self + "/homes/${config.user.userName}@droid";
+        core = self + "/modules/home/core";
       in
-        (lib.optional (builtins.pathExists base) base) ++ (lib.optional (builtins.pathExists droid) droid);
+        (lib.optional (builtins.pathExists base) base) ++ (lib.optional (builtins.pathExists droid) droid) ++ [ core ];
 
       home = {
         username = config.user.userName;
