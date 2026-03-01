@@ -46,7 +46,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Build
         run: nix build .#nixosConfigurations.moonlight.config.system.build.toplevel
-  build-nixos-node:
+  build-nixos-docker-node:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -54,7 +54,7 @@ jobs:
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Build
-        run: nix build .#nixosConfigurations.node.config.system.build.toplevel
+        run: nix build .#nixosConfigurations.docker-node.config.system.build.toplevel
   build-nixos-zephyrus:
     runs-on: ubuntu-latest
     steps:

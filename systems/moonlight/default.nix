@@ -1,5 +1,10 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  modulesPath,
+  ...
+}: {
   imports = [
+    (modulesPath + "/profiles/qemu-guest.nix")
     ./disko.nix
   ];
 
@@ -9,9 +14,6 @@
     boot.enable = true;
 
     hardware = {
-      enable = true;
-      reportPath = ./facter.json;
-
       gpu.dedicated.amd.enable = true;
 
       hid = {
