@@ -225,12 +225,6 @@
           droidModules
           ++ [
             path
-            {
-              user = {
-                userName = name;
-                group = name;
-              };
-            }
           ];
       };
 

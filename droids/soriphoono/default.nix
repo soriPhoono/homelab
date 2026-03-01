@@ -3,7 +3,6 @@
 
   core.user.shell = pkgs.fish;
 
-  user.userName = lib.mkForce "nix-on-droid";
 
   android-integration = {
     am.enable = true;
