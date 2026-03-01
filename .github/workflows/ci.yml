@@ -10,6 +10,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - name: Build
         run: nix build --impure .#nixOnDroidConfigurations.soriphoono.activationPackage
   build-home-soriphoono:
@@ -21,6 +23,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - name: Build
         run: nix build .#homeConfigurations.soriphoono.activationPackage
   build-home-spookyskelly:
@@ -32,6 +36,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - name: Build
         run: nix build .#homeConfigurations.spookyskelly.activationPackage
   build-nixos-lg-laptop:
@@ -43,6 +49,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - name: Build
         run: nix build .#nixosConfigurations.lg-laptop.config.system.build.toplevel
   build-nixos-moonlight:
@@ -54,6 +62,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - name: Build
         run: nix build .#nixosConfigurations.moonlight.config.system.build.toplevel
   build-nixos-docker-node:
@@ -65,6 +75,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - name: Build
         run: nix build .#nixosConfigurations.docker-node.config.system.build.toplevel
   build-nixos-zephyrus:
@@ -76,6 +88,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - name: Build
         run: nix build .#nixosConfigurations.zephyrus.config.system.build.toplevel
 name: CI
