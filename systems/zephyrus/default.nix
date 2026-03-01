@@ -39,11 +39,6 @@
       bluetooth.enable = true;
     };
 
-    gitops = {
-      enable = true;
-      repo = "https://github.com/soriphoono/homelab.git";
-      name = "zephyrus";
-    };
 
     secrets = {
       enable = true;
