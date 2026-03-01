@@ -23,6 +23,8 @@ jobs:
           docker-images: true
           swap-storage: false
       - uses: DeterminateSystems/nix-installer-action@main
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Read installer version
         id: version
         run: |
