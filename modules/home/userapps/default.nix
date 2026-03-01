@@ -25,7 +25,5 @@ in
           resyncTimer = "10m";
         };
       };
-
-      userapps.communication.discord.enable = true;
     };
   }

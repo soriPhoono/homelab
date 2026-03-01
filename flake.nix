@@ -39,7 +39,7 @@
     };
 
     nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/release-24.05";
+      url = "github:nix-community/nix-on-droid/prerelease-25.11";
       inputs.nixpkgs.follows = "nixpkgs-droid";
     };
 
@@ -84,9 +84,7 @@
 
     nvf = {
       url = "github:notashelf/nvf";
-      inputs = {
-        nixpkgs.follows = "nixpkgs-weekly";
-      };
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
   };
 
@@ -224,6 +222,9 @@
           droidModules
           ++ [
             path
+            {
+              core.user.userName = name;
+            }
           ];
       };
 
