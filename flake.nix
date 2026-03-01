@@ -5,7 +5,7 @@
     systems.url = "github:nix-systems/default";
 
     nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.948651";
-    nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
+    nixpkgs-droid.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
