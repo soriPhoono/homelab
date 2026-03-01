@@ -18,7 +18,6 @@ in {
 
   config = {
     user.shell = lib.getExe cfg.shell;
-    terminal.shell = lib.getExe cfg.shell;
 
     home-manager.config = {
       imports = let
