@@ -9,9 +9,6 @@
     boot.enable = true;
 
     hardware = {
-      enable = true;
-      reportPath = ./facter.json;
-
       gpu.dedicated.amd.enable = true;
 
       hid = {
