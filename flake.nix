@@ -41,7 +41,6 @@
     nix-on-droid = {
       url = "github:nix-community/nix-on-droid/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs-droid";
-      inputs.home-manager.follows = "home-manager";
     };
 
     home-manager = {
