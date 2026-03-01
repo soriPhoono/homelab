@@ -3,9 +3,12 @@
   xdg.userDirs.enable = lib.mkForce false;
 
   core = {
-    shells.shellAliases = {
-      pbcopy = "termux-clipboard-set";
-      pbpaste = "termux-clipboard-get";
+    shells = {
+      fish.generateCompletions = true;
+      shellAliases = {
+        pbcopy = "termux-clipboard-set";
+        pbpaste = "termux-clipboard-get";
+      };
     };
   };
 
