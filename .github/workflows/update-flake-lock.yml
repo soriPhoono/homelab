@@ -12,6 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
       - uses: DeterminateSystems/update-flake-lock@main
         with:
           inputs: nixpkgs home-manager nix-on-droid flake-parts systems
