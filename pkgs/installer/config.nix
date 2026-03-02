@@ -1,6 +1,17 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  modulesPath,
+  ...
+}: {
+  imports = [
+    "${modulesPath}/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"
+  ];
+
   core = {
-    boot.plymouth.enable = true;
+    boot = {
+      enable = true;
+      plymouth.enable = true;
+    };
 
     networking = {
       network-manager.enable = true;
@@ -16,6 +27,4 @@
       };
     };
   };
-
-  desktop.environments.kde.enable = true;
 }
