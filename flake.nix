@@ -5,7 +5,7 @@
     systems.url = "github:nix-systems/default";
 
     nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.948651";
-    nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
+    nixpkgs-droid.url = "github:NixOS/nixpkgs/nixos-24.05";
 
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
@@ -39,9 +39,8 @@
     };
 
     nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/master";
+      url = "github:nix-community/nix-on-droid/prerelease-25.11";
       inputs.nixpkgs.follows = "nixpkgs-droid";
-      inputs.home-manager.follows = "home-manager";
     };
 
     home-manager = {
@@ -85,9 +84,7 @@
 
     nvf = {
       url = "github:notashelf/nvf";
-      inputs = {
-        nixpkgs.follows = "nixpkgs-weekly";
-      };
+      inputs.nixpkgs.follows = "nixpkgs-weekly";
     };
   };
 
@@ -226,10 +223,7 @@
           ++ [
             path
             {
-              user = {
-                userName = name;
-                group = name;
-              };
+              core.user.userName = name;
             }
           ];
       };
@@ -294,35 +288,33 @@
         };
 
         checks = let
-          # Structure and Unit Tests
-          unitTests =
-            lib.discoverTests {
-              inherit pkgs inputs self;
-              inherit (inputs) nixtest;
-            }
-            ./tests;
-          # Dynamic Build Checks
-        in
-          unitTests;
+          evalSystems = lib.mapAttrs' (name: conf: {
+            name = "system-eval-${name}";
+            value = conf.config.system.build.toplevel;
+          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixosConfigurations);
 
-        apps = {
-          audit = {
-            type = "app";
-            program = lib.getExe (pkgs.writeShellScriptBin "audit" ''
-              ${pkgs.vulnix}/bin/vulnix --whitelist ${./vulnix-whitelist.toml} --system
-            '');
-            meta.description = "Run security audit with vulnix";
-          };
-          droid-builds = {
-            type = "app";
-            program = lib.getExe (pkgs.writeShellScriptBin "droid-builds" ''
-              echo "Evaluating all Nix-on-Droid configurations..."
-              nix build --impure --no-link --print-out-paths \
-                --file ${./tests/manual/droid-builds.nix} \
-                --argstr flakePath "$PWD"
-            '');
-            meta.description = "Build all Nix-on-Droid configurations";
-          };
+          # Evaluation checks for all homes matching this system
+          evalHomes = lib.mapAttrs' (name: conf: {
+            name = "home-eval-${name}";
+            value = conf.activationPackage;
+          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.homeConfigurations);
+
+          # Evaluation checks for all droids matching this system
+          evalDroids = lib.mapAttrs' (name: conf: {
+            name = "droid-eval-${name}";
+            value = conf.activationPackage;
+          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixOnDroidConfigurations);
+        in
+          evalSystems // evalHomes // evalDroids;
+
+        apps.check = {
+          type = "app";
+          program = lib.getExe (pkgs.writeShellScriptBin "check" ''
+            ${pkgs.vulnix}/bin/vulnix --whitelist ${./vulnix-whitelist.toml} --system
+
+            nix flake check -L --impure --all-systems
+          '');
+          meta.description = "Run security audit with vulnix";
         };
 
         packages = import ./pkgs {

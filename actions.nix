@@ -29,6 +29,13 @@
                   uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
+                  name = "Magic Nix Cache";
+                  uses = "DeterminateSystems/magic-nix-cache-action@main";
+                  with_ = {
+                    use-flakehub = false;
+                  };
+                }
+                {
                   name = "Build";
                   run = "nix build .#nixosConfigurations.${name}.config.system.build.toplevel";
                 }
@@ -50,6 +57,13 @@
                   uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
+                  name = "Magic Nix Cache";
+                  uses = "DeterminateSystems/magic-nix-cache-action@main";
+                  with_ = {
+                    use-flakehub = false;
+                  };
+                }
+                {
                   name = "Build";
                   run = "nix build .#homeConfigurations.${name}.activationPackage";
                 }
@@ -69,6 +83,13 @@
                 {
                   name = "Setup Nix";
                   uses = "DeterminateSystems/nix-installer-action@main";
+                }
+                {
+                  name = "Magic Nix Cache";
+                  uses = "DeterminateSystems/magic-nix-cache-action@main";
+                  with_ = {
+                    use-flakehub = false;
+                  };
                 }
                 {
                   name = "Build";

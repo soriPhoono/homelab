@@ -43,8 +43,16 @@
         ghostty.enable = true;
       };
       knowledge-management.obsidian.enable = true;
-      editors.antigravity.enable = true;
-      domain_specific.k8s.enable = true;
+      editors = {
+        neovim.enable = true;
+        antigravity.enable = true;
+      };
+      agents = {
+        gemini = {
+          enable = true;
+          enableJules = true;
+        };
+      };
     };
   };
 }
