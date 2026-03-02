@@ -31,6 +31,9 @@
                 {
                   name = "Enable cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
+                  _with = {
+                    use-flakehub = false;
+                  };
                 }
                 {
                   name = "Build";
@@ -56,6 +59,9 @@
                 {
                   name = "Enable cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
+                  _with = {
+                    use-flakehub = false;
+                  };
                 }
                 {
                   name = "Build";
@@ -81,6 +87,9 @@
                 {
                   name = "Enable cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
+                  _with = {
+                    use-flakehub = false;
+                  };
                 }
                 {
                   name = "Build";
