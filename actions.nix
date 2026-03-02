@@ -30,7 +30,7 @@
                 }
                 {
                   name = "Magic Nix Cache";
-                  uses = "DeterminateSystems/nix-cache-action@main";
+                  uses = "DeterminateSystems/magic-nix-cache-action@main";
                   with_ = {
                     use-flakehub = false;
                   };
@@ -58,7 +58,7 @@
                 }
                 {
                   name = "Magic Nix Cache";
-                  uses = "DeterminateSystems/nix-cache-action@main";
+                  uses = "DeterminateSystems/magic-nix-cache-action@main";
                   with_ = {
                     use-flakehub = false;
                   };
@@ -86,7 +86,7 @@
                 }
                 {
                   name = "Magic Nix Cache";
-                  uses = "DeterminateSystems/nix-cache-action@main";
+                  uses = "DeterminateSystems/magic-nix-cache-action@main";
                   with_ = {
                     use-flakehub = false;
                   };
