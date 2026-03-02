@@ -8,7 +8,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Enable cache
+      - name: Magic Nix Cache
         uses: DeterminateSystems/nix-cache-action@main
         with:
           use-flakehub: false
@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Enable cache
+      - name: Magic Nix Cache
         uses: DeterminateSystems/nix-cache-action@main
         with:
           use-flakehub: false
@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Enable cache
+      - name: Magic Nix Cache
         uses: DeterminateSystems/nix-cache-action@main
         with:
           use-flakehub: false
@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Enable cache
+      - name: Magic Nix Cache
         uses: DeterminateSystems/nix-cache-action@main
         with:
           use-flakehub: false
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Enable cache
+      - name: Magic Nix Cache
         uses: DeterminateSystems/nix-cache-action@main
         with:
           use-flakehub: false
@@ -73,7 +73,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Enable cache
+      - name: Magic Nix Cache
         uses: DeterminateSystems/nix-cache-action@main
         with:
           use-flakehub: false
@@ -86,7 +86,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Enable cache
+      - name: Magic Nix Cache
         uses: DeterminateSystems/nix-cache-action@main
         with:
           use-flakehub: false
