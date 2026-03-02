@@ -31,7 +31,7 @@
                 {
                   name = "Enable cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
-                  _with = {
+                  with_ = {
                     use-flakehub = false;
                   };
                 }
@@ -59,7 +59,7 @@
                 {
                   name = "Enable cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
-                  _with = {
+                  with_ = {
                     use-flakehub = false;
                   };
                 }
@@ -87,7 +87,7 @@
                 {
                   name = "Enable cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
-                  _with = {
+                  with_ = {
                     use-flakehub = false;
                   };
                 }
