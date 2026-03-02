@@ -288,35 +288,33 @@
         };
 
         checks = let
-          # Structure and Unit Tests
-          unitTests =
-            lib.discoverTests {
-              inherit pkgs inputs self;
-              inherit (inputs) nixtest;
-            }
-            ./tests;
-          # Dynamic Build Checks
-        in
-          unitTests;
+          evalSystems = lib.mapAttrs' (name: conf: {
+            name = "system-eval-${name}";
+            value = conf.config.system.build.toplevel;
+          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixosConfigurations);
 
-        apps = {
-          audit = {
-            type = "app";
-            program = lib.getExe (pkgs.writeShellScriptBin "audit" ''
-              ${pkgs.vulnix}/bin/vulnix --whitelist ${./vulnix-whitelist.toml} --system
-            '');
-            meta.description = "Run security audit with vulnix";
-          };
-          droid-builds = {
-            type = "app";
-            program = lib.getExe (pkgs.writeShellScriptBin "droid-builds" ''
-              echo "Evaluating all Nix-on-Droid configurations..."
-              nix build --impure --no-link --print-out-paths \
-                --file ${./tests/manual/droid-builds.nix} \
-                --argstr flakePath "$PWD"
-            '');
-            meta.description = "Build all Nix-on-Droid configurations";
-          };
+          # Evaluation checks for all homes matching this system
+          evalHomes = lib.mapAttrs' (name: conf: {
+            name = "home-eval-${name}";
+            value = conf.activationPackage;
+          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.homeConfigurations);
+
+          # Evaluation checks for all droids matching this system
+          evalDroids = lib.mapAttrs' (name: conf: {
+            name = "droid-eval-${name}";
+            value = conf.activationPackage;
+          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixOnDroidConfigurations);
+        in
+          evalSystems // evalHomes // evalDroids;
+
+        apps.check = {
+          type = "app";
+          program = lib.getExe (pkgs.writeShellScriptBin "check" ''
+            ${pkgs.vulnix}/bin/vulnix --whitelist ${./vulnix-whitelist.toml} --system
+
+            nix flake check -L --impure --all-systems
+          '');
+          meta.description = "Run security audit with vulnix";
         };
 
         packages = import ./pkgs {

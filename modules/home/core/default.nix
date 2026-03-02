@@ -10,6 +10,7 @@
     ./gitops.nix
     ./secrets.nix
     ./ssh.nix
+    ./checks.nix
   ];
 
   home.packages = with pkgs; [
@@ -49,4 +50,6 @@
     then nixosConfig.system.stateVersion
     else "24.11"
   );
+
+  core.checks.enable = lib.mkDefault true;
 }

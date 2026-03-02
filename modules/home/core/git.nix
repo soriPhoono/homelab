@@ -72,6 +72,17 @@ in {
   };
 
   config = {
+    assertions = [
+      {
+        assertion = cfg.userName != "";
+        message = "core.git.userName must be set.";
+      }
+      {
+        assertion = cfg.userEmail != "";
+        message = "core.git.userEmail must be set.";
+      }
+    ];
+
     core.ssh.extraSSHKeys =
       lib.mapAttrs
       (_: identity: identity.signingKey)

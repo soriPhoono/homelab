@@ -39,7 +39,6 @@
       bluetooth.enable = true;
     };
 
-
     secrets = {
       enable = true;
       defaultSopsFile = ./secrets.yaml;

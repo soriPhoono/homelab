@@ -34,6 +34,13 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.defaultSopsFile != null;
+        message = "core.secrets.enable is true, but core.secrets.defaultSopsFile is not set.";
+      }
+    ];
+
     sops = {
       inherit (cfg) defaultSopsFile;
 
