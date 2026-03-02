@@ -29,7 +29,7 @@
                   uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
-                  name = "Enable cache";
+                  name = "Magic Nix Cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
                   with_ = {
                     use-flakehub = false;
@@ -57,7 +57,7 @@
                   uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
-                  name = "Enable cache";
+                  name = "Magic Nix Cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
                   with_ = {
                     use-flakehub = false;
@@ -85,7 +85,7 @@
                   uses = "DeterminateSystems/nix-installer-action@main";
                 }
                 {
-                  name = "Enable cache";
+                  name = "Magic Nix Cache";
                   uses = "DeterminateSystems/nix-cache-action@main";
                   with_ = {
                     use-flakehub = false;
