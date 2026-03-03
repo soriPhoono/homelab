@@ -8,11 +8,6 @@
   ];
 
   core = {
-    boot = {
-      enable = true;
-      plymouth.enable = true;
-    };
-
     networking = {
       network-manager.enable = true;
       tailscale.enable = true;

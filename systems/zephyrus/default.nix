@@ -89,5 +89,5 @@
     services.asusd.enable = true;
   };
 
-  hosting.single-node.backends.docker.enable = true;
+  hosting.single-node.enable = true;
 }

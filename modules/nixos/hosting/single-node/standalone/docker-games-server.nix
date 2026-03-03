@@ -119,7 +119,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      hosting.single-node.backends.docker.enable = true;
+      hosting.single-node.enable = true;
 
       networking.firewall = mkIf cfg.openFirewall {
         allowedTCPPorts = [48010 47989 47984];
