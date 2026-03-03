@@ -12,6 +12,7 @@ in
       ./domain_specific
       ./terminal
       ./knowledge-management
+      ./disk_tools
     ];
 
     options.userapps.development = {
