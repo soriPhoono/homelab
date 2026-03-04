@@ -8,6 +8,11 @@
   ];
 
   core = {
+    secrets = {
+      enable = true;
+      defaultSopsFile = ./secrets.yaml;
+    };
+
     gitops = {
       enable = true;
       repo = "https://github.com/soriphoono/homelab.git";

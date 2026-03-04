@@ -3,6 +3,7 @@ keys:
   - &admin_spookyskelly age1kv7f5nyknwhf5lvm7yzhm0jetleceklj7u225uxce5x007hkvgys0fmeey
   - &system_lg_laptop age1yqsdglc9s03k6yhefaqpnpyurj0j9nktlccc8rq2uevpuzn0ea2stx0msr
   - &system_zephyrus age1vz3rjjgwq9t3288mwlt9cdyt83429srm8hwycjrflllhcwkkugvs0jafa0
+  - &system_docker_node age1fkl7zgtcyvtctelglesw7muj8nq3d5suylvrc7gz2c5jc9hqzv7q7fl7tm
 creation_rules:
   - path_regex: homes/soriphoono(@[^/]+)?/[^/]+\.(yaml|json|env|ini)$
     key_groups:
@@ -13,6 +14,11 @@ creation_rules:
       - age:
           - *admin_soriphoono
           - *admin_spookyskelly
+  - path_regex: systems/docker-node/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - age:
+          - *admin_soriphoono
+          - *system_docker_node
   - path_regex: systems/lg-laptop/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
