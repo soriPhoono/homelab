@@ -40,5 +40,16 @@ in {
     };
 
     services.resolved.enable = true;
+
+    systemd.services.nsncd = {
+      serviceConfig = {
+        # This tells systemd to create /run/nscd with nscd ownership
+        RuntimeDirectory = "nscd";
+        RuntimeDirectoryMode = "0755";
+        # Force the service to run as the correct NixOS nscd user
+        User = "nscd";
+        Group = "nscd";
+      };
+    };
   };
 }
