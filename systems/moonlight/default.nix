@@ -44,7 +44,7 @@
   };
 
   hosting.single-node = {
-    backends.docker.enable = true;
+    enable = true;
     # features.docker-games-server = {
     #   enable = true;
     #   openFirewall = true;

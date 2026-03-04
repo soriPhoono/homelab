@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -39,6 +40,8 @@ in
               config.core.shells.shellAliases);
         in ''
           set fish_greeting
+
+          eval "$(${pkgs.ntfy}/bin/ntfy shell-integration)"
 
           ${sessionVariables}
 

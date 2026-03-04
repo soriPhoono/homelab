@@ -32,7 +32,8 @@ in
       };
     };
 
-    config = lib.mkIf cfg.enable ({
+    config = lib.mkIf cfg.enable (mkMerge [
+      {
         networking.firewall.checkReversePath = "loose";
 
         services.tailscale = {
@@ -131,12 +132,13 @@ in
           };
         };
       }
-      // lib.optionalAttrs (options ? sops) {
+      (lib.optionalAttrs (options ? sops) {
         sops = mkIf cfg.auth.internal {
           secrets."networking/tailscale/auth_key" = {};
           templates."tailscale.env".content = ''
             TS_AUTHKEY=${config.sops.placeholder."networking/tailscale/auth_key"}
           '';
         };
-      });
+      })
+    ]);
   }

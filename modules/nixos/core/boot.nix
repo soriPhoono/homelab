@@ -36,7 +36,8 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable ({
+  config = lib.mkIf cfg.enable (lib.mkMerge [
+    {
       boot = {
         kernelPackages = cfg.kernel.package;
         kernelParams = cfg.kernel.params;
@@ -52,7 +53,7 @@ in {
         loader = {
           efi.canTouchEfiVariables = true;
           systemd-boot = {
-            enable = lib.mkIf cfg.enable (lib.mkForce (!cfg.secure-boot.enable));
+            enable = lib.mkForce (!cfg.secure-boot.enable);
             configurationLimit = 10;
           };
         };
@@ -64,10 +65,11 @@ in {
 
       security.sudo.wheelNeedsPassword = lib.mkDefault false;
     }
-    // lib.optionalAttrs (options ? boot.lanzaboote) {
+    (lib.optionalAttrs (options ? boot.lanzaboote) {
       boot.lanzaboote = {
         inherit (cfg.secure-boot) enable;
         pkiBundle = "/var/lib/sbctl";
       };
-    });
+    })
+  ]);
 }
