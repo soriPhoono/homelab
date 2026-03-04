@@ -43,12 +43,17 @@ in {
 
     systemd.services.nsncd = {
       serviceConfig = {
-        # This tells systemd to create /run/nscd with nscd ownership
-        RuntimeDirectory = "nscd";
-        RuntimeDirectoryMode = "0755";
-        # Force the service to run as the correct NixOS nscd user
-        User = "nscd";
-        Group = "nscd";
+        # This stops systemd from attempting to create a new User Namespace
+        PrivateUsers = lib.mkForce false;
+
+        # This prevents systemd from using 'unshare' to restrict namespaces
+        RestrictNamespaces = lib.mkForce false;
+
+        # Standard LXC overrides for systemd units
+        ProcSubset = "all";
+        ProtectControlGroups = lib.mkForce false;
+        ProtectKernelTunables = lib.mkForce false;
+        NoNewPrivileges = lib.mkForce false;
       };
     };
   };
