@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
   cfg = config.core.secrets;
@@ -33,25 +34,26 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = cfg.defaultSopsFile != null;
-        message = "core.secrets.enable is true, but core.secrets.defaultSopsFile is not set.";
-      }
-    ];
+  config = lib.mkIf cfg.enable ({
+      assertions = [
+        {
+          assertion = cfg.defaultSopsFile != null;
+          message = "core.secrets.enable is true, but core.secrets.defaultSopsFile is not set.";
+        }
+      ];
+    }
+    // lib.optionalAttrs (options ? sops) {
+      sops = {
+        inherit (cfg) defaultSopsFile;
 
-    sops = {
-      inherit (cfg) defaultSopsFile;
+        # Use the centrally defined age key file
+        age.keyFile = cfg.ageKeyFile;
 
-      # Use the centrally defined age key file
-      age.keyFile = cfg.ageKeyFile;
+        secrets.environment = lib.mkIf cfg.environment.enable {
+          format = "dotenv";
 
-      secrets.environment = lib.mkIf cfg.environment.enable {
-        format = "dotenv";
-
-        inherit (cfg.environment) sopsFile;
+          inherit (cfg.environment) sopsFile;
+        };
       };
-    };
-  };
+    });
 }

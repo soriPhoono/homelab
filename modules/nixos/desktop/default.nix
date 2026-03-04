@@ -16,6 +16,8 @@ in
       ./services/asusd.nix
       ./services/pipewire.nix
       ./services/flatpak.nix
+
+      ./tools
     ];
 
     options.desktop = {

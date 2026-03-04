@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }: let
   cfg = config.core.boot;
@@ -35,37 +36,38 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    boot = {
-      kernelPackages = cfg.kernel.package;
-      kernelParams = cfg.kernel.params;
-      kernel.sysctl."fs.inotify.max_user_watches" = 524288;
+  config = lib.mkIf cfg.enable ({
+      boot = {
+        kernelPackages = cfg.kernel.package;
+        kernelParams = cfg.kernel.params;
+        kernel.sysctl."fs.inotify.max_user_watches" = 524288;
 
-      initrd = {
-        verbose = !cfg.plymouth.enable;
-        systemd.enable = true;
-      };
-
-      consoleLogLevel = 0;
-
-      loader = {
-        efi.canTouchEfiVariables = true;
-        systemd-boot = {
-          enable = lib.mkIf cfg.enable (lib.mkForce (!cfg.secure-boot.enable));
-          configurationLimit = 10;
+        initrd = {
+          verbose = !cfg.plymouth.enable;
+          systemd.enable = true;
         };
+
+        consoleLogLevel = 0;
+
+        loader = {
+          efi.canTouchEfiVariables = true;
+          systemd-boot = {
+            enable = lib.mkIf cfg.enable (lib.mkForce (!cfg.secure-boot.enable));
+            configurationLimit = 10;
+          };
+        };
+
+        plymouth.enable = cfg.plymouth.enable;
       };
 
-      lanzaboote = {
+      zramSwap.enable = true;
+
+      security.sudo.wheelNeedsPassword = lib.mkDefault false;
+    }
+    // lib.optionalAttrs (options ? boot.lanzaboote) {
+      boot.lanzaboote = {
         inherit (cfg.secure-boot) enable;
         pkiBundle = "/var/lib/sbctl";
       };
-
-      plymouth.enable = cfg.plymouth.enable;
-    };
-
-    zramSwap.enable = true;
-
-    security.sudo.wheelNeedsPassword = lib.mkDefault false;
-  };
+    });
 }

@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
   cfg = config.core.gitops;
@@ -20,7 +21,7 @@ in
       };
     };
 
-    config = mkIf cfg.enable {
+    config = mkIf cfg.enable (lib.optionalAttrs (options ? services.comin) {
       services.comin = {
         enable = true;
         hostname = cfg.name;
@@ -32,5 +33,5 @@ in
           }
         ];
       };
-    };
+    });
   }

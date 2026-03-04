@@ -2,6 +2,7 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
   cfg = config.hosting.clustering.backends.k3s;
@@ -30,31 +31,33 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
-      {
-        sops.secrets."hosting/k3s/token" = {
-          path = "/var/lib/rancher/k3s/server/node-token";
-          mode = "0600";
-          owner = "root";
-          group = "root";
-        };
+      ({
+          networking.firewall = {
+            allowedTCPPorts = [
+              6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
+              2379 # k3s, etcd clients: required if using a "High Availability Embedded etcd" configuration
+              2380 # k3s, etcd peers: required if using a "High Availability Embedded etcd" configuration
+            ];
+            allowedUDPPorts = [
+              8472 # k3s, flannel: required if using multi-node for inter-node networking
+            ];
+          };
 
-        networking.firewall = {
-          allowedTCPPorts = [
-            6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
-            2379 # k3s, etcd clients: required if using a "High Availability Embedded etcd" configuration
-            2380 # k3s, etcd peers: required if using a "High Availability Embedded etcd" configuration
-          ];
-          allowedUDPPorts = [
-            8472 # k3s, flannel: required if using multi-node for inter-node networking
-          ];
-        };
+          services.k3s = {
+            enable = true;
+            gracefulNodeShutdown.enable = true;
+          };
+        }
+        // lib.optionalAttrs (options ? sops) {
+          sops.secrets."hosting/k3s/token" = {
+            path = "/var/lib/rancher/k3s/server/node-token";
+            mode = "0600";
+            owner = "root";
+            group = "root";
+          };
 
-        services.k3s = {
-          enable = true;
-          tokenFile = config.sops.secrets."hosting/k3s/token".path;
-          gracefulNodeShutdown.enable = true;
-        };
-      }
+          services.k3s.tokenFile = config.sops.secrets."hosting/k3s/token".path;
+        })
       (mkIf (cfg.mode == "leader") {
         services.k3s = {
           inherit (cfg) nodeIP;

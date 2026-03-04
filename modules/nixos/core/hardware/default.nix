@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
   cfg = config.core.hardware;
@@ -22,9 +23,9 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf cfg.enable (lib.optionalAttrs (options ? facter) {
     facter = {
       inherit (cfg) reportPath;
     };
-  };
+  });
 }

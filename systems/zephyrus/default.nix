@@ -87,6 +87,7 @@
       gaming.enable = true;
     };
     services.asusd.enable = true;
+    tools.partition-manager.enable = true;
   };
 
   hosting.single-node.enable = true;

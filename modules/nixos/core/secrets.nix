@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
   cfg = config.core.secrets;
@@ -19,27 +20,8 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.rules = let
-      usersWithSecrets =
-        lib.filterAttrs (
-          name: _:
-            config.home-manager.users.${name}.core.secrets.enable or false
-        )
-        config.core.users;
-    in
-      lib.concatMap (username: [
-        "d /home/${username}/.config/ 0755 ${username} users -"
-        "d /home/${username}/.config/sops/ 0700 ${username} users -"
-        "d /home/${username}/.config/sops/age/ 0700 ${username} users -"
-      ]) (lib.attrNames usersWithSecrets);
-
-    sops = {
-      defaultSopsFile = lib.mkIf (cfg.defaultSopsFile != null) cfg.defaultSopsFile;
-
-      age.sshKeyPaths = map (key: key.path) config.services.openssh.hostKeys;
-
-      secrets = let
+  config = lib.mkIf cfg.enable ({
+      systemd.tmpfiles.rules = let
         usersWithSecrets =
           lib.filterAttrs (
             name: _:
@@ -47,16 +29,36 @@ in {
           )
           config.core.users;
       in
-        lib.mapAttrs' (username: _: {
-          name = "users/${username}/age_key";
-          value = {
-            path = "/home/${username}/.config/sops/age/keys.txt";
-            mode = "0400";
-            owner = username;
-            group = "users";
-          };
-        })
-        usersWithSecrets;
-    };
-  };
+        lib.concatMap (username: [
+          "d /home/${username}/.config/ 0755 ${username} users -"
+          "d /home/${username}/.config/sops/ 0700 ${username} users -"
+          "d /home/${username}/.config/sops/age/ 0700 ${username} users -"
+        ]) (lib.attrNames usersWithSecrets);
+    }
+    // lib.optionalAttrs (options ? sops) {
+      sops = {
+        defaultSopsFile = lib.mkIf (cfg.defaultSopsFile != null) cfg.defaultSopsFile;
+
+        age.sshKeyPaths = map (key: key.path) config.services.openssh.hostKeys;
+
+        secrets = let
+          usersWithSecrets =
+            lib.filterAttrs (
+              name: _:
+                config.home-manager.users.${name}.core.secrets.enable or false
+            )
+            config.core.users;
+        in
+          lib.mapAttrs' (username: _: {
+            name = "users/${username}/age_key";
+            value = {
+              path = "/home/${username}/.config/sops/age/keys.txt";
+              mode = "0400";
+              owner = username;
+              group = "users";
+            };
+          })
+          usersWithSecrets;
+      };
+    });
 }

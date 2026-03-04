@@ -8,12 +8,7 @@
   nixosModules = with inputs; [
     ./config.nix
     home-manager.nixosModules.home-manager
-    sops-nix.nixosModules.sops
-    lanzaboote.nixosModules.lanzaboote
     determinate.nixosModules.default
-    nixos-facter-modules.nixosModules.facter
-    disko.nixosModules.disko
-    comin.nixosModules.comin
     nix-index-database.nixosModules.nix-index
 
     (_: {
@@ -31,7 +26,6 @@
         };
         sharedModules = [
           self.homeModules.default
-          sops-nix.homeManagerModules.sops
           nvf.homeManagerModules.default
         ];
         backupFileExtension = "bak";
