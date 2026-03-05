@@ -38,7 +38,9 @@ in
             enable = true;
             qemu = {
               swtpm.enable = true;
-              vhostUserPackages = with pkgs; [virtiofsd];
+              vhostUserPackages = with pkgs; [
+                virtiofsd
+              ];
             };
           };
         };
@@ -46,6 +48,10 @@ in
         programs.virt-manager = {
           enable = true;
         };
+
+        environment.systemPackages = with pkgs; [
+          virtio-win
+        ];
 
         users.extraUsers =
           builtins.mapAttrs (_: _: {
