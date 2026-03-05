@@ -52,7 +52,7 @@ in
         environment.systemPackages = with pkgs; [
           (runCommand "virtio-win-symlinked" {} ''
             mkdir -p $out/share/virtio-win
-            ln -s ${virtio-win}/* $out/share/virtio-win/
+            ln -s ${virtio-win.src} $out/share/virtio-win/virtio-win.iso
           '')
         ];
 
