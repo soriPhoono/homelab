@@ -50,7 +50,10 @@ in
         };
 
         environment.systemPackages = with pkgs; [
-          virtio-win
+          (runCommand "virtio-win-symlinked" {} ''
+            mkdir -p $out/share/virtio-win
+            ln -s ${virtio-win}/* $out/share/virtio-win/
+          '')
         ];
 
         users.extraUsers =

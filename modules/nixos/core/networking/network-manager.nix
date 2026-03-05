@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -25,6 +26,10 @@ in {
 
     networking.networkmanager = {
       enable = true;
+
+      plugins = with pkgs; [
+        networkmanager-openconnect
+      ];
 
       wifi = {
         powersave = true;
