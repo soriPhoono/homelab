@@ -1,11 +1,11 @@
-_: final: prev: {
+_: _final: prev: {
   librewolf-bin-unwrapped = prev.librewolf-bin-unwrapped.overrideAttrs (old: rec {
     pname = "librewolf-bin-unwrapped";
     inherit (prev.librewolf) version;
 
     src = prev.fetchurl {
       url = "https://codeberg.org/api/packages/librewolf/generic/librewolf/${version}/librewolf-${version}-linux-x86_64-package.tar.xz";
-      hash = "sha256-zqWq8FgdSLWAaoWvmCnIc9FlTmQtcCgLoK9XuXsWS4M=";
+      hash = "sha256-UV9laKmAvyafNXXcCGrEr51dlyO1DaV3iHJy981OR9M=";
     };
 
     # The .tar.xz from Codeberg contains the exploded browser directory.
@@ -36,15 +36,6 @@ _: final: prev: {
       fi
     '';
 
-    meta =
-      old.meta
-      // {
-        knownVulnerabilities = [];
-      };
-  });
-
-  librewolf-bin = prev.librewolf-bin.overrideAttrs (old: {
-    inherit (final.librewolf-bin-unwrapped) version;
     meta =
       old.meta
       // {
