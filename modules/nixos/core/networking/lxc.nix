@@ -36,7 +36,7 @@ in {
 
       # Disable firewall by default in LXC? No, keep it configurable.
       # But often LXC containers are behind a bridge/NAT.
-      firewall.enable = lib.mkDefault true;
+      firewall.enable = false;
     };
 
     services.resolved.enable = true;

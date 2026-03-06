@@ -4,14 +4,11 @@
   ...
 }: {
   imports = [
-    (modulesPath + "/profiles/qemu-guest.nix")
-    ./disko.nix
+    (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
 
   core = {
     nixconf.determinate-nix.enable = true;
-
-    boot.enable = true;
 
     hardware.gpu.dedicated.amd.enable = true;
 
@@ -22,7 +19,7 @@
     };
 
     networking = {
-      network-manager.enable = true;
+      lxc.enable = true;
       tailscale.enable = true;
     };
 
@@ -37,7 +34,5 @@
     };
   };
 
-  hosting.single-node = {
-    enable = true;
-  };
+  hosting.single-node.enable = true;
 }

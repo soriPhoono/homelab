@@ -39,7 +39,7 @@ in
         # Configure the primary interface for DHCP
         interfaces."${cfg.interface}".useDHCP = true;
 
-        firewall.enable = mkDefault true;
+        firewall.enable = false;
       };
 
       services.resolved.enable = true;

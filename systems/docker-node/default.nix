@@ -8,6 +8,8 @@
   ];
 
   core = {
+    nixconf.determinate-nix.enable = true;
+
     secrets = {
       enable = true;
       defaultSopsFile = ./secrets.yaml;
@@ -16,7 +18,7 @@
     gitops = {
       enable = true;
       repo = "https://github.com/soriphoono/homelab.git";
-      name = "docker-node";
+      name = "adams-controlplane-1";
     };
 
     networking = {
