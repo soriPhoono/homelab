@@ -22,7 +22,7 @@
     };
 
     networking = {
-      qemu.enable = true;
+      network-manager.enable = true;
       tailscale.enable = true;
     };
 
@@ -39,10 +39,5 @@
 
   hosting.single-node = {
     enable = true;
-    # features.docker-games-server = {
-    #   enable = true;
-    #   openFirewall = true;
-    #   dataDir = "/mnt/games";
-    # };
   };
 }

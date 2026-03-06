@@ -28,7 +28,11 @@ in {
   };
 
   config = {
-    environment.systemPackages = with pkgs; [wget];
+    environment.systemPackages = with pkgs; [
+      wget
+
+      pciutils
+    ];
 
     hardware.enableAllFirmware = true;
 
