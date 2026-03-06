@@ -34,5 +34,13 @@
     };
   };
 
-  hosting.single-node.enable = true;
+  hosting.single-node = {
+    enable = true;
+    features.docker-games-server = {
+      enable = true;
+      openFirewall = true;
+      dataDir = "/mnt/games";
+      gpuRenderNode = "/dev/dri/renderD129";
+    };
+  };
 }
