@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -53,5 +54,9 @@ in
         # Preserve dbus-broker (Plasma 6 tries to switch to dbus by default)
         dbus.implementation = "broker";
       };
+
+      environment.systemPackages = with pkgs; [
+        winboat
+      ];
     };
   }

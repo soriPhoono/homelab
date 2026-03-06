@@ -22,7 +22,7 @@
     };
 
     networking = {
-      network-manager.enable = true;
+      qemu.enable = true;
       tailscale.enable = true;
     };
 
