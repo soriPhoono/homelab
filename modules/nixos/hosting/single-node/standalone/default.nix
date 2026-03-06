@@ -1,5 +1,5 @@
 {
   imports = [
-    ./docker-games-server.nix
+    ./sunshine.nix
   ];
 }

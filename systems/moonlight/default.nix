@@ -1,14 +1,8 @@
-{
-  pkgs,
-  modulesPath,
-  ...
-}: {
-  imports = [
-    (modulesPath + "/virtualisation/proxmox-lxc.nix")
-  ];
-
+{pkgs, ...}: {
   core = {
     nixconf.determinate-nix.enable = true;
+
+    boot.enable = true;
 
     hardware.gpu.dedicated.amd.enable = true;
 
@@ -19,7 +13,7 @@
     };
 
     networking = {
-      lxc.enable = true;
+      qemu.enable = true;
       tailscale.enable = true;
     };
 
@@ -34,13 +28,5 @@
     };
   };
 
-  hosting.single-node = {
-    enable = true;
-    features.docker-games-server = {
-      enable = true;
-      openFirewall = true;
-      dataDir = "/mnt/games";
-      gpuRenderNode = "/dev/dri/renderD128";
-    };
-  };
+  hosting.single-node.features.sunshine.enable = true;
 }
