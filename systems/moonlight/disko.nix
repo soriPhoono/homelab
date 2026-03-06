@@ -8,7 +8,10 @@
           type = "gpt";
           partitions = {
             ESP = {
-              size = "512M";
+              priority = 1;
+              name = "ESP";
+              start = "1M";
+              end = "128M";
               type = "EF00";
               content = {
                 type = "filesystem";
@@ -17,29 +20,37 @@
                 mountOptions = ["umask=0077"];
               };
             };
-            content = {
-              type = "btrfs";
-              subvolumes = {
-                "/root" = {
-                  mountpoint = "/";
-                  mountOptions = [
-                    "compress=zstd"
-                    "noatime"
-                  ];
-                };
-                "/home" = {
-                  mountpoint = "/home";
-                  mountOptions = [
-                    "compress=zstd"
-                    "noatime"
-                  ];
-                };
-                "/nix" = {
-                  mountpoint = "/nix";
-                  mountOptions = [
-                    "compress=zstd"
-                    "noatime"
-                  ];
+            root = {
+              size = "100%";
+              content = {
+                type = "btrfs";
+                extraArgs = ["-f"];
+                subvolumes = {
+                  "/root" = {
+                    mountpoint = "/";
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
+                  };
+                  "/home" = {
+                    mountpoint = "/home";
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
+                  };
+                  "/nix" = {
+                    mountpoint = "/nix";
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
+                  };
+                  "/swap" = {
+                    mountpoint = "/.swapvol";
+                    swap.swapfile.size = "20M";
+                  };
                 };
               };
             };
