@@ -40,7 +40,7 @@
       enable = true;
       openFirewall = true;
       dataDir = "/mnt/games";
-      gpuRenderNode = "/dev/dri/renderD128";
+      gpuRenderNode = "/dev/dri/renderD129";
     };
   };
 }
