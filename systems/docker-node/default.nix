@@ -10,6 +10,11 @@
   core = {
     nixconf.determinate-nix.enable = true;
 
+    hardware.gpu.integrated.intel = {
+      enable = true;
+      deviceId = "a780";
+    };
+
     secrets = {
       enable = true;
       defaultSopsFile = ./secrets.yaml;
