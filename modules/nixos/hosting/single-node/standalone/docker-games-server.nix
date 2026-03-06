@@ -94,7 +94,7 @@ in
 
       systemd.services.wolf = {
         description = "Games on Whales (Wolf) Service";
-        after = ["network-online.target" "${backend}.service"];
+        after = ["network-online.target" "docker.service"];
         wants = ["network-online.target"];
         wantedBy = ["multi-user.target"];
 
