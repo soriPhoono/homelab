@@ -7,29 +7,11 @@
   cfg = config.hosting.single-node.features.docker-games-server;
 
   # Determine hosting backend
-  backend =
-    if config.hosting.single-node.backends.podman.enable
-    then "podman"
-    else "docker";
-  isPodman = backend == "podman";
-  socketPath =
-    if isPodman
-    then "/run/podman/podman.sock"
-    else "/var/run/docker.sock";
-  containerCmd =
-    if isPodman
-    then "podman"
-    else "docker";
-
   launcherScript = pkgs.writeShellApplication {
     name = "wolf-launcher";
     runtimeInputs = with pkgs; [
       curl
-      (
-        if isPodman
-        then podman
-        else docker
-      )
+      docker
       coreutils
       gawk
       gnused
@@ -46,13 +28,10 @@
 
       # Common arguments
       ARGS=(
-        run --name wolf ${
-        if isPodman
-        then "--replace"
-        else "--rm"
-      }
+        run --name wolf
+        "--rm"
         -v "${cfg.dataDir}:/etc/wolf"
-        -v "${socketPath}:/var/run/docker.sock"
+        -v "/var/run/docker.sock:/var/run/docker.sock"
         -v /dev:/dev:rw
         -v /run/udev:/run/udev:rw
         -p 47984:47984/tcp -p 47989:47989/tcp -p 48010:48010/tcp
@@ -70,33 +49,20 @@
         echo "Detected Nvidia GPU on $RENDER_NODE"
 
         # Check if we are running podman or docker and apply correct flags
-        ${
-        if isPodman
-        then ''
-          ARGS+=(
-              --device nvidia.com/gpu=all
-              --security-opt=label=disable
-              -e NVIDIA_DRIVER_CAPABILITIES=all
-              -e NVIDIA_VISIBLE_DEVICES=all
-          )
-        ''
-        else ''
-          ARGS+=(
-              --device nvidia.com/gpu=all
-              -e NVIDIA_DRIVER_CAPABILITIES=all
-              -e NVIDIA_VISIBLE_DEVICES=all
-          )
-        ''
-      }
+        ARGS+=(
+          --device nvidia.com/gpu=all
+          -e NVIDIA_DRIVER_CAPABILITIES=all
+          -e NVIDIA_VISIBLE_DEVICES=all
+        )
       else
         echo "Detected AMD/Intel GPU on $RENDER_NODE (Vendor: $VENDOR_ID)"
       fi
 
       # Clean up any existing container to prevent conflicts
-      ${containerCmd} rm -f wolf || true
+      docker rm -f wolf || true
 
       echo "Starting Wolf container..."
-      exec ${containerCmd} "''${ARGS[@]}" ghcr.io/games-on-whales/wolf:stable
+      exec docker "''${ARGS[@]}" ghcr.io/games-on-whales/wolf:stable
     '';
   };
 in
