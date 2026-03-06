@@ -13,13 +13,7 @@
 
     boot.enable = true;
 
-    hardware = {
-      gpu.dedicated.amd.enable = true;
-
-      hid = {
-        xbox_controllers.enable = true;
-      };
-    };
+    hardware.gpu.dedicated.amd.enable = true;
 
     gitops = {
       enable = true;
