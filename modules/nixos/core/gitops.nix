@@ -24,7 +24,7 @@ in
     config = mkIf cfg.enable (lib.optionalAttrs (options ? services.comin) {
       services.comin = {
         enable = true;
-        hostname = cfg.name;
+        hostname = config.networking.hostName;
         remotes = [
           {
             name = "origin";

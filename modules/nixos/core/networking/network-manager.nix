@@ -31,10 +31,14 @@ in {
         networkmanager-openconnect
       ];
 
+      dns = "systemd-resolved";
+
       wifi = {
         powersave = true;
         macAddress = "random";
       };
+
+      ethernet.macAddress = "random";
     };
 
     users.extraUsers =

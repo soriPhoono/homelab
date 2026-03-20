@@ -3,102 +3,78 @@
 
   inputs = {
     systems.url = "github:nix-systems/default";
-
-    nixpkgs-weekly.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.948651";
-    nixpkgs-droid.url = "github:NixOS/nixpkgs/nixos-24.05";
-
     flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-compat = {
-      url = "github:NixOS/flake-compat";
-      flake = false;
-    };
-
-    nixtest = {
-      url = "github:jetify-com/nixtest";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     agenix = {
       url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     agenix-shell = {
       url = "github:aciceri/agenix-shell";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     git-hooks-nix = {
       url = "github:cachix/git-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     github-actions-nix = {
       url = "github:synapdeck/github-actions-nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
-    };
-
-    nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/prerelease-25.11";
-      inputs.nixpkgs.follows = "nixpkgs-droid";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
 
     disko = {
       url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    lanzaboote = {
-      url = "github:nix-community/lanzaboote/v0.4.2";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
-    };
-
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     comin = {
       url = "github:nlewo/comin";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nur = {
       url = "github:nix-community/NUR";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nvf = {
       url = "github:notashelf/nvf";
-      inputs.nixpkgs.follows = "nixpkgs-weekly";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs = inputs @ {
     self,
-    nixpkgs-weekly,
-    nixpkgs-droid,
+    nixpkgs,
     flake-parts,
     agenix,
-    nix-on-droid,
     ...
   }: let
     # Extend lib with our custom functions
-    lib = nixpkgs-weekly.lib.extend (final: prev:
+    lib = nixpkgs.lib.extend (final: prev:
       (import ./lib/default.nix {inherit inputs;}) final prev
       // {
         inherit (inputs.home-manager.lib) hm;
@@ -107,7 +83,7 @@
     # --- System Support & Package Cache --- #
     supportedSystems = import inputs.systems;
     pkgsFor = lib.genAttrs supportedSystems (system:
-      import nixpkgs-weekly {
+      import nixpkgs {
         inherit system;
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;
@@ -120,28 +96,12 @@
       nvf.homeManagerModules.default
     ];
 
-    droidModules = [
-      self.droidModules.default
-      {
-        home-manager = {
-          useGlobalPkgs = true;
-          extraSpecialArgs = {
-            inherit inputs self lib;
-            isDroid = true;
-          };
-          sharedModules = homeManagerModules;
-          backupFileExtension = "bak";
-        };
-      }
-    ];
-
     nixosModules = with inputs; [
       self.nixosModules.default
       home-manager.nixosModules.home-manager
       nixos-facter-modules.nixosModules.facter
       disko.nixosModules.disko
       determinate.nixosModules.default
-      lanzaboote.nixosModules.lanzaboote
       sops-nix.nixosModules.sops
       comin.nixosModules.comin
       nix-index-database.nixosModules.nix-index
@@ -152,7 +112,6 @@
           startAsUserService = true;
           extraSpecialArgs = {
             inherit inputs self lib;
-            isDroid = false;
           };
           sharedModules = homeManagerModules;
           backupFileExtension = "bak";
@@ -163,20 +122,20 @@
     # --- System Builders --- #
 
     # Standalone Home Manager Builder
-    mkHome = username: let
+    mkHome = username: homeName: let
       basePath = ./homes + "/${username}";
-      globalPath = ./homes + "/${username}@global";
+      homePath = ./homes + "/${username}@${homeName}";
 
       # Determine if paths exist
       hasBase = builtins.pathExists basePath;
-      hasGlobal = builtins.pathExists globalPath;
+      hasHome = builtins.pathExists homePath;
 
-      # Read meta from base first, then global, fallback to empty
+      # Read meta from home first, then base, fallback to empty
       meta =
-        if hasBase
+        if hasHome
+        then lib.readMeta homePath
+        else if hasBase
         then lib.readMeta basePath
-        else if hasGlobal
-        then lib.readMeta globalPath
         else {};
 
       systemArch = meta.system or "x86_64-linux";
@@ -186,44 +145,18 @@
         inherit pkgs;
         extraSpecialArgs = {
           inherit inputs self lib;
-          isDroid = false;
         };
         modules =
           homeManagerModules
           ++ lib.optional hasBase (basePath + "/default.nix")
-          ++ lib.optional hasGlobal (globalPath + "/default.nix")
+          ++ lib.optional hasHome (homePath + "/default.nix")
           ++ [
             {
               home = {
                 inherit username;
                 homeDirectory = lib.mkDefault "/home/${username}";
-                stateVersion = lib.mkDefault "24.11";
+                stateVersion = lib.mkDefault "25.11";
               };
-            }
-          ];
-      };
-
-    # Nix-on-Droid Builder
-    mkDroid = name: path: let
-      systemArch = "aarch64-linux";
-      pkgs = import nixpkgs-droid {
-        system = systemArch;
-        config.allowUnfree = true;
-        overlays = builtins.attrValues self.overlays;
-      };
-    in
-      nix-on-droid.lib.nixOnDroidConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = {
-          inherit inputs self lib;
-          isDroid = true;
-        };
-        modules =
-          droidModules
-          ++ [
-            path
-            {
-              core.user.userName = name;
             }
           ];
       };
@@ -237,15 +170,15 @@
       lib.nixosSystem {
         inherit pkgs;
         specialArgs = {
-          inherit inputs self lib hostName;
+          inherit inputs self lib;
         };
         modules =
           nixosModules
           ++ [
-            path
             {
               networking.hostName = hostName;
             }
+            path
           ];
       };
   in
@@ -268,7 +201,7 @@
         system,
         ...
       }: {
-        _module.args.pkgs = import nixpkgs-weekly {
+        _module.args.pkgs = import nixpkgs {
           inherit system;
           overlays = [
             (_: _: {
@@ -298,24 +231,8 @@
             name = "home-eval-${name}";
             value = conf.activationPackage;
           }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.homeConfigurations);
-
-          # Evaluation checks for all droids matching this system
-          evalDroids = lib.mapAttrs' (name: conf: {
-            name = "droid-eval-${name}";
-            value = conf.activationPackage;
-          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixOnDroidConfigurations);
         in
-          evalSystems // evalHomes // evalDroids;
-
-        apps.check = {
-          type = "app";
-          program = lib.getExe (pkgs.writeShellScriptBin "check" ''
-            ${pkgs.vulnix}/bin/vulnix --whitelist ${./vulnix-whitelist.toml} --system
-
-            nix flake check -L --impure --all-systems
-          '');
-          meta.description = "Run security audit with vulnix";
-        };
+          evalSystems // evalHomes;
 
         packages = import ./pkgs {
           inherit
@@ -333,7 +250,6 @@
       flake = {
         # Global Module Exports
         nixosModules = import ./modules/nixos {inherit lib self;};
-        droidModules = import ./modules/droid {inherit lib self;};
         homeModules = import ./modules/home {inherit lib self;};
 
         # Overlay Exports
@@ -347,31 +263,38 @@
         # All systems in the /systems folder
         nixosConfigurations = lib.mapAttrs mkSystem (lib.discover ./systems);
 
-        # All nix-on-droid configurations in the /droids folder
-        nixOnDroidConfigurations = lib.mapAttrs mkDroid (lib.discover ./droids);
-
         # All standalone homes in the /homes folder
-        # Scans for <user> and <user>@global, combines them if both exist.
+        # Scans for <user> and <user>@<homeName>, combines them if both exist.
         homeConfigurations = let
-          allEntries = builtins.readDir ./homes;
-          homeDirs = builtins.attrNames (lib.filterAttrs (_n: v: v == "directory") allEntries);
+          homeDirs = lib.attrNames (lib.filterAttrs (_n: v: v == "directory") (builtins.readDir ./homes));
+          hostDirs = builtins.readDir ./systems;
 
-          # identify valid user directories (no @, or ending in @global)
-          validUsers =
+          # Filter for base homes (no @) and standalone homes (user@host where systems/host doesn't exist)
+          validHomeNames =
             lib.filter (
-              name:
-                (! lib.hasInfix "@" name) || (lib.hasSuffix "@global" name)
+              name: let
+                parts = lib.splitString "@" name;
+                hostName =
+                  if lib.length parts > 1
+                  then lib.last parts
+                  else "";
+              in
+                hostName == "" || !(hostDirs ? ${hostName})
             )
             homeDirs;
 
-          # normalize to username
-          usernames = lib.unique (map (
-              name:
-                lib.removeSuffix "@global" name
-            )
-            validUsers);
+          # Helper to call mkHome with split username and homeName
+          mkHomeConfig = name: let
+            parts = lib.splitString "@" name;
+            username = lib.head parts;
+            homeName =
+              if lib.length parts > 1
+              then lib.last parts
+              else "";
+          in
+            mkHome username homeName;
         in
-          lib.genAttrs usernames mkHome;
+          lib.genAttrs validHomeNames mkHomeConfig;
 
         # All templates in the /templates folder
         templates =

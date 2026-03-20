@@ -16,10 +16,12 @@ Every change must map explicitly to a GitHub Issue. This allows tracking on the 
 Create short-lived branches from `main` using the format:
 
 ```bash
-git checkout -b dev-<issue-name>
+git checkout -b <type>/<issue-number>-<issue-name>
 ```
 
-*Example*: `dev-fix-zsh-typo` or `dev-add-k8s-cluster`
+where `<type>` is one of `fix`, `feat`, `chore`, `docs`, `style`, or `refactor`.
+
+*Example*: `fix/123-fix-zsh-typo` or `feat/456-add-k8s-cluster`
 
 ### 3. Commit Conventions
 
@@ -27,20 +29,19 @@ We use **Conventional Commits** to keep history clean and automatable.
 
 | Type | Description |
 | :--- | :--- |
-| `feat:` | A new feature |
 | `fix:` | A bug fix |
+| `feat:` | A new feature |
+| `chore:` | Changes to the build process or auxiliary tools and libraries such as documentation generation |
 | `docs:` | Documentation only changes |
 | `style:` | Changes that do not affect the meaning of the code (white-space, formatting, etc) |
 | `refactor:` | A code change that neither fixes a bug nor adds a feature |
-| `perf:` | A code change that improves performance |
-| `test:` | Adding missing tests or correcting existing tests |
-| `chore:` | Changes to the build process or auxiliary tools and libraries such as documentation generation |
 
 *Example*: `feat: add sunshine module for gaming VM`
 
 ### 4. Validation
 
-Before pushing, ensure the fortress can compile for integration and deployment. The `pre-commit` hooks (managed by `git-hooks` in the flake) should handle this automatically.
+Before pushing, ensure the flake can compile for integration and deployment. The `pre-commit` hooks (managed by `git-hooks` in the flake) should handle this automatically.
+
 To run checks manually:
 
 ```bash

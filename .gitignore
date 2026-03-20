@@ -3,7 +3,5 @@
 result
 .pre-commit-config.yaml
 
-.decrypted-secrets.yaml
-
 .gemini/
 gha-creds-*.json

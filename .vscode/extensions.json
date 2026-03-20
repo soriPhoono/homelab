@@ -2,10 +2,5 @@
   "recommendations": [
     "jnoortheen.nix-ide",
     "mkhl.direnv",
-    "redhat.vscode-yaml",
-    "ms-azuretools.vscode-docker",
-    "eamodio.gitlens",
-    "editorconfig.editorconfig",
-    "tamasfe.even-better-toml",
   ]
 }

@@ -6,10 +6,9 @@
   cfg = config.core.hardware.gpu;
 in {
   imports = [
-    ./dedicated/amd.nix
-    ./dedicated/nvidia.nix
-    ./integrated/amd.nix
-    ./integrated/intel.nix
+    ./intel.nix
+    ./amd.nix
+    ./nvidia.nix
   ];
 
   options.core.hardware.gpu = {

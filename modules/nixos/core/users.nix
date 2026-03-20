@@ -3,7 +3,6 @@
   pkgs,
   config,
   self,
-  hostName,
   ...
 }: let
   cfg = config.core;
@@ -114,6 +113,8 @@ in {
     users = {
       mutableUsers = false;
 
+      users.root.openssh.authorizedKeys.keys = lib.mapAttrsToList (_name: user: user.publicKey) (lib.filterAttrs (_name: user: user.admin) cfg.users);
+
       extraUsers =
         lib.mapAttrs (name: user: {
           inherit (user) hashedPassword shell subUidRanges subGidRanges;
@@ -132,7 +133,7 @@ in {
       lib.mapAttrs (username: user: {
         imports = let
           userHome = self + "/homes/${username}";
-          hostHome = self + "/homes/${username}@${hostName}";
+          hostHome = self + "/homes/${username}@${config.networking.hostName}";
         in
           lib.optional (builtins.pathExists userHome) userHome
           ++ lib.optional (builtins.pathExists hostHome) hostHome;
