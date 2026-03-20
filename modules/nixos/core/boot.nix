@@ -41,21 +41,32 @@ in
                 };
               };
             };
+          default = {
+            name = "bgrt";
+            package = pkgs.plymouth-themes.bgrt;
+          };
+          description = "Plymouth theme to use";
         };
       };
     };
 
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
+        security = {
+          sudo.wheelNeedsPassword = lib.mkDefault false;
+          tpm2 = {
+            enable = true;
+            pkcs11.enable = true; # NOTE: Required for things like secure boot and TPM-backed TOTP
+          };
+        };
+
         boot = {
           kernelPackages = cfg.kernel.package;
           kernelParams =
-            (mkMerge [
-              (mkIf cfg.plymouth.enable [
-                "quiet"
-                "systemd.show_status=false"
-                "udev.log_level=3"
-              ])
+            (mkIf cfg.plymouth.enable [
+              "quiet"
+              "systemd.show_status=false"
+              "udev.log_level=3"
             ])
             ++ cfg.kernel.params;
 
@@ -64,7 +75,6 @@ in
             systemd.enable = true;
             network = {
               enable = true;
-
               ssh.enable = true;
             };
           };
@@ -75,18 +85,24 @@ in
             efi.canTouchEfiVariables = true;
             systemd-boot = {
               enable = lib.mkForce (!cfg.secure-boot.enable);
-              configurationLimit = 10;
+              configurationLimit = 3;
             };
           };
 
-          plymouth.enable = cfg.plymouth.enable;
+          plymouth = {
+            inherit (cfg.plymouth) enable;
+            font = "${pkgs.nerdfonts}/share/fonts/truetype/NerdFonts/SauceCodePro/SauceCodeProNerdFontMono-Regular.ttf";
+            theme = cfg.plymouth.theme.name;
+            themePackages = [
+              cfg.plymouth.theme.package
+            ];
+          };
         };
 
         zramSwap.enable = true;
-
-        security.sudo.wheelNeedsPassword = lib.mkDefault false;
       }
       (lib.optionalAttrs (options ? boot.lanzaboote) {
+        # TODO: this needs upgrading and refactoring
         boot.lanzaboote = {
           inherit (cfg.secure-boot) enable;
           pkiBundle = "/var/lib/sbctl";

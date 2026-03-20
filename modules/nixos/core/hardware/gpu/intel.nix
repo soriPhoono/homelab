@@ -41,6 +41,8 @@ in
         core.hardware.gpu.enable = true;
 
         services.xserver.videoDrivers = ["intel"];
+
+        hardware.intel-gpu-tools.enable = true;
       }
       (mkIf cfg.integrated.enable {
         boot.kernelParams = lib.mkIf (cfg.deviceId != null) [

@@ -1,7 +1,7 @@
 {
   imports = [
     ./logitech.nix
-    ./qmk_keyboards.nix
+    ./keyboards.nix
     ./tablet.nix
     ./xbox_controllers.nix
   ];
