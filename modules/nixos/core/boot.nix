@@ -91,6 +91,7 @@ in
 
           plymouth = {
             inherit (cfg.plymouth) enable;
+
             font = "${pkgs.nerdfonts}/share/fonts/truetype/NerdFonts/SauceCodePro/SauceCodeProNerdFontMono-Regular.ttf";
             theme = cfg.plymouth.theme.name;
             themePackages = [
