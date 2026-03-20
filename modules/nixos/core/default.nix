@@ -56,7 +56,7 @@ in {
         clean = {
           enable = true;
           dates = "daily";
-          extraArgs = "--keep-since 3d --keep 5";
+          extraArgs = "--keep-since 3d --keep 3";
         };
       };
     };
