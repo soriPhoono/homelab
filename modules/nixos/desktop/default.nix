@@ -10,13 +10,9 @@ in
     imports = [
       ./environments
 
-      ./features/gaming.nix
-      ./features/printing.nix
-      ./features/virtualisation.nix
+      ./features
 
-      ./services/asusd.nix
-      ./services/pipewire.nix
-      ./services/flatpak.nix
+      ./services
 
       ./tools
     ];
