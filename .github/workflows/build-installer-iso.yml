@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - pkgs/installer/version.nix
+      - nix/pkgs/installer/version.nix
   workflow_dispatch:
 permissions:
   contents: write
@@ -30,7 +30,7 @@ jobs:
       - name: Read installer version
         id: version
         run: |
-          VERSION=$(nix eval --raw --file pkgs/installer/version.nix)
+          VERSION=$(nix eval --raw --file nix/pkgs/installer/version.nix)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Installer version: $VERSION"
       - name: Build installer ISO
