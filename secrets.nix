@@ -27,7 +27,7 @@ let
     };
 
     # Collect secrets from teams
-    teamSecretsList = builtins.concatLists (builtins.map (team: builtins.map (secret: mkSecret secret team.users) team.secrets) (builtins.attrValues teams));
+    teamSecretsList = lib.concatMap (team: builtins.map (secret: mkSecret secret team.users) team.secrets) (builtins.attrValues teams);
 
     # Collect per-user secrets
     userSecretsList = builtins.map (secret: mkSecret secret userSecrets.${secret}) (builtins.attrNames userSecrets);
@@ -44,7 +44,7 @@ let
 
     agenix-shell-secrets = lib.listToAttrs (builtins.concatLists [
       # Secrets from teams the user belongs to
-      (builtins.concatLists (builtins.map (
+      (lib.concatMap (
           team:
             builtins.map (secret: {
               name = lib.toUpper secret;
@@ -52,7 +52,7 @@ let
             })
             team.secrets
         )
-        userTeams))
+        userTeams)
       # Per-user secrets the user has access to
       (builtins.map (secret: {
           name = lib.toUpper secret;
@@ -68,7 +68,7 @@ let
 
   # Minimal lib for the default call (used by agenix CLI or pure import)
   libMinimal = {
-    inherit (builtins) listToAttrs concatLists;
+    inherit (builtins) listToAttrs concatLists concatMap;
     mapAttrs' = f: set:
       builtins.listToAttrs (builtins.map (n: f n set.${n}) (builtins.attrNames set));
     filterAttrs = f: set:
