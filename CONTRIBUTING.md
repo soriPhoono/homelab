@@ -53,6 +53,6 @@ nix flake check
 Modules in this repository function fundamentally as configuration **overlays**. Instead of acting as independent, isolated scripts, they are designed to be composed together.
 
 - **Configuration Overlays**: When you enable a module (e.g., `services.my-service.enable = true;`), it overlays its specific settings (packages, systemd services, environment variables, etc.) onto the existing system configuration tree.
-- **Package Overlays**: Sometimes, modules may also rely on package overlays (`pkgs/` or `overlays/`) to modify or inject custom packages into the global `pkgs` set before the module's configuration is evaluated.
+- **Package Overlays**: Sometimes, modules may also rely on package overlays (`overlays/`) to modify or inject custom packages (or modify existing ones) into the global `pkgs` set before the module's configuration is evaluated.
 
 This approach ensures that our infrastructure remains highly modular, reproducible, and easy to extend by stacking these configuration overlays on top of a base system.
