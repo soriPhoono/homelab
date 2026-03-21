@@ -2,7 +2,7 @@
   lib,
   config,
   options,
-  osConfig ? {},
+  nixosConfig,
   ...
 }: let
   cfg = config.core.ssh;
@@ -113,7 +113,7 @@ in
           };
 
           services.ssh-agent = {
-            enable = !(osConfig.programs.ssh.startAgent or false);
+            enable = !(nixosConfig.programs.ssh.startAgent or false);
           };
         }
       ];

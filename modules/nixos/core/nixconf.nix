@@ -27,14 +27,12 @@ in
           experimental-features = "nix-command flakes";
           # Opinionated: disable global registry
           flake-registry = "";
-          # Workaround for https://github.com/NixOS/nix/issues/9574
-          nix-path = config.nix.nixPath;
 
-          trusted-users = lib.mapAttrsToList (name: _: name) (lib.filterAttrs (_: content: content.admin) config.core.users);
+          trusted-users = lib.mapAttrsToList (name: _: name) (lib.filterAttrs (_: user: user.admin) config.core.users);
 
           # Limit the number of cores used per build job to prevent OOM
           # during memory-intensive compilations (like browsers).
-          cores = 2;
+          cores = 4;
 
           # Common substituters applicable to all systems
           substituters = [

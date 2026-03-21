@@ -14,11 +14,6 @@ in
         description = "The url to retrieve the flake configuration from";
         example = "https://github.com/soriphoono/homelab.git";
       };
-      name = mkOption {
-        type = types.str;
-        description = "The name of the configuration to update from";
-        example = "zephyrus";
-      };
     };
 
     config = mkIf cfg.enable (lib.optionalAttrs (options ? services.comin) {
