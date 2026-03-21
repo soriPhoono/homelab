@@ -51,7 +51,7 @@ nix flake check
 ### 5. Modules and Overlays
 
 Modules in this repository function fundamentally as configuration **overlays**. Instead of acting as independent, isolated scripts, they are designed to be composed together.
-
+Modules in this repository function fundamentally as configuration **overlays**. Instead of acting as isolated scripts, they are designed to be composed together.
 - **Configuration Overlays**: When you enable a module (e.g., `services.my-service.enable = true;`), it overlays its specific settings (packages, systemd services, environment variables, etc.) onto the existing system configuration tree.
 - **Package Overlays**: Sometimes, modules may also rely on package overlays (`overlays/`) to modify or inject custom packages (or modify existing ones) into the global `pkgs` set before the module's configuration is evaluated.
 
