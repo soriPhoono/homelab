@@ -66,7 +66,7 @@
     theme.enable = true;
   };
 in
-  lib.foldl lib.recursiveUpdate baseSettings [
+  lib.foldl' lib.recursiveUpdate baseSettings [
     utilities
     languages
     ui
