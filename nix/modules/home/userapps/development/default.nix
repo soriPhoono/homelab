@@ -26,5 +26,10 @@ in
         "${config.home.homeDirectory}/.cargo/bin"
         "${config.home.homeDirectory}/go/bin"
       ];
+
+      programs = { 
+         npm.enable = true; 
+         uv.enable = true; 
+       };
     };
   }
