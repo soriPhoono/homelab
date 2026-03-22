@@ -44,4 +44,6 @@ This file provides context and rules for AI agents working in this repository.
 - Always source the environment before running Nix commands:
   ```bash
   . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-  ```
+- Always source the environment before running Nix commands:
+  ```bash
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
