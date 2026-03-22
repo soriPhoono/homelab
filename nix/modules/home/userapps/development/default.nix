@@ -28,8 +28,8 @@ in
       ];
 
       programs = { 
-         npm.enable = true; 
-         uv.enable = true; 
-       };
+        npm.enable = true; 
+        uv.enable = true; 
+      };
     };
   }
