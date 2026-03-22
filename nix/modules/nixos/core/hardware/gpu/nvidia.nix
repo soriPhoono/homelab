@@ -10,7 +10,7 @@ in
       enable = mkEnableOption "Enable NVIDIA GPU support (dedicated only)";
 
       mode = mkOption {
-        type = enum ["desktop" "laptop"];
+        type = types.enum ["desktop" "laptop"];
         default = "laptop";
         description = "NVIDIA GPU mode";
       };
@@ -35,8 +35,8 @@ in
           };
 
           prime = {
-            intelBusId = "PCI:0@0:2:0";
-            amdgpuBusId = "PCI:4@0:0:0";
+            intelBusId = mkIf config.core.hardware.gpu.intel.integrated.enable "PCI:0@0:2:0";
+            amdgpuBusId = mkIf config.core.hardware.gpu.amd.integrated.enable "PCI:4@0:0:0";
             nvidiaBusId = "PCI:1@0:0:0";
           };
         };

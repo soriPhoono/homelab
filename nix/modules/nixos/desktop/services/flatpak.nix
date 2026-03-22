@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -26,7 +27,7 @@ in
           wantedBy = ["multi-user.target"];
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${pkgs.writers.writeShellApplication {
+            ExecStart = "${pkgs.writeShellApplication {
               name = "configure-flathub";
               text = ''
                 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -41,7 +42,7 @@ in
           wantedBy = ["multi-user.target"];
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${pkgs.writers.writeShellApplication {
+            ExecStart = "${pkgs.writeShellApplication {
               name = "install-warehouse-flatpak";
               text = ''
                 flatpak install -y flathub io.github.mimbrero.Warehouse

@@ -33,17 +33,17 @@ in
               options = {
                 name = mkOption {
                   type = str;
-                  default = "bgrt";
+                  default = "nixos-bgrt";
                 };
                 package = mkOption {
                   type = types.package;
-                  default = pkgs.plymouth-themes.bgrt;
+                  default = pkgs.nixos-bgrt-plymouth;
                 };
               };
             };
           default = {
-            name = "bgrt";
-            package = pkgs.plymouth-themes.bgrt;
+            name = "nixos-bgrt";
+            package = pkgs.nixos-bgrt-plymouth;
           };
           description = "Plymouth theme to use";
         };
