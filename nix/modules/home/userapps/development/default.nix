@@ -22,11 +22,9 @@ in
     config = mkIf cfg.enable {
       home.sessionPath = [
         "${config.home.homeDirectory}/.npm/bin"
+        "${config.home.homeDirectory}/.local/bin"
+        "${config.home.homeDirectory}/.cargo/bin"
+        "${config.home.homeDirectory}/go/bin"
       ];
-
-      programs = {
-        npm.enable = true;
-        uv.enable = true;
-      };
     };
   }
