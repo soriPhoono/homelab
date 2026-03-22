@@ -7,9 +7,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+        uses: DeterminateSystems/magic-nix-cache-action@v8
         with:
           use-flakehub: false
       - name: Build
@@ -20,9 +20,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+        uses: DeterminateSystems/magic-nix-cache-action@v8
         with:
           use-flakehub: false
       - name: Build
@@ -33,35 +33,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+        uses: DeterminateSystems/magic-nix-cache-action@v8
         with:
           use-flakehub: false
       - name: Build
         run: nix build .#nixosConfigurations.lg-laptop.config.system.build.toplevel
-  build-nixos-workstation:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@main
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          use-flakehub: false
-      - name: Build
-        run: nix build .#nixosConfigurations.workstation.config.system.build.toplevel
   build-nixos-zephyrus:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+        uses: DeterminateSystems/magic-nix-cache-action@v8
         with:
           use-flakehub: false
       - name: Build

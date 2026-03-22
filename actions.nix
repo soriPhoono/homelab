@@ -26,11 +26,11 @@
                 }
                 {
                   name = "Setup Nix";
-                  uses = "DeterminateSystems/nix-installer-action@main";
+                  uses = "DeterminateSystems/nix-installer-action@v14";
                 }
                 {
                   name = "Magic Nix Cache";
-                  uses = "DeterminateSystems/magic-nix-cache-action@main";
+                  uses = "DeterminateSystems/magic-nix-cache-action@v8";
                   with_ = {
                     use-flakehub = false;
                   };
@@ -54,11 +54,11 @@
                 }
                 {
                   name = "Setup Nix";
-                  uses = "DeterminateSystems/nix-installer-action@main";
+                  uses = "DeterminateSystems/nix-installer-action@v14";
                 }
                 {
                   name = "Magic Nix Cache";
-                  uses = "DeterminateSystems/magic-nix-cache-action@main";
+                  uses = "DeterminateSystems/magic-nix-cache-action@v8";
                   with_ = {
                     use-flakehub = false;
                   };
