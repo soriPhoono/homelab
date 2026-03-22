@@ -9,10 +9,8 @@ in
     imports = [
       ./agents
       ./editors
-      ./domain_specific
       ./terminal
       ./knowledge-management
-      ./disk_tools
     ];
 
     options.userapps.development = {
@@ -26,10 +24,5 @@ in
         "${config.home.homeDirectory}/.cargo/bin"
         "${config.home.homeDirectory}/go/bin"
       ];
-
-      programs = { 
-        npm.enable = true; 
-        uv.enable = true; 
-      };
     };
   }
