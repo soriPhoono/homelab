@@ -1,6 +1,4 @@
 {pkgs, ...}: {
-  # nix-on-droid cache — needed to build/evaluate droid activation packages locally
-  # TODO: migrate this to it's own module and create personal CI/CD runner for gh actions/gitlab CI to build nix on droid test release evals
   imports = [
     ./disko.nix
   ];
