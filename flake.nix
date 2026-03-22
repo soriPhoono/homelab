@@ -75,7 +75,7 @@
   }: let
     # Extend lib with our custom functions
     lib = nixpkgs.lib.extend (final: prev:
-      (import ./lib/default.nix {inherit inputs;}) final prev
+      (import ./nix/lib/default.nix {inherit inputs;}) final prev
       // {
         inherit (inputs.home-manager.lib) hm;
       });
@@ -123,8 +123,8 @@
 
     # Standalone Home Manager Builder
     mkHome = username: homeName: let
-      basePath = ./homes + "/${username}";
-      homePath = ./homes + "/${username}@${homeName}";
+      basePath = ./nix/homes + "/${username}";
+      homePath = ./nix/homes + "/${username}@${homeName}";
 
       # Determine if paths exist
       hasBase = builtins.pathExists basePath;
@@ -234,7 +234,7 @@
         in
           evalSystems // evalHomes;
 
-        packages = import ./pkgs {
+        packages = import ./nix/pkgs {
           inherit
             inputs
             lib
@@ -249,11 +249,11 @@
 
       flake = {
         # Global Module Exports
-        nixosModules = import ./modules/nixos {inherit lib self;};
-        homeModules = import ./modules/home {inherit lib self;};
+        nixosModules = import ./nix/modules/nixos {inherit lib self;};
+        homeModules = import ./nix/modules/home {inherit lib self;};
 
         # Overlay Exports
-        overlays = with inputs; ((import ./overlays {inherit self inputs lib;})
+        overlays = with inputs; ((import ./nix/overlays {inherit self inputs lib;})
           // {
             nur = nur.overlays.default;
           });
@@ -261,13 +261,13 @@
         # --- Automatic Discovery & Construction --- #
 
         # All systems in the /systems folder
-        nixosConfigurations = lib.mapAttrs mkSystem (lib.discover ./systems);
+        nixosConfigurations = lib.mapAttrs mkSystem (lib.discover ./nix/systems);
 
         # All standalone homes in the /homes folder
         # Scans for <user> and <user>@<homeName>, combines them if both exist.
         homeConfigurations = let
-          homeDirs = lib.attrNames (lib.filterAttrs (_n: v: v == "directory") (builtins.readDir ./homes));
-          hostDirs = builtins.readDir ./systems;
+          homeDirs = lib.attrNames (lib.filterAttrs (_n: v: v == "directory") (builtins.readDir ./nix/homes));
+          hostDirs = builtins.readDir ./nix/systems;
 
           # Filter for base homes (no @) and standalone homes (user@host where systems/host doesn't exist)
           validHomeNames =
@@ -299,14 +299,14 @@
         # All templates in the /templates folder
         templates =
           lib.mapAttrs (name: _: let
-            path = ./templates + "/${name}";
+            path = ./nix/templates + "/${name}";
           in {
             inherit path;
             inherit ((import "${path}/flake.nix")) description;
           }) (
             lib.filterAttrs (
-              name: type: type == "directory" && builtins.pathExists (./templates + "/${name}/flake.nix")
-            ) (builtins.readDir ./templates)
+              name: type: type == "directory" && builtins.pathExists (./nix/templates + "/${name}/flake.nix")
+            ) (builtins.readDir ./nix/templates)
           );
       };
     };
