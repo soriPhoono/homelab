@@ -12,6 +12,8 @@ This file provides context and rules for AI agents working in this repository.
 - The project follows a **Trunk-Based Development** model with a strict **Issue-First** policy.
 - **Branch Naming**: Branches must be created from `main` in the format:
   ```bash
+  <type>/<identifier>-<description>
+  ```bash
   <type>/<issue-number>-<issue-name>
   ```
   Where `<type>` is one of `fix`, `feat`, `chore`, `docs`, `style`, or `refactor`. (e.g., `feat/456-add-k8s-cluster`).
