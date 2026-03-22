@@ -1,0 +1,7 @@
+.vscode/
+.direnv/
+
+result
+.pre-commit-config.yaml
+
+gha-creds-*.json
