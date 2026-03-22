@@ -25,7 +25,6 @@
     enable = true;
     browsers = {
       chrome.enable = true;
-      librewolf.enable = true;
     };
     communication = {
       discord.enable = true;
