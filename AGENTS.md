@@ -45,9 +45,8 @@ This file provides context and rules for AI agents working in this repository.
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux --no-confirm --extra-conf "filter-syscalls = false"
   ```
-- Always source the environment before running Nix commands:
+- Always source the environment before running Nix commands and be sure to allow the devshell:
   ```bash
   . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-- Always source the environment before running Nix commands:
-  ```bash
-  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  direnv allow
+  ```
