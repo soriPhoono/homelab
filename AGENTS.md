@@ -13,8 +13,6 @@ This file provides context and rules for AI agents working in this repository.
 - **Branch Naming**: Branches must be created from `main` in the format:
   ```bash
   <type>/<identifier>-<description>
-  ```bash
-  <type>/<issue-number>-<issue-name>
   ```
   Where `<type>` is one of `fix`, `feat`, `chore`, `docs`, `style`, or `refactor`. (e.g., `feat/456-add-k8s-cluster`).
 
@@ -26,10 +24,6 @@ This file provides context and rules for AI agents working in this repository.
 
 - **Module Architecture**: Nix modules in this repository function fundamentally as **configuration overlays** designed to be composed together (e.g., via `enable = true;`) rather than acting as independent, isolated scripts.
 - **Module Imports**: When importing Nix modules, prefer importing a directory (which implicitly loads `default.nix`) over explicitly listing individual `.nix` files.
-
-## Testing & Validation
-
-- Use `nix flake check` as the standard execution command to test and validate Nix flake configurations for errors. If it fails, fix the code before pushing.
 
 ## Testing & Validation
 
