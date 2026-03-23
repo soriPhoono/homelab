@@ -16,6 +16,8 @@ in {
     networking.networkmanager = {
       enable = true;
 
+      dns = "systemd-resolved";
+
       plugins = with pkgs; [
         networkmanager-openconnect
       ];
