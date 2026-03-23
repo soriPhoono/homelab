@@ -23,6 +23,8 @@ in
         flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
       in {
         settings = {
+          download-buffer-size = 1073741824;
+
           # Enable flakes and new 'nix' command
           experimental-features = "nix-command flakes";
           # Opinionated: disable global registry
