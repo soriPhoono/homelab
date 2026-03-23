@@ -20,8 +20,6 @@ in {
         networkmanager-openconnect
       ];
 
-      dns = "systemd-resolved";
-
       wifi = {
         powersave = true;
         macAddress = "random";
