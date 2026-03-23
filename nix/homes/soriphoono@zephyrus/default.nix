@@ -44,10 +44,6 @@
       agents.gemini.enable = true;
       editors = {
         neovim.enable = true;
-        vscode = {
-          enable = true;
-          package = pkgs.antigravity;
-        };
       };
     };
   };
