@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   core = {
     shells.fish.generateCompletions = true;
 
@@ -22,34 +26,27 @@
   };
 
   userapps = {
-    enable = true;
+    defaultApplications.enable = true;
     browsers = {
+      firefox.enable = true;
       chrome.enable = true;
-    };
-    communication = {
-      discord.enable = true;
     };
     data-fortress = {
       nextcloud.enable = true;
       bitwarden.enable = true;
     };
-    office = {
-      onlyoffice.enable = true;
-    };
+    office.onlyoffice.enable = true;
+    communication.discord.enable = true;
     development = {
       enable = true;
-      terminal = {
-        ghostty.enable = true;
-      };
+      terminal.ghostty.enable = true;
       knowledge-management.obsidian.enable = true;
+      agents.gemini.enable = true;
       editors = {
         neovim.enable = true;
-        antigravity.enable = true;
-      };
-      agents = {
-        gemini = {
+        vscode = {
           enable = true;
-          enableJules = true;
+          package = pkgs.antigravity;
         };
       };
     };

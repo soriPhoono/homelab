@@ -1,5 +1,6 @@
 {pkgs, ...}: let
   inherit (pkgs) lib;
+
   utilities = import ./plugins/utilities.nix;
   languages = import ./plugins/languages.nix;
   ui = import ./plugins/ui.nix;

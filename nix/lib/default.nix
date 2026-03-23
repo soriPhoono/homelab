@@ -1,6 +1,4 @@
 _: self: _super: {
-  # Dynamic Discovery: Reads a directory and returns an attrset of { name = path; }
-  # including directories with default.nix and standalone .nix files.
   discover = dir:
     self.mapAttrs' (name: _: {
       name = self.removeSuffix ".nix" name;
@@ -25,9 +23,10 @@ _: self: _super: {
       ) (builtins.readDir dir)
     );
 
-  # Metadata Reader: Reads meta.json from a path
-  readMeta = path:
-    if builtins.pathExists (path + "/meta.json")
-    then builtins.fromJSON (builtins.readFile (path + "/meta.json"))
+  # Dynamic Discovery: Reads a directory and returns an attrset of { name = path; }
+  # including directories with default.nix and standalone .nix files.
+  readMeta = dir:
+    if builtins.pathExists (dir + "/meta.json")
+    then builtins.fromJSON (builtins.readFile (dir + "/meta.json"))
     else {};
 }

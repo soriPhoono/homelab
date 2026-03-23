@@ -15,6 +15,8 @@
       enable = true;
       reportPath = ./facter.json;
 
+      cpu.vendor = "amd";
+
       gpu = {
         amd.integrated.enable = true;
         nvidia = {
@@ -22,7 +24,6 @@
           mode = "laptop";
         };
       };
-      cpu.vendor = "amd";
 
       hid = {
         xbox_controllers.enable = true;
@@ -48,22 +49,7 @@
         hashedPassword = "$6$x7n.SUTMtInzs2l4$Ew3Zu3Mkc4zvuH8STaVpwIv59UX9rmUV7I7bmWyTRjomM7QRn0Jt/Pl/JN./IqTrXqEe8nIYB43m1nLI2Un211";
         admin = true;
         shell = pkgs.fish;
-        extraGroups = [
-          "docker"
-        ];
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgxxFcqHVwYhY0TjbsqByOYpmWXqzlVyGzpKjqS8mO7";
-        subUidRanges = [
-          {
-            startUid = 100000;
-            count = 65536;
-          }
-        ];
-        subGidRanges = [
-          {
-            startGid = 100000;
-            count = 65536;
-          }
-        ];
       };
     };
 

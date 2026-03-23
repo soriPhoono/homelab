@@ -15,13 +15,13 @@
       enable = true;
       reportPath = ./facter.json;
 
+      cpu.vendor = "intel";
       gpu = {
         intel.integrated = {
           enable = true;
           deviceID = "a7a0";
         };
       };
-      cpu.vendor = "intel";
 
       hid = {
         tablet.enable = true;

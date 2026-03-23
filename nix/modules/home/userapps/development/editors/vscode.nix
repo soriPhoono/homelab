@@ -18,7 +18,7 @@ in
 
       desktop = mkOption {
         type = types.str;
-        default = "codium.desktop";
+        default = "${lib.getName cfg.package}.desktop";
         description = "The desktop file name for the editor.";
       };
 

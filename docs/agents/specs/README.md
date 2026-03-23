@@ -28,7 +28,9 @@ This file provides context and rules for AI agents working in this repository.
 ## Testing & Validation
 
 - Use `nix flake check` as the standard execution command to test and validate Nix flake configurations for errors. If it fails, fix the code before pushing.
+
 - **Linting**: The repository uses `nil`, `statix`, and `deadnix` for linting. Ensure your changes pass these checks.
+
 - **Security**: `gitleaks` is active in pre-commit hooks to prevent secret exposure. Never commit sensitive information.
 
 - Use `nix fmt` as the standard command to auto-format the repository and resolve treefmt errors.

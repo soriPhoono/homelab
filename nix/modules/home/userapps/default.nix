@@ -8,8 +8,5 @@ with lib; {
     ./office
   ];
 
-  options.userapps = {
-    enable = mkEnableOption "Enable core applications and default feature-set";
-    defaultApplications.enable = mkEnableOption "Set default applications (xdg.mimeApps) via Nix";
-  };
+  options.userapps.defaultApplications.enable = mkEnableOption "Set default applications (xdg.mimeApps) via Nix";
 }
