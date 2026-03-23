@@ -13,7 +13,7 @@ This repository is a Nix-based "homelab" configuration that manages both NixOS s
 ## System Life Cycle
 
 - **Inputs**: Defined in `flake.nix` (nixpkgs, home-manager, sops-nix, etc.).
-- **Modules**: NixOS and Home Manager modules define "features" (e.g., `core.nixconf`, `userapps.firefox`).
+- **Modules**: NixOS and Home Manager modules define "" (e.g., `core.nixconf`, `userapps.firefox`).
 - **Discovery**: `lib.discover` scans `nix/systems/` and `nix/homes/` to find entry points.
 - **Construction**: `mkSystem` and `mkHome` functions in `flake.nix` assemble the modules and configurations.
 - **Deployment**: Managed via standard Nix tools or `comin` for GitOps-style pulls.

@@ -2,7 +2,7 @@
 
 ## 🏰 Project Overview: The Data Fortress
 
-This repository is a comprehensive, declarative configuration for my personal infrastructure (homelab). It manages everything from physical servers and desktops to virtualized environments and single-board computers leveraging the declarative nature of the nix ecosystem. This repository is primarily focused on independent systems and does not include any cloud infrastructure, as those are managed via operating systems as apliances, i.e.: Proxmox nodes.
+This repository is a comprehensive, declarative configuration for my personal infrastructure (homelab). It manages everything from physical servers and desktops to virtualized environments and single-board computers leveraging the declarative nature of the nix ecosystem.
 
 Built on **NixOS** and **Home Manager**, it leverages **Nix Flakes** for reproducibility and hermetic builds.
 
@@ -21,11 +21,9 @@ This repository uses a modern Flake-based structure with automatic discovery log
 
 | Directory | Role | Description |
 | :--- | :--- | :--- |
-| **`droids/`** | **Android** | Nix-on-Droid configurations for Android devices. |
-| **`environments/`** | **Non-NixOS** | System Manager configurations for non-NixOS Linux hosts. |
-| **`homes/`** | **Users** | Home Manager configurations. Core (`user`), Standalone (`user@global`) or system-bound (`user@hostname`). |
+| **`homes/`** | **Users** | Home Manager configurations. Core (`user`), Standalone (`user@home-name`) or system-bound (`user@hostname`). |
 | **`lib/`** | **Helpers** | Utility functions used throughout the flake. |
-| **`modules/`** | **Logic** | Reusable modules. `nixos/` for NixOS-level, `home/` for user-level, `droid/` for Android. |
+| **`modules/`** | **Logic** | Reusable modules. `nixos/` for NixOS-level, `home/` for user-level. |
 | **`overlays/`** | **Overlays** | Package overlays used throughout the flake. (Internal pkg modifications) |
 | **`pkgs/`** | **Software** | Custom package declarations. |
 | **`secrets/`** | **Secrets** | Encrypted secrets used throughout the flake for developer facing integrations. |
@@ -37,11 +35,10 @@ This repository uses a modern Flake-based structure with automatic discovery log
 The `lib/` directory includes custom logic to automatically import configurations:
 
 - **Systems**: Any directory in `systems/` with a `default.nix` is automatically exposed as a `nixosConfiguration`.
-- **Droids**: Any directory in `droids/` is exposed as a `nixOnDroidConfiguration`.
 - **Homes**: The flake scans `homes/` for three naming patterns:
   - `user` — Base configuration, used everywhere as a base configuration layer.
-  - `user@global` — Supplementary config for standalone installs. Combined with the base and exported as `homeConfigurations.user`.
-  - `user@hostname` — Machine-specific overrides, imported by the NixOS/Environment system configuration itself. **Not** exported as a standalone `homeConfiguration`.
+  - `user@home-name` — Supplementary config for standalone installs. Combined with the base and exported as `homeConfigurations.user@home-name`.
+  - `user@hostname` — Machine-specific overrides, imported by the NixOS system configuration itself. **Not** exported as a standalone `homeConfiguration`.
 
 ## 🚀 Quick Start
 
