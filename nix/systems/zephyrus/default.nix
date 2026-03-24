@@ -65,7 +65,13 @@
   };
 
   desktop = {
-    environments.kde.enable = true;
+    environments = {
+      display_managers.sddm.theme = {
+        package = pkgs.sddm-sugar-dark;
+        name = "sugar-dark";
+      };
+      kde.enable = true;
+    };
     features = {
       printing.enable = true;
       virtualisation.enable = true;

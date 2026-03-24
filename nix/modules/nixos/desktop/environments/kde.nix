@@ -27,7 +27,20 @@ in
         with kdePackages; [
           discover
           ksystemlog
+
           wallpaper-engine-plugin
+
+          kcolorchooser
+
+          dragon
+          elisa
+
+          ktorrent
+          kmail
+
+          kwave
+          krita
+          kdenlive
         ];
       };
 

@@ -31,12 +31,12 @@
         "..." = "cd ../..";
 
         du = "${pkgs.dust}/bin/dust";
-
         find = "${pkgs.fd}/bin/fd";
-
         grep = "${pkgs.ripgrep}/bin/rg";
 
         top = "${pkgs.btop}/bin/btop";
+        gtop = "${pkgs.nvtopPackages.full}/bin/nvtop";
+        df = "${pkgs.duf}/bin/duf";
 
         gs = "${pkgs.git}/bin/git status";
         ga = "${pkgs.git}/bin/git add";
@@ -44,7 +44,7 @@
         gp = "${pkgs.git}/bin/git push";
         gpl = "${pkgs.git}/bin/git pull";
 
-        v = "${pkgs.neovim}/bin/nvim";
+        v = "nvim";
       };
       description = "Shell command aliases";
     };
