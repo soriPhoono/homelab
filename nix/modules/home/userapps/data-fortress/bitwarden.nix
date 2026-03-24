@@ -12,8 +12,13 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.packages = [
-        pkgs.bitwarden-desktop
+      home.packages = with pkgs; [
+        bitwarden-cli
+        bitwarden-desktop
       ];
+
+      core.shells.sessionVariables = {
+        SSH_AUTH_SOCK = "/home/${config.home.username}/.bitwarden-ssh-agent.sock";
+      };
     };
   }

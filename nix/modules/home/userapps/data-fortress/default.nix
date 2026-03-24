@@ -1,6 +1,7 @@
 {
   imports = [
-    ./nextcloud.nix
     ./bitwarden.nix
+    ./nextcloud.nix
+    ./obsidian.nix
   ];
 }

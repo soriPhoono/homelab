@@ -4,7 +4,7 @@
   ];
 
   core = {
-    # nixconf.determinate-nix.enable = true;
+    nixconf.determinate.enable = true;
 
     boot = {
       enable = true;

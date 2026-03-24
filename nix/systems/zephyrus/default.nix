@@ -4,9 +4,19 @@
   ];
 
   core = {
+    nixconf.determinate.enable = true;
+
     boot = {
       enable = true;
-      plymouth.enable = true;
+      plymouth = {
+        enable = true;
+        theme = {
+          name = "cross_hud";
+          package = pkgs.adi1090x-plymouth-themes.override {
+            selected_themes = ["cross_hud"];
+          };
+        };
+      };
     };
 
     hardware = {
@@ -34,7 +44,7 @@
 
     secrets = {
       enable = true;
-      defaultSopsFile = ./secrets.yaml;
+      defaultSopsFile = ./secrets.yml;
     };
 
     networking = {
@@ -47,7 +57,7 @@
         hashedPassword = "$6$x7n.SUTMtInzs2l4$Ew3Zu3Mkc4zvuH8STaVpwIv59UX9rmUV7I7bmWyTRjomM7QRn0Jt/Pl/JN./IqTrXqEe8nIYB43m1nLI2Un211";
         admin = true;
         shell = pkgs.fish;
-        publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgxxFcqHVwYhY0TjbsqByOYpmWXqzlVyGzpKjqS8mO7";
+        publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT Personal Key";
       };
     };
 
@@ -64,4 +74,6 @@
     services.asusd.enable = true;
     tools.partition-manager.enable = true;
   };
+
+  hosting.docker.enable = true;
 }

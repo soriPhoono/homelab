@@ -1,10 +1,5 @@
 {pkgs, ...}: {
   core = {
-    secrets = {
-      enable = true;
-      defaultSopsFile = ./secrets.yaml;
-    };
-
     git = {
       enable = true;
       userName = "soriphoono";

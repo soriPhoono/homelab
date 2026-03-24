@@ -23,9 +23,11 @@ in
           NIXOS_OZONE_WL = "1";
         };
 
-        systemPackages = with pkgs; [
-          kdePackages.discover
-          kdePackages.ksystemlog
+        systemPackages = with pkgs;
+        with kdePackages; [
+          discover
+          ksystemlog
+          wallpaper-engine-plugin
         ];
       };
 

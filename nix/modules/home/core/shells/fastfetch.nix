@@ -15,8 +15,7 @@ in {
 
       settings = {
         logo = {
-          source = ../../../../assets/logo.png;
-          type = "kitty";
+          source = ../../../../../assets/logo.txt;
 
           padding.right = 1;
         };

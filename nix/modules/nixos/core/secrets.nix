@@ -23,19 +23,11 @@ in
 
     config = lib.mkIf cfg.enable (mkMerge [
       {
-        systemd.tmpfiles.rules = let
-          usersWithSecrets =
-            lib.filterAttrs (
-              name: _:
-                config.home-manager.users.${name}.core.secrets.enable or false
-            )
-            config.core.users;
-        in
-          lib.concatMap (username: [
-            "d /home/${username}/.config/ 0755 ${username} users -"
-            "d /home/${username}/.config/sops/ 0700 ${username} users -"
-            "d /home/${username}/.config/sops/age/ 0700 ${username} users -"
-          ]) (lib.attrNames usersWithSecrets);
+        systemd.tmpfiles.rules = lib.concatMap (username: [
+          "d /home/${username}/.config/ 0755 ${username} users -"
+          "d /home/${username}/.config/sops/ 0700 ${username} users -"
+          "d /home/${username}/.config/sops/age/ 0700 ${username} users -"
+        ]) (lib.attrNames config.core.users);
       }
       (lib.optionalAttrs (options ? sops) {
         sops = {
@@ -43,14 +35,7 @@ in
 
           age.sshKeyPaths = map (key: key.path) config.services.openssh.hostKeys;
 
-          secrets = let
-            usersWithSecrets =
-              lib.filterAttrs (
-                name: _:
-                  config.home-manager.users.${name}.core.secrets.enable or false
-              )
-              config.core.users;
-          in
+          secrets =
             lib.mapAttrs' (username: _: {
               name = "users/${username}/age_key";
               value = {
@@ -60,7 +45,7 @@ in
                 group = "users";
               };
             })
-            usersWithSecrets;
+            config.core.users;
         };
       })
     ]);

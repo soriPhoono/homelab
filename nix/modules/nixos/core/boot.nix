@@ -48,10 +48,6 @@ in
           description = "Plymouth theme to use";
         };
       };
-
-      initrd = {
-        ssh.enable = mkEnableOption "Enable SSH in initrd";
-      };
     };
 
     config = lib.mkIf cfg.enable (lib.mkMerge [
@@ -77,10 +73,6 @@ in
           initrd = {
             verbose = !cfg.plymouth.enable;
             systemd.enable = true;
-            network = {
-              enable = true;
-              ssh.enable = cfg.initrd.ssh.enable;
-            };
           };
 
           consoleLogLevel = 0;

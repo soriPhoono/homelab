@@ -23,14 +23,18 @@ in
       systemd.services = {
         flatpak-configure-flathub = {
           description = "Configure Flathub remote";
-          after = ["flatpak.service"];
+          wants = ["network-online.target"];
+          after = ["network-online.target" "flatpak.service"];
           wantedBy = ["multi-user.target"];
           serviceConfig = {
             Type = "oneshot";
             ExecStart = "${pkgs.writeShellApplication {
               name = "configure-flathub";
+              runtimeInputs = with pkgs; [
+                flatpak
+              ];
               text = ''
-                flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+                flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
               '';
             }}/bin/configure-flathub";
           };
@@ -38,10 +42,14 @@ in
 
         flatpak-install-warehouse = mkIf cfg.enableStore {
           description = "Install Warehouse Flatpak";
-          after = ["flatpak-configure-flathub.service"];
+          wants = ["network-online.target"];
+          after = ["network-online.target" "flatpak-configure-flathub.service"];
           wantedBy = ["multi-user.target"];
           serviceConfig = {
             Type = "oneshot";
+            runtimeInputs = with pkgs; [
+              flatpak
+            ];
             ExecStart = "${pkgs.writeShellApplication {
               name = "install-warehouse-flatpak";
               text = ''
