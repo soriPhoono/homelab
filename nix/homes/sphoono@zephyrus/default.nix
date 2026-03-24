@@ -42,7 +42,10 @@
       nextcloud.enable = true;
       bitwarden.enable = true;
     };
-    office.onlyoffice.enable = true;
+    office = {
+      onlyoffice.enable = true;
+      slack.enable = true;
+    };
     content-creation = {
       obs-studio.enable = true;
       davinci-resolve.enable = true;
