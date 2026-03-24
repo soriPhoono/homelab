@@ -36,9 +36,9 @@ in
       home-manager.users =
         lib.mapAttrs (_: _: {
           home.sessionVariables = {
-            SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
-            SSH_ASKPASS = "ksshaskpass";
-            GIT_ASKPASS = "ksshaskpass";
+            SSH_AUTH_SOCK = mkDefault "$XDG_RUNTIME_DIR/ssh-agent";
+            SSH_ASKPASS = mkDefault "ksshaskpass";
+            GIT_ASKPASS = mkDefault "ksshaskpass";
           };
         })
         config.core.users;
