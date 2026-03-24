@@ -50,8 +50,8 @@ in
         lib.mapAttrs (_: _: {
           home.sessionVariables = {
             SSH_AUTH_SOCK = mkDefault "$XDG_RUNTIME_DIR/ssh-agent";
-            SSH_ASKPASS = mkDefault "ksshaskpass";
-            GIT_ASKPASS = mkDefault "ksshaskpass";
+            SSH_ASKPASS = mkDefault "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
+            GIT_ASKPASS = mkDefault "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
           };
         })
         config.core.users;
