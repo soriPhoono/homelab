@@ -254,12 +254,8 @@
               self
               ;
           };
-          nvimPkgs = lib.mapAttrs' (name: pkg: {
-            name = "neovim-${name}";
-            value = pkg;
-          }) (self.nvimConfigurations.${system} or {});
         in
-          customPkgs // nvimPkgs;
+          customPkgs;
 
         # --- Configuration Builders --- #
 

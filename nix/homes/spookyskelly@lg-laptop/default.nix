@@ -21,5 +21,6 @@
     office.onlyoffice.enable = true;
     communication.discord.enable = true;
     development.knowledge-management.obsidian.enable = true;
+    content-creation.blender.enable = true;
   };
 }
