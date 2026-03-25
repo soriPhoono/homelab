@@ -4,6 +4,8 @@
   ...
 }: {
   core = {
+    secrets.enable = true;
+
     shells = {
       fish.generateCompletions = true;
       starship.enable = true;

@@ -6,8 +6,6 @@
   cfg = config.core.git;
 in {
   options.core.git = {
-    enable = lib.mkEnableOption "git";
-
     userName = lib.mkOption {
       type = lib.types.str;
       default = "";
@@ -75,7 +73,7 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = {
     assertions = [
       {
         assertion = cfg.userName != "";

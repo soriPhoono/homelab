@@ -1,7 +1,8 @@
 {nvimConfigurations, ...}: {
   core = {
+    secrets.defaultSopsFile = ./secrets.yml;
+
     git = {
-      enable = true;
       userName = "soriphoono";
       userEmail = "soriphoono@gmail.com";
     };

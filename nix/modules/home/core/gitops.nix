@@ -34,9 +34,9 @@ in {
         # We assume the flake is located at ~/Documents/Projects/homelab as per context
         ExecStart = "${pkgs.writeShellApplication {
           name = "hm-gitops-sync";
-          runtimeDependencies = [
-            pkgs.git
-            pkgs.nh
+          runtimeDependencies = with pkgs; [
+            git
+            nh
           ];
           text = ''
             set -e

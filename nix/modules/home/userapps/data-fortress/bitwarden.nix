@@ -9,6 +9,8 @@ in
   with lib; {
     options.userapps.data-fortress.bitwarden = {
       enable = mkEnableOption "Enable Bitwarden desktop client";
+
+      ssh-agent.enable = mkEnableOption "Enable Bitwarden SSH agent";
     };
 
     config = mkIf cfg.enable {
@@ -17,7 +19,7 @@ in
         bitwarden-desktop
       ];
 
-      core.shells.sessionVariables = {
+      core.shells.sessionVariables = mkIf cfg.ssh-agent.enable {
         SSH_AUTH_SOCK = "/home/${config.home.username}/.bitwarden-ssh-agent.sock";
       };
     };

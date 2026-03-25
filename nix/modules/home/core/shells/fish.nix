@@ -23,26 +23,19 @@ in
       programs.fish = {
         inherit (cfg) enable generateCompletions;
 
-        shellInitLast = let
+        inherit (config.core.shells) shellAliases;
+
+        interactiveShellInit = let
           sessionVariables =
             builtins.concatStringsSep
             "\n"
             (lib.mapAttrsToList
               (name: value: "set ${name} \"${value}\"")
               config.core.shells.sessionVariables);
-
-          shellAliases =
-            builtins.concatStringsSep
-            "\n"
-            (lib.mapAttrsToList
-              (name: command: "alias ${name}=\"${command}\"")
-              config.core.shells.shellAliases);
         in ''
           set fish_greeting
 
           ${sessionVariables}
-
-          ${shellAliases}
 
           if not set -q SSH_CLIENT
             ${lib.optionalString config.programs.fastfetch.enable "fastfetch"}

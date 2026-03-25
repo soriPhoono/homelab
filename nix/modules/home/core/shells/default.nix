@@ -14,35 +14,35 @@
     shellAliases = lib.mkOption {
       type = with lib.types; attrsOf str;
       default = {
-        rm = "${pkgs.trash-cli}/bin/trash";
+        rm = "trash";
 
-        ls = "${pkgs.eza}/bin/eza";
-        l = "ls -l";
-        la = "ls -a";
-        ll = "ls -l";
-        lla = "ls -la";
-        lt = "ls -TL 3";
-        lta = "ls -aTL 3";
+        ls = "eza";
+        l = "eza -l";
+        la = "eza -a";
+        ll = "eza -l";
+        lla = "eza -la";
+        lt = "eza -TL 3";
+        lta = "eza -aTL 3";
 
-        cat = "${pkgs.bat}/bin/bat --style=plain --paging=never";
+        cat = "bat --style=plain --paging=never";
 
         cd = "z";
         ".." = "cd ..";
         "..." = "cd ../..";
 
-        du = "${pkgs.dust}/bin/dust";
-        find = "${pkgs.fd}/bin/fd";
-        grep = "${pkgs.ripgrep}/bin/rg";
+        du = "dust";
+        find = "fd";
+        grep = "rg";
 
-        top = "${pkgs.btop}/bin/btop";
-        gtop = "${pkgs.nvtopPackages.full}/bin/nvtop";
-        df = "${pkgs.duf}/bin/duf";
+        top = "btop";
+        gtop = "nvtop";
+        df = "duf";
 
-        gs = "${pkgs.git}/bin/git status";
-        ga = "${pkgs.git}/bin/git add";
-        gc = "${pkgs.git}/bin/git commit -m";
-        gp = "${pkgs.git}/bin/git push";
-        gpl = "${pkgs.git}/bin/git pull";
+        gs = "git status";
+        ga = "git add";
+        gc = "git commit -m";
+        gp = "git push";
+        gpl = "git pull";
 
         v = "nvim";
       };
@@ -59,6 +59,14 @@
   config = {
     home.packages = with pkgs; [
       trash-cli
+
+      btop
+      nvtopPackages.full
+      duf
+
+      dust
+      fd
+      ripgrep
     ];
 
     programs = {
@@ -83,9 +91,6 @@
       bat = {
         enable = true;
         extraPackages = with pkgs.bat-extras; [
-          batdiff
-          batman
-          prettybat
         ];
       };
 
