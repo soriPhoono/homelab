@@ -15,10 +15,10 @@ in
         description = "Priority for being the default editor. Lower is higher priority.";
       };
 
-      settings = mkOption {
-        type = types.attrsOf types.anything;
-        default = {};
-        description = "Neovim settings";
+      package = mkOption {
+        type = types.package;
+        default = pkgs.neovim;
+        description = "Neovim package";
       };
     };
 
@@ -37,10 +37,6 @@ in
           "application/x-shellscript" = editor;
         });
 
-      programs.nvf = {
-        enable = true;
-
-        settings.vim = cfg.settings;
-      };
+      home.packages = [cfg.package];
     };
   }

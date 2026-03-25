@@ -66,9 +66,18 @@
 
   desktop = {
     environments = {
-      display_managers.sddm.theme = {
-        package = pkgs.sddm-sugar-dark;
-        name = "sugar-dark";
+      display_managers.sddm = {
+        theme = {
+          package = pkgs.sddm-astronaut.override {
+            embeddedTheme = "pixel_sakura";
+          };
+          name = "sddm-astronaut-theme";
+        };
+        extraPackages = with pkgs.kdePackages; [
+          qtmultimedia
+          qtvirtualkeyboard
+          qtsvg
+        ];
       };
       kde.enable = true;
     };

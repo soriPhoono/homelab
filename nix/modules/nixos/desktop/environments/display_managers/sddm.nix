@@ -30,6 +30,13 @@ in
           example = "catppuccin-frappe-teal";
         };
       };
+
+      extraPackages = mkOption {
+        type = with types; listOf package;
+        default = [];
+        description = "Extra packages to add to the SDDM environment (e.g. Qt plugins for themes)";
+        example = literalExpression "with pkgs.kdePackages; [ qtmultimedia ]";
+      };
     };
 
     config = mkIf (config.desktop.enable && (config.desktop.environment == "kde" || config.desktop.environments.display_managers.sddm.enable)) {
@@ -41,6 +48,13 @@ in
         enable = true;
         wayland.enable = true;
         theme = mkIf (cfg.theme.name != null) cfg.theme.name;
+        extraPackages =
+          (
+            if cfg.theme.package != null
+            then [cfg.theme.package]
+            else []
+          )
+          ++ cfg.extraPackages;
       };
     };
   }

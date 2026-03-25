@@ -12,11 +12,10 @@
     hideSearchHighlight = true;
     clipboard = {
       enable = true;
-      registers = "unnamedplus";
+      providers.wl-copy.enable = true;
     };
     extraPackages = with pkgs; [
       ripgrep
-      wl-clipboard
       tree-sitter
       bacon
     ];
@@ -55,8 +54,6 @@
       # Search
       ignorecase = true;
       smartcase = true;
-
-      # System clipboard
 
       # Mouse support
       mouse = "a";

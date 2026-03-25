@@ -96,27 +96,29 @@
       nvf.homeManagerModules.default
     ];
 
-    nixosModules = with inputs; [
-      self.nixosModules.default
-      home-manager.nixosModules.home-manager
-      nixos-facter-modules.nixosModules.facter
-      disko.nixosModules.disko
-      determinate.nixosModules.default
-      sops-nix.nixosModules.sops
-      comin.nixosModules.comin
-      nix-index-database.nixosModules.nix-index
-      {
-        home-manager = {
-          useGlobalPkgs = true;
-          useUserPackages = true;
-          extraSpecialArgs = {
-            inherit inputs self lib;
+    nixosModules = system:
+      with inputs; [
+        self.nixosModules.default
+        home-manager.nixosModules.home-manager
+        nixos-facter-modules.nixosModules.facter
+        disko.nixosModules.disko
+        determinate.nixosModules.default
+        sops-nix.nixosModules.sops
+        comin.nixosModules.comin
+        nix-index-database.nixosModules.nix-index
+        {
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            extraSpecialArgs = {
+              inherit inputs self lib;
+              nvimConfigurations = self.nvimConfigurations.${system};
+            };
+            sharedModules = homeManagerModules;
+            backupFileExtension = "bak";
           };
-          sharedModules = homeManagerModules;
-          backupFileExtension = "bak";
-        };
-      }
-    ];
+        }
+      ];
 
     # --- System Builders --- #
 
@@ -144,6 +146,7 @@
         inherit pkgs;
         extraSpecialArgs = {
           inherit inputs self lib;
+          nvimConfigurations = self.nvimConfigurations.${systemArch};
         };
         modules =
           homeManagerModules
@@ -172,13 +175,24 @@
           inherit inputs self lib;
         };
         modules =
-          nixosModules
+          (nixosModules systemArch)
           ++ [
             {
               networking.hostName = hostName;
             }
             path
           ];
+      };
+
+    # Standalone Neovim Builder
+    mkNeovim = system: path: let
+      pkgs = pkgsFor.${system};
+    in
+      inputs.nvf.lib.neovimConfiguration {
+        inherit pkgs;
+        modules = [
+          path
+        ];
       };
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -210,8 +224,6 @@
           config.allowUnfree = true;
         };
 
-        githubActions = import ./actions.nix {inherit self lib;};
-
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
@@ -233,17 +245,27 @@
         in
           evalSystems // evalHomes;
 
-        packages = import ./nix/pkgs {
-          inherit
-            inputs
-            lib
-            pkgs
-            self
-            ;
-        };
+        packages = let
+          customPkgs = import ./nix/pkgs {
+            inherit
+              inputs
+              lib
+              pkgs
+              self
+              ;
+          };
+          nvimPkgs = lib.mapAttrs' (name: pkg: {
+            name = "neovim-${name}";
+            value = pkg;
+          }) (self.nvimConfigurations.${system} or {});
+        in
+          customPkgs // nvimPkgs;
+
+        # --- Configuration Builders --- #
 
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
+        githubActions = import ./actions.nix {inherit self lib;};
       };
 
       flake = {
@@ -294,6 +316,15 @@
             mkHome username homeName;
         in
           lib.genAttrs validHomeNames mkHomeConfig;
+
+        # All standalone Neovim configurations
+        nvimConfigurations = lib.genAttrs supportedSystems (
+          system:
+            lib.mapAttrs
+            (_name: path: (mkNeovim system path).neovim) ((import ./nix/nvim) {
+              inherit lib;
+            })
+        );
 
         # All templates in the /templates folder
         templates =

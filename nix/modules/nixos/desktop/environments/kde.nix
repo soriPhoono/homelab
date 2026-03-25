@@ -31,15 +31,14 @@ in
           wallpaper-engine-plugin
 
           kcolorchooser
-
           dragon
           elisa
 
           ktorrent
           kmail
 
-          kwave
           krita
+          kwave
           kdenlive
         ];
       };

@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{nvimConfigurations, ...}: {
   core = {
     git = {
       enable = true;
@@ -7,5 +7,8 @@
     };
   };
 
-  userapps.development.editors.neovim.settings = import ./nvim {inherit pkgs;};
+  userapps.development.editors.neovim = {
+    enable = true;
+    package = nvimConfigurations.sphoono;
+  };
 }
