@@ -55,6 +55,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nur = {
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -93,6 +98,7 @@
     homeManagerModules = with inputs; [
       self.homeModules.default
       sops-nix.homeManagerModules.sops
+      stylix.homeModules.stylix
       nvf.homeManagerModules.default
     ];
 
@@ -106,6 +112,7 @@
         sops-nix.nixosModules.sops
         comin.nixosModules.comin
         nix-index-database.nixosModules.nix-index
+        stylix.nixosModules.stylix
         {
           home-manager = {
             useGlobalPkgs = true;

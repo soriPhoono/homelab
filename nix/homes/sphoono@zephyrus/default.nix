@@ -72,4 +72,6 @@
       command = "antigravity";
     };
   };
+
+  themes.enable = true;
 }

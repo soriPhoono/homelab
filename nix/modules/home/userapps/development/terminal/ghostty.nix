@@ -28,17 +28,6 @@ in
           "application/x-terminal-emulator" = terminal;
         });
 
-      programs.ghostty = {
-        enable = true;
-        settings = {
-          theme = "light:Catppuccin Latte,dark:Catppuccin Frappe";
-          font-family = "SauceCodePro Nerd Font";
-          font-size = 16;
-          window-decoration = true;
-          window-padding-x = 8;
-          window-padding-y = 8;
-          confirm-close-surface = false;
-        };
-      };
+      programs.ghostty.enable = true;
     };
   }

@@ -19,8 +19,6 @@
 
     carlito
     liberation_ttf
-    nerd-fonts.aurulent-sans-mono
-    nerd-fonts.sauce-code-pro
   ];
 
   xdg = {
