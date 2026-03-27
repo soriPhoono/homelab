@@ -6,6 +6,10 @@
   cfg = config.desktop.hyprland.default;
 in
   with lib; {
+    imports = [
+      ./binds
+    ];
+
     options.desktop.hyprland.default = {
       enable =
         (mkEnableOption "Enable default hyprland desktop customizations")
@@ -15,19 +19,19 @@ in
     };
 
     config = mkIf cfg.enable {
-      desktop.hyprland = {
-        hotkeys = {
-          terminal = {
-            mods = [
-              "SUPER"
-            ];
-            trigger = "Return";
-            executor = "exec";
-            command = "${config.programs.kitty.package}/bin/kitty";
-          };
+      wayland.windowManager.hyprland.settings = {
+        general = {
+          border_size = 3;
+          gaps_in = 4;
+          gaps_out = 8;
+          float_gaps = 8;
+
+          snap.enabled = true;
+        };
+
+        decoration = {
+          rounding = 10;
         };
       };
-
-      userapps.development.terminal.kitty.enable = true;
     };
   }

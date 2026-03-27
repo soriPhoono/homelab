@@ -30,8 +30,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      stylix.targets.vscode.enable = false;
-
       home.sessionVariables = {
         EDITOR = mkOverride cfg.priority (lib.getExe cfg.package);
         VISUAL = mkOverride cfg.priority (lib.getExe cfg.package);

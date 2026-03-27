@@ -85,6 +85,7 @@
           qtsvg
         ];
       };
+      # kde.enable = true;
       managers.hyprland.enable = true;
     };
     features = {
