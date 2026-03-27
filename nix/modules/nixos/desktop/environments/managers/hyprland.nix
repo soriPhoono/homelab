@@ -13,7 +13,11 @@ in
     config = mkIf cfg.enable {
       desktop.environments = {
         managers.enable = true;
-        display_managers.greetd.enable = config.desktop.environment == null;
+        display_managers.sddm.enable = true;
+      };
+
+      environment.sessionVariables = {
+        NIXOS_OZONE_WL = "1";
       };
 
       programs.hyprland = {
@@ -23,7 +27,11 @@ in
 
       home-manager.users =
         builtins.mapAttrs (_: _: {
-          desktop.environments.hyprland.enable = true;
+          desktop.hyprland.enable = true;
+
+          home.sessionVariables = {
+            SSH_AUTH_SOCK = mkDefault "$XDG_RUNTIME_DIR/ssh-agent";
+          };
         })
         config.core.users;
     };

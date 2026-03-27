@@ -9,24 +9,12 @@ in
   with lib; {
     imports = [
       ./environments
-
       ./features
-
       ./services
-
       ./tools
     ];
 
-    options.desktop = {
-      enable = mkEnableOption "Enable core desktop configurations";
-
-      environment = mkOption {
-        type = with types; nullOr (enum ["kde" "cosmic"]);
-        default = null;
-        description = "The shorthand code for the currently enabled desktop, for autoselection of display manager";
-        example = "kde";
-      };
-    };
+    options.desktop.enable = mkEnableOption "Enable core desktop configurations";
 
     config = mkIf cfg.enable {
       desktop.services = {
@@ -34,25 +22,18 @@ in
         flatpak.enable = true;
       };
 
-      programs = {
-        appimage = {
-          enable = true;
-          binfmt = true;
-        };
+      programs.appimage = {
+        enable = true;
+        binfmt = true;
       };
 
       services = {
         geoclue2.enable = true;
-
-        # Automatically update timezone based on location (uses geoclue2)
         automatic-timezoned.enable = true;
-
-        # Preserve dbus-broker (Plasma 6 tries to switch to dbus by default)
         dbus.implementation = "broker";
       };
 
       environment.systemPackages = with pkgs; [
-        winboat
       ];
     };
   }

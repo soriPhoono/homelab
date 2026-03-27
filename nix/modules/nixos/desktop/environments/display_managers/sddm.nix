@@ -39,7 +39,7 @@ in
       };
     };
 
-    config = mkIf (config.desktop.enable && (config.desktop.environment == "kde" || config.desktop.environments.display_managers.sddm.enable)) {
+    config = mkIf config.desktop.environments.display_managers.sddm.enable {
       environment.systemPackages = mkIf (cfg.theme.package != null) [
         cfg.theme.package
       ];
@@ -48,13 +48,7 @@ in
         enable = true;
         wayland.enable = true;
         theme = mkIf (cfg.theme.name != null) cfg.theme.name;
-        extraPackages =
-          (
-            if cfg.theme.package != null
-            then [cfg.theme.package]
-            else []
-          )
-          ++ cfg.extraPackages;
+        inherit (cfg) extraPackages;
       };
     };
   }

@@ -53,4 +53,23 @@
       davinci-resolve.enable = true;
     };
   };
+
+  desktop.hyprland.hotkeys = {
+    chrome = {
+      mods = [
+        "SUPER"
+      ];
+      trigger = "B";
+      executor = "exec";
+      command = "google-chrome";
+    };
+    antigravity = {
+      mods = [
+        "SUPER"
+      ];
+      trigger = "C";
+      executor = "exec";
+      command = "antigravity";
+    };
+  };
 }

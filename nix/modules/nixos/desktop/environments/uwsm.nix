@@ -50,9 +50,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      desktop = {
-        enable = true;
-      };
+      desktop.enable = true;
 
       programs.uwsm = {
         enable = true;

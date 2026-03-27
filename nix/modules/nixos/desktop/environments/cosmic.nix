@@ -13,10 +13,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      desktop = {
-        enable = true;
-        environment = "cosmic";
-      };
+      desktop.enable = true;
 
       environment = {
         sessionVariables = {
@@ -26,11 +23,6 @@ in
 
         systemPackages = with pkgs; [
         ];
-      };
-
-      programs.firefox.preferences = {
-        # disable libadwaita theming for Firefox
-        "widget.gtk.libadwaita-colors.enabled" = false;
       };
 
       services = {

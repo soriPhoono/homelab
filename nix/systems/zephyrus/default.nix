@@ -3,6 +3,12 @@
     ./disko.nix
   ];
 
+  environment.systemPackages = with pkgs;
+  with kdePackages; [
+    # Themes
+    catppuccin-kde
+  ];
+
   core = {
     nixconf.determinate.enable = true;
 
@@ -69,7 +75,7 @@
       display_managers.sddm = {
         theme = {
           package = pkgs.sddm-astronaut.override {
-            embeddedTheme = "pixel_sakura";
+            embeddedTheme = "jake_the_dog";
           };
           name = "sddm-astronaut-theme";
         };
@@ -79,7 +85,7 @@
           qtsvg
         ];
       };
-      kde.enable = true;
+      managers.hyprland.enable = true;
     };
     features = {
       printing.enable = true;

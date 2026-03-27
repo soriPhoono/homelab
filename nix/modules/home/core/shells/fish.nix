@@ -25,17 +25,8 @@ in
 
         inherit (config.core.shells) shellAliases;
 
-        interactiveShellInit = let
-          sessionVariables =
-            builtins.concatStringsSep
-            "\n"
-            (lib.mapAttrsToList
-              (name: value: "set ${name} \"${value}\"")
-              config.core.shells.sessionVariables);
-        in ''
+        interactiveShellInit = ''
           set fish_greeting
-
-          ${sessionVariables}
 
           if not set -q SSH_CLIENT
             ${lib.optionalString config.programs.fastfetch.enable "fastfetch"}

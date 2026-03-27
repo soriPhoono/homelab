@@ -14,7 +14,6 @@ in
     config = mkIf cfg.enable {
       desktop = {
         enable = true;
-        environment = "kde";
         environments.display_managers.sddm.enable = true;
       };
 
@@ -27,8 +26,6 @@ in
         with kdePackages; [
           discover
           ksystemlog
-
-          wallpaper-engine-plugin
 
           kcolorchooser
           dragon

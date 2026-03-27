@@ -39,25 +39,6 @@ in
             }}/bin/configure-flathub";
           };
         };
-
-        flatpak-install-warehouse = mkIf cfg.enableStore {
-          description = "Install Warehouse Flatpak";
-          wants = ["network-online.target"];
-          after = ["network-online.target" "flatpak-configure-flathub.service"];
-          wantedBy = ["multi-user.target"];
-          serviceConfig = {
-            Type = "oneshot";
-            runtimeInputs = with pkgs; [
-              flatpak
-            ];
-            ExecStart = "${pkgs.writeShellApplication {
-              name = "install-warehouse-flatpak";
-              text = ''
-                flatpak install -y flathub io.github.mimbrero.Warehouse
-              '';
-            }}/bin/install-warehouse-flatpak";
-          };
-        };
       };
     };
   }

@@ -27,8 +27,8 @@
     enable = true;
     userDirs = {
       enable = true;
-
       createDirectories = true;
+      setSessionVariables = true;
     };
   };
 
@@ -48,6 +48,6 @@
   home.stateVersion = lib.mkDefault (
     if nixosConfig != null
     then nixosConfig.system.stateVersion
-    else "25.11"
+    else "26.05"
   );
 }
