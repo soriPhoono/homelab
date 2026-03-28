@@ -23,11 +23,17 @@ The project uses a **Dynamic Discovery Mechanism** to automate module imports an
 
 ### Module System
 
+#### Nixos
+
 Configurations are categorized into three main layers:
 
 1. **Core**: Essential system services, networking, and user management.
-1. **Desktop**: UI environments (KDE, SDDM), gaming, and productivity tools.
-1. **Hosting**: Server-side workloads (Docker, K3s).
+2. **Desktop**: UI environments (KDE, SDDM), gaming, and productivity tools.
+3. **Hosting**: Server-side workloads (Docker, K3s).
+
+#### Home Manager
+
+# TODO
 
 ### Discovery Logic (`lib.discover`)
 
