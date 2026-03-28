@@ -13,7 +13,6 @@
   autocomplete.blink-cmp = {
     enable = true;
     friendly-snippets.enable = true;
-    setupOpts.completion.sources.default = ["lsp" "path" "snippets" "buffer"];
   };
 
   languages = {

@@ -15,7 +15,7 @@ in
             ];
             trigger = "Return";
             executor = "exec";
-            command = "${config.programs.kitty.package}/bin/kitty";
+            command = "uwsm app -s a ${config.programs.kitty.package}/bin/kitty";
           };
         };
       };
