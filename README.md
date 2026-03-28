@@ -30,6 +30,7 @@ This repository uses a modern Flake-based structure with automatic discovery log
 | **`secrets/`** | **Secrets** | Encrypted secrets used throughout the flake for developer facing integrations. |
 | **`systems/`** | **Hosts** | Top-level NixOS configurations for machines. Each folder is a host toplevel module. |
 | **`templates/`** | **Scaffolding** | Boilerplates for creating new systems, modules, or general projects. |
+| **`docker/`** | **Docker Swarm** | Compose files for standalone or swarm services like NetBird (`docker/compose/netbird/docker-compose.yml`). |
 
 ### Dynamic Discovery
 

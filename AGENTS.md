@@ -101,6 +101,7 @@ ______________________________________________________________________
 - `nix/modules/`: Reusable NixOS (`nixos/`) and Home Manager (`home/`) modules.
 - `nix/systems/`: Machine-specific configurations.
 - `nix/homes/`: User-specific Home Manager configurations.
+- `docker/`: Compose files for standalone or single-node Docker Swarm services (e.g., `docker/compose/netbird/docker-compose.yml`).
 - `secrets.nix`: Definition of `agenix` secrets for the dev shell.
 - `.sops.yaml`: SOPS configuration for encrypted secrets.
 
