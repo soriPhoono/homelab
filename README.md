@@ -2,9 +2,19 @@
 
 ## 🏰 Project Overview: The Data Fortress
 
-This repository is a comprehensive, declarative configuration for my personal infrastructure (homelab). It manages everything from physical servers and desktops to virtualized environments and single-board computers leveraging the declarative nature of the nix ecosystem.
+This repository is a comprehensive, declarative configuration for my personal infrastructure (homelab). It manages everything from physical servers and desktops to virtualized environments and single-board computers leveraging the declarative nature of the nix ecosystem, docker-compose, and kubernetes manifests via fluxCD.
+
+### NixOS
 
 Built on **NixOS** and **Home Manager**, it leverages **Nix Flakes** for reproducibility and hermetic builds.
+
+### Docker Compose
+
+# Todo
+
+### Kubernetes
+
+# Todo
 
 ## 🧠 Core Philosophy
 
