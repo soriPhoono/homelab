@@ -10,11 +10,11 @@ Built on **NixOS** and **Home Manager**, it leverages **Nix Flakes** for reprodu
 
 ### Docker Compose
 
-# Todo
+#### Todo
 
 ### Kubernetes
 
-# Todo
+#### Todo
 
 ## 🧠 Core Philosophy
 
