@@ -60,14 +60,10 @@ in
             cpu = {
               format = "{icon}";
               format-icons = [
-                "<span color='#a6da95'>▁ </span>" # green
-                "<span color='#a6da95'>▂ </span>" # blue
-                "<span color='#a6da95'>▃ </span>" # white
-                "<span color='#eed49f'>▄ </span>" # white
-                "<span color='#eed49f'>▅ </span>" # yellow
-                "<span color='#eed49f'>▆ </span>" # yellow
-                "<span color='#f5a97f'>▇ </span>" # orange
-                "<span color='#ed8796'>█ </span>" # red
+                "󰡳" # green
+                "󰡵" # yellow
+                "󰊚" # orange
+                "󰡴" # red
               ];
             };
 
