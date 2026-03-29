@@ -11,14 +11,20 @@ in
     ];
 
     config = mkIf cfg.enable {
-      wayland.windowManager.hyprland.settings.bind = builtins.concatLists (builtins.genList (
-          i: let
-            ws = toString (i + 1);
-          in [
-            "SUPER, ${toString ws}, workspace, ${toString ws}"
-            "SUPER SHIFT, ${toString ws}, movetoworkspace, ${toString ws}"
-          ]
-        )
-        9);
+      wayland.windowManager.hyprland.settings.bind =
+        [
+          "SUPER, Q, killactive, "
+
+          "SUPER, grave, togglespecialworkspace, scratchpad"
+        ]
+        ++ (builtins.concatLists (builtins.genList (
+            i: let
+              ws = toString (i + 1);
+            in [
+              "SUPER, ${toString ws}, workspace, ${toString ws}"
+              "SUPER SHIFT, ${toString ws}, movetoworkspace, ${toString ws}"
+            ]
+          )
+          9));
     };
   }

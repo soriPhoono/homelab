@@ -21,6 +21,8 @@ in
 
     config = mkIf cfg.enable {
       wayland.windowManager.hyprland.settings = {
+        exec-shutdown = "sleep 1";
+
         bezier = [
           "overshot, 0.05, 0.9, 0.1, 1.05"
           "smoothOut, 0.5, 0, 0.99, 0.99"

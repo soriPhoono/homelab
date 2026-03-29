@@ -21,7 +21,7 @@
 
       monospace = {
         package = pkgs.nerd-fonts.aurulent-sans-mono;
-        name = "Aurulent Sans Mono Nerd Font";
+        name = "AurulentSansM Nerd Font Mono";
       };
 
       emoji = {

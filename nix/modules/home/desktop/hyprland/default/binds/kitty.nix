@@ -7,18 +7,9 @@
 in
   with lib; {
     config = mkIf cfg.enable {
-      desktop.hyprland = {
-        hotkeys = {
-          terminal = {
-            mods = [
-              "SUPER"
-            ];
-            trigger = "Return";
-            executor = "exec";
-            command = "uwsm app -s a ${config.programs.kitty.package}/bin/kitty";
-          };
-        };
-      };
+      wayland.windowManager.hyprland.settings.bind = [
+        "SUPER, Return, exec, uwsm app -s a kitty"
+      ];
 
       userapps.development.terminal.kitty.enable = true;
     };
