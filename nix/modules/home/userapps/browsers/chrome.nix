@@ -13,6 +13,12 @@ in
         // {
           default = true;
         };
+
+      priority = mkOption {
+        type = types.int;
+        default = 40;
+        description = "Priority for being the default browser. Lower is higher priority.";
+      };
     };
 
     config = mkIf cfg.enable {

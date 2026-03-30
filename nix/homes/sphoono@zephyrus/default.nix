@@ -22,7 +22,7 @@
     ];
 
     bind = [
-      "SUPER, B, exec, uwsm app -s a google-chrome"
+      "SUPER, B, exec, uwsm app -s a xdg-open https://duckduckgo.com"
       "SUPER, C, exec, uwsm app -s a antigravity"
     ];
   };

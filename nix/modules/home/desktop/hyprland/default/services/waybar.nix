@@ -1,6 +1,8 @@
 {
   lib,
+  pkgs,
   config,
+  nixosConfig,
   ...
 }: let
   cfg = config.desktop.hyprland.default;
@@ -16,7 +18,7 @@ in
           mainBar = {
             layer = "top";
             position = "top";
-            height = 30;
+            height = 46;
             output = [
               "eDP-1"
             ];
@@ -34,6 +36,10 @@ in
             modules-right = [
               "custom/separator"
               "network"
+              "bluetooth"
+              "wireplumber"
+              "battery"
+              "backlight"
             ];
 
             "hyprland/workspaces" = {
@@ -58,19 +64,19 @@ in
             };
 
             cpu = {
-              format = "{icon}";
-              format-icons = [
-                "󰡳" # green
-                "󰡵" # yellow
-                "󰊚" # orange
-                "󰡴" # red
-              ];
+              format = "{usage}% ";
+              interval = 1;
+              states = {
+                medium = 50;
+                high = 80;
+                danger = 90;
+              };
             };
 
             memory = {
               format = "{percentage}% ";
+              interval = 1;
               states = {
-                low = 10;
                 medium = 50;
                 high = 80;
                 danger = 90;
@@ -91,6 +97,8 @@ in
             };
 
             network = {
+              interval = 1;
+
               format-wifi = "{icon}";
               format-ethernet = "<span color='#a6da95'>󰈀</span>";
               format-disconnected = "<span color='#ed8796'>󰖪</span>";
@@ -103,24 +111,137 @@ in
                 "<span color='#eed49f'>󰤥</span>"
                 "<span color='#a6da95'>󰤨</span>"
               ];
+
+              tooltip-format-wifi = "Connected (WiFi): {essid} @{frequency}GHz\nIP: {ipaddr}\nSignal: {signalStrength}%\nUp: {bandwidthUpBytes}\nDown: {bandwidthDownBytes}";
+              tooltip-format-ethernet = "Connected (Ethernet): {essid} @{frequency}GHz\nIP: {ipaddr}\nUp: {bandwidthUpBytes}\nDown: {bandwidthDownBytes}";
+              tooltip-format-disconnected = "No Connection";
+              tooltip-format-disabled = "WiFi Disabled";
+
+              on-click = "${pkgs.networkmanagerapplet}/bin/nm-connection-editor";
+              on-click-right = let
+                networkToggleScript = pkgs.writeShellApplication {
+                  name = "toggle-network";
+                  runtimeInputs = [
+                    pkgs.networkmanagerapplet
+                  ];
+                  text = ''
+                    if [[ $(nmcli radio wifi) == 'enabled' ]]; then
+                      nmcli radio wifi off
+                    else
+                      nmcli radio wifi on
+                    fi
+                  '';
+                };
+              in "${networkToggleScript}/bin/toggle-network";
             };
 
             bluetooth = {
-              format-connected = "<span color='#a6da95'>󰣰</span>";
-              format-on = "<span color='#a6da95'>󰣰</span>";
-              format-off = "<span color='#363a4f'>󰣰</span>";
-              format-disabled = "<span color='#363a4f'>󰣰</span>";
-              format-no-controller = "<span color='#363a4f'>󰣰</span>";
+              format-connected = "󰂱";
+              format-on = "󰂯";
+              format-off = "󰂲";
+              format-disabled = "󰂲";
+              format-no-controller = "󰂲";
+              format-connected-battery = "󰥉";
 
-              format-connected-battery = "<span color='#a6da95'>󰣰</span>";
+              tooltip-format-disabled = "BT Disabled";
+              tooltip-format-off = "BT Off";
+              tooltip-format-on = "BT On";
+              tooltip-format-connected = "Connected: {num_connections}\n{device_enumerate}";
+              tooltip-format-connected-battery = "Connected: {num_connections}\n{device_enumerate}";
+              tooltip-format-enumerate-connected = "Device: {device_alias}";
+              tooltip-format-enumerate-connected-battery = "Device: {device_alias} 󰁹 {device_battery_percentage}%";
 
-              tooltip-format-disabled = "Bluetooth: 󰣰";
-              tooltip-format-off = "Bluetooth: 󰣰";
-              tooltip-format-on = "Bluetooth: 󰣰";
-              tooltip-format-connected = "Bluetooth: 󰣰";
-              tooltip-format-connected-battery = "Bluetooth: 󰣰";
-              tooltip-format-enumerate-connected = "Bluetooth: 󰣰";
-              tooltip-format-enumerate-connected-battery = "Bluetooth: 󰣰";
+              on-click = "${pkgs.blueman}/bin/blueman-manager";
+              on-click-right = let
+                bluetoothPackage =
+                  if nixosConfig != null
+                  then nixosConfig.hardware.bluetooth.package
+                  else pkgs.bluez;
+
+                bluetoothToggleScript = pkgs.writeShellApplication {
+                  name = "toogle-bluetooth";
+                  runtimeInputs = [
+                    bluetoothPackage
+                  ];
+                  text = ''
+                    if [[ $(bluetoothctl show | grep PowerState | awk '{print $2}') == 'on' ]]; then
+                      bluetoothctl power off
+                    else
+                      bluetoothctl power on
+                    fi
+                  '';
+                };
+              in "${bluetoothToggleScript}/bin/toogle-bluetooth";
+            };
+
+            wireplumber = {
+              format = "{icon}";
+              format-muted = "<span color=#ed8796>󰸈</span>";
+              format-source = "";
+              format-source-muted = "";
+              format-icons = [
+                "󰕿"
+                "󰖀"
+                "󰕾"
+              ];
+              states = {
+                medium = 50;
+                high = 80;
+                very-high = 90;
+              };
+
+              tooltip-format = "{node_name}\n{icon}: {volume}%\n{format_source}: {source_volume}%";
+
+              on-click = "${pkgs.pwvucontrol}/bin/pwvucontrol";
+              on-click-right = let
+                wireplumberToggleScript = pkgs.writeShellApplication {
+                  name = "toggle-wireplumber";
+                  runtimeInputs = [
+                    pkgs.wireplumber
+                  ];
+                  text = ''
+                    if [[ $(wpctl status | grep PowerState | awk '{print $2}') == 'on' ]]; then
+                      wpctl set-volume @DEFAULT_SINK@ 0%
+                    else
+                      wpctl set-volume @DEFAULT_SINK@ 50%
+                    fi
+                  '';
+                };
+              in "${wireplumberToggleScript}/bin/toggle-wireplumber";
+            };
+
+            battery = {
+              states = {
+                low = 20;
+                medium = 50;
+                high = 80;
+              };
+
+              format-discharging-low = "󰁻";
+              format-discharging-medium = "󰁾";
+              format-discharging-high = "󰂁";
+              format-charging-low = "󰂆";
+              format-charging-medium = "󰢝";
+              format-charging-high = "󰂊";
+              format-full = "󰂅";
+
+              tooltip-format = "Capacity: {percent}%\nDraw: {power}\nRemaining: {timeTo}\nHealth: {health}%";
+            };
+
+            backlight = {
+              format = "{icon}";
+              tooltip-format = "backlight: {percent}%";
+              format-icons = [
+                "󱩎"
+                "󱩏"
+                "󱩐"
+                "󱩑"
+                "󱩒"
+                "󱩓"
+                "󱩔"
+                "󱩕"
+                "󱩖"
+              ];
             };
 
             "custom/separator" = {
@@ -139,7 +260,7 @@ in
             border: none;
             border-radius: 0;
             font-family: "AurulentSansM Nerd Font Mono";
-            font-size: 14px;
+            font-size: 16px;
             min-height: 0;
           }
 
@@ -163,12 +284,14 @@ in
 
           tooltip {
             background: rgb(36, 39, 58);
+            color: rgb(202, 211, 245);
             border: 1px solid rgb(54, 58, 79);
             border-radius: 1rem;
           }
 
           #workspaces button {
-            padding: 4px 8px;
+            padding-left: 12px;
+            padding-right: 12px;
             font-weight: bold;
             background-color: transparent;
             color: rgb(91, 96, 120);
@@ -187,7 +310,23 @@ in
             color: rgb(237, 135, 150);
           }
 
-          #memory.low {
+          #cpu {
+            color: rgb(166, 218, 149);
+          }
+
+          #cpu.medium {
+            color: rgb(238, 212, 159);
+          }
+
+          #cpu.high {
+            color: rgb(245, 169, 127);
+          }
+
+          #cpu.danger {
+            color: rgb(237, 135, 150);
+          }
+
+          #memory {
             color: rgb(166, 218, 149);
           }
 
@@ -203,7 +342,94 @@ in
             color: rgb(237, 135, 150);
           }
 
-          #cpu, #memory, #network {
+          #network {
+            font-size: 26px;
+          }
+
+          #bluetooth {
+            font-size: 16px;
+          }
+
+          #bluetooth.disabled {
+            color: rgb(54, 58, 79);
+          }
+
+          #bluetooth.off {
+            color: rgb(54, 58, 79);
+          }
+
+          #bluetooth.no-controller {
+            color: rgb(54, 58, 79);
+          }
+
+          #bluetooth.on {
+            color: rgb(166, 218, 149);
+          }
+
+          #bluetooth.connected {
+            color: rgb(125, 196, 228);
+          }
+
+          #wireplumber {
+            color: rgb(166, 218, 149);
+            font-size: 18px;
+          }
+
+          #wireplumber.medium {
+            color: rgb(238, 212, 159);
+          }
+
+          #wireplumber.high {
+            color: rgb(245, 169, 127);
+          }
+
+          #wireplumber.very-high {
+            color: rgb(237, 135, 150);
+          }
+
+          #battery.discharging {
+            font-size: 22px;
+            color: rgb(166, 218, 149);
+          }
+
+          #battery.discharging.low {
+            color: rgb(237, 135, 150);
+          }
+
+          #battery.discharging.medium {
+            color: rgb(245, 169, 127);
+          }
+
+          #battery.discharging.high {
+            color: rgb(238, 212, 159);
+          }
+
+          #battery.charging {
+            color: rgb(166, 218, 149);
+          }
+
+          #battery.charging.low {
+            color: rgb(237, 135, 150);
+          }
+
+          #battery.charging.medium {
+            color: rgb(245, 169, 127);
+          }
+
+          #battery.charging.high {
+            color: rgb(238, 212, 159);
+          }
+
+          #battery.full {
+            color: rgb(166, 218, 149);
+          }
+
+          #backlight {
+            font-size: 22px;
+            color: rgb(238, 212, 159);
+          }
+
+          #cpu, #memory, #network, #bluetooth, #wireplumber, #backlight {
             margin: 0 4px;
           }
 

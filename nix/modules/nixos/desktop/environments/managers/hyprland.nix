@@ -25,6 +25,11 @@ in
         withUWSM = true;
       };
 
+      services = {
+        blueman.enable = true;
+        power-profiles-daemon.enable = true;
+      };
+
       home-manager.users =
         builtins.mapAttrs (_: _: {
           desktop.hyprland.enable = true;
