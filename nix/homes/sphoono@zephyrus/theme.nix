@@ -6,7 +6,7 @@
     cursor = {
       package = pkgs.catppuccin-cursors.macchiatoBlue;
       name = "Catppuccin-Macchiato-Blue-Cursors";
-      size = 36;
+      size = 24;
     };
 
     fonts = let
@@ -28,6 +28,18 @@
         package = pkgs.noto-fonts-color-emoji;
         name = "Noto Color Emoji";
       };
+
+      sizes = {
+        applications = 14;
+        desktop = 12;
+      };
+    };
+
+    opacity = {
+      applications = 0.9;
+      desktop = 0.9;
+      popups = 0.9;
+      terminal = 0.9;
     };
   };
 }

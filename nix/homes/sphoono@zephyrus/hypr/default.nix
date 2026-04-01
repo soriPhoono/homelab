@@ -1,27 +1,23 @@
 {
   lib,
   config,
+  nixosConfig,
   ...
-}: let
-  cfg = config.desktop.hyprland.default;
-in
-  with lib; {
-    imports = [
-      ./binds
-      ./services
-    ];
+}:
+with lib; {
+  imports = [
+    ./shell.nix
+    ./binds.nix
+  ];
 
-    options.desktop.hyprland.default = {
-      enable =
-        (mkEnableOption "Enable default hyprland desktop customizations")
-        // {
-          default = config.desktop.hyprland.enable;
-        };
-    };
-
-    config = mkIf cfg.enable {
-      wayland.windowManager.hyprland.settings = {
-        exec-shutdown = "sleep 5";
+  config = {
+    xdg.configFile."uwsm/env".source = mkIf (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM) "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
+    wayland.windowManager.hyprland = {
+      enable = true;
+      settings = {
+        monitor = [
+          "eDP-1, 1920x1080@144, 0x0, 1.25"
+        ];
 
         bezier = [
           "overshot, 0.05, 0.9, 0.1, 1.05"
@@ -62,6 +58,8 @@ in
           hide_special_on_workspace_change = true;
 
           workspace_center_on = 1;
+
+          drag_threshold = 10;
         };
 
         input = {
@@ -102,4 +100,5 @@ in
         };
       };
     };
-  }
+  };
+}

@@ -8,6 +8,7 @@
 in
   with lib; {
     imports = [
+      ./bash.nix
       ./fish.nix
 
       ./starship.nix

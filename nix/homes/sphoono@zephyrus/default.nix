@@ -2,10 +2,18 @@
   imports = [
     ./userapps.nix
     ./theme.nix
+
+    ./hypr
   ];
 
   core = {
-    secrets.enable = true;
+    secrets = {
+      enable = true;
+      environment = {
+        enable = true;
+        sopsFile = ./secrets.env;
+      };
+    };
 
     shells = {
       fish.generateCompletions = true;
@@ -13,17 +21,8 @@
       fastfetch.enable = true;
     };
 
+    apps.yazi.enable = true;
+
     git.projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
-  };
-
-  wayland.windowManager.hyprland.settings = {
-    monitor = [
-      "eDP-1, 1920x1080@144, 0x0, 1.5"
-    ];
-
-    bind = [
-      "SUPER, B, exec, uwsm app -s a xdg-open https://duckduckgo.com"
-      "SUPER, C, exec, uwsm app -s a antigravity"
-    ];
   };
 }

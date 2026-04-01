@@ -19,6 +19,7 @@ in {
       builtins.mapAttrs (_name: _user: {
         extraGroups = [
           "adbusers"
+          "uucp"
         ];
       })
       (lib.filterAttrs

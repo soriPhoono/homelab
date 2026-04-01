@@ -8,9 +8,9 @@
 in
   with lib; {
     imports = [
+      ./cpu.nix
       ./gpu
       ./hid
-      ./cpu.nix
       ./adb.nix
       ./bluetooth.nix
     ];

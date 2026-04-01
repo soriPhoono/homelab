@@ -3,12 +3,6 @@
     ./disko.nix
   ];
 
-  environment.systemPackages = with pkgs;
-  with kdePackages; [
-    # Themes
-    catppuccin-kde
-  ];
-
   core = {
     nixconf.determinate.enable = true;
 

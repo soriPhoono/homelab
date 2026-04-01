@@ -12,6 +12,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.packages = [pkgs.davinci-resolve];
+      home.packages = [pkgs.kdePackages.kdenlive];
     };
   }

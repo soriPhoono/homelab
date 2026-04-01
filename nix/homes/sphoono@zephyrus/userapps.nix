@@ -14,7 +14,6 @@
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      knowledge-management.obsidian.enable = true;
       agents.gemini.enable = true;
       editors = {
         neovim.enable = true;
@@ -27,6 +26,7 @@
     data-fortress = {
       nextcloud.enable = true;
       bitwarden.enable = true;
+      obsidian.enable = true;
     };
     office = {
       onlyoffice.enable = true;

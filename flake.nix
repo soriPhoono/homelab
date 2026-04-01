@@ -69,6 +69,11 @@
       url = "github:notashelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -100,6 +105,21 @@
       sops-nix.homeManagerModules.sops
       stylix.homeModules.stylix
       nvf.homeManagerModules.default
+      noctalia.homeModules.default
+      ({
+        config,
+        nixosConfig,
+        ...
+      }: {
+        home = {
+          homeDirectory = lib.mkDefault "/home/${config.home.username}";
+          stateVersion = lib.mkDefault (
+            if nixosConfig != null
+            then nixosConfig.system.stateVersion
+            else "26.05"
+          );
+        };
+      })
     ];
 
     nixosModules = system:
@@ -156,18 +176,16 @@
           nvimConfigurations = self.nvimConfigurations.${systemArch};
         };
         modules =
-          homeManagerModules
-          ++ lib.optional hasBase (basePath + "/default.nix")
-          ++ lib.optional hasHome (homePath + "/default.nix")
-          ++ [
+          [
             {
               home = {
                 inherit username;
-                homeDirectory = lib.mkDefault "/home/${username}";
-                stateVersion = lib.mkDefault "26.05";
               };
             }
-          ];
+          ]
+          ++ homeManagerModules
+          ++ lib.optional hasBase (basePath + "/default.nix")
+          ++ lib.optional hasHome (homePath + "/default.nix");
       };
 
     # Base NixOS System Builder

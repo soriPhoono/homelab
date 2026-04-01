@@ -6,6 +6,7 @@
 }: {
   imports = [
     ./shells
+    ./apps
 
     ./git.nix
     ./gitops.nix

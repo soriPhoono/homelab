@@ -5,6 +5,6 @@
 
     # Streaming
     ./obs-studio.nix
-    ./davinci-resolve.nix
+    ./kdenlive.nix
   ];
 }

@@ -5,3 +5,5 @@ result
 
 .gemini/
 gha-creds-*.json
+
+noctalia-settings.json
