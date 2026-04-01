@@ -8,12 +8,20 @@
       xdg-desktop-portal-wlr
     ];
 
-    home.sessionVariables = {
-      NOCTALIA_AP_GOOGLE_API_KEY = "$GOOGLE_AI_API_KEY";
+    home = {
+      sessionVariables = {
+        NOCTALIA_AP_GOOGLE_API_KEY = "$GOOGLE_AI_API_KEY";
+      };
+      file.".cache/noctalia/wallpapers.json" = {
+        text = builtins.toJSON {
+          defaultWallpaper = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers/default.png";
+        };
+      };
     };
 
     programs.noctalia-shell = {
       enable = true;
+      package = pkgs.noctalia-shell.override {calendarSupport = true;};
       plugins = {
         sources = [
           {

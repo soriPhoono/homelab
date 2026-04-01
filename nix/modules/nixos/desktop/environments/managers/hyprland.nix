@@ -71,6 +71,7 @@ in
         };
 
         gvfs.enable = true;
+        gnome.evolution-data-server.enable = true;
       };
 
       home-manager.users =
