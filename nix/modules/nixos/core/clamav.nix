@@ -49,7 +49,9 @@ in {
 
     onAccessPaths = mkOption {
       type = with types; listOf str;
-      default = flatten (mapAttrsToList (_name: user: builtins.attrValues (filterAttrs (_name: value: builtins.isString value && hasPrefix "/" value) user.xdg.userDirs)) config.home-manager.users);
+      default = flatten (mapAttrsToList (_name: user:
+        builtins.attrValues (filterAttrs (n: v: n != "publishShare" && builtins.isString v && hasPrefix "/" v) user.xdg.userDirs))
+      config.home-manager.users);
       description = "Paths for clamonacc on-access scanning.";
       example = ["/home" "/srv"];
     };

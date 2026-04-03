@@ -1,9 +1,6 @@
 {
   core = {
-    secrets = {
-      enable = true;
-      defaultSopsFile = ./secrets.yaml;
-    };
+    secrets.enable = true;
 
     shells = {
       fish.generateCompletions = true;

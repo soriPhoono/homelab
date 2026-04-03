@@ -6,7 +6,11 @@
   cfg = config.core.shells.fastfetch;
 in {
   options.core.shells.fastfetch = {
-    enable = lib.mkEnableOption "fastfetch";
+    enable =
+      lib.mkEnableOption "fastfetch"
+      // {
+        default = true;
+      };
   };
 
   config = lib.mkIf cfg.enable {

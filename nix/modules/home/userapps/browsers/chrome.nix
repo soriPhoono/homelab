@@ -8,11 +8,7 @@
 in
   with lib; {
     options.userapps.browsers.chrome = {
-      enable =
-        (mkEnableOption "Enable Google Chrome. Defaults to true if no other browsers are enabled.")
-        // {
-          default = true;
-        };
+      enable = mkEnableOption "Enable Google Chrome.";
 
       priority = mkOption {
         type = types.int;

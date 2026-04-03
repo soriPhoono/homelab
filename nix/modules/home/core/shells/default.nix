@@ -3,118 +3,89 @@
   pkgs,
   config,
   ...
-}: let
-  cfg = config.core.shells;
-in
-  with lib; {
-    imports = [
-      ./bash.nix
-      ./fish.nix
+}:
+with lib; {
+  imports = [
+    ./bash.nix
+    ./fish.nix
 
-      ./starship.nix
-      ./fastfetch.nix
-    ];
+    ./starship.nix
+    ./fastfetch.nix
+  ];
 
-    options.core.shells = {
-      shellAliases = lib.mkOption {
-        type = with lib.types; attrsOf str;
-        default = {
-          rm = "trash";
-
-          ls = "eza";
-          l = "eza -l";
-          la = "eza -a";
-          ll = "eza -l";
-          lla = "eza -la";
-          lt = "eza -TL 3";
-          lta = "eza -aTL 3";
-
-          cat = "bat --style=plain --paging=never";
-
-          cd = "z";
-          ".." = "cd ..";
-          "..." = "cd ../..";
-
-          du = "dust";
-          find = "fd";
-          grep = "rg";
-
-          top = "btop";
-          gtop = "nvtop";
-          df = "duf";
-
-          gs = "git status";
-          ga = "git add";
-          gc = "git commit -m";
-          gp = "git push";
-          gpl = "git pull";
-
-          v = "nvim";
-        };
-        description = "Shell command aliases";
-      };
-
-      sessionVariables = lib.mkOption {
-        type = with lib.types; attrsOf str;
-        default = {};
-        description = "Environment variables to set for the user";
-      };
+  options.core.shells = {
+    shellAliases = lib.mkOption {
+      type = with lib.types; attrsOf str;
+      default = {};
+      description = "Shell command aliases";
     };
 
-    config = {
-      home = {
-        inherit (cfg) sessionVariables;
+    sessionVariables = lib.mkOption {
+      type = with lib.types; attrsOf str;
+      default = {};
+      description = "Environment variables to set for the user";
+    };
+  };
 
-        packages = with pkgs; [
-          trash-cli
+  config = {
+    core.shells.shellAliases = {
+      rm = "${pkgs.trashy}/bin/trash";
 
-          btop
-          nvtopPackages.full
-          duf
+      ls = "${config.programs.eza.package}/bin/eza";
+      l = "ls -l";
+      la = "ls -a";
+      ll = "ls -l";
+      lla = "ls -la";
+      lt = "ls -TL 3";
+      lta = "ls -aTL 3";
 
-          dust
-          fd
-          ripgrep
+      cat = "${config.programs.bat.package}/bin/bat";
+
+      cd = "z";
+      ".." = "cd ..";
+      "..." = "cd ../..";
+
+      du = "${pkgs.dust}/bin/dust";
+      find = "${config.programs.fd.package}/bin/fd";
+      grep = "${config.programs.ripgrep.package}/bin/rg";
+
+      df = "${pkgs.duf}/bin/duf";
+
+      # Note: Go back to btop for invokeable,
+      # have this running in mcp server mode w/ browser
+      # for network connections of ai agents to
+      # monitor systems in homelab
+      monitor = "${config.programs.btop.package}/bin/btop";
+    };
+
+    programs = {
+      direnv = {
+        enable = true;
+        nix-direnv.enable = true;
+      };
+
+      eza = {
+        enable = true;
+
+        git = true;
+        icons = "auto";
+
+        extraOptions = [
+          "--group-directories-first"
         ];
       };
 
-      programs = {
-        direnv = {
-          enable = true;
-          nix-direnv.enable = true;
-        };
+      zoxide.enable = true;
 
-        eza = {
-          enable = true;
-
-          git = true;
-          icons = "auto";
-
-          extraOptions = [
-            "--group-directories-first"
-          ];
-        };
-
-        zoxide.enable = true;
-
-        bat = {
-          enable = true;
-          extraPackages = [
-          ];
-        };
-
-        fd = {
-          enable = true;
-          hidden = true;
-        };
-
-        fzf = {
-          enable = true;
-        };
-
-        ripgrep.enable = true;
-
-        btop.enable = true;
+      bat = {
+        enable = true;
+        extraPackages = [
+        ];
       };
+
+      fd.enable = true;
+      fzf.enable = true;
+      ripgrep.enable = true;
     };
-  }
+  };
+}

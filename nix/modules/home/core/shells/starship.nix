@@ -6,7 +6,11 @@
   cfg = config.core.shells.starship;
 in {
   options.core.shells.starship = {
-    enable = lib.mkEnableOption "starship";
+    enable =
+      lib.mkEnableOption "starship"
+      // {
+        default = true;
+      };
   };
 
   config = lib.mkIf cfg.enable {

@@ -16,9 +16,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.sessionVariables = {
-        TERMINAL = mkOverride cfg.priority "ghostty";
-      };
+      home.sessionVariables.TERMINAL = mkOverride cfg.priority "ghostty";
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
         terminal = ["com.mitchellh.ghostty.desktop"];

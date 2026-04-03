@@ -37,7 +37,7 @@ in {
           owner = "soulhotel";
           repo = "FF-ULTIMA";
           rev = "db84254";
-          sha256 = "sha256-z1R0OXJYbJd3G+ncWmp44uYJFaZtZ1Qzz8TbaHZ6BBQ=";
+          hash = "sha256-z1R0OXJYbJd3G+ncWmp44uYJFaZtZ1Qzz8TbaHZ6BBQ=";
         };
       in {
         enable = true;
@@ -147,5 +147,7 @@ in {
         };
       };
     };
+
+    stylix.targets.firefox.profileNames = ["default"];
   };
 }

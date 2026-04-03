@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }: let
@@ -43,28 +42,6 @@ in
 
       services = {
         power-profiles-daemon.enable = true;
-        acpid = {
-          enable = true;
-          logEvents = true;
-          powerEventCommands = "systemctl poweroff";
-
-          handlers = {
-            ac-power = {
-              action = ''
-                STATUS=$(cat /sys/class/power_supply/*/online 2>/dev/null | head -n 1)
-
-                if [ "$STATUS" -eq 1 ]; then
-                  ${pkgs.logger}/bin/logger "ACPI Event: AC connected. Setting profile to balanced."
-                  ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set performance
-                else
-                  ${pkgs.logger}/bin/logger "ACPI Event: AC disconnected. Setting profile to power-saver."
-                  ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced
-                fi
-              '';
-              event = "ac_adapter/*";
-            };
-          };
-        };
         upower = {
           enable = true;
           criticalPowerAction = "PowerOff";

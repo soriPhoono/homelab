@@ -74,6 +74,14 @@
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
   };
 
   outputs = inputs @ {
@@ -106,19 +114,8 @@
       stylix.homeModules.stylix
       nvf.homeManagerModules.default
       noctalia.homeModules.default
-      ({
-        config,
-        nixosConfig,
-        ...
-      }: {
-        home = {
-          homeDirectory = lib.mkDefault "/home/${config.home.username}";
-          stateVersion = lib.mkDefault (
-            if nixosConfig != null
-            then nixosConfig.system.stateVersion
-            else "26.05"
-          );
-        };
+      ({config, ...}: {
+        home.homeDirectory = lib.mkDefault "/home/${config.home.username}";
       })
     ];
 
@@ -231,7 +228,15 @@
       # Supported systems for devShells/checks
       systems = supportedSystems;
 
-      agenix-shell.secrets = (import ./secrets.nix {inherit lib;}).agenix-shell-secrets;
+      agenix-shell = {
+        identityPaths = [
+          "$HOME/.ssh/id_ed25519"
+        ];
+        secrets = {
+          GEMINI_API_KEY.file = ./secrets/gemini_api_key.age;
+          CODESTRAL_API_KEY.file = ./secrets/codestral_api_key.age;
+        };
+      };
 
       perSystem = {
         pkgs,

@@ -27,20 +27,21 @@ in
       programs.obs-studio = {
         inherit (cfg) enable package;
 
-        plugins = with pkgs.obs-studio-plugins; [
-          # Hardware Acceleration
-          obs-vaapi
+        plugins = with pkgs.obs-studio-plugins;
+          [
+            # Hardware Acceleration
+            obs-vaapi
 
-          # Capture methods
-          wlrobs # Wayland
-          obs-pipewire-audio-capture # Pipewire audio capture
-          obs-vkcapture # Vulkan
-          input-overlay # Gamepad overlay
+            # Capture methods
+            obs-pipewire-audio-capture # Pipewire audio capture
+            obs-vkcapture # Vulkan
+            input-overlay # Gamepad overlay
 
-          # Filters
-          obs-backgroundremoval
-          pixel-art
-        ];
+            # Filters
+            obs-backgroundremoval
+            pixel-art
+          ]
+          ++ cfg.plugins;
       };
     };
   }

@@ -9,6 +9,7 @@ with pkgs;
     packages =
       [
         nil
+        nixd
         alejandra
         vulnix
 
@@ -29,12 +30,16 @@ with pkgs;
 
       # Deploy GitHub Actions from actions.nix when that file is modified to create reactive checks in GitHub CI
       mkdir -p .github/workflows
-      ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: file: let
-          safeName = lib.removeSuffix ".yml" name;
-        in ''
-          cp -f ${file} ./.github/workflows/${safeName}.yml
-          chmod +w ./.github/workflows/${safeName}.yml
-        '')
-        config.githubActions.workflowFiles)}
+      ${lib.concatStringsSep "\n" (
+        lib.mapAttrsToList (
+          name: file: let
+            safeName = lib.removeSuffix ".yml" name;
+          in ''
+            cp -f ${file} ./.github/workflows/${safeName}.yml
+            chmod +w ./.github/workflows/${safeName}.yml
+          ''
+        )
+        config.githubActions.workflowFiles
+      )}
     '';
   }

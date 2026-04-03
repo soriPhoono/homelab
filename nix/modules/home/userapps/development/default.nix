@@ -26,8 +26,8 @@ in
 
       programs = {
         uv.enable = true;
-        cargo.enable = true;
         npm.enable = true;
+        cargo.enable = true;
         go.enable = true;
       };
     };

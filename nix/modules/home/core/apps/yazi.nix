@@ -24,18 +24,27 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.packages = with pkgs; [
-        glib
-      ];
-
       programs.yazi = {
         enable = true;
+
+        extraPackages = with pkgs; [
+          glib
+          trash-cli
+        ];
+
+        plugins =
+          {
+            inherit (pkgs.yaziPlugins) gvfs recycle-bin restore;
+          }
+          // cfg.plugins;
 
         initLua = ''
           require("gvfs"):setup({
             password_vault = "keyring",
             save_password_autoconfirm = true
           })
+
+          require("recycle-bin"):setup()
         '';
 
         settings = {
@@ -87,21 +96,43 @@ in
         keymap = {
           mgr = {
             prepend_keymap = [
+              # Trash cli controlers
+              {
+                on = ["R" "o"];
+                run = "plugin recycle-bin -- open";
+                desc = "Open Trash";
+              }
+              {
+                on = ["R" "e"];
+                run = "plugin recycle-bin -- empty";
+                desc = "Empty Trash";
+              }
+              {
+                on = ["R" "D"];
+                run = "plugin recycle-bin -- emptyDays";
+                desc = "Empty by days deleted";
+              }
+              {
+                on = ["R" "d"];
+                run = "plugin recycle-bin -- delete";
+                desc = "Delete from Trash";
+              }
+              {
+                on = ["R" "r"];
+                run = "plugin recycle-bin -- restore";
+                desc = "Restore from Trash";
+              }
+              {
+                on = ["R" "u"];
+                run = "plugin restore -- --interactive --interactive-overwrite";
+                desc = "Restore deleted files/folders (Interactive overwrite)";
+              }
+              # GVFS controls
               # Mount
               {
                 on = ["M" "m"];
-                run = "plugin gvfs -- select-then-mount --jump";
-                desc = "Select device to mount and jump to its mount point";
-              }
-
-              # This will remount device under current working directory (cwd)
-              #   -> cwd = /run/user/1000/gvfs/DEVICE_1/FOLDER_A
-              #   -> device mountpoint = /run/user/1000/gvfs/DEVICE_1
-              #   -> remount this DEVIEC_1 if needed
-              {
-                on = ["M" "R"];
-                run = "plugin gvfs -- remount-current-cwd-device";
-                desc = "Remount device under cwd";
+                run = "plugin gvfs -- select-then-mount";
+                desc = "Select device to mount";
               }
 
               # Or this if you want to unmount and eject device.
@@ -175,36 +206,13 @@ in
                 desc = "Select device to jump to its mount point";
               }
               {
-                on = ["`" "`"];
+                on = ["g" "M"];
                 run = "plugin gvfs -- jump-back-prev-cwd";
                 desc = "Jump back to the position before jumped to device";
-              }
-
-              # Automount (This is different from `x-systemd.automount` in /etc/fstab)
-              #   -> Hover over any file/folder under a mounted device then run `automount-when-cd` action to enable automount when cd/jump for that device.
-              #   -> When you cd/jump to unmounted device mountpoint or its sub folder, this will auto-mount the device before jump.
-              #   -> Works with any command or any bookmark plugin that change cwd. For example, use `yamb` to add bookmarks and jump to them, use yazi's built-in `cd` `back` `forward` commands:
-
-              #   -> { on = [ "m", "a" ], run = [ "plugin yamb -- save", "plugin gvfs -- automount-when-cd" ], desc = "Add bookmark and enable automount when cd"}
-              {
-                on = ["M" "t"];
-                run = "plugin gvfs -- automount-when-cd";
-                desc = "Enable automount when cd to device under cwd";
-              }
-              {
-                on = ["M" "T"];
-                run = "plugin gvfs -- automount-when-cd --disabled";
-                desc = "Disable automount when cd to device under cwd";
               }
             ];
           };
         };
-
-        plugins =
-          {
-            inherit (pkgs.yaziPlugins) gvfs;
-          }
-          // cfg.plugins;
       };
     };
   }

@@ -1,27 +1,31 @@
 {
   pkgs,
   config,
+  nixosConfig,
   ...
 }: {
   config = {
+    sops = {
+      secrets."api/GEMINI_API_KEY" = {};
+      templates."noctalia.env".content = ''
+        NOCTALIA_AP_GOOGLE_API_KEY=${config.sops.placeholder."api/GEMINI_API_KEY"}
+      '';
+    };
+
     xdg.portal.extraPortals = with pkgs; [
       xdg-desktop-portal-wlr
     ];
 
-    home = {
-      sessionVariables = {
-        NOCTALIA_AP_GOOGLE_API_KEY = "$GOOGLE_AI_API_KEY";
-      };
-      file.".cache/noctalia/wallpapers.json" = {
-        text = builtins.toJSON {
-          defaultWallpaper = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers/default.png";
-        };
-      };
+    home.file.".cache/noctalia/wallpapers.json".text = builtins.toJSON {
+      defaultWallpaper = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers/default.png";
     };
 
     programs.noctalia-shell = {
       enable = true;
-      package = pkgs.noctalia-shell.override {calendarSupport = true;};
+      package = pkgs.noctalia-shell.override {
+        calendarSupport = true;
+        gpuScreenRecorderSupport = true;
+      };
       plugins = {
         sources = [
           {
@@ -51,7 +55,11 @@
         };
         tailscale = {
           showPeerCount = false;
-          terminalCommand = "${config.programs.ghostty.package}/bin/ghostty -e";
+          terminalCommand = "${
+            if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
+            then "uwsm app -s a "
+            else ""
+          }${config.programs.ghostty.package}/bin/ghostty -e";
           taildropReceiveMode = "pkexec";
         };
       };
@@ -65,7 +73,10 @@
           position = "follow_bar";
           terminalCommand = "${config.programs.ghostty.package}/bin/ghostty -e";
           customLaunchPrefixEnabled = true;
-          customLaunchPrefix = "uwsm app";
+          customLaunchPrefix =
+            if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
+            then "uwsm app -s a"
+            else "";
           density = "compact";
         };
         audio = {
@@ -97,7 +108,11 @@
         nightlight.enabled = true;
         noctaliaPerformance.disableWallpaper = true;
         sessionMenu.position = "center";
-        systemMonitor.externalMonitor = "${config.programs.ghostty.package}/bin/ghostty -e btop";
+        systemMonitor.externalMonitor = "${
+          if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
+          then "uwsm app -s a "
+          else ""
+        }${config.programs.ghostty.package}/bin/ghostty -e ${config.programs.btop.package}/bin/btop";
         wallpaper.directory = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers";
         bar = {
           barType = "floating";
@@ -174,10 +189,7 @@
     wayland.windowManager.hyprland.settings = {
       layerrule = [
         "match:namespace noctalia-shell:regionSelector, no_anim on"
-      ];
-
-      exec-once = [
-        "noctalia-shell"
+        "match:namespace noctalia-background-.*$, ignore_alpha 0.5, blur on, blur_popups on"
       ];
 
       bind = [
@@ -186,6 +198,22 @@
         "SUPER, comma, exec, noctalia-shell ipc call settings toggle"
         "SUPER, L, exec, noctalia-shell ipc call sessionMenu toggle"
       ];
+    };
+
+    systemd.user.services.noctalia-shell = {
+      Unit = {
+        Description = "Noctalia Shell";
+        PartOf = ["graphical-session.target"];
+        After = ["graphical-session.target"];
+      };
+      Service = {
+        ExecStart = "${config.programs.noctalia-shell.package}/bin/noctalia-shell";
+        EnvironmentFile = config.sops.templates."noctalia.env".path;
+        Restart = "on-failure";
+      };
+      Install = {
+        WantedBy = ["graphical-session.target"];
+      };
     };
   };
 }

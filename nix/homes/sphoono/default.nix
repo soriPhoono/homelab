@@ -2,9 +2,10 @@
   core = {
     secrets.defaultSopsFile = ./secrets.yml;
 
-    git = {
-      userName = "soriphoono";
-      userEmail = "soriphoono@gmail.com";
+    apps.git.userName = "soriphoono";
+
+    shells.shellAliases = {
+      v = "${nvimConfigurations.sphoono}/bin/nvim";
     };
   };
 

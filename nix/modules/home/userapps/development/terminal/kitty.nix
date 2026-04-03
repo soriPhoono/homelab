@@ -16,9 +16,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.sessionVariables = {
-        TERMINAL = mkOverride cfg.priority "kitty";
-      };
+      home.sessionVariables.TERMINAL = mkOverride cfg.priority "kitty";
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
         terminal = ["kitty.desktop"];
@@ -28,8 +26,6 @@ in
           "application/x-terminal-emulator" = terminal;
         });
 
-      programs.kitty = {
-        enable = true;
-      };
+      programs.kitty.enable = true;
     };
   }

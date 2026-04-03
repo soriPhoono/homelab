@@ -1,6 +1,16 @@
-{config, ...}: {
+# TODO: Add binds for core hyprland features and other user applications.
+{
+  config,
+  nixosConfig,
+  ...
+}: {
   config = {
-    wayland.windowManager.hyprland.settings = {
+    wayland.windowManager.hyprland.settings = let
+      launcherPrefix =
+        if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
+        then "uwsm app -s a "
+        else "";
+    in {
       bind =
         [
           "SUPER, Q, killactive, "
@@ -11,13 +21,14 @@
           "SUPER, F, togglefloating, "
           "SUPER CTRL, F, fullscreen, 0"
 
-          "SUPER, Return, exec, ${config.programs.ghostty.package}/bin/ghostty"
-          "SUPER, E, exec, ${config.programs.ghostty.package}/bin/ghostty -e ${config.programs.yazi.package}/bin/yazi"
+          "SUPER, Return, exec, ${launcherPrefix}-T"
+          "SUPER, E, exec, ${launcherPrefix}-T ${config.programs.yazi.package}/bin/yazi"
 
-          "SUPER, B, exec, uwsm app -s a google-chrome"
-          "SUPER, C, exec, uwsm app -s a antigravity"
+          "SUPER, B, exec, ${launcherPrefix}google-chrome"
+          "SUPER, C, exec, ${launcherPrefix}antigravity"
         ]
-        ++ (builtins.concatLists (builtins.genList (
+        ++ (builtins.concatLists (
+          builtins.genList (
             i: let
               ws = toString (i + 1);
             in [
@@ -25,7 +36,8 @@
               "SUPER SHIFT, ${toString ws}, movetoworkspace, ${toString ws}"
             ]
           )
-          9));
+          9
+        ));
 
       bindm = [
         "ALT, mouse:272, movewindow"

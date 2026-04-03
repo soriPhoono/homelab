@@ -1,4 +1,8 @@
 {pkgs, ...}: {
+  imports = [
+    ./zed
+  ];
+
   userapps = {
     defaultApplications.enable = true;
     browsers = {
@@ -17,6 +21,7 @@
       agents.gemini.enable = true;
       editors = {
         neovim.enable = true;
+        zed.enable = true;
         vscode = {
           enable = true;
           package = pkgs.antigravity;

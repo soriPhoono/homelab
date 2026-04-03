@@ -1,17 +1,21 @@
 {config, ...}: {
   imports = [
+    ./hypr
+
     ./userapps.nix
     ./theme.nix
-
-    ./hypr
   ];
 
   core = {
-    secrets = {
+    secrets.enable = true;
+
+    email = {
       enable = true;
-      environment = {
-        enable = true;
-        sopsFile = ./secrets.env;
+      accounts = {
+        personal = {
+          address = "soriphoono@gmail.com";
+          primary = true;
+        };
       };
     };
 
@@ -21,8 +25,13 @@
       fastfetch.enable = true;
     };
 
-    apps.yazi.enable = true;
-
-    git.projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
+    apps = {
+      yazi.enable = true;
+      git = {
+        enable = true;
+        projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
+      };
+      development.enable = true;
+    };
   };
 }
