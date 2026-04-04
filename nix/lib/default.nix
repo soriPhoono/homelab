@@ -1,4 +1,6 @@
-_: self: _super: {
+_: self: _super: let
+  helpers = import ./helpers.nix () self _super;
+in {
   discover = dir:
     self.mapAttrs' (name: _: {
       name = self.removeSuffix ".nix" name;
@@ -7,7 +9,7 @@ _: self: _super: {
       self.filterAttrs (
         name: type:
           (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
-          || (type == "regular" && name != "default.nix" && self.hasSuffix ".nix" name)
+          || (type == "regular" && name != "default.nix" && self.hasSuffix ".nix" name && name != "helpers.nix")
       ) (builtins.readDir dir)
     );
 
@@ -19,7 +21,7 @@ _: self: _super: {
     }) (
       self.filterAttrs (
         name: type:
-          type == "regular" && self.hasSuffix ".nix" name
+          type == "regular" && self.hasSuffix ".nix" name && name != "helpers.nix"
       ) (builtins.readDir dir)
     );
 
@@ -29,4 +31,4 @@ _: self: _super: {
     if builtins.pathExists (dir + "/meta.json")
     then builtins.fromJSON (builtins.readFile (dir + "/meta.json"))
     else {};
-}
+} // helpers
