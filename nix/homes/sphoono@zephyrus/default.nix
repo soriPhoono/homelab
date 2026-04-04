@@ -4,10 +4,7 @@
 
     ./hypr
 
-    ./userapps.nix
-
-    ./opencode
-    ./zed
+    ./userapps
   ];
 
   core = {

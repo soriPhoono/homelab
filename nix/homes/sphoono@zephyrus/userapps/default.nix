@@ -8,11 +8,6 @@
     defaultApplications.enable = true;
     development = {
       terminal.ghostty.enable = true;
-      mcpServers = {
-        GitHub = {
-          command = "";
-        };
-      };
     };
     browsers = {
       firefox.enable = true;

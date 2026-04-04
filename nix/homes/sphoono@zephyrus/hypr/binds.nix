@@ -1,16 +1,12 @@
 # TODO: Add binds for core hyprland features and other user applications.
 {
+  lib,
   config,
   nixosConfig,
   ...
 }: {
   config = {
-    wayland.windowManager.hyprland.settings = let
-      launcherPrefix =
-        if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
-        then "uwsm app -s a "
-        else "";
-    in {
+    wayland.windowManager.hyprland.settings = {
       bind =
         [
           "SUPER, Q, killactive, "
@@ -21,11 +17,11 @@
           "SUPER, F, togglefloating, "
           "SUPER CTRL, F, fullscreen, 0"
 
-          "SUPER, Return, exec, ${launcherPrefix}-T"
-          "SUPER, E, exec, ${launcherPrefix}-T ${config.programs.yazi.package}/bin/yazi"
+          "SUPER, Return, exec, ${lib.launchApp nixosConfig true ""}"
+          "SUPER, E, exec, ${lib.launchApp nixosConfig true "${config.programs.yazi.package}/bin/yazi"}"
 
-          "SUPER, B, exec, ${launcherPrefix}google-chrome"
-          "SUPER, C, exec, ${launcherPrefix}antigravity"
+          "SUPER, B, exec, ${lib.launchApp nixosConfig false "google-chrome"}"
+          "SUPER, C, exec, ${lib.launchApp nixosConfig false "antigravity"}"
         ]
         ++ (builtins.concatLists (
           builtins.genList (
