@@ -1,9 +1,13 @@
 {config, ...}: {
   imports = [
+    ./theme.nix
+
     ./hypr
 
     ./userapps.nix
-    ./theme.nix
+
+    ./opencode
+    ./zed
   ];
 
   core = {

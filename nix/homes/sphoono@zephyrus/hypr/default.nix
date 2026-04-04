@@ -67,8 +67,6 @@ with lib; {
           repeat_delay = 200;
 
           accel_profile = "flat";
-
-          touchpad.middle_button_emulation = true;
         };
 
         xwayland = {

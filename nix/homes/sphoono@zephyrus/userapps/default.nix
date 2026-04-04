@@ -1,10 +1,19 @@
-{pkgs, ...}: {
+{...}: {
   imports = [
+    ./opencode
     ./zed
   ];
 
   userapps = {
     defaultApplications.enable = true;
+    development = {
+      terminal.ghostty.enable = true;
+      mcpServers = {
+        GitHub = {
+          command = "";
+        };
+      };
+    };
     browsers = {
       firefox.enable = true;
       chrome.enable = true;
@@ -15,27 +24,15 @@
       signal.enable = true;
       matrix.enable = true;
     };
-    development = {
-      enable = true;
-      terminal.ghostty.enable = true;
-      agents.gemini.enable = true;
-      editors = {
-        neovim.enable = true;
-        zed.enable = true;
-        vscode = {
-          enable = true;
-          package = pkgs.antigravity;
-        };
-      };
+    office = {
+      onlyoffice.enable = true;
+      slack.enable = true;
     };
     data-fortress = {
       nextcloud.enable = true;
       bitwarden.enable = true;
       obsidian.enable = true;
-    };
-    office = {
-      onlyoffice.enable = true;
-      slack.enable = true;
+      grayjay.enable = true;
     };
     content-creation = {
       obs-studio.enable = true;

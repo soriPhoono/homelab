@@ -232,10 +232,7 @@
         identityPaths = [
           "$HOME/.ssh/id_ed25519"
         ];
-        secrets = {
-          GEMINI_API_KEY.file = ./secrets/gemini_api_key.age;
-          CODESTRAL_API_KEY.file = ./secrets/codestral_api_key.age;
-        };
+        secrets = {};
       };
 
       perSystem = {

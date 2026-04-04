@@ -12,7 +12,7 @@
     fonts = let
       serif = {
         package = pkgs.nerd-fonts.sauce-code-pro;
-        name = "Sauce Code Pro Nerd Font";
+        name = "SauceCodePro Nerd Font Propo";
       };
     in {
       inherit serif;

@@ -1,9 +1,10 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
-  cfg = config.userapps.development;
+  cfg = config.userapps.development.mcpServers;
 in
   with lib; {
     imports = [
@@ -12,23 +13,33 @@ in
       ./terminal
     ];
 
-    options.userapps.development = {
-      enable = mkEnableOption "Development tools";
+    options.userapps.development.mcpServers = let
+      jsonFormat = pkgs.formats.json {};
+    in {
+      enable = mkEnableOption "Enable Model Context Protocol (MCP) servers for AI agents (Globally)";
+
+      servers = mkOption {
+        inherit (jsonFormat) type;
+        description = "MCP servers configuration to be shared across supported editors (e.g., OpenCode, ClaudeCode, Zed, etc.)";
+        default = {};
+        example = literalExpression ''
+          {
+            everything = {
+              command = "npx";
+              args = [
+                "-y"
+                "@modelcontextprotocol/server-everything"
+              ];
+            };
+          }
+        '';
+      };
     };
 
     config = mkIf cfg.enable {
-      home.sessionPath = [
-        "${config.home.homeDirectory}/.local/bin"
-        "${config.home.homeDirectory}/.npm/bin"
-        "${config.home.homeDirectory}/.cargo/bin"
-        "${config.home.homeDirectory}/go/bin"
-      ];
-
-      programs = {
-        uv.enable = true;
-        npm.enable = true;
-        cargo.enable = true;
-        go.enable = true;
+      programs.mcp = {
+        enable = true;
+        inherit (cfg) servers;
       };
     };
   }

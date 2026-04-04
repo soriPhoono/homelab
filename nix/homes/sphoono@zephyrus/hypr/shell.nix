@@ -6,9 +6,9 @@
 }: {
   config = {
     sops = {
-      secrets."api/GEMINI_API_KEY" = {};
+      secrets."api/OPENROUTER_API_KEY" = {};
       templates."noctalia.env".content = ''
-        NOCTALIA_AP_GOOGLE_API_KEY=${config.sops.placeholder."api/GEMINI_API_KEY"}
+        NOCTALIA_AP_OPENAI_COMPATIBLE_API_KEY=${config.sops.placeholder."api/OPENROUTER_API_KEY"}
       '';
     };
 

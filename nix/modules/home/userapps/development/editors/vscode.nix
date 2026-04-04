@@ -1,3 +1,4 @@
+# TODO: finish fixes here
 {
   lib,
   pkgs,
@@ -16,15 +17,13 @@ in
         description = "The vscode package to use.";
       };
 
-      desktop = mkOption {
-        type = types.str;
-        default = "${lib.getName cfg.package}.desktop";
-        description = "The desktop file name for the editor.";
-      };
-
       priority = mkOption {
         type = types.int;
-        default = 30; # Lower priority than terminal editors by default
+        # NOTE: Lower priority than terminal editors
+        #   by default, zed still gets priority given
+        #   it's advanced features in combination with
+        #   it's light weight nature.
+        default = 40;
         description = "Priority for being the default editor. Lower is higher priority.";
       };
     };
@@ -36,7 +35,7 @@ in
       };
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-        editor = [cfg.desktop];
+        editor = ["${lib.getExe cfg.package}.desktop"];
       in
         mkOverride cfg.priority {
           "text/plain" = editor;

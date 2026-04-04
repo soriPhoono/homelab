@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }: let
   cfg = config.userapps.development.editors.zed;
@@ -12,15 +13,39 @@ in
     in {
       enable = mkEnableOption "Enable zed editors";
 
-      userDebug = mkOption {
-        inherit (jsonFormat) type;
-        description = "User debug settings for zed editor";
-        default = {};
+      package = mkOption {
+        type = types.package;
+        description = "The package to use for zed, e.g.: pkgs.zed-editor or pkgs.zed-editor-fhs";
+        default = pkgs.zed-editor;
+      };
+
+      priority = mkOption {
+        type = types.int;
+        description = "The priority of the zed editor";
+        default = 30;
+      };
+
+      secrets = mkOption {
+        type = with types; listOf str;
+        description = "List of secrets to inject into zed.";
+        default = [];
       };
 
       userKeymaps = mkOption {
         inherit (jsonFormat) type;
         description = "User keymaps for zed editor";
+        default = [];
+      };
+
+      userTasks = mkOption {
+        inherit (jsonFormat) type;
+        description = "User tasks for zed editor";
+        default = [];
+      };
+
+      userDebug = mkOption {
+        inherit (jsonFormat) type;
+        description = "User debug settings for zed editor";
         default = {};
       };
 
@@ -30,37 +55,84 @@ in
         default = {};
       };
 
-      userTasks = mkOption {
-        inherit (jsonFormat) type;
-        description = "User tasks for zed editor";
-        default = {};
-      };
-
       extensions = mkOption {
         type = with types; listOf str;
         description = "Names of extensions to auto install from [the master list](https://github.com/zed-industries/extensions/tree/main/extensions)";
         default = [];
       };
-    };
 
-    config = mkIf cfg.enable {
-      programs.zed-editor = {
-        inherit
-          (cfg)
-          userDebug
-          userKeymaps
-          userSettings
-          userTasks
-          extensions
-          ;
-
-        enable = true;
-        enableMcpIntegration = true;
-
-        mutableUserDebug = false;
-        mutableUserKeymaps = false;
-        mutableUserSettings = false;
-        mutableUserTasks = false;
+      mcpServers = mkOption {
+        inherit (jsonFormat) type;
+        description = "MCP servers to connect to";
+        default = {};
       };
     };
+
+    config = mkIf cfg.enable (mkMerge [
+      {
+        home.sessionVariables = {
+          EDITOR = mkOverride cfg.priority (lib.getExe cfg.package);
+          VISUAL = mkOverride cfg.priority (lib.getExe cfg.package);
+        };
+
+        xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
+          editor = ["${lib.getExe cfg.package}.desktop"];
+        in
+          mkOverride cfg.priority {
+            "text/plain" = editor;
+            "text/markdown" = editor;
+            "application/x-shellscript" = editor;
+          });
+
+        programs.zed-editor = {
+          inherit
+            (cfg)
+            package
+            userKeymaps
+            userTasks
+            userDebug
+            extensions
+            ;
+
+          enable = true;
+          enableMcpIntegration = true;
+
+          extraPackages = flatten (map (extension: extension.dependencies) cfg.extensions);
+
+          mutableUserDebug = false;
+          mutableUserKeymaps = false;
+          mutableUserSettings = false;
+          mutableUserTasks = false;
+
+          userSettings =
+            {
+              context_servers = cfg.mcpServers;
+            }
+            // cfg.userSettings;
+        };
+      }
+      (mkIf (options ? sops && cfg.secrets != []) {
+        sops.secrets = genAttrs cfg.secrets (_: {});
+
+        programs.zed-editor.package = mkForce (pkgs.symlinkJoin {
+          name = "zed-editor-wrapped";
+          paths = [cfg.package];
+          buildInputs = [pkgs.makeWrapper];
+          postBuild = ''
+            for bin in $out/bin/*; do
+              if [ -f "$bin" ] && [ -x "$bin" ]; then
+                wrapProgram "$bin" \
+                  ${
+              concatStringsSep
+              " \\\n"
+              (map
+                (secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${config.sops.secrets.${secret}.path})\"'")
+                cfg.secrets)
+            }
+              fi
+            done
+          '';
+        });
+      })
+    ]);
   }
