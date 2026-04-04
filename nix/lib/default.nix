@@ -1,5 +1,5 @@
 _: self: _super: let
-  helpers = import ./helpers.nix () self _super;
+  helpers = import ./helpers.nix null self _super;
 in {
   discover = dir:
     self.mapAttrs' (name: _: {

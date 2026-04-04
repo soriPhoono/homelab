@@ -97,7 +97,7 @@ in
           enable = true;
           enableMcpIntegration = true;
 
-          extraPackages = flatten (map (extension: extension.dependencies) cfg.extensions);
+          extraPackages = flatten (map (extension: if builtins.isAttrs extension then (extension.dependencies or []) else []) cfg.extensions);
 
           mutableUserDebug = false;
           mutableUserKeymaps = false;
