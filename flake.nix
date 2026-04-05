@@ -94,6 +94,7 @@
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-droid,
     flake-parts,
     agenix,
     ...
