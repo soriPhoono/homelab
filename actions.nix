@@ -18,7 +18,7 @@
         (lib.mapAttrs' (name: _value: {
             name = "build-nixos-${name}";
             value = {
-              runsOn = "ubuntu-latest";
+              runsOn = "ubuntu-24.04";
               steps = [
                 {
                   name = "Checkout code";
@@ -46,7 +46,7 @@
         // (lib.mapAttrs' (name: _value: {
             name = "build-home-${name}";
             value = {
-              runsOn = "ubuntu-latest";
+              runsOn = "ubuntu-24.04";
               steps = [
                 {
                   name = "Checkout code";
@@ -74,7 +74,7 @@
         // (lib.mapAttrs' (name: _value: {
             name = "build-droid-${name}";
             value = {
-              runsOn = "ubuntu-latest";
+              runsOn = "ubuntu-24.04-arm";
               steps = [
                 {
                   name = "Checkout code";
