@@ -1,6 +1,5 @@
 {
   imports = [
-    ./opencode
     ./zed
   ];
 
@@ -10,7 +9,10 @@
 
   userapps = {
     defaultApplications.enable = true;
-    development.terminal.ghostty.enable = true;
+    development = {
+      agents.opencode.enable = true;
+      terminal.ghostty.enable = true;
+    };
     browsers = {
       firefox.enable = true;
       chrome.enable = true;

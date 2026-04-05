@@ -225,17 +225,19 @@
         };
         modules = [
           self.droidModules.default
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.config.imports = homeManagerModules;
-            home-manager.extraSpecialArgs = {
-              inherit inputs self lib;
-              nvimConfigurations = self.nvimConfigurations.${systemArch};
-            };
-            home-manager.backupFileExtension = "bak";
-          }
           path
+          {
+            home-manager = {
+              sharedModules = homeManagerModules;
+              backupFileExtension = "bak";
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = {
+                inherit inputs self lib;
+                nvimConfigurations = self.nvimConfigurations.${systemArch};
+              };
+            };
+          }
         ];
       };
 
@@ -302,8 +304,14 @@
             name = "home-eval-${name}";
             value = conf.activationPackage;
           }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.homeConfigurations);
+
+          # Evaluation checks for all nix-on-droid configurations matching this system
+          evalDroids = lib.mapAttrs' (name: conf: {
+            name = "droid-eval-${name}";
+            value = conf.activationPackage;
+          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixOnDroidConfigurations);
         in
-          evalSystems // evalHomes;
+          evalSystems // evalHomes // evalDroids;
 
         packages = let
           customPkgs = import ./nix/pkgs {

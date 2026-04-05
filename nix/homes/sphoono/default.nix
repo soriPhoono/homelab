@@ -1,4 +1,8 @@
 {nvimConfigurations, ...}: {
+  imports = [
+    ./opencode
+  ];
+
   core = {
     secrets.defaultSopsFile = ./secrets.yml;
 
