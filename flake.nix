@@ -5,6 +5,7 @@
     systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     agenix = {
@@ -106,8 +107,14 @@
 
     # --- System Support & Package Cache --- #
     supportedSystems = import inputs.systems;
-    pkgsFor = lib.genAttrs supportedSystems (system:
-      import nixpkgs {
+    pkgsFor = forDroid: lib.genAttrs supportedSystems (system: 
+      if forDroid
+      then import nixpkgs-droid {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = builtins.attrValues self.overlays;
+      }
+      else import nixpkgs {
         inherit system;
         config.allowUnfree = true;
         overlays = builtins.attrValues self.overlays;
@@ -170,7 +177,7 @@
         else {};
 
       systemArch = meta.system or "x86_64-linux";
-      pkgs = pkgsFor.${systemArch};
+      pkgs = (pkgsFor false).${systemArch};
     in
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -195,7 +202,7 @@
     mkSystem = hostName: path: let
       meta = lib.readMeta path;
       systemArch = meta.system or "x86_64-linux";
-      pkgs = pkgsFor.${systemArch};
+      pkgs = (pkgsFor false).${systemArch};
     in
       lib.nixosSystem {
         inherit pkgs;
@@ -216,7 +223,7 @@
     mkDroid = _hostName: path: let
       meta = lib.readMeta path;
       systemArch = meta.system or "aarch64-linux";
-      pkgs = pkgsFor.${systemArch};
+      pkgs = (pkgsFor true).${systemArch};
     in
       inputs.nix-on-droid.lib.nixOnDroidConfiguration {
         inherit pkgs;
@@ -243,7 +250,7 @@
 
     # Standalone Neovim Builder
     mkNeovim = system: path: let
-      pkgs = pkgsFor.${system};
+      pkgs = (pkgsFor false).${system};
     in
       inputs.nvf.lib.neovimConfiguration {
         inherit pkgs;
