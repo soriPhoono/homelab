@@ -1,14 +1,16 @@
-{...}: {
+{
   imports = [
     ./opencode
     ./zed
   ];
 
+  sops.secrets = {
+    "api/GITHUB_API_KEY" = {};
+  };
+
   userapps = {
     defaultApplications.enable = true;
-    development = {
-      terminal.ghostty.enable = true;
-    };
+    development.terminal.ghostty.enable = true;
     browsers = {
       firefox.enable = true;
       chrome.enable = true;
@@ -31,7 +33,7 @@
     };
     content-creation = {
       obs-studio.enable = true;
-      davinci-resolve.enable = true;
+      kdenlive.enable = true;
     };
   };
 }

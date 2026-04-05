@@ -46,6 +46,7 @@
           screen-recorder = standardPlugin;
           usb-drive-manager = standardPlugin;
           tailscale = standardPlugin;
+          network-manager-vpn = standardPlugin;
         };
       };
       pluginSettings = {

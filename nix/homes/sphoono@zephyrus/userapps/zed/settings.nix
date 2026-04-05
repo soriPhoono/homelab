@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   userapps.development.editors.zed.userSettings = {
     soft_wrap = "bounded";
     base_keymap = "Atom";
@@ -11,9 +15,7 @@
     };
     agent_servers = {
       opencode = {
-        type = "custom";
-        command = "${pkgs.opencode}/bin/opencode";
-        args = ["acp"];
+        type = "registry";
       };
     };
     edit_predictions = {
@@ -47,6 +49,22 @@
         }
       ];
       model_parameters = [];
+    };
+    context_servers = {
+      GitHub = {
+        command = let
+          github-mcp-script = pkgs.writeShellApplication {
+            name = "github-mcp";
+            text = ''
+              GITHUB_PERSONAL_ACCESS_TOKEN=$(cat ${config.sops.secrets."api/GITHUB_API_KEY".path})
+              export GITHUB_PERSONAL_ACCESS_TOKEN
+              exec ${pkgs.nodejs}/bin/npx -y @modelcontextprotocol/server-github "$@"
+            '';
+          };
+        in "${github-mcp-script}/bin/github-mcp";
+        args = [];
+        env = {};
+      };
     };
   };
 }

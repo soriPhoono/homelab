@@ -28,7 +28,7 @@
     };
     content-creation = {
       obs-studio.enable = true;
-      davinci-resolve.enable = true;
+      kdenlive.enable = true;
       blender.enable = true;
     };
   };

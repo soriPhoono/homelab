@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.content-creation.davinci-resolve;
+  cfg = config.userapps.content-creation.kdenlive;
 in
   with lib; {
-    options.userapps.content-creation.davinci-resolve = {
+    options.userapps.content-creation.kdenlive = {
       enable = mkEnableOption "Davinci Resolve";
     };
 
