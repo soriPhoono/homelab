@@ -18,7 +18,7 @@
         (lib.mapAttrs' (name: _value: {
             name = "build-nixos-${name}";
             value = {
-              runsOn = "ubuntu-latest";
+              runsOn = "ubuntu-24.04";
               steps = [
                 {
                   name = "Checkout code";
@@ -46,7 +46,7 @@
         // (lib.mapAttrs' (name: _value: {
             name = "build-home-${name}";
             value = {
-              runsOn = "ubuntu-latest";
+              runsOn = "ubuntu-24.04";
               steps = [
                 {
                   name = "Checkout code";
@@ -74,7 +74,7 @@
         // (lib.mapAttrs' (name: _value: {
             name = "build-droid-${name}";
             value = {
-              runsOn = "ubuntu-latest";
+              runsOn = "ubuntu-24.04-arm";
               steps = [
                 {
                   name = "Checkout code";
@@ -85,8 +85,8 @@
                   uses = "DeterminateSystems/nix-installer-action@v14";
                   with_ = {
                     extra-conf = ''
-                      substituters = https://cache.nixos.org https://nix-on-droid.cachix.org
-                      trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-on-droid.cachix.org-1:56snoCGOrO2IfGGEcyALWkOQilOOdgoT0K/k4Iemh5Q=
+                      substituters = https://nix-on-droid.cachix.org
+                      trusted-public-keys = nix-on-droid.cachix.org-1:56snoMJTXmDRC1Ei24CmKoUqvHJ9XCp+nidK7qkMQrU=
                     '';
                   };
                 }
