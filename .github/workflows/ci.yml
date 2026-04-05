@@ -2,7 +2,7 @@
 
 jobs:
   build-droid-test-device:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
       - name: Build
         run: nix build .#nixOnDroidConfigurations.test-device.activationPackage --impure
   build-home-sphoono:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
       - name: Build
         run: nix build .#homeConfigurations.sphoono.activationPackage
   build-home-spookyskelly:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
       - name: Build
         run: nix build .#homeConfigurations.spookyskelly.activationPackage
   build-nixos-lg-laptop:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
       - name: Build
         run: nix build .#nixosConfigurations.lg-laptop.config.system.build.toplevel
   build-nixos-zephyrus:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
