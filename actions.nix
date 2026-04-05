@@ -85,8 +85,8 @@
                   uses = "DeterminateSystems/nix-installer-action@v14";
                   with_ = {
                     extra-conf = ''
-                      substituters = https://cache.nixos.org https://nix-on-droid.cachix.org
-                      trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-on-droid.cachix.org-1:56snoCGOrO2IfGGEcyALWkOQilOOdgoT0K/k4Iemh5Q=
+                      substituters = https://nix-on-droid.cachix.org
+                      trusted-public-keys = nix-on-droid.cachix.org-1:56snoCGOrO2IfGGEcyALWkOQilOOdgoT0K/k4Iemh5Q=
                     '';
                   };
                 }
