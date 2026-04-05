@@ -14,7 +14,7 @@ in
       android-integration = {
         am.enable = true;
         termux-open-url.enable = true;
-        termux-reload-session.enable = true;
+        termux-reload-settings.enable = true;
       };
     };
   }
