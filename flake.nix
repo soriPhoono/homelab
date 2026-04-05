@@ -28,6 +28,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-on-droid = {
+      url = "github:nix-community/nix-on-droid/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -206,6 +212,33 @@
           ];
       };
 
+    # Standalone Nix-on-Droid Builder
+    mkDroid = _hostName: path: let
+      meta = lib.readMeta path;
+      systemArch = meta.system or "aarch64-linux";
+      pkgs = pkgsFor.${systemArch};
+    in
+      inputs.nix-on-droid.lib.nixOnDroidConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = {
+          inherit inputs self lib;
+        };
+        modules = [
+          self.droidModules.default
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.config.imports = homeManagerModules;
+            home-manager.extraSpecialArgs = {
+              inherit inputs self lib;
+              nvimConfigurations = self.nvimConfigurations.${systemArch};
+            };
+            home-manager.backupFileExtension = "bak";
+          }
+          path
+        ];
+      };
+
     # Standalone Neovim Builder
     mkNeovim = system: path: let
       pkgs = pkgsFor.${system};
@@ -295,6 +328,7 @@
         # Global Module Exports
         nixosModules = import ./nix/modules/nixos {inherit lib self;};
         homeModules = import ./nix/modules/home {inherit lib self;};
+        droidModules = import ./nix/modules/droid {inherit lib self;};
 
         # Overlay Exports
         overlays = with inputs; ((import ./nix/overlays {inherit self inputs lib;})
@@ -306,6 +340,9 @@
 
         # All systems in the /systems folder
         nixosConfigurations = lib.mapAttrs mkSystem (lib.discover ./nix/systems);
+
+        # All nix-on-droid systems in the /droid folder
+        nixOnDroidConfigurations = lib.mapAttrs mkDroid (lib.discover ./nix/droid);
 
         # All standalone homes in the /homes folder
         # Scans for <user> and <user>@<homeName>, combines them if both exist.
