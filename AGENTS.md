@@ -1,121 +1,33 @@
-# AGENTS.md - Homelab "The Data Fortress"
+# AGENTS.md
 
-This document provides high-level architectural context and development guidelines for AI agents interacting with this Nix-based homelab project.
+High-signal context for AI agents working in this Nix-based homelab repository ("The Data Fortress").
 
-## 🏰 Project Overview
+## Important Commands & Workflows
 
-**The Data Fortress** is a comprehensive, declarative infrastructure-as-code repository for managing physical servers, desktops, and virtual environments. It is built on the **Nix** ecosystem, specifically leveraging **NixOS**, **Home Manager**, and **Nix Flakes** for reproducibility and hermetic builds.
+- **Dev Shell is Mandatory:** Always run `direnv allow` or enter `nix develop`. This automatically evaluates `actions.nix` and regenerates `.github/workflows/`.
+- **Do not edit `.github/workflows/*.yml` manually.** Edit `actions.nix`, then enter the dev shell to regenerate workflows.
+- **Formatting:** Run `nix fmt`. Do not run individual formatters (it uses `treefmt` under the hood for Nix, YAML, and Markdown).
+- **Validation:** Always run `nix flake check` before committing. Pre-commit hooks are also enabled in the dev shell.
+- **Deployment:** Use `nh os switch .` (for NixOS) or `nh home switch .` (for standalone Home Manager).
 
-### Core Technologies
+## Architecture & Discovery Quirks
 
-- **NixOS & Home Manager**: Declarative system and user configuration.
-- **Flake-parts**: Modular flake structure.
-- **nh (nix-helper)**: Primary CLI for system/home deployments.
-- **sops-nix & agenix**: Encrypted secrets management.
-- **Disko**: Declarative disk partitioning.
-- **nixos-facter**: Hardware-specific configuration discovery.
+This repo relies heavily on dynamic discovery (`nix/lib/discover`). You rarely need to manually add files to an `imports` list.
 
-______________________________________________________________________
+- **Modules:** Any directory in `nix/modules/nixos/` or `nix/modules/home/` with a `default.nix` (or any standalone `.nix` file) is automatically imported.
+- **Custom Packages:** Files or directories in `nix/pkgs/` are automatically exported as flake `packages`.
+- **NixOS Systems:** Directories in `nix/systems/<hostname>` with a `default.nix` are automatically exported as `nixosConfigurations`.
+- **Home Manager Quirks (VERY IMPORTANT):**
+  - **Standalone Homes:** Directories like `nix/homes/user` or `nix/homes/user@hostname` (where `hostname` does **not** exist in `nix/systems/`) are exported as standalone `homeConfigurations`.
+  - **System-integrated Homes:** Directories like `nix/homes/user@hostname` (where `hostname` **exists** in `nix/systems/`) are **NOT** standalone. They are automatically imported by the NixOS configuration via the `core.users` module (`nix/modules/nixos/core/users.nix`).
+  - When adding a user to a NixOS system, add them to `core.users` in the system config, and create the corresponding `nix/homes/user` and/or `nix/homes/user@hostname` folders. The system will auto-import them.
 
-## 🏗️ Architecture & Discovery
+## Hardware & Disk
 
-The project uses a **Dynamic Discovery Mechanism** to automate module imports and system/home exports.
+- **Disko:** Declarative disk partitioning is defined in `nix/systems/<hostname>/disko.nix`.
+- **Hardware constraints:** We use `nixos-facter` for hardware support. To add a new system, run `nixos-facter > facter.json` to generate the facts, then set `reportPath = ./facter.json;` in the system's `default.nix`.
 
-### Module System
+## Secrets
 
-#### Nixos
-
-Configurations are categorized into three main layers:
-
-1. **Core**: Essential system services, networking, and user management.
-1. **Desktop**: UI environments (KDE, SDDM), gaming, and productivity tools.
-1. **Hosting**: Server-side workloads (Docker, K3s).
-
-#### Home Manager
-
-# TODO
-
-### Discovery Logic (`lib.discover`)
-
-The system automatically finds and imports configurations:
-
-- **Systems**: Any directory in `nix/systems/` with a `default.nix` is exported as a `nixosConfiguration`.
-- **Homes**: Scanned from `nix/homes/`.
-  - `user` (base layer)
-  - `user@home-name` (standalone Home Manager export)
-  - `user@hostname` (host-specific overrides, imported by the system configuration)
-
-______________________________________________________________________
-
-## 🚀 Building & Deployment
-
-### Development Environment
-
-The project uses `direnv` and `flake-parts` to provide a consistent development shell.
-
-```bash
-direnv allow  # Preferred
-nix develop   # Alternative
-```
-
-### Deployment Commands
-
-Deployment is recommended via the `nh` (nix-helper) tool:
-
-- **Deploy System**: `nh os switch .` (targets current hostname) or `nixos-rebuild switch --flake .#<hostname>`
-- **Deploy Home**: `nh home switch .` or `home-manager switch --flake .#<username>`
-
-### Validation
-
-Strict adherence to `nix flake check` is required before any deployment or push. This is enforced by `pre-commit` hooks.
-
-```bash
-nix flake check
-```
-
-______________________________________________________________________
-
-## 🛠️ Development Workflow
-
-### Adding a New System
-
-1. Create a directory: `nix/systems/<hostname>/`.
-1. Add `default.nix` and `disko.nix`.
-1. (Optional) Run `nixos-facter` to generate `facter.json` for hardware support.
-1. Run `nix flake check` to verify the new configuration.
-
-### Formatting & Linting
-
-The project uses `treefmt` with the following tools:
-
-- **Nix**: `alejandra` (formatter), `deadnix` (dead code), `statix` (linting).
-- **YAML**: `yamlfmt`.
-- **Markdown**: `mdformat`.
-
-______________________________________________________________________
-
-## 📂 Key Files & Directories
-
-- `flake.nix`: Entry point, inputs, and output generation logic.
-- `nix/lib/`: Custom library functions (Discovery, Metadata reading).
-- `nix/modules/`: Reusable NixOS (`nixos/`) and Home Manager (`home/`) modules.
-- `nix/systems/`: Machine-specific configurations.
-- `nix/homes/`: User-specific Home Manager configurations.
-- `secrets.nix`: Definition of `agenix` secrets for the dev shell.
-- `.sops.yaml`: SOPS configuration for encrypted secrets.
-
-______________________________________________________________________
-
-## 🔐 Secrets Management
-
-- **System Secrets**: Managed via `sops-nix`. Keys are typically host SSH keys.
-- **User/Dev Secrets**: Managed via `agenix`. Decrypted automatically in the `nix develop` shell if the required key is present.
-- **Encryption**: Secrets are stored as encrypted YAML/Age files in `nix/systems/<host>/secrets.yml` or `secrets/`.
-
-______________________________________________________________________
-
-## 🧪 Testing & CI
-
-- **Local Checks**: `nix flake check` evaluates all system and home configurations.
-- **GitHub Actions**: Workflows in `.github/workflows/` are managed declaratively via `actions.nix`.
-- **Pre-commit**: `pre-commit.nix` defines hooks for linting and formatting.
+- **System/User Secrets:** Managed via `sops-nix`. Keys are typically host SSH keys. Encrypted files must match the rules in `.sops.yaml`.
+- **Dev Shell Secrets:** Managed via `agenix` and `agenix-shell` (configured in `secrets.nix`). Decrypted automatically in the `nix develop` shell if the required identity key is present.

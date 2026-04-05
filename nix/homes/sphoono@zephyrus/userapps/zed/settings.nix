@@ -4,24 +4,17 @@
   ...
 }: {
   userapps.development.editors.zed.userSettings = {
-    soft_wrap = "bounded";
-    base_keymap = "Atom";
-    load_direnv = "shell_hook";
     terminal = {
-      toolbar = {
-        breadcrumbs = true;
-      };
+      toolbar.breadcrumbs = true;
       shell = "system";
-    };
-    agent_servers = {
-      opencode = {
-        type = "registry";
-      };
     };
     edit_predictions = {
       provider = "codestral";
       mode = "eager";
     };
+    soft_wrap = "bounded";
+    base_keymap = "Atom";
+    load_direnv = "shell_hook";
     agent = {
       inline_assistant_model = {
         provider = "openrouter";
@@ -66,5 +59,6 @@
         env = {};
       };
     };
+    agent_servers.opencode.type = "registry";
   };
 }
