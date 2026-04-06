@@ -13,7 +13,6 @@
     };
 
     apps = {
-      yazi.enable = true;
       git.projectsDir = "${config.home.homeDirectory}/projects/";
     };
   };
