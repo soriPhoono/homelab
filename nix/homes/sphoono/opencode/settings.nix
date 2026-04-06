@@ -1,10 +1,26 @@
-{
+_: {
+  # sops.secrets."api/EXA_API_KEY" = {};
+
   userapps.development.agents.opencode.settings = {
+    model = "openrouter/free";
+
+    # NOTE: These are the models to use at the top of the month till the usage runs out on my google cloud credit.
+    # model = "openrouter/google/gemini-3-flash-preview";
+    # small_model = "openrouter/free";
+
     provider = {
       openrouter = {
         options = {
           apiKey = "{env:OPENROUTER_API_KEY}";
         };
+      };
+    };
+
+    mcp = {
+      exa = {
+        type = "remote";
+        url = "https://mcp.exa.ai/mcp";
+        enabled = true;
       };
     };
   };

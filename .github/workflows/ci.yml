@@ -48,19 +48,6 @@ jobs:
           use-flakehub: false
       - name: Build
         run: nix build .#homeConfigurations.sphoono.activationPackage
-  build-home-sphoono@sphoono-droid:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
-        with:
-          use-flakehub: false
-      - name: Build
-        run: nix build .#homeConfigurations.sphoono@sphoono-droid.activationPackage
   build-home-spookyskelly:
     runs-on: ubuntu-24.04
     steps:

@@ -11,8 +11,11 @@
       userName = "soriphoono";
     };
 
-    shells.shellAliases = {
-      v = "${nvimConfigurations.sphoono}/bin/nvim";
+    shells = {
+      bash.enable = true;
+      shellAliases = {
+        v = "${nvimConfigurations.sphoono}/bin/nvim";
+      };
     };
   };
 

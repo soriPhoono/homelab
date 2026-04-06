@@ -32,12 +32,19 @@
   // Optionally, map the Nix formatter to the default Zed formatting behavior
   "languages": {
     "Nix": {
+      "language_servers": [
+        "nixd",
+        "!nil"
+      ],
       "formatter": {
         "external": {
           "command": "alejandra",
-          "arguments": ["--quiet", "--"],
-        },
-      },
-    },
+          "arguments": [
+            "--quiet",
+            "--"
+          ]
+        }
+      }
+    }
   },
 }

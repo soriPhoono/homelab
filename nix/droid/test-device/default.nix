@@ -1,4 +1,4 @@
 {
-  core.user = "sphoono";
+  core.user.name = "sphoono";
   system.stateVersion = "24.05";
 }

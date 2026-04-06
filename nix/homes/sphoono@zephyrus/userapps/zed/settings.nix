@@ -5,6 +5,7 @@
 }: {
   sops.secrets = {
     "api/GITHUB_API_KEY" = {};
+    "api/CONTEXT7_API_KEY" = {};
   };
 
   userapps.development.editors.zed.userSettings = {
@@ -59,6 +60,20 @@
             '';
           };
         in "${github-mcp-script}/bin/github-mcp";
+        args = [];
+        env = {};
+      };
+      Context7 = {
+        command = let
+          context7-mcp-script = pkgs.writeShellApplication {
+            name = "context7-mcp";
+            text = ''
+              CONTEXT7_API_KEY=$(cat ${config.sops.secrets."api/CONTEXT7_API_KEY".path})
+              export CONTEXT7_API_KEY
+              exec ${pkgs.nodejs}/bin/npx -y @upstash/context7-mcp --api-key "$CONTEXT7_API_KEY" "$@"
+            '';
+          };
+        in "${context7-mcp-script}/bin/context7-mcp";
         args = [];
         env = {};
       };

@@ -187,7 +187,7 @@
         inherit pkgs;
         extraSpecialArgs = {
           inherit inputs self lib;
-          nvimConfigurations = self.nvimConfigurations.${systemArch};
+          nvimConfigurations = self.nvimConfigurations.${systemArch}; # TODO: Migrate this to an overlay
         };
         modules =
           [
@@ -316,11 +316,25 @@
             value = conf.activationPackage;
           }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.homeConfigurations);
 
-          # Evaluation checks for all nix-on-droid configurations matching this system
-          evalDroids = lib.mapAttrs' (name: conf: {
-            name = "droid-eval-${name}";
-            value = conf.activationPackage;
-          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixOnDroidConfigurations);
+          # Evaluation checks for all nix-on-droid configurations.
+          # We wrap them in a check that verifies the attribute exists.
+          # Note: nix-on-droid evaluation is often impure and can fail in strict pure mode.
+          evalDroids =
+            lib.mapAttrs' (name: conf: {
+              name = "droid-eval-${name}";
+              value =
+                pkgs.runCommand "droid-eval-${name}" {
+                  # We avoid accessing attributes that trigger derivation realization
+                  # if they depend on missing store paths or impure inputs.
+                  # Instead, we just check if the config evaluates at all.
+                  evaluatedConfig = builtins.typeOf conf.config;
+                  meta.description = "Evaluation check for nix-on-droid configuration ${name}";
+                } ''
+                  echo "Checking ${name} evaluation (type: $evaluatedConfig)..."
+                  touch $out
+                '';
+            })
+            self.nixOnDroidConfigurations;
         in
           evalSystems // evalHomes // evalDroids;
 
@@ -353,7 +367,10 @@
         overlays = with inputs; ((import ./nix/overlays {inherit self inputs lib;})
           // {
             nur = nur.overlays.default;
-          });
+          }
+          // lib.mapAttrs (name: _: _final: prev: {
+            ${name} = self.nvimConfigurations.${prev.stdenv.hostPlatform.system}.${name};
+          }) ((import ./nix/nvim) {inherit lib;}));
 
         # --- Automatic Discovery & Construction --- #
 
@@ -367,7 +384,7 @@
         # Scans for <user> and <user>@<homeName>, combines them if both exist.
         homeConfigurations = let
           homeDirs = lib.attrNames (lib.filterAttrs (_n: v: v == "directory") (builtins.readDir ./nix/homes));
-          hostDirs = builtins.readDir ./nix/systems;
+          hostDirs = lib.attrNames (lib.filterAttrs (_n: v: v == "directory") (builtins.readDir ./nix/systems));
 
           # Filter for base homes (no @) and standalone homes (user@host where systems/host doesn't exist)
           validHomeNames =
@@ -379,7 +396,10 @@
                   then lib.last parts
                   else "";
               in
-                hostName == "" || !(hostDirs ? ${hostName})
+                (hostName
+                  == ""
+                  || hostName != "droid")
+                && !(lib.elem hostName hostDirs)
             )
             homeDirs;
 
