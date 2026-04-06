@@ -3,10 +3,6 @@
     ./zed
   ];
 
-  sops.secrets = {
-    "api/GITHUB_API_KEY" = {};
-  };
-
   userapps = {
     defaultApplications.enable = true;
     development = {

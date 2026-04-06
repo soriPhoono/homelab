@@ -108,18 +108,21 @@
 
     # --- System Support & Package Cache --- #
     supportedSystems = import inputs.systems;
-    pkgsFor = forDroid: lib.genAttrs supportedSystems (system: 
-      if forDroid
-      then import nixpkgs-droid {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = builtins.attrValues self.overlays;
-      }
-      else import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = builtins.attrValues self.overlays;
-      });
+    pkgsFor = forDroid:
+      lib.genAttrs supportedSystems (system:
+        if forDroid
+        then
+          import nixpkgs-droid {
+            inherit system;
+            config.allowUnfree = true;
+            overlays = builtins.attrValues self.overlays;
+          }
+        else
+          import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+            overlays = builtins.attrValues self.overlays;
+          });
 
     # --- System Builder Parameters --- #
     homeManagerModules = with inputs; [

@@ -3,6 +3,10 @@
   config,
   ...
 }: {
+  sops.secrets = {
+    "api/GITHUB_API_KEY" = {};
+  };
+
   userapps.development.editors.zed.userSettings = {
     terminal = {
       toolbar.breadcrumbs = true;

@@ -6,7 +6,10 @@
   core = {
     secrets.defaultSopsFile = ./secrets.yml;
 
-    apps.git.userName = "soriphoono";
+    apps.git = {
+      enable = true;
+      userName = "soriphoono";
+    };
 
     shells.shellAliases = {
       v = "${nvimConfigurations.sphoono}/bin/nvim";

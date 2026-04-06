@@ -1,19 +1,32 @@
 {
   lib,
   config,
-  options,
   ...
-}:
-with lib; {
-  programs.bash = mkMerge [
-    {
-      enable = true;
-      historyControl = ["ignoreboth"];
-    }
-    (optionalAttrs (options ? sops && config.core.secrets.environment.enable) {
-      initExtra = ''
-        source ${config.sops.secrets."environment.env".path}
-      '';
-    })
-  ];
-}
+}: let
+  cfg = config.core.shells.bash;
+in
+  with lib; {
+    options.core.shells.bash = {
+      enable = mkEnableOption "Enable bash shell configuration";
+      extraShellInit = lib.mkOption {
+        type = lib.types.lines;
+        default = "";
+        description = "Extra shell initialization code";
+      };
+    };
+
+    config = mkIf cfg.enable (mkMerge [
+      {
+        programs.bash = {
+          enable = true;
+          historyControl = ["ignoreboth"];
+          initExtra = cfg.extraShellInit;
+        };
+      }
+      (mkIf config.core.secrets.environment.enable {
+        programs.bash.initExtra = ''
+          source ${config.sops.secrets."environment.env".path}
+        '';
+      })
+    ]);
+  }

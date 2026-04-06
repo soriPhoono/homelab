@@ -33,19 +33,25 @@ in
         ];
 
         plugins =
-          {
-            inherit (pkgs.yaziPlugins) gvfs recycle-bin restore;
-          }
+          (optionalAttrs (pkgs ? yaziPlugins) (
+            filterAttrs (_: v: v != null) {
+              gvfs = pkgs.yaziPlugins.gvfs or null;
+              recycle-bin = pkgs.yaziPlugins.recycle-bin or null;
+              restore = pkgs.yaziPlugins.restore or null;
+            }
+          ))
           // cfg.plugins;
 
-        initLua = ''
-          require("gvfs"):setup({
-            password_vault = "keyring",
-            save_password_autoconfirm = true
-          })
-
-          require("recycle-bin"):setup()
-        '';
+        initLua =
+          (optionalString (pkgs ? yaziPlugins && pkgs.yaziPlugins ? gvfs) ''
+            require("gvfs"):setup({
+              password_vault = "keyring",
+              save_password_autoconfirm = true
+            })
+          '')
+          + (optionalString (pkgs ? yaziPlugins && pkgs.yaziPlugins ? "recycle-bin") ''
+            require("recycle-bin"):setup()
+          '');
 
         settings = {
           plugin = {

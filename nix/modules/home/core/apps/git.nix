@@ -111,18 +111,18 @@ in
             cfg.extraIdentities;
 
           settings = {
-            user = {
-              name = cfg.userName;
-              email =
-                if config.core.email.enable
-                then
-                  (
-                    if (config.accounts.email.accounts ? "git")
-                    then config.accounts.email.accounts.git.address
-                    else config.accounts.email.accounts.primary.address
-                  )
-                else cfg.userEmail;
-            };
+            user = mkMerge [
+              {name = cfg.userName;}
+              (mkIf config.core.email.enable {
+                email =
+                  if (config.accounts.email.accounts ? "git")
+                  then config.accounts.email.accounts.git.address
+                  else config.accounts.email.accounts.primary.address;
+              })
+              (mkIf (!config.core.email.enable && cfg.userEmail != null) {
+                email = cfg.userEmail;
+              })
+            ];
 
             init.defaultBranch = "main";
 
