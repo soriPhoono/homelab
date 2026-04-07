@@ -25,25 +25,19 @@ in
         description = "OpenCode settings";
         default = {};
       };
-
-      mcpServers = mkOption {
-        inherit (jsonFormat) type;
-        description = "MCP servers to connect opencode to";
-        default = {};
-      };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
+        home.packages = with pkgs; [
+          opencode-desktop
+        ];
+
         programs.opencode = {
+          inherit (cfg) settings;
+
           enable = true;
           enableMcpIntegration = true;
-
-          settings =
-            {
-              mcp = cfg.mcpServers;
-            }
-            // cfg.settings;
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {

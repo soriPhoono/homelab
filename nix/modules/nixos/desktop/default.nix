@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }: let
@@ -22,6 +21,8 @@ in
         flatpak.enable = true;
       };
 
+      xdg.terminal-exec.enable = true;
+
       programs.appimage = {
         enable = true;
         binfmt = true;
@@ -32,8 +33,5 @@ in
         automatic-timezoned.enable = true;
         dbus.implementation = "broker";
       };
-
-      environment.systemPackages = with pkgs; [
-      ];
     };
   }

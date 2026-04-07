@@ -1,8 +1,6 @@
-# TODO: Add binds for core hyprland features and other user applications.
 {
-  lib,
+  pkgs,
   config,
-  nixosConfig,
   ...
 }: {
   config = {
@@ -17,11 +15,8 @@
           "SUPER, F, togglefloating, "
           "SUPER CTRL, F, fullscreen, 0"
 
-          "SUPER, Return, exec, ${lib.launchApp nixosConfig true ""}"
-          "SUPER, E, exec, ${lib.launchApp nixosConfig true "${config.programs.yazi.package}/bin/yazi"}"
-
-          "SUPER, B, exec, ${lib.launchApp nixosConfig false "google-chrome"}"
-          "SUPER, C, exec, ${lib.launchApp nixosConfig false "antigravity"}"
+          "SUPER, Return, exec, ${pkgs.run-application}/bin/run-application $TERMINAL"
+          "SUPER, E, exec, ${pkgs.run-application}/bin/run-application $TERMINAL -e ${config.programs.yazi.package}/bin/yazi"
         ]
         ++ (builtins.concatLists (
           builtins.genList (

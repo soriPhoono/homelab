@@ -1,7 +1,6 @@
 {
   pkgs,
   config,
-  nixosConfig,
   ...
 }: {
   config = {
@@ -44,23 +43,26 @@
           assistant-panel = standardPlugin;
           special-workspaces = standardPlugin;
           screen-recorder = standardPlugin;
+          network-manager-vpn = standardPlugin;
           usb-drive-manager = standardPlugin;
           tailscale = standardPlugin;
-          network-manager-vpn = standardPlugin;
         };
       };
       pluginSettings = {
+        assistant-panel = {
+          ai = {
+            provider = "openai_compatible";
+            openaiBaseUrl = "https://openrouter.ai/api/v1/chat/completions";
+            model = "gemini-3.1-flash-lite-preview";
+          };
+        };
         usb-drive-manager = {
           autoMount = true;
           hideWhenEmpty = true;
         };
         tailscale = {
           showPeerCount = false;
-          terminalCommand = "${
-            if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
-            then "uwsm app -s a "
-            else ""
-          }${config.programs.ghostty.package}/bin/ghostty -e";
+          terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
           taildropReceiveMode = "pkexec";
         };
       };
@@ -72,12 +74,9 @@
         appLauncher = {
           enableClipboardHistory = true;
           position = "follow_bar";
-          terminalCommand = "${config.programs.ghostty.package}/bin/ghostty -e";
+          terminalCommand = "${config.home.sessionVariables.TERMINAL} -e";
           customLaunchPrefixEnabled = true;
-          customLaunchPrefix =
-            if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
-            then "uwsm app -s a"
-            else "";
+          customLaunchPrefix = "${pkgs.run-application}/bin/run-application";
           density = "compact";
         };
         audio = {
@@ -106,14 +105,10 @@
           bluetoothRssiPollingEnabled = true;
           disableDiscoverability = true;
         };
-        nightlight.enabled = true;
+        nightLight.enabled = true;
         noctaliaPerformance.disableWallpaper = true;
         sessionMenu.position = "center";
-        systemMonitor.externalMonitor = "${
-          if (nixosConfig != null && nixosConfig.programs.hyprland.withUWSM)
-          then "uwsm app -s a "
-          else ""
-        }${config.programs.ghostty.package}/bin/ghostty -e ${config.programs.btop.package}/bin/btop";
+        systemMonitor.externalMonitor = "${pkgs.run-application}/bin/run-application -- ${config.home.sessionVariables.TERMINAL} -e ${config.programs.btop.package}/bin/btop";
         wallpaper.directory = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers";
         bar = {
           barType = "floating";
@@ -144,6 +139,9 @@
             right = [
               {
                 id = "Tray";
+              }
+              {
+                id = "plugin:network-manager-vpn";
               }
               {
                 id = "plugin:tailscale";
@@ -197,15 +195,53 @@
         "SUPER, A, exec, noctalia-shell ipc call launcher toggle"
         "SUPER, Tab, exec, noctalia-shell ipc call controlCenter toggle"
         "SUPER, comma, exec, noctalia-shell ipc call settings toggle"
-        "SUPER, L, exec, noctalia-shell ipc call sessionMenu toggle"
+        "SUPER, L, exec, noctalia-shell ipc call lockScreen lock"
+        "SUPER, P, exec, noctalia-shell ipc call sessionMenu toggle"
+        "SUPER, V, exec, noctalia-shell ipc call launcher clipboard"
+        "SUPER, C, exec, noctalia-shell ipc call launcher emoji"
+
+        # Zephyrus G14 Specific
+        # Mic Mute
+        ", XF86AudioMicMute, exec, noctalia-shell ipc call volume muteInput"
+        # ROG Key
+        ", XF86Launch1, exec, noctalia-shell ipc call settings toggle"
+        # Fan Mode
+        ", XF86Launch4, exec, noctalia-shell ipc call powerProfile cycle"
+        # Airplane Mode
+        ", XF86Launch5, exec, noctalia-shell ipc call airplaneMode toggle"
+      ];
+
+      bindl = [
+        # Audio
+        ", XF86AudioMute, exec, noctalia-shell ipc call volume muteOutput"
+
+        # Media
+        ", XF86AudioPrev, exec, noctalia-shell ipc call media previous"
+        ", XF86AudioPlay, exec, noctalia-shell ipc call media playPause"
+        ", XF86AudioNext, exec, noctalia-shell ipc call media next"
+      ];
+
+      bindle = [
+        # Volume
+        ", XF86AudioLowerVolume, exec, noctalia-shell ipc call volume decrease"
+        ", XF86AudioRaiseVolume, exec, noctalia-shell ipc call volume increase"
+
+        # Brightness
+        ", XF86MonBrightnessDown, exec, noctalia-shell ipc call brightness decrease"
+        ", XF86MonBrightnessUp, exec, noctalia-shell ipc call brightness increase"
+
+        # Keyboard Brightness
+        ", XF86KbdBrightnessDown, exec, ${pkgs.brightnessctl}/bin/brightnessctl -d 'input*::kbd_backlight' set 5%-"
+        ", XF86KbdBrightnessUp, exec, ${pkgs.brightnessctl}/bin/brightnessctl -d 'input*::kbd_backlight' set 5%+"
       ];
     };
 
     systemd.user.services.noctalia-shell = {
       Unit = {
         Description = "Noctalia Shell";
-        PartOf = ["graphical-session.target"];
-        After = ["graphical-session.target"];
+        PartOf = ["wayland-session@hyprland.desktop.target"];
+        After = ["wayland-session@hyprland.desktop.target" "wayland-wm@hyprland.desktop.service"];
+        Before = ["wayland-session-shutdown.target"];
       };
       Service = {
         ExecStart = "${config.programs.noctalia-shell.package}/bin/noctalia-shell";
@@ -213,7 +249,7 @@
         Restart = "on-failure";
       };
       Install = {
-        WantedBy = ["graphical-session.target"];
+        WantedBy = ["wayland-session@hyprland.desktop.target"];
       };
     };
   };
