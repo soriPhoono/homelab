@@ -16,22 +16,24 @@ in
     options.desktop.enable = mkEnableOption "Enable core desktop configurations";
 
     config = mkIf cfg.enable {
-      desktop.services = {
-        pipewire.enable = true;
-        flatpak.enable = true;
-      };
-
       xdg.terminal-exec.enable = true;
-
-      programs.appimage = {
-        enable = true;
-        binfmt = true;
-      };
 
       services = {
         geoclue2.enable = true;
-        automatic-timezoned.enable = true;
         dbus.implementation = "broker";
+      };
+
+      core = {
+        hardware.bluetooth.enable = true;
+        networking.network-manager.enable = true;
+      };
+
+      desktop = {
+        services = {
+          pipewire.enable = true;
+          flatpak.enable = true;
+        };
+        tools.appimage.enable = true;
       };
     };
   }

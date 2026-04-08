@@ -21,7 +21,7 @@ in
 
       userapps.browsers = {
         enable = true;
-        chrome.enable = lib.mkDefault false;
+        zen.enable = lib.mkDefault false;
       };
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let

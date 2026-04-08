@@ -1,21 +1,17 @@
 {
-  imports = [
-    ./zen
-    ./zed
-  ];
-
   userapps = {
     defaultApplications.enable = true;
     development = {
       enable = true;
       terminal.ghostty.enable = true;
       agents.opencode.enable = true;
+      editors = {
+        neovim.enable = true;
+        zed.enable = true;
+      };
     };
     file-browser.dolphin.enable = true;
-    browsers = {
-      zen.enable = true;
-      chrome.enable = true;
-    };
+    browsers.zen.enable = true;
     communication = {
       discord.enable = true;
       telegram.enable = true;

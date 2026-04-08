@@ -7,7 +7,6 @@
   ];
 
   userapps.browsers.zen = {
-    enable = true;
     extraConfig = {
       setAsDefaultBrowser = true;
       enablePrivateDesktopEntry = true;
@@ -54,17 +53,17 @@
               {
                 algorithm = "floating";
                 type = "explicit-lightness";
-                red = 59;
-                green = 130;
-                blue = 246;
-                lightness = 50;
+                red = 69;
+                green = 107;
+                blue = 188;
+                lightness = 35;
                 position = {
                   x = 51;
                   y = 97;
                 };
               }
             ];
-            opacity = 0.3;
+            opacity = 0.4;
           };
         };
         Work = {
@@ -78,17 +77,17 @@
               {
                 algorithm = "floating";
                 type = "explicit-lightness";
-                red = 147;
-                green = 51;
-                blue = 234;
-                lightness = 50;
+                red = 121;
+                green = 94;
+                blue = 171;
+                lightness = 35;
                 position = {
                   x = 68;
                   y = 137;
                 };
               }
             ];
-            opacity = 0.3;
+            opacity = 0.4;
           };
         };
         Development = {
@@ -102,17 +101,17 @@
               {
                 algorithm = "floating";
                 type = "explicit-lightness";
-                red = 34;
-                green = 197;
-                blue = 94;
-                lightness = 50;
+                red = 99;
+                green = 147;
+                blue = 133;
+                lightness = 35;
                 position = {
                   x = 100;
                   y = 100;
                 };
               }
             ];
-            opacity = 0.3;
+            opacity = 0.4;
           };
         };
         School = {
@@ -126,17 +125,17 @@
               {
                 algorithm = "floating";
                 type = "explicit-lightness";
-                red = 249;
-                green = 115;
-                blue = 22;
-                lightness = 50;
+                red = 167;
+                green = 109;
+                blue = 87;
+                lightness = 35;
                 position = {
                   x = 80;
                   y = 120;
                 };
               }
             ];
-            opacity = 0.3;
+            opacity = 0.4;
           };
         };
         Shopping = {
@@ -150,17 +149,17 @@
               {
                 algorithm = "floating";
                 type = "explicit-lightness";
-                red = 234;
-                green = 179;
-                blue = 8;
-                lightness = 50;
+                red = 164;
+                green = 138;
+                blue = 99;
+                lightness = 35;
                 position = {
                   x = 60;
                   y = 110;
                 };
               }
             ];
-            opacity = 0.3;
+            opacity = 0.4;
           };
         };
       };

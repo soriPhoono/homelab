@@ -65,6 +65,7 @@
   desktop = {
     environments = {
       display_managers.sddm = {
+        enable = true;
         theme = {
           package = pkgs.sddm-astronaut.override {
             embeddedTheme = "jake_the_dog";

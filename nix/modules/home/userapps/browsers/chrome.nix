@@ -9,10 +9,7 @@ in
   with lib; {
     options.userapps.browsers.chrome = {
       enable =
-        mkEnableOption "Enable Google Chrome."
-        // {
-          default = true;
-        };
+        mkEnableOption "Enable Google Chrome.";
 
       priority = mkOption {
         type = types.int;
@@ -22,7 +19,10 @@ in
     };
 
     config = mkIf cfg.enable {
-      userapps.browsers.enable = true;
+      userapps.browsers = {
+        enable = true;
+        zen.enable = mkDefault false;
+      };
 
       home = {
         sessionVariables.BROWSER = mkOverride cfg.priority "google-chrome";

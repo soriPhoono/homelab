@@ -1,3 +1,4 @@
+# TODO: make this and floorp browser more like zen in that each user profile can define customizations
 {
   lib,
   pkgs,
@@ -21,7 +22,7 @@ in
 
       userapps.browsers = {
         enable = true;
-        chrome.enable = lib.mkDefault false;
+        zen.enable = lib.mkDefault false;
       };
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let

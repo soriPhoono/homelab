@@ -126,5 +126,23 @@ in
           extraGroups = ["docker"];
         })
         (lib.filterAttrs (_name: user: user.admin) config.core.users);
+
+      home-manager.users =
+        mapAttrs (_: _: {
+          # TODO: see home-manager's git.nix file for notes about what to do here
+
+          imports = [
+            ({config, ...}: {
+              core.shells.shellAliases = {
+                d = "docker";
+                dc = "docker compose";
+                lzd = "${config.programs.lazydocker.package}/bin/lazydocker";
+              };
+
+              programs.lazydocker.enable = true;
+            })
+          ];
+        })
+        config.core.users;
     };
   }

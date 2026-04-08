@@ -1,12 +1,12 @@
 {nvimConfigurations, ...}: {
   imports = [
-    ./opencode
+    ./configs
   ];
 
   core = {
-    secrets.defaultSopsFile = ./secrets.yml;
     shells.bash.enable = true;
 
+    secrets.defaultSopsFile = ./secrets.yml;
     apps.git.userName = "soriphoono";
   };
 

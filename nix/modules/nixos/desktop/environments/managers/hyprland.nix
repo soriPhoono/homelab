@@ -11,24 +11,9 @@ in
     };
 
     config = mkIf cfg.enable {
-      nix.settings = {
-        extra-substituters = ["https://noctalia.cachix.org"];
-        extra-trusted-public-keys = ["noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="];
-      };
+      desktop.environments.managers.enable = true;
 
-      core = {
-        hardware.bluetooth.enable = true;
-        networking.network-manager.enable = true;
-      };
-
-      desktop.environments = {
-        managers.enable = true;
-        display_managers.sddm.enable = true;
-      };
-
-      environment.sessionVariables = {
-        NIXOS_OZONE_WL = "1";
-      };
+      environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
       security.polkit.enable = true;
 
@@ -41,18 +26,27 @@ in
       };
 
       services = {
+        gvfs.enable = true;
+
         power-profiles-daemon.enable = true;
         upower = {
           enable = true;
           criticalPowerAction = "PowerOff";
         };
-
-        gvfs.enable = true;
-        gnome.evolution-data-server.enable = true;
       };
 
       home-manager.users =
         builtins.mapAttrs (_: _: {
+          imports = [
+            ({
+              config,
+              nixosConfig,
+              ...
+            }: {
+              xdg.configFile."uwsm/env".source = mkIf nixosConfig.programs.uwsm.enable "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
+            })
+          ];
+
           home.sessionVariables = {
             SSH_AUTH_SOCK = mkDefault "$XDG_RUNTIME_DIR/ssh-agent";
           };

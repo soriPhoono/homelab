@@ -1,3 +1,4 @@
+# TODO: guard this file with personal.hyprland.enable
 {
   pkgs,
   config,
@@ -51,12 +52,6 @@
           )
           9
         ));
-
-      binde = [
-        # Keyboard Brightness
-        ", XF86KbdBrightnessDown, exec, ${pkgs.brightnessctl}/bin/brightnessctl -d asus::kbd_backlight set 33%-"
-        ", XF86KbdBrightnessUp, exec, ${pkgs.brightnessctl}/bin/brightnessctl -d asus::kbd_backlight set 33%+"
-      ];
 
       bindm = [
         "SUPER, Control_L, movewindow"

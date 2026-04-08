@@ -81,6 +81,8 @@ in
         (_: identity: identity.signingKey)
         cfg.extraIdentities;
 
+      # TODO: move personal shell aliases into personal core configuration module
+
       core.shells.shellAliases = {
         lzg = "${config.programs.lazygit.package}/bin/lazygit";
         gs = "git status";

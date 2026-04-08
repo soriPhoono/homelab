@@ -5,10 +5,8 @@
 }: {
   imports = [
     ./theme.nix
-
-    ./hypr
-
-    ./userapps
+    ./hypr.nix
+    ./userapps.nix
   ];
 
   core = {
