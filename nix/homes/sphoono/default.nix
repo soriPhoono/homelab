@@ -5,22 +5,12 @@
 
   core = {
     secrets.defaultSopsFile = ./secrets.yml;
+    shells.bash.enable = true;
 
-    apps.git = {
-      enable = true;
-      userName = "soriphoono";
-    };
-
-    shells = {
-      bash.enable = true;
-      shellAliases = {
-        v = "${nvimConfigurations.sphoono}/bin/nvim";
-      };
-    };
+    apps.git.userName = "soriphoono";
   };
 
   userapps.development.editors.neovim = {
-    enable = true;
     package = nvimConfigurations.sphoono;
   };
 }

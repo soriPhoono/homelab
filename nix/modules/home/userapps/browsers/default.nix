@@ -4,6 +4,7 @@
   ...
 }: {
   imports = [
+    ./zen.nix
     ./firefox.nix
     ./chrome.nix
     ./floorp.nix

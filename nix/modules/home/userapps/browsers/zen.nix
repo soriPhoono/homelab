@@ -1,46 +1,62 @@
 {
-  lib,
-  config,
   inputs,
+  lib,
+  pkgs,
+  config,
   ...
 }: let
   cfg = config.userapps.browsers.zen;
+  baseConfig = {
+    enable = true;
+    nativeMessagingHosts = with pkgs; [firefoxpwa];
+  };
 in
   with lib; {
-    imports =
-      if cfg.enable
-      then
-        if cfg.beta
-        then optionals inputs.zen-browser.homeModules.beta
-        else optionals inputs.zen-browser.homeModules.twilight
-      else []; # CHECK THIS
+    imports = [
+      inputs.zen-browser.homeModules.twilight
+    ];
 
     options.userapps.browsers.zen = {
       enable = mkEnableOption "Enable Zen Browser";
-
-      beta = mkEnableOption "Use the beta version of Zen Browser instead of twilight";
 
       priority = mkOption {
         type = types.int;
         default = 10;
         description = "Priority for being the default browser. Lower is higher priority.";
       };
+
+      extraConfig = mkOption {
+        type = types.attrs;
+        default = {};
+        description = ''
+          Extra configuration to pass to programs.zen-browser.
+          This can be used to override or extend the default configuration.
+        '';
+      };
+
+      profileConfig = mkOption {
+        type = types.attrsOf types.attrs;
+        default = {};
+        description = ''
+          Per-profile configuration that gets merged into extraConfig.
+          Each attribute represents a profile name (e.g., "default").
+          Use this for cleaner organization in user configs.
+        '';
+      };
     };
 
     config = mkIf cfg.enable {
-      userapps.browsers.enable = true;
-      userapps.browsers.chrome.enable = mkDefault false;
+      home.sessionVariables.BROWSER = "zen-twilight";
+
+      userapps.browsers = {
+        enable = true;
+        chrome.enable = mkDefault false;
+      };
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-        browser = [
-          (
-            if cfg.beta
-            then "zen-beta.desktop"
-            else "zen-twilight.desktop"
-          )
-        ];
+        browser = ["zen-twilight.desktop"];
       in
-        lib.mkOverride cfg.priority {
+        mkOverride cfg.priority {
           "text/html" = browser;
           "text/xml" = browser;
           "x-scheme-handler/http" = browser;
@@ -49,7 +65,10 @@ in
           "x-scheme-handler/unknown" = browser;
         });
 
-      programs.zen-browser = {
-      };
+      programs.zen-browser = recursiveUpdate baseConfig (
+        recursiveUpdate
+        cfg.extraConfig
+        {profiles = cfg.profileConfig;}
+      );
     };
   }

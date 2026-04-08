@@ -229,10 +229,6 @@
         # Brightness
         ", XF86MonBrightnessDown, exec, noctalia-shell ipc call brightness decrease"
         ", XF86MonBrightnessUp, exec, noctalia-shell ipc call brightness increase"
-
-        # Keyboard Brightness
-        ", XF86KbdBrightnessDown, exec, ${pkgs.brightnessctl}/bin/brightnessctl set 5%-"
-        ", XF86KbdBrightnessUp, exec, ${pkgs.brightnessctl}/bin/brightnessctl set 5%+"
       ];
     };
 

@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  nvimConfigurations,
+  ...
+}: {
   imports = [
     ./theme.nix
 
@@ -24,6 +28,9 @@
       fish.generateCompletions = true;
       starship.enable = true;
       fastfetch.enable = true;
+      shellAliases = {
+        v = "${nvimConfigurations.sphoono}/bin/nvim";
+      };
     };
 
     apps = {

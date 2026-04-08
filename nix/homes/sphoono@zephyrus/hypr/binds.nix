@@ -7,16 +7,38 @@
     wayland.windowManager.hyprland.settings = {
       bind =
         [
-          "SUPER, Q, killactive, "
+          # Window Control
+          "SUPER, Q, killactive"
 
+          "SUPER, T, togglefloating"
+          "SUPER SHIFT, T, fullscreen, 0"
+
+          "SUPER, G, togglegroup"
+          "SUPER SHIFT, G, moveoutofgroup"
+
+          # Scratching
           "SUPER, grave, togglespecialworkspace, scratchpad"
           "SUPER SHIFT, grave, movetoworkspace, special:scratchpad"
 
-          "SUPER, F, togglefloating, "
-          "SUPER CTRL, F, fullscreen, 0"
+          # Screenshots using grimblast
+          ", Print, exec, ${pkgs.grimblast}/bin/grimblast --notify copy output"
+          "SUPER, Print, exec, ${pkgs.grimblast}/bin/grimblast --notify copy area"
+          "SUPER SHIFT, Print, exec, ${pkgs.grimblast}/bin/grimblast --notify copy active"
 
-          "SUPER, Return, exec, ${pkgs.run-application}/bin/run-application $TERMINAL"
-          "SUPER, E, exec, ${pkgs.run-application}/bin/run-application $TERMINAL -e ${config.programs.yazi.package}/bin/yazi"
+          # Focus navigation with arrows
+          "SUPER, left, movefocus, l"
+          "SUPER, right, movefocus, r"
+          "SUPER, up, movefocus, u"
+          "SUPER, down, movefocus, d"
+
+          "SUPER SHIFT, left, swapwindow, l"
+          "SUPER SHIFT, right, swapwindow, r"
+          "SUPER SHIFT, up, swapwindow, u"
+          "SUPER SHIFT, down, swapwindow, d"
+
+          "SUPER, Return, exec, ${config.home.sessionVariables.TERMINAL}"
+          "SUPER, E, exec, ${config.home.sessionVariables.FILE_BROWSER}"
+          "SUPER, B, exec, ${config.home.sessionVariables.BROWSER}"
         ]
         ++ (builtins.concatLists (
           builtins.genList (
@@ -30,15 +52,15 @@
           9
         ));
 
-      bindm = [
-        "ALT, mouse:272, movewindow"
-        "SUPER, Control_L, movewindow"
-        "ALT, mouse:273, resizewindow"
-        "SUPER, ALT_L, resizewindow"
+      binde = [
+        # Keyboard Brightness
+        ", XF86KbdBrightnessDown, exec, ${pkgs.brightnessctl}/bin/brightnessctl -d asus::kbd_backlight set 33%-"
+        ", XF86KbdBrightnessUp, exec, ${pkgs.brightnessctl}/bin/brightnessctl -d asus::kbd_backlight set 33%+"
       ];
 
-      bindc = [
-        "ALT, mouse:272, togglefloating"
+      bindm = [
+        "SUPER, Control_L, movewindow"
+        "SUPER, ALT_L, resizewindow"
       ];
     };
   };

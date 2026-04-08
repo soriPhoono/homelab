@@ -6,17 +6,12 @@ _: {
     deadnix.enable = true;
     statix.enable = true;
 
-    yamlfmt = {
-      enable = true;
-      excludes = [
-        ".github/workflows/*"
-      ];
-    };
+    yamlfmt.enable = true;
 
     mdformat = {
       enable = true;
       excludes = [
-        ".agent/workflows/*"
+        ".agents/skills/*"
       ];
     };
   };

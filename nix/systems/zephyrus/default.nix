@@ -60,8 +60,6 @@
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT Personal Key";
       };
     };
-
-    clamav.enable = true;
   };
 
   desktop = {
@@ -84,7 +82,9 @@
     };
     features = {
       printing.enable = true;
-      virtualisation.enable = true;
+      virtualisation = {
+        enableVirtualBox = true;
+      };
       gaming.enable = true;
     };
     services.asusd.enable = true;

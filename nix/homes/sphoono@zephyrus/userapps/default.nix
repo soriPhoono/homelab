@@ -1,5 +1,6 @@
 {
   imports = [
+    ./zen
     ./zed
   ];
 
@@ -9,8 +10,9 @@
       agents.opencode.enable = true;
       terminal.ghostty.enable = true;
     };
+    file-browser.dolphin.enable = true;
     browsers = {
-      firefox.enable = true;
+      zen.enable = true;
       chrome.enable = true;
     };
     communication = {

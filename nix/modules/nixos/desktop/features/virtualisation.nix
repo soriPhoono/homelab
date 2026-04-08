@@ -8,7 +8,8 @@
 in
   with lib; {
     options.desktop.features.virtualisation = {
-      enable = mkEnableOption "Enable virtualisation";
+      enableVirtManager = mkEnableOption "Enable virtualisation with virt-manager";
+      enableVirtualBox = mkEnableOption "Enable VirtualBox virtualisation";
       mode = mkOption {
         type = with types; enum ["host" "guest"];
         default = "host";
@@ -16,8 +17,8 @@ in
       };
     };
 
-    config = mkIf cfg.enable (mkMerge [
-      (mkIf (cfg.mode == "host") {
+    config = mkMerge [
+      (mkIf (cfg.enableVirtManager && cfg.mode == "host") {
         boot.kernelModules = ["br_netfilter"];
         boot.kernel.sysctl = {
           "net.ipv4.ip_forward" = 1;
@@ -65,11 +66,25 @@ in
           })
           config.core.users;
       })
-      (mkIf (cfg.mode == "guest") {
+      (mkIf (cfg.enableVirtManager && cfg.mode == "guest") {
         services = {
           qemuGuest.enable = true;
           spice-vdagentd.enable = true;
         };
       })
-    ]);
+      (mkIf cfg.enableVirtualBox {
+        virtualisation.virtualbox.host = {
+          enable = true;
+          enableExtensionPack = true;
+        };
+
+        users.extraUsers =
+          builtins.mapAttrs (_: _: {
+            extraGroups = [
+              "vboxusers"
+            ];
+          })
+          config.core.users;
+      })
+    ];
   }

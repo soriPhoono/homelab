@@ -1,11 +1,12 @@
 {lib, ...}:
 with lib; {
   imports = [
-    ./browsers
-    ./communication
     ./development
+    ./file-browsers
+    ./browsers
     ./data-fortress
     ./office
+    ./communication
     ./content-creation
   ];
 

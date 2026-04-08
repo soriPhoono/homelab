@@ -8,7 +8,11 @@
 in
   with lib; {
     options.userapps.browsers.chrome = {
-      enable = mkEnableOption "Enable Google Chrome.";
+      enable =
+        mkEnableOption "Enable Google Chrome."
+        // {
+          default = true;
+        };
 
       priority = mkOption {
         type = types.int;
@@ -20,9 +24,12 @@ in
     config = mkIf cfg.enable {
       userapps.browsers.enable = true;
 
-      home.packages = with pkgs; [
-        google-chrome
-      ];
+      home = {
+        sessionVariables.BROWSER = mkOverride cfg.priority "google-chrome";
+        packages = with pkgs; [
+          google-chrome
+        ];
+      };
 
       xdg.mimeApps.defaultApplications = mkIf config.userapps.defaultApplications.enable (let
         browser = ["google-chrome.desktop"];
