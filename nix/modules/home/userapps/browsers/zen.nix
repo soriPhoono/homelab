@@ -52,10 +52,7 @@ in
     config = mkIf cfg.enable {
       home.sessionVariables.BROWSER = "zen-twilight";
 
-      userapps.browsers = {
-        enable = true;
-        chrome.enable = mkDefault false;
-      };
+      userapps.browsers.enable = true;
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
         browser = ["zen-twilight.desktop"];

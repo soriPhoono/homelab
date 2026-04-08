@@ -37,7 +37,6 @@
         enable = true;
         projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
       };
-      development.enable = true;
     };
   };
 }

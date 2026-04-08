@@ -2,11 +2,15 @@
   personal.hyprland = {
     enable = true;
     monitors = [
-      "eDP-1"
+      {
+        name = "eDP-1";
+        hyprConfig = "1920x1080@144Hz, 0x0, 1.25";
+        primary = true;
+      }
     ];
   };
 
-  wayland.windowManagers.hyprland = {
+  wayland.windowManager.hyprland = {
     enable = true;
     settings = {
       bind = [

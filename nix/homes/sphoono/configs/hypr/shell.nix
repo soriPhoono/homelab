@@ -22,6 +22,7 @@ in
 
       xdg.portal.extraPortals = with pkgs; [
         xdg-desktop-portal-wlr
+        xdg-desktop-portal-gtk
       ];
 
       home.file.".cache/noctalia/wallpapers.json".text = builtins.toJSON {
@@ -75,7 +76,9 @@ in
             taildropReceiveMode = "pkexec";
           };
         };
-        settings = {
+        settings = let
+          monitors = map (monitor: monitor.name) cfg.monitors;
+        in {
           appLauncher = {
             enableClipboardHistory = true;
             position = "follow_bar";
@@ -118,9 +121,7 @@ in
           sessionMenu.position = "center";
           systemMonitor.externalMonitor = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e ${config.programs.btop.package}/bin/btop";
           wallpaper.directory = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers";
-          bar = let
-            monitors = map (monitor: monitor.name) cfg.monitors;
-          in {
+          bar = {
             inherit monitors;
 
             barType = "floating";
