@@ -7,8 +7,9 @@
   userapps = {
     defaultApplications.enable = true;
     development = {
-      agents.opencode.enable = true;
+      enable = true;
       terminal.ghostty.enable = true;
+      agents.opencode.enable = true;
     };
     file-browser.dolphin.enable = true;
     browsers = {

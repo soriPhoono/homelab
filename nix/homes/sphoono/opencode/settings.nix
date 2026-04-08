@@ -1,4 +1,4 @@
-_: {
+{config, ...}: {
   # sops.secrets."api/EXA_API_KEY" = {};
 
   userapps.development.agents.opencode.settings = {
@@ -17,6 +17,10 @@ _: {
     };
 
     mcp = {
+      obsidian = {
+        type = "local";
+        command = ["npx" "-y" "@bitbonsai/mcpvault@latest" "${config.home.homeDirectory}/Nextcloud/Notes"];
+      };
       exa = {
         type = "remote";
         url = "https://mcp.exa.ai/mcp";

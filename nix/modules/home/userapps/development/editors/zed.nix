@@ -60,12 +60,6 @@ in
         description = "Names of extensions to auto install from [the master list](https://github.com/zed-industries/extensions/tree/main/extensions)";
         default = [];
       };
-
-      mcpServers = mkOption {
-        inherit (jsonFormat) type;
-        description = "MCP servers to connect to";
-        default = {};
-      };
     };
 
     config = mkIf cfg.enable (mkMerge [
@@ -91,6 +85,7 @@ in
             userKeymaps
             userTasks
             userDebug
+            userSettings
             extensions
             ;
 
@@ -101,12 +96,6 @@ in
           mutableUserKeymaps = false;
           mutableUserSettings = false;
           mutableUserTasks = false;
-
-          userSettings =
-            {
-              context_servers = cfg.mcpServers;
-            }
-            // cfg.userSettings;
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {

@@ -3,7 +3,7 @@
     mods = [
       "f7c71d9a-bce2-420f-ae44-a64bd92975ab" # Better Unloaded Tabs
       "d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe" # Better Active Tab
-      "e122b5d9-d385-4bf8-9971-e137809097d0" # No Top Sites
+      # "e122b5d9-d385-4bf8-9971-e137809097d0" # No Top Sites
       "7190e4e9-bead-4b40-8f57-95d852ddc941" # Tab title fixes
       "803c7895-b39b-458e-84f8-a521f4d7a064" # Hide Inactive Workspaces
       "906c6915-5677-48ff-9bfc-096a02a72379" # Floating Status Bar
