@@ -1,6 +1,7 @@
 {
   imports = [
     ./settings.nix
+    ./mcp.nix
   ];
 
   userapps.development.agents = {
