@@ -13,7 +13,7 @@
     # Development - Git
     git = {
       type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-git" "--repository" "."];
+      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-git" "--repository" "$PWD"];
     };
 
     github = {
