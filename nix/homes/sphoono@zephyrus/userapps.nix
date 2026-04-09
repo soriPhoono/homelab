@@ -27,6 +27,7 @@
       bitwarden.enable = true;
       obsidian.enable = true;
       grayjay.enable = true;
+      qbittorrent.enable = true;
     };
     content-creation = {
       obs-studio.enable = true;

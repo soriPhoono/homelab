@@ -4,5 +4,6 @@
     ./nextcloud.nix
     ./obsidian.nix
     ./grayjay.nix
+    ./qbittorrent.nix
   ];
 }
