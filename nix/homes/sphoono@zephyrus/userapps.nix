@@ -1,6 +1,21 @@
 {
   userapps = {
     defaultApplications.enable = true;
+    desktop = {
+      file-browser.dolphin.enable = true;
+      video-players.vlc.enable = true;
+      browsers.zen.enable = true;
+      communication = {
+        discord.enable = true;
+        telegram.enable = true;
+        signal.enable = true;
+        matrix.enable = true;
+      };
+      office = {
+        onlyoffice.enable = true;
+        slack.enable = true;
+      };
+    };
     development = {
       enable = true;
       terminal.ghostty.enable = true;
@@ -9,18 +24,6 @@
         neovim.enable = true;
         zed.enable = true;
       };
-    };
-    file-browser.dolphin.enable = true;
-    browsers.zen.enable = true;
-    communication = {
-      discord.enable = true;
-      telegram.enable = true;
-      signal.enable = true;
-      matrix.enable = true;
-    };
-    office = {
-      onlyoffice.enable = true;
-      slack.enable = true;
     };
     data-fortress = {
       nextcloud.enable = true;

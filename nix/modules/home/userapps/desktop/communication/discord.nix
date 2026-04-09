@@ -3,10 +3,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.communication.discord;
+  cfg = config.userapps.desktop.communication.discord;
 in
   with lib; {
-    options.userapps.communication.discord = {
+    options.userapps.desktop.communication.discord = {
       enable = mkEnableOption "Enable discord client";
     };
 

@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.office.slack;
+  cfg = config.userapps.desktop.office.slack;
 in
   with lib; {
-    options.userapps.office.slack = {
+    options.userapps.desktop.office.slack = {
       enable = mkEnableOption "Enable Slack desktop client";
     };
 

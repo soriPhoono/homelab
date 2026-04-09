@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.browsers.chrome;
+  cfg = config.userapps.desktop.browsers.chrome;
 in
   with lib; {
-    options.userapps.browsers.chrome = {
+    options.userapps.desktop.browsers.chrome = {
       enable =
         mkEnableOption "Enable Google Chrome.";
 
@@ -19,7 +19,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      userapps.browsers = {
+      userapps.desktop.browsers = {
         enable = true;
         zen.enable = mkDefault false;
       };

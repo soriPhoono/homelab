@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  userapps.browsers.zen.profileConfig.default.search = {
+  userapps.desktop.browsers.zen.profileConfig.default.search = {
     force = true;
     default = "ddg";
     engines = let

@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.communication.signal;
+  cfg = config.userapps.desktop.communication.signal;
 in
   with lib; {
-    options.userapps.communication.signal = {
+    options.userapps.desktop.communication.signal = {
       enable = mkEnableOption "Enable signal desktop for private texting features";
     };
 

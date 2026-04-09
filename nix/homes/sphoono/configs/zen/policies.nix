@@ -1,5 +1,5 @@
 _: {
-  userapps.browsers.zen.extraConfig.policies = let
+  userapps.desktop.browsers.zen.extraConfig.policies = let
     mkLockedAttrs = builtins.mapAttrs (_: value: {
       Value = value;
       Status = "locked";

@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  userapps.browsers.zen.profileConfig.default = {
+  userapps.desktop.browsers.zen.profileConfig.default = {
     mods = [
       "f7c71d9a-bce2-420f-ae44-a64bd92975ab" # Better Unloaded Tabs
       "d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe" # Better Active Tab

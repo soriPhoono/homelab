@@ -1,5 +1,5 @@
 _: {
-  userapps.browsers.zen.profileConfig.default = {
+  userapps.desktop.browsers.zen.profileConfig.default = {
     settings = {
       "browser.search.defaultenginename" = "DuckDuckGo";
       "browser.search.order.1" = "DuckDuckGo";

@@ -1,32 +1,31 @@
-# TODO: make this and floorp browser more like zen in that each user profile can define customizations
 {
   lib,
   pkgs,
   config,
   ...
 }: let
-  cfg = config.userapps.browsers.firefox;
+  cfg = config.userapps.desktop.browsers.floorp;
 in
   with lib; {
-    options.userapps.browsers.firefox = {
-      enable = lib.mkEnableOption "Enable Firefox";
+    options.userapps.desktop.browsers.floorp = {
+      enable = lib.mkEnableOption "Enable Floorp browser";
       priority = lib.mkOption {
         type = lib.types.int;
-        default = 20;
+        default = 30;
         description = "Priority for being the default browser. Lower is higher priority.";
       };
     };
 
     config = lib.mkIf cfg.enable {
-      home.sessionVariables.BROWSER = mkOverride cfg.priority "firefox";
+      home.sessionVariables.BROWSER = mkOverride cfg.priority "floorp";
 
-      userapps.browsers = {
+      userapps.desktop.browsers = {
         enable = true;
         zen.enable = lib.mkDefault false;
       };
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-        browser = ["firefox.desktop"];
+        browser = ["floorp.desktop"];
       in
         lib.mkOverride cfg.priority {
           "text/html" = browser;
@@ -38,16 +37,8 @@ in
         });
 
       programs = {
-        firefox = let
-          ff-ultima = pkgs.fetchFromGitHub {
-            owner = "soulhotel";
-            repo = "FF-ULTIMA";
-            rev = "db84254";
-            hash = "sha256-z1R0OXJYbJd3G+ncWmp44uYJFaZtZ1Qzz8TbaHZ6BBQ=";
-          };
-        in {
+        floorp = {
           enable = true;
-          package = pkgs.firefox-bin;
 
           profiles.default = {
             id = 0;
@@ -58,7 +49,6 @@ in
               force = true;
 
               order = ["ddg"];
-
               default = "ddg";
 
               engines = {
@@ -82,7 +72,6 @@ in
                   icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
                   definedAliases = ["@np"];
                 };
-
                 "Nix Options" = {
                   urls = [
                     {
@@ -103,11 +92,10 @@ in
                   icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
                   definedAliases = ["@no"];
                 };
-
                 "NixOS Wiki" = {
                   urls = [
                     {
-                      template = "https://wiki.nixos.org/w/index.php";
+                      template = "https://nixos.wiki/w/index.php";
                       params = [
                         {
                           name = "search";
@@ -136,24 +124,20 @@ in
               extensions.autoDisableScopes = 0;
               browser = {
                 search = {
-                  defaultenginename = "DuckDuckGo";
-                  "order.1" = "DuckDuckGo";
+                  defaultsearchenginename = "DuckDuckGo";
+                  order = [
+                    "DuckDuckGo"
+                  ];
                 };
               };
             };
 
-            extraConfig = builtins.readFile (ff-ultima + "/user.js");
-            userChrome = builtins.readFile (ff-ultima + "/userChrome.css");
-            userContent = builtins.readFile (ff-ultima + "/userContent.css");
-          };
-
-          policies = {
-            DisableTelementry = true;
-            DisplayBookmarksToolbar = "never";
+            policies = {
+              DisableTelementry = true;
+              DisplayBookmarksToolbar = "never";
+            };
           };
         };
       };
-
-      stylix.targets.firefox.profileNames = ["default"];
     };
   }

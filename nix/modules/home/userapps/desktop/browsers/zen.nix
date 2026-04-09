@@ -5,7 +5,7 @@
   config,
   ...
 }: let
-  cfg = config.userapps.browsers.zen;
+  cfg = config.userapps.desktop.browsers.zen;
   baseConfig = {
     enable = true;
     nativeMessagingHosts = with pkgs; [firefoxpwa];
@@ -16,7 +16,7 @@ in
       inputs.zen-browser.homeModules.twilight
     ];
 
-    options.userapps.browsers.zen = {
+    options.userapps.desktop.browsers.zen = {
       enable =
         mkEnableOption "Enable Zen Browser"
         // {
@@ -52,7 +52,7 @@ in
     config = mkIf cfg.enable {
       home.sessionVariables.BROWSER = "zen-twilight";
 
-      userapps.browsers.enable = true;
+      userapps.desktop.browsers.enable = true;
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
         browser = ["zen-twilight.desktop"];

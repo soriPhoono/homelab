@@ -1,13 +1,10 @@
 {lib, ...}:
 with lib; {
   imports = [
-    ./browsers
-    ./communication
-    ./content-creation
-    ./data-fortress
+    ./desktop
     ./development
-    ./file-browsers
-    ./office
+    ./data-fortress
+    ./content-creation
   ];
 
   options.userapps.defaultApplications.enable = mkEnableOption "Set default applications (xdg.mimeApps) via Nix";

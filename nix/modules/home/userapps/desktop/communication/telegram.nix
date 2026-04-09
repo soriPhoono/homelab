@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.communication.telegram;
+  cfg = config.userapps.desktop.communication.telegram;
 in
   with lib; {
-    options.userapps.communication.telegram = {
+    options.userapps.desktop.communication.telegram = {
       enable = mkEnableOption "Enable telegram desktop client";
     };
 

@@ -13,7 +13,7 @@
     # Development - Git
     git = {
       type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-git"];
+      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-git" "--repository" "."];
     };
 
     github = {
@@ -33,13 +33,13 @@
     # Development - Knowledge
     memory = {
       type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-memory"];
+      command = ["${pkgs.uv}/bin/uvx" "mcp-server-memory"];
     };
 
     # Development - Web2
     fetch = {
       type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-fetch"];
+      command = ["${pkgs.uv}/bin/uvx" "mcp-server-fetch"];
     };
 
     exa = {
@@ -73,7 +73,7 @@
 
     sequential-thinking = {
       type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-sequential-thinking"];
+      command = ["${pkgs.uv}/bin/uvx" "mcp-sequential-thinking"];
     };
 
     # Knowledge / Notes

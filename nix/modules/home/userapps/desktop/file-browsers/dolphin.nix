@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.file-browser.dolphin;
+  cfg = config.userapps.desktop.file-browser.dolphin;
 in
   with lib; {
-    options.userapps.file-browser.dolphin.enable = mkEnableOption "Enable dolphin file browser";
+    options.userapps.desktop.file-browser.dolphin.enable = mkEnableOption "Enable dolphin file browser";
 
     config = mkIf cfg.enable {
       home.sessionVariables.FILE_BROWSER = "dolphin";

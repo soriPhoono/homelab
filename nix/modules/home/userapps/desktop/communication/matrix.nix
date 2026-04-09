@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.communication.matrix;
+  cfg = config.userapps.desktop.communication.matrix;
 in
   with lib; {
-    options.userapps.communication.matrix = {
+    options.userapps.desktop.communication.matrix = {
       enable = mkEnableOption "Enable matrix client Element Desktop";
     };
 
