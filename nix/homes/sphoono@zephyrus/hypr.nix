@@ -8,10 +8,7 @@
         primary = true;
       }
     ];
-  };
-
-  wayland.windowManager.hyprland = {
-    settings = {
+    extraSettings = {
       bind = [
         # Zephyrus G14 Specific
         # ROG Key

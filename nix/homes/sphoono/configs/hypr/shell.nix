@@ -52,6 +52,7 @@ in
             polkit-agent = standardPlugin;
             assistant-panel = standardPlugin;
             special-workspaces = standardPlugin;
+            pomoduro = standardPlugin;
             screen-recorder = standardPlugin;
             network-manager-vpn = standardPlugin;
             usb-drive-manager = standardPlugin;
@@ -138,6 +139,9 @@ in
                 }
                 {
                   id = "SystemMonitor";
+                }
+                {
+                  id = "plugin:pomoduro";
                 }
                 {
                   id = "plugin:screen-recorder";

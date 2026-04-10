@@ -1,25 +1,29 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.videoPlayers.mpv;
+  cfg = config.userapps.desktop.players.video.vlc;
 in
   with lib; {
-    options.userapps.desktop.videoPlayers.mpv = {
-      enable = mkEnableOption "Enable mpv, the light-weight video player";
+    options.userapps.desktop.players.video.vlc = {
+      enable = mkEnableOption "VLC media player";
+
       priority = mkOption {
         type = types.int;
-        default = 0;
-        description = "The priority of mpv, the light-weight video player. Lower priority means it will be preferred over other video players.";
+        default = 10;
+        description = "Priority for being the default video player. Lower is higher priority.";
       };
     };
 
     config = mkIf cfg.enable {
-      home.packages = [pkgs.mpv];
+      home.packages = with pkgs; [
+        vlc
+      ];
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-        videoPlayer = ["mpv.desktop"];
+        videoPlayer = ["vlc.desktop"];
       in
         mkOverride cfg.priority {
           "video/webm" = videoPlayer;

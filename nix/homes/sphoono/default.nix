@@ -10,7 +10,7 @@
   core = {
     shells = {
       bash.enable = true;
-      core.shells.shellAliases = {
+      shellAliases = {
         lzg = "${config.programs.lazygit.package}/bin/lazygit";
         gs = "git status";
         ga = "git add";

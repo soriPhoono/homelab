@@ -1,7 +1,7 @@
 {
   imports = [
     ./file-browsers
-    ./video-players
+    ./players
     ./browsers
     ./communication
     ./office
