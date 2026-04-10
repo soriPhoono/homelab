@@ -63,7 +63,7 @@ in
             ai = {
               provider = "openai_compatible";
               openaiBaseUrl = "https://openrouter.ai/api/v1/chat/completions";
-              model = "gemini-3.1-flash-lite-preview";
+              model = "google/gemini-3-flash-preview";
             };
           };
           usb-drive-manager = {
@@ -91,9 +91,9 @@ in
             spectrumFrameRate = 60;
             visualizerType = "mirrored";
           };
-          colorSchemes.schedulingMode = "on";
+          colorSchemes.schedulingMode = "dark";
           general = {
-            avatarImage = "${config.home.homeDirectory}/.face";
+            avatarImage = "${config.home.homeDirectory}/Nextcloud/Pictures/.face";
             enableLockScreenMediaControls = true;
             showScreenCorners = true;
             forceBlackScreenCorners = true;
@@ -207,11 +207,10 @@ in
         bind = [
           "SUPER, A, exec, noctalia-shell ipc call launcher toggle"
           "SUPER, Tab, exec, noctalia-shell ipc call controlCenter toggle"
-          "SUPER, comma, exec, noctalia-shell ipc call settings toggle"
           "SUPER, L, exec, noctalia-shell ipc call lockScreen lock"
           "SUPER, P, exec, noctalia-shell ipc call sessionMenu toggle"
-          "SUPER, V, exec, noctalia-shell ipc call launcher clipboard"
           "SUPER, C, exec, noctalia-shell ipc call launcher emoji"
+          "SUPER, V, exec, noctalia-shell ipc call launcher clipboard"
 
           # Mic Mute
           ", XF86AudioMicMute, exec, noctalia-shell ipc call volume muteInput"

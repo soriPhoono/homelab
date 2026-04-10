@@ -14,9 +14,6 @@
           "SUPER, T, togglefloating"
           "SUPER SHIFT, T, fullscreen, 0"
 
-          "SUPER, G, togglegroup"
-          "SUPER SHIFT, G, moveoutofgroup"
-
           # Scratching
           "SUPER, grave, togglespecialworkspace, scratchpad"
           "SUPER SHIFT, grave, movetoworkspace, special:scratchpad"
@@ -37,9 +34,9 @@
           "SUPER SHIFT, up, swapwindow, u"
           "SUPER SHIFT, down, swapwindow, d"
 
-          "SUPER, Return, exec, ${config.home.sessionVariables.TERMINAL}"
-          "SUPER, E, exec, ${config.home.sessionVariables.FILE_BROWSER}"
-          "SUPER, B, exec, ${config.home.sessionVariables.BROWSER}"
+          "SUPER, Return, exec, ${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL}"
+          "SUPER, F, exec, ${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.FILE_BROWSER}"
+          "SUPER, B, exec, ${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.BROWSER}"
         ]
         ++ (builtins.concatLists (
           builtins.genList (
