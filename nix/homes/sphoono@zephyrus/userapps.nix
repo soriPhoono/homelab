@@ -2,7 +2,7 @@
   userapps = {
     defaultApplications.enable = true;
     desktop = {
-      file-browser.dolphin.enable = true;
+      file-browser.nautilus.enable = true;
       players = {
         mpv.enable = true;
         audio.rhythmbox.enable = true;
@@ -23,10 +23,7 @@
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      agents.opencode = {
-        enable = true;
-        enableDesktop = true;
-      };
+      agents.opencode.enable = true;
       editors = {
         neovim.enable = true;
         zed.enable = true;

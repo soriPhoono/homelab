@@ -5,6 +5,8 @@
 }: {
   imports = [
     ./configs
+
+    ./theme.nix
   ];
 
   core = {
@@ -22,6 +24,7 @@
     };
 
     secrets.defaultSopsFile = ./secrets.yml;
+
     apps.git = {
       enable = true;
       userName = "soriphoono";

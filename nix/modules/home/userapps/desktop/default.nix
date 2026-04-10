@@ -1,6 +1,6 @@
 {
   imports = [
-    ./file-browsers
+    ./file-browser
     ./players
     ./browsers
     ./communication

@@ -18,7 +18,7 @@
 
     github = {
       type = "remote";
-      url = "https://api.githubcopilot.com/mcp/";
+      url = "https://api.githubcopilot.com/mcp";
       headers = {
         Authorization = "Bearer {env:GITHUB_API_KEY}";
       };
@@ -49,7 +49,7 @@
     # Development - Code Intelligence
     context7 = {
       type = "remote";
-      url = "https://mcp.context7.com/mcp/oauth";
+      url = "https://mcp.context7.com/mcp";
       headers = {
         CONTEXT7_API_KEY = "{env:CONTEXT7_API_KEY}";
       };
