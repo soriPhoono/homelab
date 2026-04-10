@@ -25,6 +25,7 @@ _: {
       "full-screen-api.warning.timeout" = 0;
     };
 
+    # TODO: FIX THIS
     pinsForce = true;
     pins = {
       "Bitwarden" = {
@@ -49,6 +50,12 @@ _: {
         id = "d1f6a5b6-c8e0-4f7a-d9b1-e6c4d3f2a1b8";
         url = "https://youtube.com";
         position = 4;
+        isEssential = true;
+      };
+      "Etherscan" = {
+        id = "e3f7b6c8-d9f1-5a8c-e0b2-f7d5e4c3b2a9";
+        url = "https://etherscan.io";
+        position = 5;
         isEssential = true;
       };
       "Remix IDE" = {

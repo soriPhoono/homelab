@@ -11,7 +11,6 @@
   };
 
   wayland.windowManager.hyprland = {
-    enable = true;
     settings = {
       bind = [
         # Zephyrus G14 Specific

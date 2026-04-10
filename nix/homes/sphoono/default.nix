@@ -1,13 +1,31 @@
-{nvimConfigurations, ...}: {
+{
+  config,
+  nvimConfigurations,
+  ...
+}: {
   imports = [
     ./configs
   ];
 
   core = {
-    shells.bash.enable = true;
+    shells = {
+      bash.enable = true;
+      core.shells.shellAliases = {
+        lzg = "${config.programs.lazygit.package}/bin/lazygit";
+        gs = "git status";
+        ga = "git add";
+        gc = "git commit -m";
+        gch = "git checkout -b";
+        gp = "git push";
+        gpl = "git pull";
+      };
+    };
 
     secrets.defaultSopsFile = ./secrets.yml;
-    apps.git.userName = "soriphoono";
+    apps.git = {
+      enable = true;
+      userName = "soriphoono";
+    };
   };
 
   userapps.development.editors.neovim = {

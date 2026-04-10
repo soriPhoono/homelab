@@ -26,7 +26,10 @@
       cpu.vendor = "amd";
 
       gpu = {
-        amd.integrated.enable = true;
+        amd = {
+          enable = true;
+          integrated.enable = true;
+        };
         nvidia = {
           enable = true;
           mode = "laptop";

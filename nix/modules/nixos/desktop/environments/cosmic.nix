@@ -1,7 +1,6 @@
 # NOTE: cosmic in nixpkgs is not stable yet: https://github.com/NixOS/nixpkgs/issues/259641
 {
   lib,
-  pkgs,
   config,
   ...
 }: let
@@ -20,9 +19,6 @@ in
           NIXOS_OZONE_WL = "1";
           COSMIC_DATA_CONTROL_ENABLED = 1;
         };
-
-        systemPackages = with pkgs; [
-        ];
       };
 
       services = {

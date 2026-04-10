@@ -7,15 +7,7 @@
   cfg = config.desktop.services.flatpak;
 in
   with lib; {
-    options.desktop.services.flatpak = {
-      enable = mkEnableOption "Enable Flatpak application containerisation system";
-
-      enableStore =
-        mkEnableOption "Enable Flatpak store setup with Warehouse app"
-        // {
-          default = config.desktop.environment == null;
-        };
-    };
+    options.desktop.services.flatpak.enable = mkEnableOption "Enable Flatpak application containerisation system";
 
     config = mkIf cfg.enable {
       services.flatpak.enable = true;

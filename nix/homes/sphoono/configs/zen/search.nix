@@ -73,6 +73,21 @@
         icon = nixSnowflakeIcon;
         definedAliases = ["@nw"];
       };
+      "Nix Functions" = {
+        urls = [
+          {
+            template = "https://noogle.dev/q";
+            params = [
+              {
+                name = "term";
+                value = "{searchTerms}";
+              }
+            ];
+          }
+        ];
+        icon = nixSnowflakeIcon;
+        definedAliases = ["@nf"];
+      };
       "google".metaData.hidden = true;
       "bing".metaData.hidden = true;
       "amazon".metaData.hidden = true;

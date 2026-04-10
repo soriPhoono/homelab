@@ -28,6 +28,10 @@
       fastfetch.enable = true;
       shellAliases = {
         v = "${nvimConfigurations.sphoono}/bin/nvim";
+
+        d = "docker";
+        dc = "docker compose";
+        lzd = "lazydocker";
       };
     };
 

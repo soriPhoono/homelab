@@ -1,4 +1,3 @@
-# TODO: Finish opencode configuration
 {
   lib,
   pkgs,
@@ -13,6 +12,7 @@ in
       jsonFormat = pkgs.formats.json {};
     in {
       enable = mkEnableOption "Enable OpenCode AI agent";
+      enableDesktop = mkEnableOption "Enable OpenCode desktop application (requires opencode-desktop package)";
 
       secrets = mkOption {
         type = with types; listOf str;
@@ -29,15 +29,15 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        home.packages = with pkgs; [
-          opencode-desktop
-        ];
+        home.packages = with pkgs;
+          mkIf cfg.enableDesktop [
+            opencode-desktop
+          ];
 
         programs.opencode = {
           inherit (cfg) settings;
 
           enable = true;
-          enableMcpIntegration = true;
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {

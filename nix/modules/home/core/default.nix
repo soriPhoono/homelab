@@ -17,9 +17,6 @@
   home.packages = with pkgs; [
     p7zip
     unrar
-
-    carlito
-    liberation_ttf
   ];
 
   xdg = {

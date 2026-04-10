@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  nixosConfig,
   ...
 }: let
   cfg = config.core.gitops;
@@ -24,7 +25,7 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf (cfg.enable && !nixosConfig) {
     systemd.user.services.hm-gitops = {
       Unit = {
         Description = "Home Manager GitOps Sync Service";

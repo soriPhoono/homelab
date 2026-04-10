@@ -32,7 +32,6 @@ in {
 
         extraPackages = with pkgs; [
           mangohud
-          gamemode
         ];
       };
     };

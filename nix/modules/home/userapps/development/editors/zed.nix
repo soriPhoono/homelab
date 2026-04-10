@@ -90,7 +90,6 @@ in
             ;
 
           enable = true;
-          enableMcpIntegration = true;
 
           mutableUserDebug = false;
           mutableUserKeymaps = false;

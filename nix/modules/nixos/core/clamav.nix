@@ -1,3 +1,4 @@
+# TODO: reduce memory footprint
 {
   config,
   lib,

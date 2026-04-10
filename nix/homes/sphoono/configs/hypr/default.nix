@@ -1,4 +1,3 @@
-# TODO: Finish bifurcation of this into system specific and personally global parts.
 {
   lib,
   config,
@@ -36,6 +35,7 @@ in
     };
 
     config = mkIf cfg.enable {
+      enable = true;
       wayland.windowManager.hyprland = {
         settings = {
           monitor = map (monitor: "${monitor.name}, ${monitor.hyprConfig}") cfg.monitors;
