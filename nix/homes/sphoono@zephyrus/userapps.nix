@@ -1,8 +1,8 @@
-{
+_: {
   userapps = {
     defaultApplications.enable = true;
     desktop = {
-      file-browser.dolphin.enable = true;
+      file-browser.nautilus.enable = true;
       players = {
         mpv.enable = true;
         audio.rhythmbox.enable = true;
@@ -23,19 +23,13 @@
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      agents = {
-        gemini.enable = true;
-        opencode.enable = true;
-      };
-      editors = {
-        zed.enable = true;
-      };
+      agents.gemini.enable = true;
+      editors.vscode.enable = true;
     };
     data-fortress = {
       nextcloud.enable = true;
       bitwarden.enable = true;
       obsidian.enable = true;
-      grayjay.enable = true;
       qbittorrent.enable = true;
     };
     content-creation = {

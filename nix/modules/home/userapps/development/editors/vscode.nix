@@ -26,6 +26,18 @@ in
         default = 40;
         description = "Priority for being the default editor. Lower is higher priority.";
       };
+
+      extensions = mkOption {
+        type = with types; listOf package;
+        default = [];
+        description = "List of VSCode extensions to install.";
+      };
+
+      userSettings = mkOption {
+        type = with types; attrs;
+        default = {};
+        description = "User settings for VSCode.";
+      };
     };
 
     config = mkIf cfg.enable {
@@ -46,6 +58,13 @@ in
       programs.vscode = {
         enable = true;
         inherit (cfg) package;
+
+        profiles.default = {
+          inherit (cfg) extensions userSettings;
+
+          enableExtensionUpdateCheck = false;
+          enableUpdateCheck = false;
+        };
       };
     };
   }
