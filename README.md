@@ -34,7 +34,6 @@ This repository uses a modern Flake-based structure with automatic discovery log
 | **`homes/`** | **Users** | Home Manager configurations. Core (`user`), Standalone (`user@home-name`) or system-bound (`user@hostname`). |
 | **`lib/`** | **Helpers** | Utility functions used throughout the flake. |
 | **`modules/`** | **Logic** | Reusable modules. `nixos/` for NixOS-level, `home/` for user-level. |
-| **`nvim/`** | **Neovim** | Neovim configurations built with nvf. |
 | **`overlays/`** | **Overlays** | Package overlays used throughout the flake. (Internal pkg modifications) |
 | **`pkgs/`** | **Software** | Custom package declarations. |
 | **`secrets/`** | **Secrets** | Encrypted secrets used throughout the flake for developer facing integrations. |

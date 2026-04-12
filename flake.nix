@@ -5,7 +5,6 @@
     systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     agenix = {
@@ -27,12 +26,6 @@
     github-actions-nix = {
       url = "github:synapdeck/github-actions-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/master";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
     };
 
     home-manager = {
@@ -67,16 +60,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nur = {
-      url = "github:nix-community/NUR";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nvf = {
-      url = "github:notashelf/nvf";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -89,77 +72,60 @@
         home-manager.follows = "home-manager";
       };
     };
+
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
-    nixpkgs-droid,
     flake-parts,
+    nur,
     agenix,
     ...
   }: let
-    # Extend lib with our custom functions
-    lib = nixpkgs.lib.extend (final: prev:
-      (import ./nix/lib/default.nix {inherit inputs;}) final prev
-      // {
-        inherit (inputs.home-manager.lib) hm;
-      });
+    readMeta = dir:
+      if builtins.pathExists (dir + "/meta.json")
+      then builtins.fromJSON (builtins.readFile (dir + "/meta.json"))
+      else {};
+
+    lib = nixpkgs.lib.extend (import ./nix/lib.nix);
 
     # --- System Support & Package Cache --- #
-    supportedSystems = import inputs.systems;
-    pkgsFor = forDroid:
-      lib.genAttrs supportedSystems (system:
-        if forDroid
-        then
-          import nixpkgs-droid {
-            inherit system;
-            config.allowUnfree = true;
-            overlays = builtins.attrValues self.overlays;
-          }
-        else
-          import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-            overlays = builtins.attrValues self.overlays;
+    systems = import inputs.systems;
+
+    pkgsBatch = lib.genAttrs systems (system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = builtins.attrValues (import ./nix/overlays {inherit inputs lib;}
+          // {
+            nur = nur.overlays.default;
           });
+      });
 
     # --- System Builder Parameters --- #
     homeManagerModules = with inputs; [
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       stylix.homeModules.stylix
-      nvf.homeManagerModules.default
       noctalia.homeModules.default
-      ({config, ...}: {
-        home.homeDirectory = lib.mkDefault "/home/${config.home.username}";
-      })
     ];
 
-    nixosModules = system:
-      with inputs; [
-        self.nixosModules.default
-        home-manager.nixosModules.home-manager
-        nixos-facter-modules.nixosModules.facter
-        disko.nixosModules.disko
-        determinate.nixosModules.default
-        sops-nix.nixosModules.sops
-        comin.nixosModules.comin
-        nix-index-database.nixosModules.nix-index
-        stylix.nixosModules.stylix
-        {
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            extraSpecialArgs = {
-              inherit inputs self lib;
-              nvimConfigurations = self.nvimConfigurations.${system};
-            };
-            sharedModules = homeManagerModules;
-            backupFileExtension = "bak";
-          };
-        }
-      ];
+    nixosModules = with inputs; [
+      self.nixosModules.default
+      home-manager.nixosModules.home-manager
+      nixos-facter-modules.nixosModules.facter
+      disko.nixosModules.disko
+      determinate.nixosModules.default
+      sops-nix.nixosModules.sops
+      comin.nixosModules.comin
+      nix-index-database.nixosModules.nix-index
+      stylix.nixosModules.stylix
+    ];
 
     # --- System Builders --- #
 
@@ -168,99 +134,69 @@
       basePath = ./nix/homes + "/${username}";
       homePath = ./nix/homes + "/${username}@${homeName}";
 
-      # Determine if paths exist
+      # Optimization: Short-circuit the filesystem check if this is just a base user
       hasBase = builtins.pathExists basePath;
-      hasHome = builtins.pathExists homePath;
+      hasHome = homeName != "" && builtins.pathExists homePath;
 
       # Read meta from home first, then base, fallback to empty
       meta =
         if hasHome
-        then lib.readMeta homePath
+        then readMeta homePath
         else if hasBase
-        then lib.readMeta basePath
+        then readMeta basePath
         else {};
 
       systemArch = meta.system or "x86_64-linux";
-      pkgs = (pkgsFor false).${systemArch};
+      pkgs = pkgsBatch.${systemArch};
     in
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
-          inherit inputs self lib;
-          nvimConfigurations = self.nvimConfigurations.${systemArch}; # TODO: Migrate this to an overlay
+          inherit inputs self;
         };
         modules =
-          [
+          homeManagerModules
+          ++ [
             {
               home = {
                 inherit username;
               };
             }
           ]
-          ++ homeManagerModules
           ++ lib.optional hasBase (basePath + "/default.nix")
           ++ lib.optional hasHome (homePath + "/default.nix");
       };
 
     # Base NixOS System Builder
-    mkSystem = hostName: path: let
-      meta = lib.readMeta path;
-      systemArch = meta.system or "x86_64-linux";
-      pkgs = (pkgsFor false).${systemArch};
+    mkSystem = hostName: let
+      path = ./nix/systems/${hostName};
+      meta = readMeta path;
+      system = meta.system or "x86_64-linux";
+      pkgs = pkgsBatch.${system};
     in
       lib.nixosSystem {
         inherit pkgs;
         specialArgs = {
-          inherit inputs self lib;
+          inherit inputs self;
         };
         modules =
-          (nixosModules systemArch)
+          nixosModules
           ++ [
             {
               networking.hostName = hostName;
+
+              home-manager = {
+                sharedModules = homeManagerModules;
+                backupFileExtension = "bak";
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                extraSpecialArgs = {
+                  inherit inputs self;
+                };
+              };
             }
             path
           ];
-      };
-
-    # Standalone Nix-on-Droid Builder
-    mkDroid = _hostName: path: let
-      meta = lib.readMeta path;
-      systemArch = meta.system or "aarch64-linux";
-      pkgs = (pkgsFor true).${systemArch};
-    in
-      inputs.nix-on-droid.lib.nixOnDroidConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = {
-          inherit inputs self lib;
-        };
-        modules = [
-          self.droidModules.default
-          path
-          {
-            home-manager = {
-              sharedModules = homeManagerModules;
-              backupFileExtension = "bak";
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = {
-                inherit inputs self lib;
-                nvimConfigurations = self.nvimConfigurations.${systemArch};
-              };
-            };
-          }
-        ];
-      };
-
-    # Standalone Neovim Builder
-    mkNeovim = system: path: let
-      pkgs = (pkgsFor false).${system};
-    in
-      inputs.nvf.lib.neovimConfiguration {
-        inherit pkgs;
-        modules = [
-          path
-        ];
       };
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -272,7 +208,7 @@
       ];
 
       # Supported systems for devShells/checks
-      systems = supportedSystems;
+      inherit systems;
 
       agenix-shell = {
         identityPaths = [
@@ -289,12 +225,12 @@
       }: {
         _module.args.pkgs = import nixpkgs {
           inherit system;
+          config.allowUnfree = true;
           overlays = [
             (_: _: {
               agenix = agenix.packages.${system}.default;
             })
           ];
-          config.allowUnfree = true;
         };
 
         devShells.default = import ./shell.nix {
@@ -304,138 +240,59 @@
           };
         };
 
-        checks = let
-          evalSystems = lib.mapAttrs' (name: conf: {
-            name = "system-eval-${name}";
-            value = conf.config.system.build.toplevel;
-          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.nixosConfigurations);
-
-          # Evaluation checks for all homes matching this system
-          evalHomes = lib.mapAttrs' (name: conf: {
-            name = "home-eval-${name}";
-            value = conf.activationPackage;
-          }) (lib.filterAttrs (_name: conf: conf.pkgs.stdenv.hostPlatform.system == system) self.homeConfigurations);
-
-          # Evaluation checks for all nix-on-droid configurations.
-          # We wrap them in a check that verifies the attribute exists.
-          # Note: nix-on-droid evaluation is often impure and can fail in strict pure mode.
-          evalDroids =
-            lib.mapAttrs' (name: conf: {
-              name = "droid-eval-${name}";
-              value =
-                pkgs.runCommand "droid-eval-${name}" {
-                  # We avoid accessing attributes that trigger derivation realization
-                  # if they depend on missing store paths or impure inputs.
-                  # Instead, we just check if the config evaluates at all.
-                  evaluatedConfig = builtins.typeOf conf.config;
-                  meta.description = "Evaluation check for nix-on-droid configuration ${name}";
-                } ''
-                  echo "Checking ${name} evaluation (type: $evaluatedConfig)..."
-                  touch $out
-                '';
-            })
-            self.nixOnDroidConfigurations;
-        in
-          evalSystems // evalHomes // evalDroids;
-
-        packages = let
-          customPkgs = import ./nix/pkgs {
-            inherit
-              inputs
-              lib
-              pkgs
-              self
-              ;
-          };
-        in
-          customPkgs;
-
         # --- Configuration Builders --- #
+
+        githubActions = import ./actions.nix {inherit self lib;};
 
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
-        githubActions = import ./actions.nix {inherit self lib;};
       };
 
       flake = {
         # Global Module Exports
         nixosModules = import ./nix/modules/nixos {inherit lib self;};
         homeModules = import ./nix/modules/home {inherit lib self;};
-        droidModules = import ./nix/modules/droid {inherit lib self;};
-
-        # Overlay Exports
-        overlays = with inputs; ((import ./nix/overlays {inherit self inputs lib;})
-          // {
-            nur = nur.overlays.default;
-          }
-          // lib.mapAttrs (name: _: _final: prev: {
-            ${name} = self.nvimConfigurations.${prev.stdenv.hostPlatform.system}.${name};
-          }) ((import ./nix/nvim) {inherit lib;}));
 
         # --- Automatic Discovery & Construction --- #
 
         # All systems in the /systems folder
-        nixosConfigurations = lib.mapAttrs mkSystem (lib.discover ./nix/systems);
-
-        # All nix-on-droid systems in the /droid folder
-        nixOnDroidConfigurations = lib.mapAttrs mkDroid (lib.discover ./nix/droid);
+        nixosConfigurations = lib.mapAttrs (hostName: _: mkSystem hostName) (lib.homelab.discover ./nix/systems);
 
         # All standalone homes in the /homes folder
         # Scans for <user> and <user>@<homeName>, combines them if both exist.
         homeConfigurations = let
-          homeDirs = lib.attrNames (lib.filterAttrs (_n: v: v == "directory") (builtins.readDir ./nix/homes));
-          hostDirs = lib.attrNames (lib.filterAttrs (_n: v: v == "directory") (builtins.readDir ./nix/systems));
+          # Retrieve raw directory contents as attribute sets { "name" = "type"; }
+          homesContent = builtins.readDir ./nix/homes;
+          systemsContent = builtins.readDir ./nix/systems;
 
-          # Filter for base homes (no @) and standalone homes (user@host where systems/host doesn't exist)
-          validHomeNames =
-            lib.filter (
-              name: let
-                parts = lib.splitString "@" name;
-                hostName =
-                  if lib.length parts > 1
-                  then lib.last parts
-                  else "";
-              in
-                (hostName
-                  == ""
-                  || hostName != "droid")
-                && !(lib.elem hostName hostDirs)
-            )
-            homeDirs;
+          # Optimization: Keep systems as an attribute set for O(1) lookups
+          systemHosts = lib.filterAttrs (_n: type: type == "directory") systemsContent;
 
-          # Helper to call mkHome with split username and homeName
-          mkHomeConfig = name: let
-            parts = lib.splitString "@" name;
-            username = lib.head parts;
-            homeName =
-              if lib.length parts > 1
-              then lib.last parts
-              else "";
-          in
-            mkHome username homeName;
+          # Single-pass evaluation: maps the directory name to { name, value } or drops it (null)
+          processHomeDir = name: type:
+            if type != "directory"
+            then null
+            else let
+              parts = lib.splitString "@" name;
+              username = lib.head parts;
+              hostName =
+                if lib.length parts > 1
+                then lib.last parts
+                else "";
+            in
+              # Optimization: Simplified boolean logic and O(1) existence check
+              if hostName != "droid" && !(lib.hasAttr hostName systemHosts)
+              then {
+                inherit name;
+                value = mkHome username hostName;
+              }
+              else null;
         in
-          lib.genAttrs validHomeNames mkHomeConfig;
-
-        # All standalone Neovim configurations
-        nvimConfigurations = lib.genAttrs supportedSystems (
-          system:
-            lib.mapAttrs
-            (_name: path: (mkNeovim system path).neovim) ((import ./nix/nvim) {
-              inherit lib;
-            })
-        );
-
-        # All templates in the /templates folder
-        templates =
-          lib.mapAttrs (name: _: let
-            path = ./nix/templates + "/${name}";
-          in {
-            inherit path;
-            inherit ((import "${path}/flake.nix")) description;
-          }) (
-            lib.filterAttrs (
-              name: type: type == "directory" && builtins.pathExists (./nix/templates + "/${name}/flake.nix")
-            ) (builtins.readDir ./nix/templates)
+          # Execute single pass, strip out skipped directories (nulls), and build the final set
+          builtins.listToAttrs (
+            builtins.filter (x: x != null) (
+              lib.mapAttrsToList processHomeDir homesContent
+            )
           );
       };
     };

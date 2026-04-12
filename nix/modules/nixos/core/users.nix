@@ -46,40 +46,6 @@ in
               description = "The public key for the user.";
               example = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...";
             };
-
-            subUidRanges = mkOption {
-              type = listOf (submodule {
-                options = {
-                  startUid = mkOption {
-                    type = int;
-                    description = "Starting UID of the range.";
-                  };
-                  count = mkOption {
-                    type = int;
-                    description = "Number of UIDs in the range.";
-                  };
-                };
-              });
-              default = [];
-              description = "List of UID ranges for the user.";
-            };
-
-            subGidRanges = mkOption {
-              type = listOf (submodule {
-                options = {
-                  startGid = mkOption {
-                    type = int;
-                    description = "Starting GID of the range.";
-                  };
-                  count = mkOption {
-                    type = int;
-                    description = "Number of GIDs in the range.";
-                  };
-                };
-              });
-              default = [];
-              description = "List of GID ranges for the user.";
-            };
           };
         });
 
@@ -114,7 +80,7 @@ in
 
         extraUsers =
           mapAttrs (name: user: {
-            inherit (user) hashedPassword shell subUidRanges subGidRanges;
+            inherit (user) hashedPassword shell;
             isNormalUser = true;
             extraGroups = user.extraGroups ++ optional user.admin "wheel";
             group = name;
@@ -137,6 +103,7 @@ in
 
           home = {
             inherit username;
+            homeDirectory = "/home/${username}";
           };
 
           core = {

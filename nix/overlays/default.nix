@@ -1,12 +1,11 @@
 {
   inputs,
   lib,
-  self,
   ...
 }:
 lib.mapAttrs' (name: _: {
   name = lib.removeSuffix ".nix" name;
-  value = import (./. + "/${name}") {inherit self inputs lib;};
+  value = import (./. + "/${name}") {inherit inputs lib;};
 }) (
   lib.filterAttrs (
     name: type:

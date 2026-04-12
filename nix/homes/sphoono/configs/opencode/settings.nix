@@ -1,5 +1,5 @@
 _: {
-  userapps.development.agents.opencode.settings = {
+  programs.opencode.settings = {
     model = "openrouter/google/gemini-3-flash-preview";
 
     # NOTE: These are the models to use at the top of the month till the usage runs out on my google cloud credit.

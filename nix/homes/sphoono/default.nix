@@ -1,8 +1,4 @@
-{
-  config,
-  nvimConfigurations,
-  ...
-}: {
+{config, ...}: {
   imports = [
     ./configs
 
@@ -29,9 +25,5 @@
       enable = true;
       userName = "soriphoono";
     };
-  };
-
-  userapps.development.editors.neovim = {
-    package = nvimConfigurations.sphoono;
   };
 }

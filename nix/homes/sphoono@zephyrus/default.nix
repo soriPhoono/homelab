@@ -1,8 +1,4 @@
-{
-  config,
-  nvimConfigurations,
-  ...
-}: {
+{config, ...}: {
   imports = [
     ./theme.nix
     ./hypr.nix
@@ -27,8 +23,6 @@
       starship.enable = true;
       fastfetch.enable = true;
       shellAliases = {
-        v = "${nvimConfigurations.sphoono}/bin/nvim";
-
         d = "docker";
         dc = "docker compose";
         lzd = "lazydocker";

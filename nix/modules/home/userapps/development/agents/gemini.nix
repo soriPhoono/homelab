@@ -5,35 +5,29 @@
   options,
   ...
 }: let
-  cfg = config.userapps.development.agents.opencode;
+  cfg = config.userapps.development.agents.gemini;
 in
   with lib; {
-    options.userapps.development.agents.opencode = {
-      enable = mkEnableOption "Enable OpenCode AI agent";
-      enableDesktop = mkEnableOption "Enable OpenCode desktop application (requires opencode-desktop package)";
+    options.userapps.development.agents.gemini = {
+      enable = mkEnableOption "Gemini agent for development";
 
       secrets = mkOption {
         type = with types; listOf str;
-        description = "Secret names to load in from sops for opencode functionality";
+        description = "Secret names to load in from sops for Gemini agent functionality";
         default = [];
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
-        home.packages = with pkgs;
-          mkIf cfg.enableDesktop [
-            opencode-desktop
-          ];
-
-        programs.opencode.enable = true;
+        programs.gemini-cli.enable = true;
       }
       (mkIf (options ? sops && cfg.secrets != []) {
         sops.secrets = genAttrs cfg.secrets (_: {});
 
-        programs.opencode.package = pkgs.symlinkJoin {
-          name = "opencode-wrapped";
-          paths = [pkgs.opencode];
+        programs.gemini-cli.package = pkgs.symlinkJoin {
+          name = "gemini-wrapped";
+          paths = [pkgs.gemini-cli];
           buildInputs = [pkgs.makeWrapper];
 
           postBuild = ''

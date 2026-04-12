@@ -1,5 +1,5 @@
 {
-  userapps.development.editors.zed.extensions = [
+  programs.zed-editor.extensions = [
     # Desktop / System
     "dockerfile" # Dockerfile syntax highlighting and LSP
     "docker-compose" # Docker Compose YAML support

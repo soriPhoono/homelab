@@ -32,11 +32,6 @@
       bluetooth.enable = true;
     };
 
-    gitops = {
-      enable = true;
-      repo = "https://github.com/soriphoono/homelab.git";
-    };
-
     secrets = {
       enable = true;
       defaultSopsFile = ./secrets.yaml;
@@ -55,8 +50,6 @@
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEe5elK6ZPxVfoUBM1Ytd9/15OjdTeIfyUU61qR3osP8";
       };
     };
-
-    clamav.enable = true;
   };
 
   desktop = {

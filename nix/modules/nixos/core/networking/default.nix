@@ -3,7 +3,6 @@
     ./openssh.nix
     ./network-manager.nix
     ./tailscale.nix
-    ./netbird.nix
   ];
 
   config = {

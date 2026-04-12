@@ -8,7 +8,6 @@ with pkgs;
   mkShell {
     packages =
       [
-        nil
         nixd
         alejandra
         vulnix

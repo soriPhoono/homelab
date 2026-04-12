@@ -8,9 +8,7 @@
   cfg = config.userapps.development.editors.zed;
 in
   with lib; {
-    options.userapps.development.editors.zed = let
-      jsonFormat = pkgs.formats.json {};
-    in {
+    options.userapps.development.editors.zed = {
       enable = mkEnableOption "Enable zed editors";
 
       package = mkOption {
@@ -28,36 +26,6 @@ in
       secrets = mkOption {
         type = with types; listOf str;
         description = "List of secrets to inject into zed.";
-        default = [];
-      };
-
-      userKeymaps = mkOption {
-        inherit (jsonFormat) type;
-        description = "User keymaps for zed editor";
-        default = [];
-      };
-
-      userTasks = mkOption {
-        inherit (jsonFormat) type;
-        description = "User tasks for zed editor";
-        default = [];
-      };
-
-      userDebug = mkOption {
-        inherit (jsonFormat) type;
-        description = "User debug settings for zed editor";
-        default = {};
-      };
-
-      userSettings = mkOption {
-        inherit (jsonFormat) type;
-        description = "User settings for zed editor";
-        default = {};
-      };
-
-      extensions = mkOption {
-        type = with types; listOf str;
-        description = "Names of extensions to auto install from [the master list](https://github.com/zed-industries/extensions/tree/main/extensions)";
         default = [];
       };
     };
@@ -79,16 +47,6 @@ in
           });
 
         programs.zed-editor = {
-          inherit
-            (cfg)
-            package
-            userKeymaps
-            userTasks
-            userDebug
-            userSettings
-            extensions
-            ;
-
           enable = true;
 
           mutableUserDebug = false;

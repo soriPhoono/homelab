@@ -3,11 +3,34 @@
   config,
   ...
 }: {
-  userapps.development.agents.opencode.settings.mcp = {
+  programs.opencode.settings.mcp = {
     # DevOps / System
     filesystem = {
       type = "local";
       command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-filesystem" "${config.home.homeDirectory}"];
+    };
+
+    # Development - Knowledge
+    memory = {
+      type = "local";
+      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-memory"];
+    };
+
+    sequential-thinking = {
+      type = "local";
+      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-sequential-thinking"];
+    };
+
+    # Knowledge / Notes
+    obsidian = {
+      type = "local";
+      command = ["${pkgs.nodejs}/bin/npx" "-y" "@bitbonsai/mcpvault@latest" "${config.home.homeDirectory}/Nextcloud/Notes"];
+    };
+
+    # Development - Web2
+    fetch = {
+      type = "local";
+      command = ["${pkgs.uv}/bin/uvx" "mcp-server-fetch"];
     };
 
     # Development - Git
@@ -22,19 +45,6 @@
       headers = {
         Authorization = "Bearer {env:GITHUB_API_KEY}";
       };
-      enabled = true;
-    };
-
-    # Development - Knowledge
-    memory = {
-      type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-memory"];
-    };
-
-    # Development - Web2
-    fetch = {
-      type = "local";
-      command = ["${pkgs.uv}/bin/uvx" "mcp-server-fetch"];
     };
 
     exa = {
@@ -43,7 +53,6 @@
       headers = {
         x-api-key = "{env:EXA_API_KEY}";
       };
-      enabled = true;
     };
 
     # Development - Code Intelligence
@@ -53,18 +62,6 @@
       headers = {
         CONTEXT7_API_KEY = "{env:CONTEXT7_API_KEY}";
       };
-      enabled = true;
-    };
-
-    sequential-thinking = {
-      type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-sequential-thinking"];
-    };
-
-    # Knowledge / Notes
-    obsidian = {
-      type = "local";
-      command = ["${pkgs.nodejs}/bin/npx" "-y" "@bitbonsai/mcpvault@latest" "${config.home.homeDirectory}/Nextcloud/Notes"];
     };
   };
 }

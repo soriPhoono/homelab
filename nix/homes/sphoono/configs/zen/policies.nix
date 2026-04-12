@@ -23,13 +23,6 @@ _: {
       Fingerprinting = true;
     };
 
-    SanitizeOnShutdown = {
-      FormData = true;
-      Cache = true;
-      Cookies = true;
-      History = true;
-    };
-
     Preferences = mkLockedAttrs {
       "browser.aboutConfig.showWarning" = false;
       "browser.tabs.warnOnClose" = false;

@@ -9,8 +9,6 @@ in
     imports = [
       ./zen.nix
       ./firefox.nix
-      ./chrome.nix
-      ./floorp.nix
     ];
 
     options.userapps.desktop.browsers.enable = mkEnableOption "Enable browser component configuration";

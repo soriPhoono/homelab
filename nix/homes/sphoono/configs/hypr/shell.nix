@@ -13,16 +13,8 @@ in
         extra-trusted-public-keys = ["noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="];
       };
 
-      sops = {
-        secrets."api/OPENROUTER_API_KEY" = {};
-        templates."noctalia.env".content = ''
-          NOCTALIA_AP_OPENAI_COMPATIBLE_API_KEY=${config.sops.placeholder."api/OPENROUTER_API_KEY"}
-        '';
-      };
-
       xdg.portal.extraPortals = with pkgs; [
-        xdg-desktop-portal-wlr
-        xdg-desktop-portal-gtk
+        xdg-desktop-portal-gnome
       ];
 
       home.file.".cache/noctalia/wallpapers.json".text = builtins.toJSON {
@@ -50,9 +42,8 @@ in
             };
           in {
             polkit-agent = standardPlugin;
-            assistant-panel = standardPlugin;
             special-workspaces = standardPlugin;
-            pomoduro = standardPlugin;
+            pomodoro = standardPlugin;
             screen-recorder = standardPlugin;
             network-manager-vpn = standardPlugin;
             usb-drive-manager = standardPlugin;
@@ -60,13 +51,6 @@ in
           };
         };
         pluginSettings = {
-          assistant-panel = {
-            ai = {
-              provider = "openai_compatible";
-              openaiBaseUrl = "https://openrouter.ai/api/v1/chat/completions";
-              model = "google/gemini-3-flash-preview";
-            };
-          };
           usb-drive-manager = {
             autoMount = true;
             hideWhenEmpty = true;
@@ -129,7 +113,7 @@ in
             widgets = {
               left = [
                 {
-                  id = "plugin:assistant-panel";
+                  id = "plugin:pomodoro";
                 }
                 {
                   id = "Workspace";
@@ -186,8 +170,7 @@ in
               ];
             };
           };
-          dock.enabled =
-            false;
+          dock.enabled = false;
           notifications = {
             inherit monitors;
           };
@@ -206,6 +189,10 @@ in
         layerrule = [
           "match:namespace noctalia-shell:regionSelector, no_anim on"
           "match:namespace noctalia-background-.*$, ignore_alpha 0.5, blur on, blur_popups on"
+        ];
+
+        exec-once = [
+          "${pkgs.uwsm}/bin/uwsm app -s b -t service -- noctalia-shell"
         ];
 
         bind = [
@@ -239,23 +226,6 @@ in
           ", XF86MonBrightnessDown, exec, noctalia-shell ipc call brightness decrease"
           ", XF86MonBrightnessUp, exec, noctalia-shell ipc call brightness increase"
         ];
-      };
-
-      systemd.user.services.noctalia-shell = {
-        Unit = {
-          Description = "Noctalia Shell";
-          PartOf = ["wayland-session@hyprland.desktop.target"];
-          After = ["wayland-session@hyprland.desktop.target" "wayland-wm@hyprland.desktop.service"];
-          Before = ["wayland-session-shutdown.target"];
-        };
-        Service = {
-          ExecStart = "${config.programs.noctalia-shell.package}/bin/noctalia-shell";
-          EnvironmentFile = config.sops.templates."noctalia.env".path;
-          Restart = "on-failure";
-        };
-        Install = {
-          WantedBy = ["wayland-session@hyprland.desktop.target"];
-        };
       };
     };
   }

@@ -183,7 +183,6 @@ nixos-config/
 {
   imports = [
     ./fish
-    ./neovim
     ./git
   ];
 }

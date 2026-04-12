@@ -86,6 +86,8 @@ with lib; {
       fd.enable = true;
       fzf.enable = true;
       ripgrep.enable = true;
+
+      btop.enable = true;
     };
   };
 }

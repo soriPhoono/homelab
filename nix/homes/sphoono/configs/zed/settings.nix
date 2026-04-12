@@ -1,5 +1,5 @@
 {
-  userapps.development.editors.zed.userSettings = {
+  programs.zed-editor.userSettings = {
     terminal = {
       toolbar.breadcrumbs = true;
       shell = "system";
@@ -39,6 +39,9 @@
       ];
       model_parameters = [];
     };
-    agent_servers.opencode.type = "registry";
+    agent_servers = {
+      gemini.type = "registry";
+      opencode.type = "registry";
+    };
   };
 }
