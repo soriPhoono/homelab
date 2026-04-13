@@ -2,10 +2,9 @@ _: {
   userapps = {
     defaultApplications.enable = true;
     desktop = {
-      file-browser.nautilus.enable = true;
+      file-browser.pcmanfm.enable = true;
       players = {
         mpv.enable = true;
-        audio.rhythmbox.enable = true;
         video.vlc.enable = true;
       };
       browsers.zen.enable = true;

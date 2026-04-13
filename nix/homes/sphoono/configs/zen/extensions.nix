@@ -19,6 +19,7 @@
         bitwarden
         privacy-badger
         decentraleyes
+        metamask
       ];
     };
   };

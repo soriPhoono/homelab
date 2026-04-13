@@ -23,9 +23,12 @@ _: {
       "browser.bookmarks.showMobileBookmarks" = false;
 
       "full-screen-api.warning.timeout" = 0;
+
+      # Required for essential pins to display correctly
+      "zen.window-sync.enabled" = true;
+      "zen.window-sync.sync-only-pinned-tabs" = true;
     };
 
-    # TODO: FIX THIS
     pinsForce = true;
     pins = {
       "Bitwarden" = {
@@ -61,7 +64,7 @@ _: {
       "Remix IDE" = {
         id = "e2f7b6c7-d9f1-5a8c-e0b2-f7d5e4c3b2a9";
         url = "https://remix.ethereum.org";
-        position = 5;
+        position = 6;
         isEssential = true;
       };
     };

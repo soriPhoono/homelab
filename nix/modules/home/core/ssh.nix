@@ -1,91 +1,55 @@
 {
   lib,
   config,
-  options,
   nixosConfig,
+  options,
   ...
-}: let
-  cfg = config.core.ssh;
-in
-  with lib; {
-    options.core.ssh = {
-      publicKey = lib.mkOption {
-        type = with lib.types; nullOr str;
-        default = null;
-        description = "Public SSH key to use for authentication";
-      };
+}:
+with lib; {
+  options.core.ssh.publicKey = lib.mkOption {
+    type = with lib.types; nullOr str;
+    default = null;
+    description = "Public SSH key to use for authentication";
+  };
 
-      extraSSHKeys = mkOption {
-        type = with types; attrsOf str;
-        description = ''
-          An attrset of path on disk/secret in vault containing
-          the private key for this ssh key, will also be appended
-          with .pub for public key
-        '';
-        default = {};
-        example = {
-          "school" = "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-        };
-      };
+  config = let
+    primaryKey = lib.optionalAttrs (config.core.ssh.publicKey != null) {
+      ".ssh/id_ed25519.pub".text = config.core.ssh.publicKey;
     };
 
-    config = let
-      extraKeys =
-        lib.mapAttrs' (name: contents: {
-          name = ".ssh/${name}_key.pub";
-          value.text = contents;
-        })
-        config.core.ssh.extraSSHKeys;
+    primarySecret = lib.optionalAttrs (config.core.ssh.publicKey != null) {
+      "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
+    };
+  in
+    mkIf (options ? sops) {
+      sops.secrets = lib.mkIf config.core.secrets.enable primarySecret;
 
-      primaryKey = lib.optionalAttrs (config.core.ssh.publicKey != null) {
-        ".ssh/id_ed25519.pub".text = config.core.ssh.publicKey;
-      };
+      home.file = primaryKey;
 
-      extraSecrets =
-        lib.mapAttrs' (name: _: {
-          name = "ssh/${name}_key";
-          value.path = "${config.home.homeDirectory}/.ssh/${name}_key";
-        })
-        config.core.ssh.extraSSHKeys;
+      programs.ssh = {
+        enable = true;
+        enableDefaultConfig = false;
 
-      primarySecret = lib.optionalAttrs (config.core.ssh.publicKey != null) {
-        "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
-      };
-    in
-      lib.mkMerge [
-        (lib.optionalAttrs (options ? sops) {
-          sops.secrets = lib.mkIf config.core.secrets.enable (primarySecret // extraSecrets);
-        })
-        {
-          home.file = extraKeys // primaryKey;
-          programs.ssh = {
-            enable = true;
+        matchBlocks = {
+          "*" = {
+            identityFile = [
+              "${config.home.homeDirectory}/.ssh/id_ed25519"
+            ];
 
-            enableDefaultConfig = false;
-
-            matchBlocks = {
-              "*" = {
-                identityFile =
-                  [
-                    "${config.home.homeDirectory}/.ssh/id_ed25519"
-                  ]
-                  ++ (lib.mapAttrsToList (name: _: "${config.home.homeDirectory}/.ssh/${name}_key") cfg.extraSSHKeys);
-
-                forwardAgent = false;
-                addKeysToAgent = "yes";
-                compression = false;
-                serverAliveInterval = 0;
-                serverAliveCountMax = 3;
-                hashKnownHosts = false;
-                userKnownHostsFile = "~/.ssh/known_hosts";
-                controlMaster = "no";
-                controlPath = "~/.ssh/master-%r@%n:%p";
-                controlPersist = "no";
-              };
-            };
+            forwardAgent = false;
+            addKeysToAgent = "yes";
+            compression = false;
+            serverAliveInterval = 0;
+            serverAliveCountMax = 3;
+            hashKnownHosts = false;
+            userKnownHostsFile = "~/.ssh/known_hosts";
+            controlMaster = "no";
+            controlPath = "~/.ssh/master-%r@%n:%p";
+            controlPersist = "no";
           };
+        };
+      };
 
-          services.ssh-agent.enable = !(nixosConfig.programs.ssh.startAgent or false);
-        }
-      ];
-  }
+      services.ssh-agent.enable = !(nixosConfig.programs.ssh.startAgent or false);
+    };
+}

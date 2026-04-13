@@ -8,6 +8,7 @@
 
     boot = {
       enable = true;
+      kernel.packages = pkgs.linuxPackages_zen;
       plymouth = {
         enable = true;
         theme = {
@@ -45,14 +46,14 @@
       bluetooth.enable = true;
     };
 
-    secrets = {
-      enable = true;
-      defaultSopsFile = ./secrets.yml;
-    };
-
     networking = {
       network-manager.enable = true;
       tailscale.enable = true;
+    };
+
+    secrets = {
+      enable = true;
+      defaultSopsFile = ./secrets.yml;
     };
 
     users = {
@@ -83,16 +84,15 @@
       };
       managers.hyprland.enable = true;
     };
+    services.asusd.enable = true;
     features = {
       printing.enable = true;
-      virtualisation = {
-        enableVirtualBox = true;
-      };
+      virtualisation.enableVirtualBox = true;
       gaming.enable = true;
     };
-    services.asusd.enable = true;
-    tools.partition-manager.enable = true;
+    tools = {
+      docker.enable = true;
+      partition-manager.enable = true;
+    };
   };
-
-  hosting.docker.enable = true;
 }

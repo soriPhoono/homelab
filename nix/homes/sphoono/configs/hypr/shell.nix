@@ -13,10 +13,6 @@ in
         extra-trusted-public-keys = ["noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="];
       };
 
-      xdg.portal.extraPortals = with pkgs; [
-        xdg-desktop-portal-gnome
-      ];
-
       home.file.".cache/noctalia/wallpapers.json".text = builtins.toJSON {
         defaultWallpaper = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers/default.png";
       };

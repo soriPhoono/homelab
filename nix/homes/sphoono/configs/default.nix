@@ -3,8 +3,10 @@
     ./hypr
     ./zen
     ./gemini
-    ./opencode
     ./vscode
-    ./zed
+
+    # Future implementation when web3 feedback loop is finished
+    # ./opencode
+    # ./zed
   ];
 }

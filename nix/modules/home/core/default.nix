@@ -23,8 +23,11 @@
     enable = true;
     userDirs = {
       enable = true;
-      createDirectories = true;
-      setSessionVariables = true;
+      createDirectories = lib.mkDefault (
+        if nixosConfig != null
+        then nixosConfig.desktop.enable
+        else false
+      );
     };
   };
 

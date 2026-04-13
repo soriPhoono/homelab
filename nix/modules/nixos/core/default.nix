@@ -32,6 +32,7 @@ in {
       wget
 
       pciutils
+      usbutils
     ];
 
     hardware.enableAllFirmware = true;

@@ -1,4 +1,4 @@
-# TODO: finish fixes here
+# TODO: finish implementing mcp servers for antigravity to comply with immutable extension dirs
 {
   lib,
   pkgs,
@@ -19,10 +19,6 @@ in
 
       priority = mkOption {
         type = types.int;
-        # NOTE: Lower priority than terminal editors
-        #   by default, zed still gets priority given
-        #   it's advanced features in combination with
-        #   it's light weight nature.
         default = 40;
         description = "Priority for being the default editor. Lower is higher priority.";
       };
@@ -58,6 +54,7 @@ in
       programs.vscode = {
         enable = true;
         inherit (cfg) package;
+        mutableExtensionsDir = false;
 
         profiles.default = {
           inherit (cfg) extensions userSettings;

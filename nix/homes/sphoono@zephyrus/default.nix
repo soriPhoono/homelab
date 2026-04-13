@@ -1,6 +1,5 @@
-{config, ...}: {
+{
   imports = [
-    ./theme.nix
     ./hypr.nix
     ./userapps.nix
   ];
@@ -19,7 +18,6 @@
     };
 
     shells = {
-      fish.generateCompletions = true;
       starship.enable = true;
       fastfetch.enable = true;
       shellAliases = {
@@ -29,12 +27,6 @@
       };
     };
 
-    apps = {
-      yazi.enable = true;
-      git = {
-        enable = true;
-        projectsDir = "${config.home.homeDirectory}/Documents/Projects/";
-      };
-    };
+    apps.git.enable = true;
   };
 }

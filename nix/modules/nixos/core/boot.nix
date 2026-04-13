@@ -52,12 +52,9 @@ in
 
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
-        security = {
-          sudo.wheelNeedsPassword = lib.mkDefault false;
-          tpm2 = {
-            enable = true;
-            pkcs11.enable = true; # NOTE: Required for things like secure boot and TPM-backed TOTP
-          };
+        security.tpm2 = {
+          enable = true;
+          pkcs11.enable = true;
         };
 
         boot = {

@@ -50,6 +50,8 @@ in
     };
 
     config = mkIf cfg.enable {
+      stylix.targets.zen-browser.enable = false;
+
       home.sessionVariables.BROWSER = "zen-twilight";
 
       userapps.desktop.browsers.enable = true;
@@ -71,7 +73,5 @@ in
         cfg.extraConfig
         {profiles = cfg.profileConfig;}
       );
-
-      stylix.targets.zen-browser.profileNames = builtins.attrNames cfg.profileConfig;
     };
   }

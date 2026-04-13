@@ -50,12 +50,6 @@ with lib; {
       grep = "${config.programs.ripgrep.package}/bin/rg";
 
       df = "${pkgs.duf}/bin/duf";
-
-      # Note: Go back to btop for invokeable,
-      # have this running in mcp server mode w/ browser
-      # for network connections of ai agents to
-      # monitor systems in homelab
-      monitor = "${config.programs.btop.package}/bin/btop";
     };
 
     programs = {

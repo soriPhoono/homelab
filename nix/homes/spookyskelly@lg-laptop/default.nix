@@ -3,7 +3,6 @@
     secrets.enable = true;
 
     shells = {
-      fish.generateCompletions = true;
       starship.enable = true;
       fastfetch.enable = true;
     };

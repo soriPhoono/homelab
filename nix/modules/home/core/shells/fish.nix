@@ -9,13 +9,11 @@ in
   with lib; {
     options.core.shells.fish = {
       enable = mkEnableOption "Enable the fish shell";
-
-      generateCompletions = mkEnableOption "Generate completions for fish";
     };
 
     config = mkIf cfg.enable {
       programs.fish = {
-        inherit (cfg) enable generateCompletions;
+        enable = true;
 
         inherit (config.core.shells) shellAliases;
 

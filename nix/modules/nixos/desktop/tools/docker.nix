@@ -4,16 +4,22 @@
   config,
   ...
 }: let
-  cfg = config.hosting.docker;
+  cfg = config.desktop.tools.docker;
 in
   with lib; {
-    options.hosting.docker = {
+    options.desktop.tools.docker = {
       enable = mkEnableOption "Enable docker container hosting";
 
       extraSettings = lib.mkOption {
         type = lib.types.attrsOf lib.types.anything;
         default = {};
         description = "Extra settings for docker backend";
+      };
+
+      networks = mkOption {
+        type = with types; listOf str;
+        default = [];
+        description = "List of Docker networks to automatically create. This is outside of what is mentioned in the oci-containers entries.";
       };
 
       plugins = lib.mkOption {
@@ -36,12 +42,6 @@ in
         });
         default = [];
         description = "List of Docker plugins to automatically install and enable.";
-      };
-
-      networks = mkOption {
-        type = with types; listOf str;
-        default = [];
-        description = "List of Docker networks to automatically create. This is outside of what is mentioned in the oci-containers entries.";
       };
     };
 

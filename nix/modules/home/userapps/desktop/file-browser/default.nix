@@ -1,6 +1,5 @@
 {
   imports = [
-    ./dolphin.nix
-    ./nautilus.nix
+    ./pcmanfm.nix
   ];
 }
