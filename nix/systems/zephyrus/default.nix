@@ -87,7 +87,7 @@
     services.asusd.enable = true;
     features = {
       printing.enable = true;
-      virtualisation.enableVirtualBox = true;
+      virtualisation.enableVirtManager = true;
       gaming.enable = true;
     };
     tools = {

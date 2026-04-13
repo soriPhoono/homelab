@@ -24,7 +24,6 @@ _: {
 
       "full-screen-api.warning.timeout" = 0;
 
-      # Required for essential pins to display correctly
       "zen.window-sync.enabled" = true;
       "zen.window-sync.sync-only-pinned-tabs" = true;
     };
