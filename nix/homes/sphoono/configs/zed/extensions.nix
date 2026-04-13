@@ -12,17 +12,11 @@
     "svelte" # Svelte framework
     "tailwindcss" # Tailwind CSS framework
 
-    # Web3 Development
-    "tailwindcss" # Used in Web3 dapps too
-
     # DevOps
     "terraform" # Terraform IaC syntax
     "ansible" # Ansible playbooks
     "helm" # Helm charts (K8s package manager)
     "kubernetes" # Kubernetes manifests
-
-    # Firmware
-    "arduino" # Arduino firmware development
 
     # Languages
     "nix"

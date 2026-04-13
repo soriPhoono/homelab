@@ -71,5 +71,7 @@ in
         cfg.extraConfig
         {profiles = cfg.profileConfig;}
       );
+
+      stylix.targets.zen-browser.profileNames = builtins.attrNames cfg.profileConfig;
     };
   }

@@ -1,6 +1,11 @@
 {
   "nix.serverSettings": {
     "nixd": {
+      "formatting": {
+        "command": [
+          "alejandra"
+        ]
+      },
       "nixpkgs": {
         "expr": "import (builtins.getFlake (builtins.toString ./.)).inputs.nixpkgs { }"
       },
