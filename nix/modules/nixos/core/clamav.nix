@@ -14,10 +14,6 @@ in {
       type = with types; listOf str;
       default = [
         "/home"
-        "/root"
-        "/tmp"
-        "/etc"
-        "/var/lib"
       ];
       description = "Directories to scan periodically with the ClamAV scanner.";
       example = ["/home" "/srv"];

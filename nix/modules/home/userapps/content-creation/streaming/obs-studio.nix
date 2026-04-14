@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.content-creation.obs-studio;
+  cfg = config.userapps.content-creation.streaming.obs-studio;
 in
   with lib; {
-    options.userapps.content-creation.obs-studio = {
+    options.userapps.content-creation.streaming.obs-studio = {
       enable = mkEnableOption "Enable obs-studio streaming software";
 
       package = mkOption {

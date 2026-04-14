@@ -2,7 +2,10 @@ _: {
   userapps = {
     defaultApplications.enable = true;
     desktop = {
-      file-browser.pcmanfm.enable = true;
+      file-browser = {
+        plugins.drive.enable = true;
+        pcmanfm.enable = true;
+      };
       players = {
         mpv.enable = true;
         video.vlc.enable = true;
@@ -32,11 +35,19 @@ _: {
       qbittorrent.enable = true;
     };
     content-creation = {
-      audacity.enable = true;
-      gimp.enable = true;
-      blender.enable = true;
-      obs-studio.enable = true;
-      kdenlive.enable = true;
+      asset-creation = {
+        krita.enable = true;
+        gimp.enable = true;
+        inkscape.enable = true;
+        blender.enable = true;
+      };
+      editors = {
+        audacity.enable = true;
+        kdenlive.enable = true;
+      };
+      streaming = {
+        obs-studio.enable = true;
+      };
     };
   };
 }

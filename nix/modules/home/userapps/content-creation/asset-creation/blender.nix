@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.content-creation.blender;
+  cfg = config.userapps.content-creation.asset-creation.blender;
 in
   with lib; {
-    options.userapps.content-creation.blender = {
+    options.userapps.content-creation.asset-creation.blender = {
       enable = mkEnableOption "Enable blender 3D modeling software";
     };
 

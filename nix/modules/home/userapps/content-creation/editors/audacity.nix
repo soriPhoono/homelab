@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.content-creation.audacity;
+  cfg = config.userapps.content-creation.editors.audacity;
 in
   with lib; {
-    options.userapps.content-creation.audacity = {
+    options.userapps.content-creation.editors.audacity = {
       enable = mkEnableOption "Enable Audacity audio editor";
     };
 

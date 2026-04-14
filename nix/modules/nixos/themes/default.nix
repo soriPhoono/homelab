@@ -10,6 +10,7 @@ in
     options.themes = {
       enable = mkEnableOption "themes";
     };
+
     config = mkIf cfg.enable {
       stylix = {
         enable = true;

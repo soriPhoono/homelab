@@ -1,5 +1,7 @@
 {
   imports = [
+    ./plugins
+
     ./pcmanfm.nix
   ];
 }
