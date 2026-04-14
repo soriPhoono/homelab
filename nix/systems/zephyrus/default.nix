@@ -87,12 +87,12 @@
     services.asusd.enable = true;
     features = {
       printing.enable = true;
-      virtualisation.enableVirtManager = true;
+      virtualisation.enable = true;
       gaming.enable = true;
     };
     tools = {
-      docker.enable = true;
       partition-manager.enable = true;
+      docker.enable = true;
     };
   };
 }
