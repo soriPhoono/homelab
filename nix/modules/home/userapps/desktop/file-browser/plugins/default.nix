@@ -1,5 +1,5 @@
 {
   imports = [
-    ./drive.nix
+    ./gdrive.nix
   ];
 }

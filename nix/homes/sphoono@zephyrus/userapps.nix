@@ -3,7 +3,7 @@ _: {
     defaultApplications.enable = true;
     desktop = {
       file-browser = {
-        plugins.drive.enable = true;
+        plugins.gdrive.enable = true;
         pcmanfm.enable = true;
       };
       players = {
