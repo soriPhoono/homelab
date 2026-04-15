@@ -1,3 +1,4 @@
+# TODO: fix secrets handling, can't bake secrets into package when it can simply be placed in the configuration file
 {
   lib,
   pkgs,
@@ -59,7 +60,10 @@ in
         sops.secrets = genAttrs cfg.secrets (_: {});
 
         programs.zed-editor.package = mkForce (pkgs.symlinkJoin {
-          name = "zed-editor-wrapped";
+          pname = cfg.package.pname or "zed";
+          version = cfg.package.version or "latest";
+          name = "${cfg.package.name or "zed-editor"}-with-secrets";
+
           paths = [cfg.package];
           buildInputs = [pkgs.makeWrapper];
           postBuild = ''
