@@ -9,15 +9,7 @@
     boot = {
       enable = true;
       kernel.packages = pkgs.linuxPackages_zen;
-      plymouth = {
-        enable = true;
-        theme = {
-          name = "cross_hud";
-          package = pkgs.adi1090x-plymouth-themes.override {
-            selected_themes = ["cross_hud"];
-          };
-        };
-      };
+      plymouth.enable = true;
     };
 
     hardware = {

@@ -7,7 +7,9 @@ _: {
         pcmanfm.enable = true;
       };
       players = {
+        imv.enable = true;
         mpv.enable = true;
+        audio.strawberry.enable = true;
         video.vlc.enable = true;
       };
       browsers.zen.enable = true;
@@ -18,7 +20,8 @@ _: {
         matrix.enable = true;
       };
       office = {
-        onlyoffice.enable = true;
+        zathura.enable = true;
+        libreoffice.enable = true;
         slack.enable = true;
       };
     };

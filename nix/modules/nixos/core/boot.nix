@@ -29,7 +29,7 @@ in
         enable = lib.mkEnableOption "Enable plymouth boot splash screen";
         theme = mkOption {
           type = with types;
-            submodule {
+            nullOr (submodule {
               options = {
                 name = mkOption {
                   type = str;
@@ -40,7 +40,7 @@ in
                   default = pkgs.nixos-bgrt-plymouth;
                 };
               };
-            };
+            });
           default = null;
           description = "Plymouth theme to use";
         };

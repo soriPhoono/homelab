@@ -4,11 +4,11 @@
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.players.audio.rhythmbox;
+  cfg = config.userapps.desktop.players.audio.strawberry;
 in
   with lib; {
-    options.userapps.desktop.players.audio.rhythmbox = {
-      enable = mkEnableOption "Rhythmbox, the GNOME audio player";
+    options.userapps.desktop.players.audio.strawberry = {
+      enable = mkEnableOption "strawberry";
 
       priority = mkOption {
         type = types.int;
@@ -18,10 +18,10 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.packages = [pkgs.rhythmbox];
+      home.packages = [pkgs.strawberry];
 
       xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-        audioPlayer = ["rhythmbox.desktop"];
+        audioPlayer = ["org.strawberrymusicplayer.strawberry.desktop"];
       in
         mkOverride cfg.priority {
           "audio/flac" = audioPlayer;
