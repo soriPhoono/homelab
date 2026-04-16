@@ -41,9 +41,11 @@ in
             user = {
               name = cfg.userName;
               email =
-                if (config.accounts.email.accounts ? "git")
+                if (builtins.hasAttr "git" config.accounts.email.accounts)
                 then config.accounts.email.accounts.git.address
-                else config.accounts.email.accounts.primary.address;
+                else if (builtins.hasAttr "primary" config.accounts.email.accounts)
+                then config.accounts.email.accounts.primary.address
+                else "";
             };
 
             init.defaultBranch = "main";
