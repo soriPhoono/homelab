@@ -165,6 +165,7 @@
             {
               home = {
                 inherit username;
+                homeDirectory = lib.mkDefault (if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}");
               };
             }
           ]
