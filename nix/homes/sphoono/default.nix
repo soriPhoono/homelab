@@ -16,6 +16,16 @@
       gpl = "git pull";
     };
 
+    email = {
+      enable = true;
+      accounts = {
+        personal = {
+          address = "soriphoono@gmail.com";
+          primary = true;
+        };
+      };
+    };
+
     secrets.defaultSopsFile = ./secrets.yml;
 
     apps.git = {

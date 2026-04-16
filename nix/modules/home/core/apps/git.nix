@@ -45,7 +45,7 @@ in
                 then config.accounts.email.accounts.git.address
                 else if (builtins.hasAttr "primary" config.accounts.email.accounts)
                 then config.accounts.email.accounts.primary.address
-                else "";
+                else throw "No email address found for user ${cfg.userName}";
             };
 
             init.defaultBranch = "main";
