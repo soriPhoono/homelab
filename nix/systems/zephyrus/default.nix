@@ -96,5 +96,8 @@
     };
   };
 
-  themes.enable = true;
+  themes = {
+    enable = true;
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+  };
 }

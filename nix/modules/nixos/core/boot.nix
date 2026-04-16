@@ -41,10 +41,7 @@ in
                 };
               };
             };
-          default = {
-            name = "nixos-bgrt";
-            package = pkgs.nixos-bgrt-plymouth;
-          };
+          default = null;
           description = "Plymouth theme to use";
         };
       };
@@ -95,10 +92,8 @@ in
           plymouth = {
             inherit (cfg.plymouth) enable;
 
-            theme = cfg.plymouth.theme.name;
-            themePackages = [
-              cfg.plymouth.theme.package
-            ];
+            theme = lib.mkIf (cfg.plymouth.theme != null) (lib.mkForce cfg.plymouth.theme.name);
+            themePackages = lib.mkIf (cfg.plymouth.theme != null) (lib.mkForce [cfg.plymouth.theme.package]);
           };
         };
 
