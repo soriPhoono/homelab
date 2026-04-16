@@ -74,6 +74,16 @@ in
 
           consoleLogLevel = 0;
 
+          supportedFilesystems = [
+            # Linux
+            "ext4"
+            "btrfs"
+            # Windows
+            "ntfs"
+            # Apple
+            "apfs"
+          ];
+
           loader = {
             efi.canTouchEfiVariables = true;
             systemd-boot = {

@@ -95,4 +95,6 @@
       docker.enable = true;
     };
   };
+
+  themes.enable = true;
 }
