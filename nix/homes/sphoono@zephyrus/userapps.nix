@@ -32,10 +32,10 @@ _: {
       editors.vscode.enable = true;
     };
     data-fortress = {
-      nextcloud.enable = true;
-      bitwarden.enable = true;
-      obsidian.enable = true;
-      qbittorrent.enable = true;
+      cloud.nextcloud.enable = true;
+      auth.bitwarden.enable = true;
+      notes.obsidian.enable = true;
+      p2p.qbittorrent.enable = true;
     };
     content-creation = {
       asset-creation = {

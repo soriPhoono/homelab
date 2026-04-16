@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.data-fortress.qbittorrent;
+  cfg = config.userapps.data-fortress.p2p.qbittorrent;
 in
   with lib; {
-    options.userapps.data-fortress.qbittorrent = {
+    options.userapps.data-fortress.p2p.qbittorrent = {
       enable = mkOption {
         type = types.bool;
         default = false;

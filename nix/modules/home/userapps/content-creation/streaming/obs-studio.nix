@@ -34,6 +34,7 @@ in
 
             # Capture methods
             obs-pipewire-audio-capture # Pipewire audio capture
+            wlrobs # Wayland screen capture
             obs-vkcapture # Vulkan
             input-overlay # Gamepad overlay
 

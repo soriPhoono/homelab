@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.data-fortress.grayjay;
+  cfg = config.userapps.data-fortress.media.grayjay;
 in
   with lib; {
-    options.userapps.data-fortress.grayjay = {
+    options.userapps.data-fortress.media.grayjay = {
       enable = mkEnableOption "Enable Grayjay media alternative UI";
     };
 

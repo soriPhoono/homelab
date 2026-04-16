@@ -4,10 +4,10 @@
   config,
   ...
 }: let
-  cfg = config.userapps.data-fortress.obsidian;
+  cfg = config.userapps.data-fortress.notes.obsidian;
 in
   with lib; {
-    options.userapps.data-fortress.obsidian = {
+    options.userapps.data-fortress.notes.obsidian = {
       enable = mkEnableOption "Enable Obsidian note-taking application";
 
       package = mkOption {
