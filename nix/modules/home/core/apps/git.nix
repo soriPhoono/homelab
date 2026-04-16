@@ -43,7 +43,7 @@ in
               email =
                 if (config.accounts.email.accounts ? "git")
                 then config.accounts.email.accounts.git.address
-                else config.accounts.email.accounts.primary.address;
+                else if (config.accounts.email.accounts ? "primary") then config.accounts.email.accounts.primary.address else "";
             };
 
             init.defaultBranch = "main";
