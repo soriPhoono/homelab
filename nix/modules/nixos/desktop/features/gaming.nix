@@ -37,7 +37,6 @@ in {
         lutris # Linux gaming platform
 
         mangohud # Overlay for monitoring
-        proton-ge-bin # Proton GE for gaming
       ]
       ++ lib.optional cfg.wivrn.enable sidequest;
 
@@ -51,7 +50,7 @@ in {
 
     programs = {
       gamemode.enable = true;
-      gamescope.enable = lib.mkDefault cfg.gamescope.enable;
+      gamescope.enable = true;
 
       steam = {
         enable = true;
