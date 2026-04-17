@@ -71,10 +71,6 @@ in {
         extraCompatPackages = with pkgs; [
           proton-ge-bin
         ];
-
-        extraPackages = with pkgs; [
-          mangohud
-        ];
       };
     };
 
