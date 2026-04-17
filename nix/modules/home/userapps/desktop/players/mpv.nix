@@ -22,20 +22,20 @@ in
         videoPlayer = ["mpv.desktop"];
       in
         mkOverride cfg.priority {
-          "audio/flac" = audioPlayer;
-          "audio/mp3" = audioPlayer;
-          "audio/mpeg" = audioPlayer;
-          "audio/ogg" = audioPlayer;
-          "audio/vorbis" = audioPlayer;
-          "audio/x-flac" = audioPlayer;
-          "audio/x-mp3" = audioPlayer;
-          "audio/x-vorbis+ogg" = audioPlayer;
-          "audio/wav" = audioPlayer;
-          "audio/x-wav" = audioPlayer;
-          "audio/aac" = audioPlayer;
-          "audio/x-aac" = audioPlayer;
-          "audio/m4a" = audioPlayer;
-          "audio/x-m4a" = audioPlayer;
+          "audio/flac" = videoPlayer;
+          "audio/mp3" = videoPlayer;
+          "audio/mpeg" = videoPlayer;
+          "audio/ogg" = videoPlayer;
+          "audio/vorbis" = videoPlayer;
+          "audio/x-flac" = videoPlayer;
+          "audio/x-mp3" = videoPlayer;
+          "audio/x-vorbis+ogg" = videoPlayer;
+          "audio/wav" = videoPlayer;
+          "audio/x-wav" = videoPlayer;
+          "audio/aac" = videoPlayer;
+          "audio/x-aac" = videoPlayer;
+          "audio/m4a" = videoPlayer;
+          "audio/x-m4a" = videoPlayer;
 
           "video/webm" = videoPlayer;
           "video/x-matroska" = videoPlayer;

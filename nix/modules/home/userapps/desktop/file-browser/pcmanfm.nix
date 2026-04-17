@@ -14,7 +14,7 @@ in
     config = mkIf cfg.enable {
       home.sessionVariables.FILE_BROWSER = "pcmanfm";
 
-      xdg.mimeApps.defaultApplications = mkIf config.userapps.defaultApplications {
+      xdg.mimeApps.defaultApplications = mkIf config.userapps.defaultApplications.enable {
         "inode/directory" = ["pcmanfm.desktop"];
       };
 

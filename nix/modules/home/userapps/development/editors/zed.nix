@@ -39,7 +39,7 @@ in
         };
 
         xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-          editor = ["${lib.getExe cfg.package}.desktop"];
+          editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
         in
           mkOverride cfg.priority {
             "text/plain" = editor;
