@@ -50,6 +50,8 @@ in
           usb-drive-manager = {
             autoMount = true;
             hideWhenEmpty = true;
+            fileBrowser = "xdg-open";
+            terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
           };
           tailscale = {
             showPeerCount = false;
@@ -83,12 +85,11 @@ in
             lockScreenTint = 0.5;
             passwordChars = true;
           };
-          idle.enabled =
-            true;
+          idle.enabled = true;
           location = {
             name = "Denton, TX";
             useFahrenheit = true;
-            use12HourFormat = true;
+            use12hourFormat = true;
           };
           network = {
             bluetoothHideUnnamedDevices = true;

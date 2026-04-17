@@ -10,6 +10,7 @@ in
       ./agents
       ./editors
       ./terminal
+      ./inference
     ];
 
     options.userapps.development = {

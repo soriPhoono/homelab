@@ -5,5 +5,7 @@
     ./browsers
     ./communication
     ./office
+    ./virtualization
+    ./tools
   ];
 }

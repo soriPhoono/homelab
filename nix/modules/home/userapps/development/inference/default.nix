@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./lmstudio.nix
+  ];
+}

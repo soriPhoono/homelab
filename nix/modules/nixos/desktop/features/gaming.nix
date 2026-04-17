@@ -8,23 +8,66 @@
 in {
   options.desktop.features.gaming = {
     enable = lib.mkEnableOption "Enable steam integration";
+    wivrn.enable = lib.mkEnableOption "Enable WiVRn OpenXR streaming server";
+
+    gamescope = {
+      enable = lib.mkEnableOption "Enable Steam Gamescope session";
+      width = lib.mkOption {
+        type = lib.types.int;
+        default = 1920;
+        description = "Width of the gamescope session";
+      };
+      height = lib.mkOption {
+        type = lib.types.int;
+        default = 1080;
+        description = "Height of the gamescope session";
+      };
+      refreshRate = lib.mkOption {
+        type = lib.types.int;
+        default = 60;
+        description = "Refresh rate of the gamescope session";
+      };
+    };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      moonlight-qt # Cloud streaming
+    environment.systemPackages = with pkgs;
+      [
+        moonlight-qt # Cloud streaming
+        lutris # Linux gaming platform
 
-      lutris # Linux gaming platform
-    ];
+        mangohud # Overlay for monitoring
+        proton-ge-bin # Proton GE for gaming
+      ]
+      ++ lib.optional cfg.wivrn.enable sidequest;
+
+    services.wivrn = lib.mkIf cfg.wivrn.enable {
+      enable = true;
+      openFirewall = true;
+      autoStart = true;
+      highPriority = true;
+      steam.importOXRRuntimes = true;
+    };
 
     programs = {
       gamemode.enable = true;
+      gamescope.enable = lib.mkDefault cfg.gamescope.enable;
 
       steam = {
         enable = true;
 
         extest.enable = true;
         protontricks.enable = true;
+
+        gamescopeSession = lib.mkIf cfg.gamescope.enable {
+          enable = true;
+          args = [
+            "-W ${toString cfg.gamescope.width}"
+            "-H ${toString cfg.gamescope.height}"
+            "-r ${toString cfg.gamescope.refreshRate}"
+            "-f"
+          ];
+        };
 
         extraCompatPackages = with pkgs; [
           proton-ge-bin

@@ -45,7 +45,7 @@ This is the actual error checking command, be sure to run this in a loop until
 no errors are reported.
 
 ```bash
-nix flake check --all-systems --show-trace
+nix fmt && nix flake check --all-systems --show-trace
 ```
 
 - **Does this report any errors**: Prompt the user if they would like this
@@ -54,25 +54,5 @@ nix flake check --all-systems --show-trace
   scope of the initial discussion. If the
   user declines, exit this skill loop,
   and return control to the user.
-- **Does this not report any errors at all**: Proceed to step 4
-
-### Step 4: Formatting before final verification
-
-This repository is formatted via the treefmt flake-parts module with
-configuration located in the repo root, in a file called treefmt.nix.
-It is vital this project remain human readable at all times to ensure best
-practices in an agent/human development loop. Please be sure this project is
-formatted completely by running this step once to keep compliance.
-
-```bash
-nix fmt
-```
-
-### Step 5: Final check
-
-Before actually finishing, verify:
-
-- [ ] That there actually are no more errors left in this project
-  - [ ] Run step 3 exactly once more to evaluate the project for the final
-    time. If you come across an error that remains after 3 iterations of
-    this final check, defer to the user for assistance.
+- **Does this not report any errors at all**: Exit this skill loop,
+  and return control to the user.

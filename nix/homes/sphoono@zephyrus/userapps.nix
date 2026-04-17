@@ -13,6 +13,7 @@ _: {
         video.vlc.enable = true;
       };
       browsers.zen.enable = true;
+      tools.easyeffects.enable = true;
       communication = {
         discord.enable = true;
         telegram.enable = true;
@@ -24,12 +25,21 @@ _: {
         libreoffice.enable = true;
         slack.enable = true;
       };
+      virtualization = {
+        distrobox.enable = true;
+        bottles.enable = true;
+      };
     };
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      agents.gemini.enable = true;
       editors.vscode.enable = true;
+      inference.lmstudio.enable = true;
+      agents = {
+        backend.ollama.enable = true;
+        opencode.enable = true;
+        gemini.enable = true;
+      };
     };
     data-fortress = {
       cloud.nextcloud.enable = true;
@@ -48,9 +58,7 @@ _: {
         audacity.enable = true;
         kdenlive.enable = true;
       };
-      streaming = {
-        obs-studio.enable = true;
-      };
+      streaming.obs-studio.enable = true;
     };
   };
 }
