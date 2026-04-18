@@ -89,7 +89,6 @@
     nixpkgs,
     flake-parts,
     nur,
-    agenix,
     ...
   }: let
     readMeta = dir:
@@ -122,14 +121,14 @@
 
     nixosModules = with inputs; [
       self.nixosModules.default
-      home-manager.nixosModules.home-manager
       nixos-facter-modules.nixosModules.facter
       disko.nixosModules.disko
       determinate.nixosModules.default
-      sops-nix.nixosModules.sops
       comin.nixosModules.comin
-      nix-index-database.nixosModules.nix-index
+      sops-nix.nixosModules.sops
       stylix.nixosModules.stylix
+      nix-index-database.nixosModules.nix-index
+      home-manager.nixosModules.home-manager
     ];
 
     # --- System Builders --- #
@@ -236,11 +235,6 @@
         _module.args.pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
-          overlays = [
-            (_: _: {
-              agenix = agenix.packages.${system}.default;
-            })
-          ];
         };
 
         devShells.default = import ./shell.nix {
@@ -251,9 +245,7 @@
         };
 
         # --- Configuration Builders --- #
-
         githubActions = import ./actions.nix {inherit self lib;};
-
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
       };
@@ -304,6 +296,14 @@
               lib.mapAttrsToList processHomeDir homesContent
             )
           );
+      };
+
+      # TODO: Replace this with internal discover logic for scalability
+      templates = {
+        empty = {
+          path = ./nix/templates/empty;
+          description = "An empty NixOS configuration.";
+        };
       };
     };
 }

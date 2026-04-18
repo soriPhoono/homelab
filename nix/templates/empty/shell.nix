@@ -6,21 +6,13 @@
 }:
 with pkgs;
   mkShell {
-    packages =
-      [
-        nixd
-        alejandra
-        vulnix
+    packages = [
+      nixd
+      alejandra
 
-        age
-        agenix-cli
-        sops
-        ssh-to-age
-      ]
-      ++ lib.optional stdenv.isLinux [
-        disko
-        nixos-facter
-      ];
+      # age
+      # agenix-cli
+    ];
 
     shellHook = ''
       source ${config.agenix-shell.installationScript}/bin/install-agenix-shell
