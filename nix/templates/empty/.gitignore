@@ -1,7 +1,0 @@
-.direnv/
-
-result
-.pre-commit-config.yaml
-
-.gemini/
-gha-creds-*.json
