@@ -1,5 +1,5 @@
 {
-  description = "";
+  description = "Empty flake template";
 
   inputs = {
     systems.url = "github:nix-systems/default";
