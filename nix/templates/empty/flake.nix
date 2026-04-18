@@ -25,7 +25,6 @@
   };
 
   outputs = inputs @ {
-    self,
     flake-parts,
     nixpkgs,
     ...
@@ -65,12 +64,11 @@
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
-            inherit (config) pre-commit agenix-shell githubActions;
+            inherit (config) pre-commit agenix-shell;
           };
         };
 
         # --- Configuration Builders --- #
-        githubActions = import ./actions.nix {inherit self lib;};
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
       };
