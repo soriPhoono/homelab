@@ -2,6 +2,7 @@
   description = "A system flake for my homelab and personal devices";
 
   inputs = {
+    templates.url = "github:soriPhoono/templates";
     systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -296,14 +297,6 @@
               lib.mapAttrsToList processHomeDir homesContent
             )
           );
-
-        # TODO: Replace this with internal discover logic for scalability
-        templates = {
-          empty = {
-            path = ./nix/templates/empty;
-            description = "An empty NixOS configuration.";
-          };
-        };
       };
     };
 }
