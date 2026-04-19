@@ -32,13 +32,29 @@ in
       (mkIf cfg.integrated.enable {
         hardware.amdgpu.initrd.enable = true;
 
+        hardware.graphics.extraPackages = with pkgs; [
+          libvdpau-va-gl
+        ];
+
+        hardware.graphics.extraPackages32 = with pkgs; [
+          driversi686Linux.libvdpau-va-gl
+        ];
+
         environment.variables = {
           LIBVA_DRIVER_NAME = "radeonsi";
-          VDPAU_DRIVER = "radeonsi";
+          VDPAU_DRIVER = "va_gl";
         };
       })
       (mkIf cfg.dedicated.enable {
         hardware.amdgpu.opencl.enable = true;
+
+        hardware.graphics.extraPackages = mkIf config.core.hardware.gpu.dedicated.hardwareAcceleration.enable (with pkgs; [
+          libvdpau-va-gl
+        ]);
+
+        hardware.graphics.extraPackages32 = mkIf config.core.hardware.gpu.dedicated.hardwareAcceleration.enable (with pkgs; [
+          driversi686Linux.libvdpau-va-gl
+        ]);
 
         systemd.tmpfiles.rules = [
           "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"

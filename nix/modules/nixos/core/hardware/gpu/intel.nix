@@ -60,6 +60,15 @@ in
         };
       })
       (mkIf cfg.dedicated.enable {
-        })
+        hardware.graphics.extraPackages = mkIf config.core.hardware.gpu.dedicated.hardwareAcceleration.enable (with pkgs; [
+          intel-media-driver
+          libvdpau-va-gl
+        ]);
+
+        hardware.graphics.extraPackages32 = mkIf config.core.hardware.gpu.dedicated.hardwareAcceleration.enable (with pkgs; [
+          driversi686Linux.intel-media-driver
+          driversi686Linux.libvdpau-va-gl
+        ]);
+      })
     ]);
   }

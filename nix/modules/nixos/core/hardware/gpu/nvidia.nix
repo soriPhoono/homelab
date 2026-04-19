@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -40,6 +41,16 @@ in
             nvidiaBusId = "PCI:1@0:0:0";
           };
         };
+
+        hardware.graphics.extraPackages = mkIf config.core.hardware.gpu.dedicated.hardwareAcceleration.enable (with pkgs; [
+          nvidia-vaapi-driver
+          libvdpau-va-gl
+        ]);
+
+        hardware.graphics.extraPackages32 = mkIf config.core.hardware.gpu.dedicated.hardwareAcceleration.enable (with pkgs; [
+          driversi686Linux.nvidia-vaapi-driver
+          driversi686Linux.libvdpau-va-gl
+        ]);
       }
       (mkIf (cfg.mode == "desktop") {
         hardware.nvidia.prime = mkIf config.hardware.nvidia.modesetting.enable {
