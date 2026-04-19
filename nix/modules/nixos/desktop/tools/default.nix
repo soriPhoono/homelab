@@ -1,7 +1,7 @@
 {
   imports = [
     ./appimage.nix
-    ./docker.nix
     ./partition-manager.nix
+    ./docker.nix
   ];
 }

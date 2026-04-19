@@ -10,6 +10,13 @@
       size = 24;
     };
 
+    icons = {
+      enable = true;
+      package = pkgs.papirus-icon-theme;
+      light = "Papirus";
+      dark = "Papirus-Dark";
+    };
+
     fonts = let
       serif = {
         package = pkgs.nerd-fonts.sauce-code-pro;
