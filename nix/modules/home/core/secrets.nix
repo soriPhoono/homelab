@@ -47,7 +47,7 @@ in {
       # Use the centrally defined age key file
       age.keyFile = cfg.ageKeyFile;
 
-      secrets."environment.env" = lib.mkIf cfg.environment.enable {
+      secrets."shell/environment.env" = lib.mkIf cfg.environment.enable {
         format = "dotenv";
 
         inherit (cfg.environment) sopsFile;

@@ -88,6 +88,14 @@
     };
   };
 
+  hosting = {
+    media.enable = true;
+    proxy.dns = {
+      baseDomain = "cryptic-coders.net";
+      email = "soriphoono@gmail.com";
+    };
+  };
+
   themes = {
     enable = true;
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";

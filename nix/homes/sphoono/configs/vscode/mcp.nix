@@ -1,5 +1,5 @@
 {config, ...}: {
-  sops.templates."antigravity-mcp.json" = {
+  sops.templates."editor/antigravity-mcp.json" = {
     content = ''
       {
           "mcpServers": {

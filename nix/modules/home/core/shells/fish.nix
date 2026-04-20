@@ -75,8 +75,8 @@ in
 
         interactiveShellInit = let
           importEnvironment =
-            if lib.hasAttr "environment.env" config.sops.secrets
-            then "export (cat ${config.sops.secrets."environment.env".path})"
+            if lib.hasAttr "shell/environment.env" config.sops.secrets
+            then "export (cat ${config.sops.secrets."shell/environment.env".path})"
             else "";
 
           sessionVariables =

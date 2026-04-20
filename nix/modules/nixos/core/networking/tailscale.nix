@@ -63,10 +63,10 @@ in
         };
       }
       (lib.optionalAttrs (options ? sops) (mkIf cfg.auth.internal {
-        sops.secrets."networking/tailscale/auth_key" = {};
+        sops.secrets."api/tailscale" = {};
 
         services.tailscale = {
-          authKeyFile = config.sops.secrets."networking/tailscale/auth_key".path;
+          authKeyFile = config.sops.secrets."api/tailscale".path;
         };
       }))
       (mkIf config.core.networking.network-manager.enable {

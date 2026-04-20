@@ -8,10 +8,6 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     agenix-shell = {
       url = "github:aciceri/agenix-shell";
       inputs.nixpkgs.follows = "nixpkgs";
