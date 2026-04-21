@@ -39,8 +39,11 @@ in
         };
 
         # Ensure the jellyfin user has access to graphics hardware
-        users.users.jellyfin = {
-          extraGroups = ["video" "render"];
+        users = {
+          groups.media.members = ["jellyfin"];
+          users.jellyfin = {
+            extraGroups = ["video" "render"];
+          };
         };
       })
     ]);

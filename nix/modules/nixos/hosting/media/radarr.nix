@@ -12,5 +12,9 @@ in
 
     config = mkIf cfg.enable {
       services.radarr.enable = true;
+
+      users = {
+        groups.media.members = [config.services.radarr.user];
+      };
     };
   }

@@ -12,5 +12,9 @@ in
 
     config = mkIf cfg.enable {
       services.sonarr.enable = true;
+
+      users = {
+        groups.media.members = [config.services.sonarr.user];
+      };
     };
   }

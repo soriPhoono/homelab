@@ -34,6 +34,25 @@ in
             hash = "sha256-Olz4W84Kiyldy+JtbIicVCL7dAYl4zq+2rxEOUTObxA=";
           };
 
+          extraConfig = let
+            wildcardDomain =
+              if dnsConfig.localSubdomain != ""
+              then "*.${dnsConfig.localSubdomain}.${dnsConfig.baseDomain}"
+              else "*.${dnsConfig.baseDomain}";
+          in ''
+            (wildcard_tls) {
+              tls {
+                ${optionalString (dnsConfig.provider == "cloudflare") "dns cloudflare {env.CLOUDFLARE_API_TOKEN}"}
+              }
+            }
+
+            # Define the wildcard domain once to ensure a single cert is requested
+            ${wildcardDomain} {
+              import wildcard_tls
+              abort
+            }
+          '';
+
           virtualHosts = mapAttrs' (name: service: let
             subdomain =
               if dnsConfig.localSubdomain != ""
@@ -44,19 +63,35 @@ in
             nameValuePair fullHost {
               extraConfig = ''
                 bind 127.0.0.1 ::1
+                import wildcard_tls
 
-                tls {
-                  ${optionalString (dnsConfig.provider == "cloudflare") "dns cloudflare {env.CLOUDFLARE_API_TOKEN}"}
-                }
-
-                ${concatStringsSep "\n" (mapAttrsToList (path: target: ''
+                ${concatStringsSep "\n" (mapAttrsToList (path: target: let
+                  proxyBlock = ''
+                    reverse_proxy 127.0.0.1:${toString target.proxyPort} ${optionalString (target.extraConfig != null) ''
+                      {
+                        ${target.extraConfig}
+                      }
+                    ''}
+                  '';
+                in
+                  if target.handlePath
+                  then ''
+                    handle_path ${path}* {
+                      ${proxyBlock}
+                    }
+                  ''
+                  else ''
                     handle ${path}* {
-                      reverse_proxy 127.0.0.1:${toString target}
+                      ${proxyBlock}
                     }
                   '')
-                  service.extraPaths)}
+                service.extraPaths)}
 
-                reverse_proxy 127.0.0.1:${toString service.proxyPort}
+                reverse_proxy 127.0.0.1:${toString service.proxyPort} ${optionalString (service.extraConfig != null) ''
+                  {
+                    ${service.extraConfig}
+                  }
+                ''}
               '';
             })
           proxyConfig.services;

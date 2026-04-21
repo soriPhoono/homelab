@@ -1,7 +1,5 @@
 # TODO: Write configuration to define urlBase for all services
 # TODO: Write configuration to create storage directory tree under /mnt/local
-# TODO: Add Prowlarr
-# TODO: Add qbittorrent
 {
   lib,
   config,
@@ -11,10 +9,12 @@
 in
   with lib; {
     imports = [
-      ./jellyfin.nix
       ./seerr.nix
       ./sonarr.nix
       ./radarr.nix
+      ./prowlarr.nix
+      ./qbittorrent.nix
+      ./jellyfin.nix
     ];
 
     options.hosting.media = {
@@ -27,26 +27,53 @@ in
 
     config = mkIf cfg.enable {
       # Jellyfin
-      hosting.media = {
-        jellyfin = {
-          enable = true;
-          acceleration.enable = true;
+      hosting = {
+        enable = true;
+        media = {
+          jellyfin = {
+            enable = true;
+            acceleration.enable = true;
+          };
+          seerr.enable = true;
+          sonarr.enable = true;
+          radarr.enable = true;
+          prowlarr.enable = true;
+          qbittorrent.enable = true;
         };
-        seerr.enable = true;
-        sonarr.enable = true;
-        radarr.enable = true;
       };
+
+      systemd.tmpfiles.rules = [
+        "d /mnt/local 0775 - - -"
+        "d /mnt/local/media 0775 - ${config.users.groups.media.name} -"
+        "d /mnt/local/media/movies 0775 ${config.services.radarr.user} ${config.users.groups.media.name} -"
+        "d /mnt/local/media/shows 0775 ${config.services.sonarr.user} ${config.users.groups.media.name} -"
+        "d /mnt/local/media/downloads 0775 ${config.services.qbittorrent.user} ${config.users.groups.media.name} -"
+      ];
 
       # Caddy
       hosting.proxy = {
         enable = true;
         services = {
+          downloads = {
+            proxyPort = config.services.qbittorrent.webuiPort;
+            extraPaths = {
+              "/indexers" = {
+                proxyPort = config.services.prowlarr.settings.server.port;
+              };
+            };
+          };
           media = {
             proxyPort = config.services.seerr.port;
             extraPaths = {
-              "/movies" = 7878;
-              "/shows" = 8989;
-              "/watch" = 8096;
+              "/movies" = {
+                proxyPort = config.services.radarr.settings.server.port;
+              };
+              "/shows" = {
+                proxyPort = config.services.sonarr.settings.server.port;
+              };
+              "/watch" = {
+                proxyPort = 8096;
+              };
             };
           };
         };
