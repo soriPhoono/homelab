@@ -33,7 +33,10 @@ _: {
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      editors.vscode.enable = true;
+      editors = {
+        zed.enable = true;
+        vscode.enable = true;
+      };
       inference.lmstudio.enable = true;
       agents = {
         backend.ollama.enable = true;
