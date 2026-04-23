@@ -19,6 +19,12 @@ in
           // {
             inherit (prev.vscode-extensions.hashicorp) terraform;
           };
+
+        vadimcn =
+          extensions.vscode-marketplace.vadimcn
+          // {
+            inherit (prev.vscode-extensions.vadimcn) vscode-lldb;
+          };
       };
     vscode-marketplace-universal =
       extensions.vscode-marketplace-universal
@@ -35,6 +41,12 @@ in
           extensions.vscode-marketplace-universal.hashicorp
           // {
             inherit (prev.vscode-extensions.hashicorp) terraform;
+          };
+
+        vadimcn =
+          extensions.vscode-marketplace-universal.vadimcn
+          // {
+            inherit (prev.vscode-extensions.vadimcn) vscode-lldb;
           };
       };
   }

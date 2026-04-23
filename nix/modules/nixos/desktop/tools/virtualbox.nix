@@ -13,7 +13,7 @@ in
     config = mkIf cfg.enable {
       virtualisation.virtualbox.host = {
         enable = true;
-        enableExtensionPack = true;
+        # enableExtensionPack = true;
       };
 
       users.extraUsers =
