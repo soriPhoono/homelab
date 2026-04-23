@@ -8,7 +8,7 @@
 
     boot = {
       enable = true;
-      kernel.packages = pkgs.linuxPackages_zen;
+      # kernel.packages = pkgs.linuxPackages_zen;
       plymouth.enable = true;
     };
 
@@ -79,11 +79,14 @@
     services.asusd.enable = true;
     features = {
       printing.enable = true;
-      virtualisation.enable = true;
+      virtualisation = {
+        enable = true;
+      };
       gaming.enable = true;
     };
     tools = {
       partition-manager.enable = true;
+      virtualbox.enable = true;
       docker.enable = true;
     };
   };
