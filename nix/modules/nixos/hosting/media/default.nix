@@ -1,5 +1,3 @@
-# TODO: Write configuration to define urlBase for all services
-# TODO: Write configuration to create storage directory tree under /mnt/local
 {
   lib,
   config,

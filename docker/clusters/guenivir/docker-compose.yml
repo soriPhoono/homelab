@@ -1,0 +1,51 @@
+services:
+  socket_proxy:
+    image: tecnativa/docker-socket-proxy:0.2.0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      TZ: America/Chicago
+      INFO: 1
+      SERVICES: 1
+      NETWORKS: 1
+      SECRETS: 1
+      CONFIGS: 1
+      POST: 1
+    networks:
+      - swarm-cd
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  swarm-cd:
+    image: ghcr.io/m-adawi/swarm-cd:1.10.0
+    configs:
+      - source: swarm-cd_repos
+        target: /app/repos.yaml
+        mode: 0444
+      - source: swarm-cd_stacks
+        target: /app/stacks.yaml
+        mode: 0444
+    secrets:
+      - source: age_key
+        target: /run/secrets/age-key
+    environment:
+      - SOPS_AGE_KEY_FILE=/run/secrets/age-key
+    networks:
+      - swarm-cd
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+configs:
+  swarm-cd_repos:
+    file: ./configs/repos.yaml
+  swarm-cd_stacks:
+    file: ./configs/stacks.yaml
+secrets:
+  age_key:
+    file: ./secrets/age-key.txt
+networks:
+  swarm-cd:
+    driver: overlay
+    attachable: true
