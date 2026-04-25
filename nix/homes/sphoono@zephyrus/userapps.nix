@@ -39,7 +39,6 @@ _: {
       };
       inference.lmstudio.enable = true;
       agents = {
-        backend.ollama.enable = true;
         opencode.enable = true;
         gemini.enable = true;
       };

@@ -102,34 +102,6 @@ in
               }}/bin/docker-install-plugins";
             };
           };
-
-          docker-network-routing-fix = {
-            description = "Ensure local docker networks bypass tailscale routing table";
-            after = ["network-online.target" "tailscale.service"];
-            wants = ["network-online.target"];
-            wantedBy = ["multi-user.target"];
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = true;
-              ExecStart = "${pkgs.writeShellApplication {
-                name = "docker-routing-fix";
-                runtimeInputs = with pkgs; [iproute2];
-                text = ''
-                  # Priority 2500 is higher than Tailscale's 5270
-                  ip rule add to 172.17.0.0/16 lookup main prio 2500 || true
-                  ip rule add to 172.18.0.0/16 lookup main prio 2500 || true
-                '';
-              }}/bin/docker-routing-fix";
-              ExecStop = "${pkgs.writeShellApplication {
-                name = "docker-routing-unfix";
-                runtimeInputs = with pkgs; [iproute2];
-                text = ''
-                  ip rule del to 172.17.0.0/16 lookup main prio 2500 || true
-                  ip rule del to 172.18.0.0/16 lookup main prio 2500 || true
-                '';
-              }}/bin/docker-routing-unfix";
-            };
-          };
         }
         // (lib.listToAttrs (lib.mapAttrsToList (name: _: {
             name = "docker-${name}";
@@ -149,9 +121,17 @@ in
         };
       };
 
-      networking.firewall = {
-        trustedInterfaces = ["docker0" "docker_gwbridge"];
-        checkReversePath = lib.mkForce false;
+      networking = {
+        firewall = {
+          trustedInterfaces = ["docker0" "docker_gwbridge"];
+          checkReversePath = lib.mkForce false;
+        };
+        localCommands = lib.mkIf config.core.networking.tailscale.enable ''
+          # Bypass Tailscale routing table 52 for Docker container return traffic
+          # Priority 2500 is higher than Tailscale's 5270
+          ${pkgs.iproute2}/bin/ip rule add to 172.16.0.0/12 lookup main prio 2500 || true
+          ${pkgs.iproute2}/bin/ip rule add to 10.0.0.0/8 lookup main prio 2500 || true
+        '';
       };
 
       users.extraUsers =

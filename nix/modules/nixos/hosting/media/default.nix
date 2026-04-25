@@ -11,6 +11,7 @@ in
       ./sonarr.nix
       ./radarr.nix
       ./prowlarr.nix
+      ./flaresolverr.nix
       ./qbittorrent.nix
       ./jellyfin.nix
     ];
@@ -36,6 +37,7 @@ in
           sonarr.enable = true;
           radarr.enable = true;
           prowlarr.enable = true;
+          flaresolverr.enable = true;
           qbittorrent.enable = true;
         };
       };
