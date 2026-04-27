@@ -2,7 +2,7 @@
   imports = [
     ./blender.nix
     ./gimp.nix
-    ./inkscape.nix
     ./krita.nix
+    ./inkscape.nix
   ];
 }

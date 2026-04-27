@@ -43,11 +43,40 @@ in
         default = [];
         description = "List of Docker plugins to automatically install and enable.";
       };
+
+      tailscaleBypass = {
+        enable = mkOption {
+          type = types.bool;
+          default = config.core.networking.tailscale.enable or false;
+          description = "Whether to automatically bypass Tailscale routing for Docker subnets.";
+        };
+
+        subnets = mkOption {
+          type = types.listOf types.str;
+          default = [
+            "172.16.0.0/12"
+            "10.0.0.0/8"
+            "192.168.0.0/16"
+          ];
+          description = "List of subnets to bypass Tailscale routing for (both to and from).";
+        };
+
+        priority = mkOption {
+          type = types.int;
+          default = 2500;
+          description = "The priority of the ip rules (must be lower than 5270 to take precedence).";
+        };
+      };
     };
 
     config = mkIf cfg.enable {
       systemd.services =
         {
+          # Ensure rules are re-applied when tailscaled starts/restarts
+          tailscaled.serviceConfig.ExecStartPost = mkIf cfg.tailscaleBypass.enable [
+            "${pkgs.systemd}/bin/systemctl start docker-tailscale-bypass.service"
+          ];
+
           docker-create-networks = let
             networks = unique (
               flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
@@ -84,22 +113,67 @@ in
                 name = "docker-install-plugins";
                 runtimeInputs = with pkgs; [
                   docker
+                  gnugrep
                 ];
                 text = lib.optionalString (cfg.plugins != []) ''
-                  EXISTING_PLUGINS=$(docker plugin ls --format '{{.PluginReference}}')
                   ${lib.concatStringsSep "\n" (lib.map (plugin: ''
-                      # Ensure plugin is installed
-                      if ! echo "$EXISTING_PLUGINS" | grep -Fxq "${plugin.name}"; then
+                      # Check if plugin already exists by alias
+                      CURRENT_REF=$(docker plugin inspect "${plugin.name}" --format '{{.PluginReference}}' 2>/dev/null || true)
+
+                      if [ -n "$CURRENT_REF" ]; then
+                        if [ "$CURRENT_REF" = "${plugin.image}" ]; then
+                          echo "Plugin ${plugin.name} is up to date (${plugin.image})"
+                        else
+                          echo "Plugin ${plugin.name} version mismatch ($CURRENT_REF -> ${plugin.image}). Migrating..."
+                          docker plugin disable "${plugin.name}" --force
+                          docker plugin rm "${plugin.name}" --force
+                          docker plugin install ${plugin.image} --alias ${plugin.name} ${lib.optionalString plugin.grantAllPermissions "--grant-all-permissions"}
+                        fi
+                      else
+                        echo "Installing plugin ${plugin.name} (${plugin.image})..."
                         docker plugin install ${plugin.image} --alias ${plugin.name} ${lib.optionalString plugin.grantAllPermissions "--grant-all-permissions"}
                       fi
+
                       # Ensure plugin is enabled
-                      if ! docker plugin ls --format '{{.PluginReference}} {{.Enabled}}' | grep -Fxq "${plugin.name} true"; then
-                        docker plugin enable ${plugin.name} || true
+                      if ! docker plugin ls --format '{{.Name}} {{.Enabled}}' | grep -Fxq "${plugin.name} true"; then
+                        echo "Enabling plugin ${plugin.name}..."
+                        docker plugin enable "${plugin.name}" || true
                       fi
                     '')
                     cfg.plugins)}
                 '';
               }}/bin/docker-install-plugins";
+            };
+          };
+
+          docker-tailscale-bypass = mkIf cfg.tailscaleBypass.enable {
+            description = "Bypass Tailscale routing for Docker traffic";
+            wants = ["network-online.target"];
+            after = ["network-online.target" "tailscaled.service" "docker.service"];
+            wantedBy = ["multi-user.target"];
+            serviceConfig = {
+              Type = "oneshot";
+              RemainAfterExit = true;
+              ExecStart = "${pkgs.writeShellApplication {
+                name = "docker-tailscale-bypass-start";
+                runtimeInputs = [pkgs.iproute2];
+                text = ''
+                  ${lib.concatStringsSep "\n" (flatten (map (subnet: [
+                      "ip rule add from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} 2>/dev/null || true"
+                      "ip rule add to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} 2>/dev/null || true"
+                    ])
+                    cfg.tailscaleBypass.subnets))}
+                '';
+              }}/bin/docker-tailscale-bypass-start";
+              ExecStop = "${pkgs.writeShellApplication {
+                name = "docker-tailscale-bypass-stop";
+                runtimeInputs = [pkgs.iproute2];
+                text = lib.concatStringsSep "\n" (flatten (map (subnet: [
+                    "ip rule del from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} || true"
+                    "ip rule del to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} || true"
+                  ])
+                  cfg.tailscaleBypass.subnets));
+              }}/bin/docker-tailscale-bypass-stop";
             };
           };
         }
@@ -117,21 +191,12 @@ in
         docker = {
           enable = true;
           autoPrune.enable = true;
-          daemon.settings = cfg.extraSettings;
+          daemon.settings =
+            {
+              dns = ["1.1.1.1" "1.0.0.1"];
+            }
+            // cfg.extraSettings;
         };
-      };
-
-      networking = {
-        firewall = {
-          trustedInterfaces = ["docker0" "docker_gwbridge"];
-          checkReversePath = lib.mkForce false;
-        };
-        localCommands = lib.mkIf config.core.networking.tailscale.enable ''
-          # Bypass Tailscale routing table 52 for Docker container return traffic
-          # Priority 2500 is higher than Tailscale's 5270
-          ${pkgs.iproute2}/bin/ip rule add to 172.16.0.0/12 lookup main prio 2500 || true
-          ${pkgs.iproute2}/bin/ip rule add to 10.0.0.0/8 lookup main prio 2500 || true
-        '';
       };
 
       users.extraUsers =

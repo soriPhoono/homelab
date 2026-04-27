@@ -27,7 +27,6 @@ _: {
       };
       virtualization = {
         distrobox.enable = true;
-        bottles.enable = true;
       };
     };
     development = {
@@ -51,10 +50,7 @@ _: {
     };
     content-creation = {
       asset-creation = {
-        krita.enable = true;
         gimp.enable = true;
-        inkscape.enable = true;
-        blender.enable = true;
       };
       editors = {
         audacity.enable = true;

@@ -51,8 +51,8 @@ in
       {
         services.tailscale = {
           enable = true;
+          useRoutingFeatures = "client";
           openFirewall = true;
-          useRoutingFeatures = "both";
           disableUpstreamLogging = true;
 
           serve.services =

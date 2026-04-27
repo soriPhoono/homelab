@@ -33,10 +33,8 @@ in {
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs;
       [
-        moonlight-qt # Cloud streaming
-        lutris # Linux gaming platform
-
         mangohud # Overlay for monitoring
+        moonlight-qt # Cloud streaming
       ]
       ++ lib.optional cfg.wivrn.enable sidequest;
 
@@ -50,23 +48,12 @@ in {
 
     programs = {
       gamemode.enable = true;
-      gamescope.enable = true;
 
       steam = {
         enable = true;
 
         extest.enable = true;
         protontricks.enable = true;
-
-        gamescopeSession = lib.mkIf cfg.gamescope.enable {
-          enable = true;
-          args = [
-            "-W ${toString cfg.gamescope.width}"
-            "-H ${toString cfg.gamescope.height}"
-            "-r ${toString cfg.gamescope.refreshRate}"
-            "-f"
-          ];
-        };
 
         extraCompatPackages = with pkgs; [
           proton-ge-bin

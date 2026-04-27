@@ -79,9 +79,7 @@
     services.asusd.enable = true;
     features = {
       printing.enable = true;
-      virtualisation = {
-        enable = true;
-      };
+      virtualisation.enable = true;
       gaming.enable = true;
     };
     tools = {
