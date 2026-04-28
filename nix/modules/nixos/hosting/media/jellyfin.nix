@@ -37,7 +37,7 @@ in
           transcoding = {
             enableHardwareEncoding = true;
             enableIntelLowPowerEncoding = config.core.hardware.gpu.intel.integrated.enable;
-            throttleTranscoding = true;
+            throttleTranscoding = false;
             hardwareEncodingCodecs.hevc = true;
             hardwareDecodingCodecs = {
               h264 = true;
