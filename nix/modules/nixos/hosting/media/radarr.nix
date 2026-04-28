@@ -14,9 +14,10 @@ in
       services.radarr.enable = true;
 
       systemd.services.radarr.serviceConfig = {
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        ProtectSystem = lib.mkForce "strict";
+        ProtectHome = lib.mkForce true;
         PrivateDevices = true;
+        StateDirectory = "radarr";
         ReadWritePaths = ["/mnt/local/media"];
       };
 

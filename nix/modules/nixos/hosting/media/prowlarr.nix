@@ -14,8 +14,8 @@ in
       services.prowlarr.enable = true;
 
       systemd.services.prowlarr.serviceConfig = {
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        ProtectSystem = lib.mkForce "strict";
+        ProtectHome = lib.mkForce true;
         PrivateDevices = true;
       };
     };

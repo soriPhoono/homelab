@@ -16,8 +16,10 @@ in
         services.jellyfin.enable = true;
 
         systemd.services.jellyfin.serviceConfig = {
-          ProtectSystem = "strict";
-          ProtectHome = true;
+          ProtectSystem = lib.mkForce "strict";
+          ProtectHome = lib.mkForce true;
+          StateDirectory = "jellyfin";
+          CacheDirectory = "jellyfin";
           ReadWritePaths = ["/mnt/local/media"];
         };
       }

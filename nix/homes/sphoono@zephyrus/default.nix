@@ -1,6 +1,7 @@
 {
   imports = [
     ./hypr.nix
+    ./agents.nix
     ./userapps.nix
   ];
 

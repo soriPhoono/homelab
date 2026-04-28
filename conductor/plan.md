@@ -1,52 +1,30 @@
-# Implementation Plan: Zephyrus System Security Hardening
+# Implementation Plan: Fix Media Services File System Permissions
 
-## Objective
+## Background & Motivation
 
-Implement strict security hardening measures for the Zephyrus system, addressing points 2-5 from the recent security audit. This includes restricting privilege escalation, enforcing strict firewall isolation on specific interfaces, verifying secret integrity, and applying strict systemd sandboxing to media services.
+The Jellyfin service was failing to start because it was configured with `ProtectSystem = "strict"`, which mounts the entire filesystem as read-only for the service. Without explicitly declaring `StateDirectory` and `CacheDirectory`, Jellyfin could not write to its necessary configuration and state files in `/var/lib` and `/var/cache`. While investigating and fixing Jellyfin, it was discovered that `qbittorrent`, `radarr`, and `sonarr` also use `ProtectSystem = "strict"` without these declarations, which will lead to similar write failures when they attempt to save state or configuration.
 
-## Key Files & Context
+## Scope & Impact
 
-- `nix/modules/nixos/core/security.nix` (new file)
-- `nix/modules/nixos/core/default.nix`
-- `nix/modules/nixos/desktop/features/gaming.nix`
-- `nix/modules/nixos/desktop/features/printing.nix`
-- `nix/modules/nixos/core/networking/tailscale.nix`
-- `nix/modules/nixos/hosting/media/qbittorrent.nix`
-- `nix/modules/nixos/hosting/media/jellyfin.nix`
-- `nix/modules/nixos/hosting/media/*.nix` (Radarr, Sonarr, Prowlarr, etc.)
+This plan will update the NixOS module definitions for `qbittorrent`, `radarr`, and `sonarr` to explicitly declare their `StateDirectory` in their respective `systemd.services.<name>.serviceConfig` blocks. This ensures they function correctly under the strict protection mode by whitelisting their `/var/lib/<name>` directories for write access.
 
-## Implementation Steps
+## Proposed Solution
 
-### 1. Privilege Escalation (Sudo) Hardening (Item 2)
+Modify the following files to include `StateDirectory = "<service_name>";` within their `serviceConfig`:
 
-- **Action**: Create `nix/modules/nixos/core/security.nix`.
-- **Details**: Configure `security.sudo` with `execWheelOnly = true` and `extraConfig` to enforce a 15-minute timestamp timeout and always require a lecture.
-- **Action**: Import `security.nix` in `nix/modules/nixos/core/default.nix`.
+### 1. `nix/modules/nixos/hosting/media/qbittorrent.nix`
 
-### 2. Networking and Firewall Isolation (Item 3)
+Add `StateDirectory = "qbittorrent";` to `systemd.services.qbittorrent.serviceConfig`.
 
-- **Action**: Audit and modify `gaming.nix`, `printing.nix`, `tailscale.nix`, and `qbittorrent.nix`.
-- **Details**:
-  - Remove `openFirewall = true` globally.
-  - Explicitly open required ports (e.g., 8080 for qBittorrent, 631 for CUPS, Steam/LAN play ports) exclusively on the `tailscale0` interface or specific trusted LAN interfaces via `networking.firewall.interfaces."<interface>".allowedTCPPorts` and `allowedUDPPorts`.
+### 2. `nix/modules/nixos/hosting/media/radarr.nix`
 
-### 3. Secret Management Integrity (Item 4)
+Add `StateDirectory = "radarr";` to `systemd.services.radarr.serviceConfig`.
 
-- **Action**: Verification complete.
-- **Details**: The audit confirmed that `caddy.nix` correctly uses SOPS templates (`config.sops.templates`). No plain-text secrets were found in the `hosting/` modules. No file modifications are required for this item.
+### 3. `nix/modules/nixos/hosting/media/sonarr.nix`
 
-### 4. Service Sandboxing (Item 5)
+Add `StateDirectory = "sonarr";` to `systemd.services.sonarr.serviceConfig`.
 
-- **Action**: Update all service modules in `nix/modules/nixos/hosting/media/*.nix`.
-- **Details**: Inject `systemd.services.<service_name>.serviceConfig` to include:
-  - `ProtectSystem = "strict"`
-  - `ProtectHome = true`
-  - `PrivateDevices = true`
-  - *Crucial Addition*: Add `ReadWritePaths = [ "/mnt/local/media" ]` to ensure the media services can still read and write to the external media mount, circumventing the strict read-only OS protection.
+## Verification
 
-## Verification & Testing
-
-1. **Evaluation**: Run `nh os switch .` or `nixos-rebuild dry-activate` to verify the Nix evaluation is successful.
-1. **Sudo**: Run a sudo command to verify the lecture triggers and test the 15-minute timeout.
-1. **Firewall**: Use `nft list ruleset` or `iptables -L` to confirm the ports are no longer open globally but are restricted to `tailscale0` and the LAN.
-1. **Sandboxing**: Check `systemctl status qbittorrent` and `jellyfin` to ensure they start without permission errors, and verify they can write files to `/mnt/local/media`.
+1. Rebuild the system configuration using the standard deployment method (e.g., `nh os switch`).
+1. Verify that the services (`qbittorrent`, `radarr`, `sonarr`) start successfully without `Read-only file system` errors by checking their status and logs (`systemctl status <service>` and `journalctl -u <service> -b`).

@@ -14,8 +14,8 @@ in
       services.flaresolverr.enable = true;
 
       systemd.services.flaresolverr.serviceConfig = {
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        ProtectSystem = lib.mkForce "strict";
+        ProtectHome = lib.mkForce true;
         PrivateDevices = true;
       };
     };

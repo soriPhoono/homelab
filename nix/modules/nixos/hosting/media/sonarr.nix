@@ -14,9 +14,10 @@ in
       services.sonarr.enable = true;
 
       systemd.services.sonarr.serviceConfig = {
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        ProtectSystem = lib.mkForce "strict";
+        ProtectHome = lib.mkForce true;
         PrivateDevices = true;
+        StateDirectory = "sonarr";
         ReadWritePaths = ["/mnt/local/media"];
       };
 

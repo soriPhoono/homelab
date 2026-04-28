@@ -18,9 +18,10 @@ in
       };
 
       systemd.services.qbittorrent.serviceConfig = {
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        ProtectSystem = lib.mkForce "strict";
+        ProtectHome = lib.mkForce true;
         PrivateDevices = true;
+        StateDirectory = "qBittorrent";
         ReadWritePaths = ["/mnt/local/media"];
       };
 

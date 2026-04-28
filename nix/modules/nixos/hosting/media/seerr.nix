@@ -14,8 +14,8 @@ in
       services.seerr.enable = true;
 
       systemd.services.seerr.serviceConfig = {
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        ProtectSystem = lib.mkForce "strict";
+        ProtectHome = lib.mkForce true;
         PrivateDevices = true;
       };
     };

@@ -12,6 +12,7 @@ _: {
       enable = true;
       excludes = [
         ".agents/skills/*"
+        ".gemini/agents/*"
       ];
     };
   };
