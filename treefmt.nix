@@ -1,6 +1,11 @@
 _: {
   projectRootFile = "flake.nix";
 
+  settings.global.excludes = [
+    ".agents/skills/*"
+    ".gemini/agents/*"
+  ];
+
   programs = {
     alejandra.enable = true;
     deadnix.enable = true;
@@ -10,10 +15,6 @@ _: {
 
     mdformat = {
       enable = true;
-      excludes = [
-        ".agents/skills/*"
-        ".gemini/agents/*"
-      ];
     };
   };
 }
