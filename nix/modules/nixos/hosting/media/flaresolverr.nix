@@ -12,5 +12,11 @@ in
 
     config = mkIf cfg.enable {
       services.flaresolverr.enable = true;
+
+      systemd.services.flaresolverr.serviceConfig = {
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateDevices = true;
+      };
     };
   }

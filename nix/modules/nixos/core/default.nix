@@ -14,6 +14,7 @@ in {
     ./clamav.nix
     ./gitops.nix
     ./nixconf.nix
+    ./security.nix
     ./secrets.nix
     ./users.nix
   ];

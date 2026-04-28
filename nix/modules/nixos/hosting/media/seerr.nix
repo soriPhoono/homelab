@@ -12,5 +12,11 @@ in
 
     config = mkIf cfg.enable {
       services.seerr.enable = true;
+
+      systemd.services.seerr.serviceConfig = {
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateDevices = true;
+      };
     };
   }

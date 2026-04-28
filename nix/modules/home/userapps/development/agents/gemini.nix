@@ -6,6 +6,15 @@
   ...
 }: let
   cfg = config.userapps.development.agents.gemini;
+  agentContext = config.userapps.development.agents.context;
+  combinedContext = let
+    parts =
+      (lib.optional (agentContext.system != null) agentContext.system)
+      ++ (lib.optional (agentContext.user != null) agentContext.user);
+  in
+    if parts == []
+    then null
+    else lib.concatStringsSep "\n\n" parts;
 in
   with lib; {
     options.userapps.development.agents.gemini = {
@@ -21,6 +30,10 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         programs.gemini-cli.enable = true;
+
+        home.file.".gemini/GEMINI.md" = mkIf (combinedContext != null) {
+          text = combinedContext;
+        };
       }
       (mkIf (options ? sops && cfg.secrets != []) {
         sops.secrets = genAttrs cfg.secrets (_: {});

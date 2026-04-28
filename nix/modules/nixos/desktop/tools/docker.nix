@@ -73,9 +73,9 @@ in
       systemd.services =
         {
           # Ensure rules are re-applied when tailscaled starts/restarts
-          tailscaled.serviceConfig.ExecStartPost = mkIf cfg.tailscaleBypass.enable [
-            "${pkgs.systemd}/bin/systemctl start docker-tailscale-bypass.service"
-          ];
+          tailscaled.serviceConfig.ExecStartPost =
+            mkIf cfg.tailscaleBypass.enable [
+            ];
 
           docker-create-networks = let
             networks = unique (
@@ -148,31 +148,63 @@ in
 
           docker-tailscale-bypass = mkIf cfg.tailscaleBypass.enable {
             description = "Bypass Tailscale routing for Docker traffic";
-            wants = ["network-online.target"];
+            wants = ["network-online.target" "tailscaled.service"];
+            bindsTo = ["tailscaled.service"];
             after = ["network-online.target" "tailscaled.service" "docker.service"];
-            wantedBy = ["multi-user.target"];
+            wantedBy = ["multi-user.target" "tailscaled.service"];
             serviceConfig = {
               Type = "oneshot";
               RemainAfterExit = true;
               ExecStart = "${pkgs.writeShellApplication {
                 name = "docker-tailscale-bypass-start";
-                runtimeInputs = [pkgs.iproute2];
+                runtimeInputs = with pkgs; [
+                  iproute2
+                  gnugrep
+                ];
                 text = ''
+                  # Give tailscaled a moment to settle its own rules
+                  sleep 2
+
                   ${lib.concatStringsSep "\n" (flatten (map (subnet: [
-                      "ip rule add from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} 2>/dev/null || true"
-                      "ip rule add to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} 2>/dev/null || true"
+                      ''
+                        if ! ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "from ${subnet} lookup main"; then
+                          echo "Adding bypass rule from ${subnet}..."
+                          ip rule add from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
+                        fi
+                      ''
+                      ''
+                        if ! ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "to ${subnet} lookup main"; then
+                          echo "Adding bypass rule to ${subnet}..."
+                          ip rule add to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
+                        fi
+                      ''
                     ])
                     cfg.tailscaleBypass.subnets))}
                 '';
               }}/bin/docker-tailscale-bypass-start";
               ExecStop = "${pkgs.writeShellApplication {
                 name = "docker-tailscale-bypass-stop";
-                runtimeInputs = [pkgs.iproute2];
-                text = lib.concatStringsSep "\n" (flatten (map (subnet: [
-                    "ip rule del from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} || true"
-                    "ip rule del to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority} || true"
-                  ])
-                  cfg.tailscaleBypass.subnets));
+                runtimeInputs = with pkgs; [
+                  iproute2
+                  gnugrep
+                ];
+                text = ''
+                  ${lib.concatStringsSep "\n" (flatten (map (subnet: [
+                      ''
+                        if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "from ${subnet} lookup main"; then
+                          echo "Removing bypass rule from ${subnet}..."
+                          ip rule del from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
+                        fi
+                      ''
+                      ''
+                        if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "to ${subnet} lookup main"; then
+                          echo "Removing bypass rule to ${subnet}..."
+                          ip rule del to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
+                        fi
+                      ''
+                    ])
+                    cfg.tailscaleBypass.subnets))}
+                '';
               }}/bin/docker-tailscale-bypass-stop";
             };
           };

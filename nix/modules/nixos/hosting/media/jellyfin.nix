@@ -14,6 +14,12 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         services.jellyfin.enable = true;
+
+        systemd.services.jellyfin.serviceConfig = {
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          ReadWritePaths = ["/mnt/local/media"];
+        };
       }
       (mkIf cfg.acceleration.enable {
         services.jellyfin = {

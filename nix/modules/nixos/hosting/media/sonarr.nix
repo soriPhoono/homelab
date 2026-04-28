@@ -13,6 +13,13 @@ in
     config = mkIf cfg.enable {
       services.sonarr.enable = true;
 
+      systemd.services.sonarr.serviceConfig = {
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateDevices = true;
+        ReadWritePaths = ["/mnt/local/media"];
+      };
+
       users = {
         groups.media.members = [config.services.sonarr.user];
       };

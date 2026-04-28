@@ -6,6 +6,15 @@
   ...
 }: let
   cfg = config.userapps.development.agents.opencode;
+  agentContext = config.userapps.development.agents.context;
+  combinedContext = let
+    parts =
+      (lib.optional (agentContext.system != null) agentContext.system)
+      ++ (lib.optional (agentContext.user != null) agentContext.user);
+  in
+    if parts == []
+    then null
+    else lib.concatStringsSep "\n\n" parts;
 in
   with lib; {
     options.userapps.development.agents.opencode = {
@@ -27,6 +36,10 @@ in
           ];
 
         programs.opencode.enable = true;
+
+        home.file.".config/opencode/AGENTS.md" = mkIf (combinedContext != null) {
+          text = combinedContext;
+        };
       }
       (mkIf (options ? sops && cfg.secrets != []) {
         sops.secrets = genAttrs cfg.secrets (_: {});

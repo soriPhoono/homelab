@@ -2,6 +2,9 @@
 
 High-signal context for AI agents working in this Nix-based homelab repository ("The Data Fortress").
 
+> [!TIP]
+> For a detailed guide on agent skills, repository structure, and operational mandates, see [**`.agents/AGENTS.md`**](.agents/AGENTS.md).
+
 ## Important Commands & Workflows
 
 - **Dev Shell is Mandatory:** Always run `direnv allow` or enter `nix develop`. This automatically evaluates `actions.nix` and regenerates `.github/workflows/`.

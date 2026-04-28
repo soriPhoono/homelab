@@ -13,6 +13,13 @@ in
     config = mkIf cfg.enable {
       services.radarr.enable = true;
 
+      systemd.services.radarr.serviceConfig = {
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateDevices = true;
+        ReadWritePaths = ["/mnt/local/media"];
+      };
+
       users = {
         groups.media.members = [config.services.radarr.user];
       };

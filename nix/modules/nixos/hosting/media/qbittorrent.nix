@@ -14,7 +14,14 @@ in
       services.qbittorrent = {
         enable = true;
         webuiPort = 8080;
-        openFirewall = true;
+        openFirewall = false;
+      };
+
+      systemd.services.qbittorrent.serviceConfig = {
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateDevices = true;
+        ReadWritePaths = ["/mnt/local/media"];
       };
 
       users = {

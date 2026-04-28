@@ -12,5 +12,11 @@ in
 
     config = mkIf cfg.enable {
       services.prowlarr.enable = true;
+
+      systemd.services.prowlarr.serviceConfig = {
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateDevices = true;
+      };
     };
   }
