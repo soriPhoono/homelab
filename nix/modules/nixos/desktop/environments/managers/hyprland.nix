@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -13,7 +14,18 @@ in
     config = mkIf cfg.enable {
       desktop.environments.managers.enable = true;
 
-      environment.sessionVariables.NIXOS_OZONE_WL = "1";
+      environment.sessionVariables = {
+        NIXOS_OZONE_WL = "1";
+        GTK_USE_PORTAL = "1";
+      };
+
+      xdg.portal = {
+        enable = true;
+        extraPortals = [
+          pkgs.xdg-desktop-portal-gtk
+        ];
+        config.common.default = "*";
+      };
 
       security.polkit.enable = true;
 

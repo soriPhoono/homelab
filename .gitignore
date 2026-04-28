@@ -4,5 +4,6 @@ result
 .pre-commit-config.yaml
 
 gha-creds-*.json
+conductor/
 
 age-key.txt
