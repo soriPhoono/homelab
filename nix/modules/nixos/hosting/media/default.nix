@@ -27,7 +27,6 @@ in
     config = mkIf cfg.enable {
       # Jellyfin
       hosting = {
-        enable = true;
         media = {
           jellyfin = {
             enable = true;

@@ -73,9 +73,9 @@ in
       systemd.services =
         {
           # Ensure rules are re-applied when tailscaled starts/restarts
-          tailscaled.serviceConfig.ExecStartPost =
-            mkIf cfg.tailscaleBypass.enable [
-            ];
+          tailscaled.serviceConfig.ExecStartPost = mkIf cfg.tailscaleBypass.enable [
+            "-${pkgs.systemd}/bin/systemctl restart --no-block docker-tailscale-bypass.service"
+          ];
 
           docker-create-networks = let
             networks = unique (

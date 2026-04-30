@@ -4,6 +4,7 @@
   ];
 
   core = {
+    timeZone = "America/Chicago";
     nixconf.determinate.enable = true;
 
     boot = {
@@ -91,6 +92,7 @@
 
   hosting = {
     media.enable = true;
+    automation.enable = true;
     proxy.dns = {
       baseDomain = "cryptic-coders.net";
       email = "soriphoono@gmail.com";

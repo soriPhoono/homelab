@@ -17,10 +17,14 @@
       };
       communication = {
         discord.enable = true;
+        telegram.enable = true;
         signal.enable = true;
         matrix.enable = true;
       };
-      office.onlyoffice.enable = true;
+      office = {
+        libreoffice.enable = true;
+        onlyoffice.enable = true;
+      };
     };
     data-fortress = {
       cloud.nextcloud.enable = true;

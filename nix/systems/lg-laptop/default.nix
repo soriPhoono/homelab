@@ -4,6 +4,7 @@
   ];
 
   core = {
+    timeZone = "America/Chicago";
     nixconf.determinate.enable = true;
 
     boot = {
@@ -17,9 +18,12 @@
 
       cpu.vendor = "intel";
       gpu = {
-        intel.integrated = {
+        intel = {
           enable = true;
-          deviceID = "a7a0";
+          integrated = {
+            enable = true;
+            deviceID = "a7a0";
+          };
         };
       };
 
@@ -57,6 +61,14 @@
     features = {
       printing.enable = true;
       gaming.enable = true;
+    };
+  };
+
+  hosting = {
+    media.enable = true;
+    proxy.dns = {
+      baseDomain = "cryptic-coders.net";
+      email = "soriphoono@gmail.com";
     };
   };
 }
