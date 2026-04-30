@@ -27,17 +27,6 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        warnings = [
-          {
-            warning = !cfg.integrated.enable && !cfg.dedicated.enable;
-            message = ''
-              A machine with the intel gpu configuration is
-              advised to declare in what nature the support is requested,
-              either integrated or dedicated
-            '';
-          }
-        ];
-
         core.hardware.gpu.enable = true;
 
         services.xserver.videoDrivers = ["intel"];
@@ -45,8 +34,8 @@ in
         hardware.intel-gpu-tools.enable = true;
       }
       (mkIf cfg.integrated.enable {
-        boot.kernelParams = lib.mkIf (cfg.deviceID != null) [
-          "i915.force_probe=${cfg.deviceID}"
+        boot.kernelParams = lib.mkIf (cfg.integrated.deviceID != null) [
+          "i915.force_probe=${cfg.integrated.deviceID}"
         ];
 
         hardware.graphics.extraPackages = with pkgs; [
