@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./bambu-studio.nix
+  ];
+}

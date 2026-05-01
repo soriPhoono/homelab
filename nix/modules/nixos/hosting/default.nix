@@ -2,6 +2,5 @@
   imports = [
     ./proxy
     ./media
-    ./automation
   ];
 }

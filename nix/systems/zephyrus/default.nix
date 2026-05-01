@@ -80,7 +80,6 @@
     services.asusd.enable = true;
     features = {
       printing.enable = true;
-      virtualisation.enable = true;
       gaming.enable = true;
     };
     tools = {
@@ -92,7 +91,6 @@
 
   hosting = {
     media.enable = true;
-    automation.enable = true;
     proxy.dns = {
       baseDomain = "cryptic-coders.net";
       email = "soriphoono@gmail.com";

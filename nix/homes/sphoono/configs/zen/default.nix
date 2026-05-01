@@ -9,7 +9,7 @@
   userapps.desktop.browsers.zen = {
     extraConfig = {
       setAsDefaultBrowser = true;
-      enablePrivateDesktopEntry = true;
+      enablePrivateDesktopEntry = false;
     };
     profileConfig.default = {
       id = 0;

@@ -8,14 +8,26 @@ with pkgs;
   mkShell {
     packages =
       [
+        # Nix
         nixd
         alejandra
         vulnix
 
+        # Secrets
         age
         agenix-cli
         sops
         ssh-to-age
+
+        # K3s
+        k3d
+
+        # Kubernetes
+        kubectl
+        helm
+        fluxcd
+        kubeseal
+        k9s
       ]
       ++ lib.optional stdenv.isLinux [
         disko

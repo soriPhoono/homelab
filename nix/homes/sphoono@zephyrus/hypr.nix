@@ -17,6 +17,8 @@
         ", XF86Launch4, exec, noctalia-shell ipc call powerProfile cycle"
         # Airplane Mode
         ", XF86Launch5, exec, noctalia-shell ipc call airplaneMode toggle"
+        # Touchpad Toggle
+        ", XF86TouchpadToggle, exec, ${pkgs.bash}/bin/bash -lc 'tp=\"$(hyprctl -j devices | ${pkgs.jq}/bin/jq -r \".touchpads[0].name // empty\")\"; [ -n \"$tp\" ] || exit 0; enabled=\"$(hyprctl -j devices | ${pkgs.jq}/bin/jq -r --arg tp \"$tp\" \".touchpads[] | select(.name == \\$tp) | .enabled\")\"; if [ \"$enabled\" = \"true\" ]; then hyprctl keyword \"device[$tp]:enabled\" false; else hyprctl keyword \"device[$tp]:enabled\" true; fi'"
       ];
 
       binde = [

@@ -37,6 +37,9 @@ _: {
         vscode.enable = true;
       };
       inference.lmstudio.enable = true;
+      appliances = {
+        bambu-studio.enable = true;
+      };
       agents = {
         opencode.enable = true;
         gemini.enable = true;

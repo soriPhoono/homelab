@@ -11,6 +11,7 @@ in
       ./editors
       ./terminal
       ./inference
+      ./appliances
     ];
 
     options.userapps.development = {
