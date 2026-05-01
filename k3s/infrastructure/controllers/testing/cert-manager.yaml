@@ -21,6 +21,10 @@ spec:
         name: jetstack
         namespace: flux-system
   values:
+    # Chart defaults to crds.enabled=false; without CRDs, cainjector breaks and NetBird cannot use Certificate.
+    crds:
+      enabled: true
+      keep: true
     # k3d/local: startupapicheck often times out waiting on the webhook; controllers still run.
     startupapicheck:
       enabled: false

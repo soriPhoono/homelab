@@ -21,6 +21,10 @@ spec:
         name: jetstack
         namespace: flux-system
   values:
+    # Chart defaults to crds.enabled=false; cert-manager controllers require these CRDs.
+    crds:
+      enabled: true
+      keep: true
     global:
       leaderElection:
         namespace: cert-manager
