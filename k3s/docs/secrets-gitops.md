@@ -1,4 +1,4 @@
-# Cluster secrets (Sealed Secrets + Tailscale operator)
+# Cluster secrets (Sealed Secrets + NetBird Kubernetes operator)
 
 ## Sealed Secrets controller
 
@@ -23,24 +23,35 @@ kubectl create secret generic example \
 
 Commit `my-sealedsecret.yaml` and reference it from the appropriate Kustomize `resources` list.
 
-## Tailscale Kubernetes operator
+## NetBird Kubernetes operator
 
-Flux installs **tailscale-operator** into the `tailscale` namespace. The chart is configured with **empty** `oauth` values so **no** OAuth Secret is created by Helm. You must provide a Secret named **`operator-oauth`** in `tailscale` with keys **`client_id`** and **`client_secret`** (see [Tailscale Kubernetes operator](https://tailscale.com/kb/1236/kubernetes-operator)).
+Flux installs the **NetBird Kubernetes operator** (`kubernetes-operator` Helm chart) into the **`netbird`** namespace. It uses **cert-manager** for admission webhook TLS (`webhook.enableCertManager: true`), so **cert-manager** must be Ready before the operator can become healthy.
 
-Create an OAuth client in the Tailscale admin console and grant it the **`tag:k8s-operator`** tag (and any extra tags you reference in `operatorConfig.defaultTags`). Then seal the Secret and commit it:
+Create a **personal access token** in the NetBird dashboard (see [NetBird access tokens](https://docs.netbird.io/manage/peers/access-tokens)), then seal a Secret that matches the Helm values (`netbirdAPI.keyFromSecret`):
 
 ```bash
 nix develop
 kubectl config use-context <guenivir-context>
 
-kubectl create secret generic operator-oauth \
-  --namespace=tailscale \
-  --from-literal=client_id='YOUR_CLIENT_ID' \
-  --from-literal=client_secret='YOUR_CLIENT_SECRET' \
+kubectl create secret generic netbird-mgmt-api-key \
+  --namespace=netbird \
+  --from-literal=NB_API_KEY='YOUR_NETBIRD_PAT' \
   --dry-run=client -o yaml \
-  | kubeseal --format yaml -o k3s/infrastructure/configs/guenivir/tailscale-operator-oauth.sealedsecret.yaml
+  | kubeseal --format yaml -o k3s/infrastructure/configs/guenivir/netbird-mgmt-api-key.sealedsecret.yaml
 ```
 
-Add `tailscale-operator-oauth.sealedsecret.yaml` to [`../infrastructure/configs/guenivir/kustomization.yaml`](../infrastructure/configs/guenivir/kustomization.yaml) under `resources:` so Flux applies it **after** controllers (the `infrastructure-config` Kustomization runs second). The `tailscale-operator` HelmRelease uses `install.disableWait: true` so the infrastructure sync can finish before this Secret exists; the operator becomes Ready once the SealedSecret is synced and unsealed.
+Add `netbird-mgmt-api-key.sealedsecret.yaml` to [`../infrastructure/configs/guenivir/kustomization.yaml`](../infrastructure/configs/guenivir/kustomization.yaml) under `resources:` so Flux applies it **after** controllers (the `infrastructure-config` Kustomization runs second). The operator HelmRelease uses `install.disableWait: true` so the infrastructure sync can finish before this Secret exists; the operator becomes Ready once the SealedSecret is synced and unsealed.
 
-Until `operator-oauth` exists, the operator Pod may stay unhealthy; that is expected until the SealedSecret is applied.
+Until `netbird-mgmt-api-key` exists, the operator Pod may stay unhealthy; that is expected until the SealedSecret is applied.
+
+For exposing workloads and routing peers, see [NetBird Kubernetes operator](https://docs.netbird.io/how-to/kubernetes-operator). Optional **`netbird-operator-config`** chart values (routing peers, policies, ingress-style exposure) are not installed here by default; add a second HelmRelease if you need that layer.
+
+### Replacing Tailscale
+
+If this cluster previously ran the **Tailscale Kubernetes operator**, remove its namespace and CRs after Flux drops the old HelmRelease (and delete any committed Tailscale SealedSecrets). Example:
+
+```bash
+kubectl delete namespace tailscale --wait=false
+```
+
+Confirm nothing still references Tailscale-only Ingress classes or annotations before deleting workloads.

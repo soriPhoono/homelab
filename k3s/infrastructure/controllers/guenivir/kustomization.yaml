@@ -4,5 +4,5 @@ resources:
   - ../base
   - cert-manager.yaml
   - longhorn.yaml
+  - netbird-kubernetes-operator.yaml
   - sealed-secrets.yaml
-  - tailscale-operator.yaml
