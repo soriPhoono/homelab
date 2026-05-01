@@ -8,3 +8,4 @@ resources:
   - externalsecret-sample-vault.yaml
   - clusterissuer-selfsigned.yaml
   - clusterissuer-letsencrypt-staging.yaml
+  - netbird-mgmt-api-key.sealedsecret.yaml

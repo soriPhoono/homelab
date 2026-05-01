@@ -3,7 +3,7 @@
 result
 .pre-commit-config.yaml
 
-gha-creds-*.json
-conductor/
+# Kubernetes
 
-age-key.txt
+## k3d
+k3d/
