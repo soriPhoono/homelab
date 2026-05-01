@@ -34,3 +34,31 @@ This repo relies heavily on dynamic discovery (`nix/lib/discover`). You rarely n
 
 - **System/User Secrets:** Managed via `sops-nix`. Keys are typically host SSH keys. Encrypted files must match the rules in `.sops.yaml`.
 - **Dev Shell Secrets:** Managed via `agenix` and `agenix-shell` (configured in `secrets.nix`). Decrypted automatically in the `nix develop` shell if the required identity key is present.
+
+## Cursor Cloud specific instructions
+
+This is a Nix flake-based infrastructure-as-code repository. There is no traditional application to "run" — validation means the flake evaluates and builds correctly.
+
+### Environment startup
+
+The update script handles installing Nix (Determinate installer) and direnv if not already present, starting `nix-daemon`, and sourcing the Nix profile. After the update script completes, the dev shell is ready via `nix develop` or `direnv allow`.
+
+### Key commands
+
+See the "Important Commands & Workflows" section above. The essential commands are:
+
+- `nix develop` — enter the dev shell (installs pre-commit hooks, provides `alejandra`, `nixd`, `sops`, `kubectl`, etc.)
+- `nix fmt` — format all Nix, YAML, and Markdown files via treefmt
+- `nix flake check` — run all validation checks (treefmt + pre-commit)
+- `nix eval .#nixosConfigurations --apply builtins.attrNames` — list NixOS hosts
+- `nix eval .#homeConfigurations --apply builtins.attrNames` — list standalone Home Manager configs
+- `nix build .#homeConfigurations.<name>.activationPackage --dry-run` — dry-run build a home config
+- `nix eval .#nixosConfigurations.<host>.config.networking.hostName` — evaluate a NixOS config
+
+### Gotchas
+
+- The `nix-daemon` must be running for multi-user Nix operations. The update script starts it automatically, but if builds fail with "cannot connect to socket", run `nix-daemon &>/dev/null &`.
+- The `[agenix] WARNING: no readable identities found!` warning in the dev shell is expected — the cloud VM has no SSH keys for decrypting secrets. This does not block evaluation or builds.
+- `nix fmt` may reformat YAML files in `k3s/`. If your task does not involve those files, revert formatting-only changes with `git checkout -- k3s/`.
+- Warnings about `eval-cores` and `lazy-trees` unknown settings are harmless and can be ignored.
+- Current configs: NixOS hosts are `zephyrus` and `lg-laptop`; standalone Home Manager configs are `sphoono` and `spookyskelly`.
