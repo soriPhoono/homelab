@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - ../base
   - cert-manager.yaml
+  - longhorn.yaml
   - sealed-secrets.yaml
   - tailscale-operator.yaml
