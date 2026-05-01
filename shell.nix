@@ -24,7 +24,7 @@ with pkgs;
 
         # Kubernetes
         kubectl
-        helm
+        kubernetes-helm
         fluxcd
         kubeseal
         k9s

@@ -1,14 +1,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infrastructure
+  name: infrastructure-config
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./k3s/infrastructure/controllers/guenivir
+  path: ./k3s/infrastructure/configs/guenivir
   prune: true
   wait: true
   timeout: 5m0s
+  dependsOn:
+    - name: infrastructure
   sourceRef:
     kind: GitRepository
     name: flux-system
