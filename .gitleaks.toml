@@ -1,0 +1,10 @@
+title = "homelab"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "SealedSecret manifests contain ciphertext sealed for the cluster controller; allow paths only for *.sealedsecret.yaml."
+paths = [
+  '''k3s/.*\.sealedsecret\.yaml''',
+]
