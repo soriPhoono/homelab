@@ -220,7 +220,8 @@
         identityPaths = [
           "$HOME/.ssh/id_ed25519"
         ];
-        secrets = {};
+        secrets = {
+        };
       };
 
       perSystem = {
