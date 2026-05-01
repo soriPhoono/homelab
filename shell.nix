@@ -35,6 +35,7 @@ in
         ++ lib.optional stdenv.isLinux [
           disko
           nixos-facter
+          openiscsi
         ];
 
       shellHook = ''
