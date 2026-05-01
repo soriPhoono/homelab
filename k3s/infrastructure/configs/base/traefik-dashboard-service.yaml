@@ -1,0 +1,19 @@
+# ClusterIP to the Traefik pod's internal API/dashboard port (chart name: traefik).
+# targetPort uses the container port name so it tracks chart defaults (8080 vs other).
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-dashboard
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: traefik
+spec:
+  type: ClusterIP
+  ports:
+    - name: traefik
+      port: 8080
+      targetPort: traefik
+      protocol: TCP
+  selector:
+    app.kubernetes.io/instance: traefik-kube-system
+    app.kubernetes.io/name: traefik

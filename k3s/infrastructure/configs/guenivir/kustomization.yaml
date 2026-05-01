@@ -8,3 +8,12 @@ resources:
   - externalsecret-sample-vault.yaml
   - clusterissuer-selfsigned.yaml
   - clusterissuer-letsencrypt-staging.yaml
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: traefik.guenivir.apps.local
+    target:
+      kind: Ingress
+      name: traefik-dashboard
+      namespace: kube-system

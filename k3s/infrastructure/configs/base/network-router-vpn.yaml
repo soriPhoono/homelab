@@ -1,0 +1,10 @@
+# Requires a NetBird Custom DNS zone whose API Name matches spec.dnsZoneRef.name exactly
+# (DNS → Zones → domain vpn.cryptic-coders.net). The operator creates routing peers for this router.
+apiVersion: netbird.io/v1alpha1
+kind: NetworkRouter
+metadata:
+  name: vpn-cryptic-coders
+  namespace: netbird
+spec:
+  dnsZoneRef:
+    name: vpn.cryptic-coders.net

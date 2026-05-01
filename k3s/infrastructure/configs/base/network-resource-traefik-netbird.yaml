@@ -1,0 +1,16 @@
+# Exposes traefik-netbird (port 80 → Traefik web) on your NetBird network.
+# Operator DNS record shape: traefik-netbird.kube-system.<zoneName> — add a CNAME in the same zone
+# from traefik.admin.vpn → that name if you want the vanity host traefik.admin.vpn.cryptic-coders.net.
+apiVersion: netbird.io/v1alpha1
+kind: NetworkResource
+metadata:
+  name: traefik-netbird
+  namespace: kube-system
+spec:
+  networkRouterRef:
+    name: vpn-cryptic-coders
+    namespace: netbird
+  serviceRef:
+    name: traefik-netbird
+  groups:
+    - name: All

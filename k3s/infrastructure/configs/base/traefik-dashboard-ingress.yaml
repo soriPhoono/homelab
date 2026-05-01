@@ -1,0 +1,31 @@
+# Traefik dashboard UI: open http(s)://<host>/dashboard/ (trailing slash matters).
+# Not authenticated — restrict by network, add auth middleware, or keep internal-only.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-dashboard
+  namespace: kube-system
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: traefik.testing.apps.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik-dashboard
+                port:
+                  name: traefik
+    # NetBird VPN: resolve traefik.admin.vpn.cryptic-coders.net (see guenivir netbird manifests).
+    - host: traefik.admin.vpn.cryptic-coders.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik-dashboard
+                port:
+                  name: traefik

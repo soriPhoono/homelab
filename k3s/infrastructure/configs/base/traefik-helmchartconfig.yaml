@@ -1,0 +1,12 @@
+# Merges with k3s-packaged Traefik; keeps the dashboard API available on the pod's
+# "traefik" port so traefik-dashboard Service + Ingress can reach it.
+# Ref: https://docs.k3s.io/networking/networking-services#traefik-ingress-controller
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    api:
+      dashboard: true
