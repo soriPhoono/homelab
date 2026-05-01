@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - jetstack-helmrepository.yaml
   - longhorn-helmrepository.yaml
+  - netbird-helmrepository.yaml
   - sealed-secrets-helmrepository.yaml
-  - tailscale-helmrepository.yaml
