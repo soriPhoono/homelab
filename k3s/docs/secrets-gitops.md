@@ -37,7 +37,7 @@ kubectl create secret generic netbird-mgmt-api-key \
   --namespace=netbird \
   --from-literal=NB_API_KEY='YOUR_NETBIRD_PAT' \
   --dry-run=client -o yaml \
-  | kubeseal --format yaml -o k3s/infrastructure/configs/guenivir/netbird-mgmt-api-key.sealedsecret.yaml
+  | kubeseal -o yaml -w k3s/infrastructure/configs/guenivir/netbird-mgmt-api-key.sealedsecret.yaml
 ```
 
 Add `netbird-mgmt-api-key.sealedsecret.yaml` to [`../infrastructure/configs/guenivir/kustomization.yaml`](../infrastructure/configs/guenivir/kustomization.yaml) under `resources:` so Flux applies it **after** controllers (the `infrastructure-config` Kustomization runs second). The operator HelmRelease uses `install.disableWait: true` so the infrastructure sync can finish before this Secret exists; the operator becomes Ready once the SealedSecret is synced and unsealed.
@@ -45,16 +45,6 @@ Add `netbird-mgmt-api-key.sealedsecret.yaml` to [`../infrastructure/configs/guen
 Until `netbird-mgmt-api-key` exists, the operator Pod may stay unhealthy; that is expected until the SealedSecret is applied.
 
 For exposing workloads and routing peers, see [NetBird Kubernetes operator](https://docs.netbird.io/how-to/kubernetes-operator). Optional **`netbird-operator-config`** chart values (routing peers, policies, ingress-style exposure) are not installed here by default; add a second HelmRelease if you need that layer.
-
-### Replacing Tailscale
-
-If this cluster previously ran the **Tailscale Kubernetes operator**, remove its namespace and CRs after Flux drops the old HelmRelease (and delete any committed Tailscale SealedSecrets). Example:
-
-```bash
-kubectl delete namespace tailscale --wait=false
-```
-
-Confirm nothing still references Tailscale-only Ingress classes or annotations before deleting workloads.
 
 ## HashiCorp Vault (in-cluster, dev mode)
 
