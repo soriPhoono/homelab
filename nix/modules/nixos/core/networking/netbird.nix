@@ -9,6 +9,10 @@ in
     options.core.networking.netbird = {
       enable = mkEnableOption "Enable NetBird client VPN";
 
+      auth = {
+        enable = mkEnableOption "Enable NetBird setup-key auto login";
+      };
+
       clientName = mkOption {
         type = types.str;
         default = "wt0";
@@ -32,12 +36,26 @@ in
       {
         services.netbird = {
           enable = true;
+          useRoutingFeatures = "client";
+          ui.enable = true;
 
           clients.${cfg.clientName} = {
             inherit (cfg) openFirewall port;
+
+            openInternalFirewall = true;
           };
         };
       }
+      (mkIf (cfg.auth.enable && options ? sops) {
+        sops.secrets."api/netbird-token" = {};
+
+        services.netbird = {
+          clients.${cfg.clientName}.login = {
+            enable = true;
+            setupKeyFile = config.sops.secrets."api/netbird-token".path;
+          };
+        };
+      })
       (mkIf config.core.networking.network-manager.enable {
         networking.networkmanager.unmanaged = [cfg.clientName];
       })

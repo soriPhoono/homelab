@@ -23,18 +23,20 @@ in
           calendarSupport = true;
           gpuScreenRecorderSupport = true;
         };
-        plugins = {
+        plugins = let
+          url = "https://github.com/noctalia-dev/noctalia-plugins";
+        in {
           sources = [
             {
+              inherit url;
               enabled = true;
               name = "Official Noctalia Plugins";
-              url = "https://github.com/noctalia-dev/noctalia-plugins";
             }
           ];
           states = let
             standardPlugin = {
               enabled = true;
-              sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
+              sourceUrl = url;
             };
           in {
             polkit-agent = standardPlugin;
@@ -43,7 +45,7 @@ in
             screen-recorder = standardPlugin;
             network-manager-vpn = standardPlugin;
             usb-drive-manager = standardPlugin;
-            tailscale = standardPlugin;
+            netbird = standardPlugin;
           };
         };
         pluginSettings = {
@@ -53,10 +55,11 @@ in
             fileBrowser = "xdg-open";
             terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
           };
-          tailscale = {
+          netbird = {
             showPeerCount = false;
             terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
-            taildropReceiveMode = "pkexec";
+            showIpAddress = true;
+            refreshInterval = 5000;
           };
         };
         settings = let
@@ -141,7 +144,7 @@ in
                   id = "plugin:network-manager-vpn";
                 }
                 {
-                  id = "plugin:tailscale";
+                  id = "plugin:netbird";
                 }
                 {
                   id = "Brightness";
