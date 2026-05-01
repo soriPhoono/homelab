@@ -1,0 +1,20 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: hello
+  namespace: hello
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: ./deploy/helm/hello-kubernetes
+      sourceRef:
+        kind: GitRepository
+        name: hello-kubernetes
+        namespace: hello
+  values:
+    replicaCount: 2
+    service:
+      type: ClusterIP
+      port: 80
+    message: "Hello from Flux on guenivir"
