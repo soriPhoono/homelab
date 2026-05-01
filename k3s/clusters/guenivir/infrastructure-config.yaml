@@ -8,7 +8,7 @@ spec:
   path: ./k3s/infrastructure/configs/guenivir
   prune: true
   wait: true
-  timeout: 5m0s
+  timeout: 15m0s
   dependsOn:
     - name: infrastructure
   sourceRef:
