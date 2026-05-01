@@ -67,6 +67,30 @@ in
           description = "The priority of the ip rules (must be lower than 5270 to take precedence).";
         };
       };
+
+      netbirdBypass = {
+        enable = mkOption {
+          type = types.bool;
+          default = config.core.networking.netbird.enable or false;
+          description = "Whether to automatically bypass NetBird routing for Docker subnets.";
+        };
+
+        subnets = mkOption {
+          type = types.listOf types.str;
+          default = [
+            "172.16.0.0/12"
+            "10.0.0.0/8"
+            "192.168.0.0/16"
+          ];
+          description = "List of subnets to bypass NetBird routing for (both to and from).";
+        };
+
+        priority = mkOption {
+          type = types.int;
+          default = 2500;
+          description = "The priority of the ip rules (must be lower than NetBird routing rules to take precedence).";
+        };
+      };
     };
 
     config = mkIf cfg.enable {
@@ -75,6 +99,11 @@ in
           # Ensure rules are re-applied when tailscaled starts/restarts
           tailscaled.serviceConfig.ExecStartPost = mkIf cfg.tailscaleBypass.enable [
             "-${pkgs.systemd}/bin/systemctl restart --no-block docker-tailscale-bypass.service"
+          ];
+
+          # Ensure rules are re-applied when NetBird starts/restarts
+          "netbird-${config.core.networking.netbird.clientName}".serviceConfig.ExecStartPost = mkIf cfg.netbirdBypass.enable [
+            "-${pkgs.systemd}/bin/systemctl restart --no-block docker-netbird-bypass.service"
           ];
 
           docker-create-networks = let
@@ -206,6 +235,79 @@ in
                     cfg.tailscaleBypass.subnets))}
                 '';
               }}/bin/docker-tailscale-bypass-stop";
+            };
+          };
+
+          docker-netbird-bypass = mkIf cfg.netbirdBypass.enable {
+            description = "Bypass NetBird routing for Docker traffic";
+            wants = [
+              "network-online.target"
+              "netbird-${config.core.networking.netbird.clientName}.service"
+            ];
+            bindsTo = ["netbird-${config.core.networking.netbird.clientName}.service"];
+            after = [
+              "network-online.target"
+              "netbird-${config.core.networking.netbird.clientName}.service"
+              "docker.service"
+            ];
+            wantedBy = [
+              "multi-user.target"
+              "netbird-${config.core.networking.netbird.clientName}.service"
+            ];
+            serviceConfig = {
+              Type = "oneshot";
+              RemainAfterExit = true;
+              ExecStart = "${pkgs.writeShellApplication {
+                name = "docker-netbird-bypass-start";
+                runtimeInputs = with pkgs; [
+                  iproute2
+                  gnugrep
+                ];
+                text = ''
+                  # Give NetBird a moment to settle its own rules
+                  sleep 2
+
+                  ${lib.concatStringsSep "\n" (flatten (map (subnet: [
+                      ''
+                        if ! ip rule show priority ${toString cfg.netbirdBypass.priority} | grep -q "from ${subnet} lookup main"; then
+                          echo "Adding bypass rule from ${subnet}..."
+                          ip rule add from ${subnet} lookup main prio ${toString cfg.netbirdBypass.priority}
+                        fi
+                      ''
+                      ''
+                        if ! ip rule show priority ${toString cfg.netbirdBypass.priority} | grep -q "to ${subnet} lookup main"; then
+                          echo "Adding bypass rule to ${subnet}..."
+                          ip rule add to ${subnet} lookup main prio ${toString cfg.netbirdBypass.priority}
+                        fi
+                      ''
+                    ])
+                    cfg.netbirdBypass.subnets))}
+                '';
+              }}/bin/docker-netbird-bypass-start";
+              ExecStop = "${pkgs.writeShellApplication {
+                name = "docker-netbird-bypass-stop";
+                runtimeInputs = with pkgs; [
+                  iproute2
+                  gnugrep
+                ];
+                text = ''
+                  ${lib.concatStringsSep "\n" (flatten (map (subnet: [
+                      ''
+                        if ip rule show priority ${toString cfg.netbirdBypass.priority} | grep -q "from ${subnet} lookup main"; then
+                          echo "Removing bypass rule from ${subnet}..."
+                          ip rule del from ${subnet} lookup main prio ${toString cfg.netbirdBypass.priority}
+                        fi
+                      ''
+                      ''
+                        if ip rule show priority ${toString cfg.netbirdBypass.priority} | grep -q "to ${subnet} lookup main"; then
+                          echo "Removing bypass rule to ${subnet}..."
+                          ip rule del to ${subnet} lookup main prio ${toString cfg.netbirdBypass.priority}
+                        fi
+                      ''
+                    ])
+                    cfg.netbirdBypass.subnets))}
+                '';
+              }}/bin/docker-netbird-bypass-stop";
             };
           };
         }

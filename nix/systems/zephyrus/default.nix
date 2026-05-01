@@ -41,7 +41,7 @@
 
     networking = {
       network-manager.enable = true;
-      tailscale.enable = true;
+      netbird.enable = true;
     };
 
     secrets = {
