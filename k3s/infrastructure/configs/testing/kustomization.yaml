@@ -1,0 +1,10 @@
+# Same intent as configs/guenivir (copied here so Kustomize load restrictions allow Flux builds).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - vault-dev-root-token.yaml
+  - vault-bootstrap-job.yaml
+  - clustersecretstore-vault.yaml
+  - externalsecret-sample-vault.yaml
+  - clusterissuer-selfsigned.yaml
+  - clusterissuer-letsencrypt-staging.yaml

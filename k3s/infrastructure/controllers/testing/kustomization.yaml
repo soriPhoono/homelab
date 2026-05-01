@@ -1,0 +1,15 @@
+# Cluster "testing": k3d/local overlay — no Longhorn; PVCs use k3s/k3d rancher.io/local-path (hostDir binds).
+# Keep HelmRelease versions aligned with ../guenivir when you bump charts.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - external-secrets-helmrepository.yaml
+  - jetstack-helmrepository.yaml
+  - hashicorp-helmrepository.yaml
+  - netbird-helmrepository.yaml
+  - sealed-secrets-helmrepository.yaml
+  - cert-manager.yaml
+  - external-secrets.yaml
+  - sealed-secrets.yaml
+  - vault.yaml
+  - netbird-kubernetes-operator.yaml

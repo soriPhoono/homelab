@@ -26,9 +26,9 @@ in
 
           # Kubernetes
           kubectl
+          kubeseal
           kubernetes-helm
           fluxcd
-          kubeseal
           k9s
           longhornctl
         ]
