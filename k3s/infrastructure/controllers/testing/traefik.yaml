@@ -1,0 +1,41 @@
+# Upstream Traefik Helm chart (newer than k3s static bundle). Requires k3s/k3d with
+# bundled Traefik disabled (--disable=traefik) so only this release runs.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: traefik
+  targetNamespace: kube-system
+  install:
+    createNamespace: false
+  chart:
+    spec:
+      chart: traefik
+      version: 39.0.8
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: flux-system
+  values:
+    # Match k3s-packaged Traefik pod labels so traefik-dashboard / traefik-netbird
+    # Services and NetBird NetworkResource keep working unchanged.
+    instanceLabelOverride: traefik-kube-system
+    api:
+      dashboard: true
+    providers:
+      kubernetesIngress:
+        publishedService:
+          enabled: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    service:
+      type: ClusterIP
+      ipFamilyPolicy: PreferDualStack
