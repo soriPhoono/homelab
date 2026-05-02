@@ -1,6 +1,14 @@
-# Exposes traefik-netbird (port 80 → Traefik web) on your NetBird network.
-# Operator DNS record shape: traefik-netbird.kube-system.<zoneName> — add a CNAME in the same zone
-# from traefik.admin.vpn → that name if you want the vanity host traefik.admin.vpn.cryptic-coders.net.
+# Exposes Service traefik-netbird to NetBird peers (Networks + routing peer + Custom DNS zone).
+# This is private mesh access, not the public "Reverse Proxy" product
+# (https://docs.netbird.io/manage/reverse-proxy — edge TLS, internet-facing domains).
+# To also publish via Reverse Proxy, use Dashboard → Networks → Expose Service on the resource, or add
+# a Reverse Proxy service whose target is this domain resource; enable "Pass Host Header" if the app needs it.
+#
+# Operator DNS A record name (NetBird API record.Name): <service>.<namespace>.<zone.Name>
+# where zone.Name comes from the matched zone (same value you put in dnsZoneRef once lookup succeeds).
+# Canonical FQDN example when zone.Name is vpn.cryptic-coders.net:
+#   traefik-netbird.kube-system.vpn.cryptic-coders.net
+# Add matching Ingress host below; vanity traefik.admin.vpn... needs CNAME → canonical if names differ.
 apiVersion: netbird.io/v1alpha1
 kind: NetworkResource
 metadata:

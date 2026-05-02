@@ -1,5 +1,8 @@
-# Requires a NetBird Custom DNS zone whose API Name matches spec.dnsZoneRef.name exactly
-# (DNS → Zones → domain vpn.cryptic-coders.net). The operator creates routing peers for this router.
+# NetBird operator resolves zones by GET /api/dns/zones and matches zones[].name ONLY (not .domain).
+# If this string ≠ your zone's API "name", reconciliation fails → no DNS records → NXDOMAIN in browser.
+# Fix: curl -s -H "Authorization: Token $NB_TOKEN" https://api.netbird.io/api/dns/zones | jq '.[] | {name,domain}'
+# then set spec.dnsZoneRef.name to the "name" field (often differs from "domain" in the dashboard).
+# Recommended: rename the zone so name equals domain (e.g. both vpn.cryptic-coders.net) to avoid confusion.
 apiVersion: netbird.io/v1alpha1
 kind: NetworkRouter
 metadata:
