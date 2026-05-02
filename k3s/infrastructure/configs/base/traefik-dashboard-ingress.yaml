@@ -29,15 +29,3 @@ spec:
                 name: traefik-dashboard
                 port:
                   name: traefik
-    # Canonical hostname created by the operator when dnsZoneRef matches zones[].name == vpn.cryptic-coders.net.
-    # If your zone API name differs, patch this host or add a Kustomize patch to match traefik-netbird.kube-system.<zone.Name>.
-    - host: traefik-netbird.kube-system.vpn.cryptic-coders.net
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: traefik-dashboard
-                port:
-                  name: traefik
