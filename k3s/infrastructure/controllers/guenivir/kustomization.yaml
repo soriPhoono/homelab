@@ -3,8 +3,6 @@ kind: Kustomization
 resources:
   - ../base
   - cert-manager.yaml
-  - external-secrets.yaml
   - longhorn.yaml
   - netbird-kubernetes-operator.yaml
   - sealed-secrets.yaml
-  - vault.yaml

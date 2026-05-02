@@ -1,4 +1,4 @@
-# Cluster secrets (Sealed Secrets + NetBird Kubernetes operator, Vault, External secrets)
+# Cluster secrets (Sealed Secrets + NetBird Kubernetes operator)
 
 ## Sealed Secrets controller
 
@@ -40,31 +40,8 @@ kubectl create secret generic netbird-mgmt-api-key \
   | kubeseal -o yaml -w k3s/infrastructure/configs/guenivir/netbird-mgmt-api-key.sealedsecret.yaml
 ```
 
-Add `netbird-mgmt-api-key.sealedsecret.yaml` to [`../infrastructure/configs/guenivir/kustomization.yaml`](../infrastructure/configs/guenivir/kustomization.yaml) under `resources:` so Flux applies it **after** controllers (the `infrastructure-config` Kustomization runs second). The operator HelmRelease uses `install.disableWait: true` so the infrastructure sync can finish before this Secret exists; the operator becomes Ready once the SealedSecret is synced and unsealed.
+Add `netbird-mgmt-api-key.sealedsecret.yaml` to [`../infrastructure/configs/guenivir/kustomization.yaml`](../infrastructure/configs/guenivir/kustomization.yaml) under `resources:` so Flux applies it **after** controllers (the `infrastructure-config` Kustomization runs second). The HelmRelease uses `install.disableWait: true` so the infrastructure sync can finish before this Secret exists; the operator becomes Ready once the SealedSecret is synced and unsealed.
 
 Until `netbird-mgmt-api-key` exists, the operator Pod may stay unhealthy; that is expected until the SealedSecret is applied.
 
 For exposing workloads and routing peers, see [NetBird Kubernetes operator](https://docs.netbird.io/how-to/kubernetes-operator). Optional **`netbird-operator-config`** chart values (routing peers, policies, ingress-style exposure) are not installed here by default; add a second HelmRelease if you need that layer.
-
-## HashiCorp Vault (in-cluster, dev mode)
-
-Flux installs the official **Vault** Helm chart into **`vault`** in **dev mode** for bootstrap only: in-memory storage, **no HA**, **not for production**. The chart pins a non-default root token via `server.dev.devRootToken` so it can be referenced consistently from Kubernetes Secrets and [External Secrets Operator](https://external-secrets.io/).
-
-**Security:** The dev root token is stored in [`../infrastructure/configs/guenivir/vault-dev-root-token.yaml`](../infrastructure/configs/guenivir/vault-dev-root-token.yaml). Treat this like any other credential in Git: for anything beyond a lab, **replace it with a SealedSecret** (same name and keys) or move to proper Vault auto-unseal + Kubernetes auth.
-
-After sync, a **Job** [`vault-bootstrap-job.yaml`](../infrastructure/configs/guenivir/vault-bootstrap-job.yaml) enables **KV v2** at `secret/` (if missing) and seeds **`secret/cluster-defaults/sample`** with `msg=hello-from-vault`. You can add more paths with `kubectl exec` into the Vault pod or by extending that Job (delete the old Job before changing its spec).
-
-To migrate off dev mode, install Vault in **standalone** or **HA/Raft** mode, initialize and unseal per HashiCorp docs, then switch the **ClusterSecretStore** to [token, AppRole, or Kubernetes auth](https://external-secrets.io/latest/provider/hashicorp-vault/).
-
-## External Secrets Operator (Vault backend)
-
-Flux installs **external-secrets** into **`external-secrets`** with CRDs enabled. A **ClusterSecretStore** [`clustersecretstore-vault.yaml`](../infrastructure/configs/guenivir/clustersecretstore-vault.yaml) points at `http://vault.vault.svc:8200` with KV **v2** at mount **`secret`**, using the dev root token Secret above.
-
-A sample **ExternalSecret** [`externalsecret-sample-vault.yaml`](../infrastructure/configs/guenivir/externalsecret-sample-vault.yaml) syncs `cluster-defaults/sample` → Kubernetes Secret **`eso-sample-synced`** in the **`external-secrets`** namespace (key **`msg`**). Confirm with:
-
-```bash
-kubectl -n external-secrets get externalsecret eso-sample-from-vault
-kubectl -n external-secrets get secret eso-sample-synced -o jsonpath='{.data.msg}' | base64 -d
-```
-
-For application namespaces, add **ExternalSecret** manifests (or **ClusterExternalSecret**) that target Secrets in those namespaces. See [External Secrets Vault provider](https://external-secrets.io/latest/provider/hashicorp-vault/).
