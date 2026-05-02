@@ -15,5 +15,7 @@ spec:
       targetPort: traefik
       protocol: TCP
   selector:
+    # Official Traefik chart: app.kubernetes.io/instance is "<releaseName>-<namespace>"
+    # for releaseName traefik in kube-system.
     app.kubernetes.io/instance: traefik-kube-system
     app.kubernetes.io/name: traefik

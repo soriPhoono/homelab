@@ -20,9 +20,9 @@ spec:
         name: traefik
         namespace: flux-system
   values:
-    # Match historical k3s Traefik pod labels so traefik-dashboard / traefik-netbird
-    # Services and NetBird NetworkResource keep working on both clusters.
-    instanceLabelOverride: traefik-kube-system
+    # Pod labels follow the chart default (instance = <releaseName>-<targetNamespace>).
+    # Keep Service selectors in infrastructure/configs/base in sync if releaseName or
+    # targetNamespace changes.
     api:
       dashboard: true
     providers:
