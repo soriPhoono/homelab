@@ -1,0 +1,41 @@
+# Official Traefik Helm chart on both guenivir and testing. Disable k3s-bundled
+# Traefik (--disable=traefik) so only this release runs.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: traefik
+  targetNamespace: kube-system
+  install:
+    createNamespace: false
+  chart:
+    spec:
+      chart: traefik
+      version: 39.0.8
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: flux-system
+  values:
+    # Pod labels follow the chart default (instance = <releaseName>-<targetNamespace>).
+    # Keep Service selectors in infrastructure/configs/base in sync if releaseName or
+    # targetNamespace changes.
+    api:
+      dashboard: true
+    providers:
+      kubernetesIngress:
+        publishedService:
+          enabled: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    service:
+      type: ClusterIP
+      ipFamilyPolicy: PreferDualStack

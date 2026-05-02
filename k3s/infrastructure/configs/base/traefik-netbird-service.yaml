@@ -1,5 +1,5 @@
 # Duplicate ClusterIP to Traefik’s HTTP entrypoint for NetBird NetworkResource exposure.
-# Labels/selectors match k3s-packaged Traefik; targetPort "web" follows the Traefik Helm chart.
+# Selector matches Traefik Helm chart pod labels (release traefik, namespace kube-system).
 apiVersion: v1
 kind: Service
 metadata:
