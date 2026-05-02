@@ -8,5 +8,4 @@ resources:
   - external-secrets.yaml
   - netbird-kubernetes-operator.yaml
   - sealed-secrets.yaml
-  - traefik.yaml
   - vault.yaml

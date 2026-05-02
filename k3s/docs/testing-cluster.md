@@ -46,8 +46,8 @@ NetBird Helm values use **`cluster.name: testing`** for this cluster.
 
 ## Traefik (Flux Helm chart)
 
-The **testing** cluster installs Traefik from the **official Traefik Helm repository** (Flux `HelmRelease` in `infrastructure/controllers/testing/traefik.yaml`) so the ingress controller can track chart releases independently of the k3s static chart tarball.
+**guenivir** and **testing** both install Traefik from the **official Traefik Helm repository** via the shared Flux `HelmRelease` in [`../infrastructure/controllers/base/traefik.yaml`](../infrastructure/controllers/base/traefik.yaml) (included by each cluster’s `infrastructure/controllers/<name>/kustomization.yaml`). Bump the chart **`version`** there for both clusters at once.
 
-**Important:** k3d/k3s also deploys Traefik via the built-in `HelmChart` unless you disable it. Run the cluster with **`--k3s-arg '--disable=traefik@server:0'`** (or the equivalent for your k3s install) so only the Flux-managed Traefik runs. Otherwise you will have two controllers and conflicting `IngressClass` / services. If you previously had the bundled chart installed, remove leftover **`HelmChart/traefik-crd`** in `kube-system` if it still exists after disabling, so CRD install jobs do not fight Flux.
+**Important:** k3s also deploys Traefik via the built-in `HelmChart` unless you disable it. Use **`--disable=traefik`** on the server (for k3d: **`--k3s-arg '--disable=traefik@server:0'`**) so only the Flux-managed Traefik runs. Otherwise you get two controllers and conflicting `IngressClass` / services. If a node previously ran the bundled chart, delete leftover **`HelmChart/traefik-crd`** in `kube-system` when needed so install jobs do not fight Flux.
 
-`traefik-dashboard`, `traefik-netbird`, and the NetBird `NetworkResource` in `infrastructure/configs/base` select pods with **`app.kubernetes.io/instance: traefik-kube-system`**. The Flux release sets **`instanceLabelOverride: traefik-kube-system`** so those manifests stay valid without per-cluster patches.
+`traefik-dashboard`, `traefik-netbird`, and the NetBird `NetworkResource` in `infrastructure/configs/base` select pods with **`app.kubernetes.io/instance: traefik-kube-system`**. The Flux release sets **`instanceLabelOverride: traefik-kube-system`** so those manifests stay valid on every cluster (including NetBird ingress to the dashboard).

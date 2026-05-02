@@ -8,3 +8,4 @@ resources:
   - netbird-helmrepository.yaml
   - sealed-secrets-helmrepository.yaml
   - traefik-helmrepository.yaml
+  - traefik.yaml
