@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - traefik-helmchartconfig.yaml
   - traefik-dashboard-service.yaml
+  - traefik-dashboard-middleware.yaml
   - traefik-netbird-service.yaml
   - traefik-dashboard-ingress.yaml
   - network-router-vpn.yaml

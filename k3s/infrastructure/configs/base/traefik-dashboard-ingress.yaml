@@ -1,10 +1,12 @@
-# Traefik dashboard UI: open http(s)://<host>/dashboard/ (trailing slash matters).
+# Traefik dashboard UI lives at /dashboard/ (trailing slash matters). Middleware redirects / and /dashboard → /dashboard/.
 # Not authenticated — restrict by network, add auth middleware, or keep internal-only.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: traefik-dashboard
   namespace: kube-system
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-traefik-dashboard-path-redirect@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
@@ -18,7 +20,18 @@ spec:
                 name: traefik-dashboard
                 port:
                   name: traefik
-    # NetBird mesh: after DNS for this host reaches the cluster (Custom Zone / CNAME), Traefik routes by Host.
+    # NetBird mesh: operator DNS name (<svc>.<ns>.<zone>) — see network-resource-traefik-netbird.yaml.
+    - host: traefik-netbird.kube-system.vpn.cryptic-coders.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik-dashboard
+                port:
+                  name: traefik
+    # Optional vanity host; CNAME → canonical if both exist.
     - host: traefik.admin.vpn.cryptic-coders.net
       http:
         paths:

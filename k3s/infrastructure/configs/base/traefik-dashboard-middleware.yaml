@@ -1,0 +1,33 @@
+# redirectRegex matches the full request URL (scheme + host + path). Chain runs root first, then /dashboard → /dashboard/.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: traefik-dashboard-redirect-root
+  namespace: kube-system
+spec:
+  redirectRegex:
+    regex: ^(https?://[^/]+)/?$
+    replacement: ${1}/dashboard/
+    permanent: false
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: traefik-dashboard-redirect-noslash
+  namespace: kube-system
+spec:
+  redirectRegex:
+    regex: ^(https?://[^/]+)/dashboard$
+    replacement: ${1}/dashboard/
+    permanent: false
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: traefik-dashboard-path-redirect
+  namespace: kube-system
+spec:
+  chain:
+    middlewares:
+      - name: traefik-dashboard-redirect-root
+      - name: traefik-dashboard-redirect-noslash
