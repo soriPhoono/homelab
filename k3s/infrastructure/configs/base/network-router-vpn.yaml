@@ -1,8 +1,12 @@
 # NetBird operator resolves zones by GET /api/dns/zones and matches zones[].name ONLY (not .domain).
 # If this string ≠ your zone's API "name", reconciliation fails → no DNS records → NXDOMAIN in browser.
-# Fix: curl -s -H "Authorization: Token $NB_TOKEN" https://api.netbird.io/api/dns/zones | jq '.[] | {name,domain}'
+# Fix: curl -sS -H "Authorization: Token $NB_TOKEN" https://api.netbird.io/api/dns/zones \
+#   | nix run nixpkgs#jq -- 'if type == "array" then .[] | {name,domain} else . end'
+# Use "--" before jq when using nix run; with jq on PATH you can use jq '.[] | {name,domain}' directly.
 # then set spec.dnsZoneRef.name to the "name" field (often differs from "domain" in the dashboard).
-# Recommended: rename the zone so name equals domain (e.g. both vpn.cryptic-coders.net) to avoid confusion.
+# If the API returns [] you have no Custom DNS zones yet — create one in Dashboard → DNS → Zones
+# (domain, distribution groups to peers that should resolve it), then re-run the curl and align dnsZoneRef.name.
+# Recommended: set the zone "name" and "domain" to the same FQDN (e.g. vpn.cryptic-coders.net) so this file matches.
 apiVersion: netbird.io/v1alpha1
 kind: NetworkRouter
 metadata:
