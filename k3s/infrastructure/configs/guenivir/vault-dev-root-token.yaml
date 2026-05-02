@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: vault-dev-root-token
-  namespace: vault
-type: Opaque
-stringData:
-  # Dev-mode root token (must match server.dev.devRootToken on the Vault HelmRelease).
-  token: dev-root-for-eso-bootstrap-only

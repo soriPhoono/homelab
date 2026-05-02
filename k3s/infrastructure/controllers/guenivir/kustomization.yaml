@@ -7,4 +7,3 @@ resources:
   - longhorn.yaml
   - netbird-kubernetes-operator.yaml
   - sealed-secrets.yaml
-  - vault.yaml
