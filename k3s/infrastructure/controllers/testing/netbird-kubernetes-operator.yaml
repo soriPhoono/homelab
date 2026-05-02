@@ -14,8 +14,10 @@ spec:
   install:
     createNamespace: true
     disableWait: true
+  # Match install: Flux `infrastructure` Kustomization uses `wait: true`; without this, Helm
+  # waits for the operator/webhook rollout and can block the whole sync (e.g. API key, cert lag).
   upgrade:
-    disableWait: false
+    disableWait: true
   chart:
     spec:
       chart: kubernetes-operator
