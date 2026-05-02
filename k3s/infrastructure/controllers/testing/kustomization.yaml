@@ -5,6 +5,5 @@ kind: Kustomization
 resources:
   - ../base
   - cert-manager.yaml
-  - external-secrets.yaml
   - netbird-kubernetes-operator.yaml
   - sealed-secrets.yaml

@@ -1,4 +1,4 @@
-# Cluster secrets (Sealed Secrets + NetBird Kubernetes operator, External Secrets)
+# Cluster secrets (Sealed Secrets + NetBird Kubernetes operator)
 
 ## Sealed Secrets controller
 
@@ -45,7 +45,3 @@ Add `netbird-mgmt-api-key.sealedsecret.yaml` to [`../infrastructure/configs/guen
 Until `netbird-mgmt-api-key` exists, the operator Pod may stay unhealthy; that is expected until the SealedSecret is applied.
 
 For exposing workloads and routing peers, see [NetBird Kubernetes operator](https://docs.netbird.io/how-to/kubernetes-operator). Optional **`netbird-operator-config`** chart values (routing peers, policies, ingress-style exposure) are not installed here by default; add a second HelmRelease if you need that layer.
-
-## External Secrets Operator
-
-Flux installs **external-secrets** into **`external-secrets`** with CRDs enabled. No **ClusterSecretStore** is shipped by default; add one when you pick a backend (for example [HashiCorp Vault](https://external-secrets.io/latest/provider/hashicorp-vault/), AWS Secrets Manager, or another [supported provider](https://external-secrets.io/latest/provider/overview/)).
