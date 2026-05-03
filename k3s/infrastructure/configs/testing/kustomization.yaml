@@ -3,10 +3,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../base
-  - vault-dev-root-token.yaml
-  - vault-bootstrap-job.yaml
-  - clustersecretstore-vault.yaml
-  - externalsecret-sample-vault.yaml
   - clusterissuer-selfsigned.yaml
   - clusterissuer-letsencrypt-staging.yaml
   - netbird-mgmt-api-key.sealedsecret.yaml

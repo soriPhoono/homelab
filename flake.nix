@@ -261,7 +261,18 @@
               ];
               text = ''
                 # Disable k3s-bundled Traefik; Flux installs Traefik from the official Helm chart (testing path).
-                k3d cluster create test-cluster --k3s-arg '--disable=traefik@server:0'
+                k3d cluster create test-cluster \
+                  --k3s-arg '--disable=traefik@server:0' \
+                  --image rancher/k3s:v1.31.5-k3s1 \
+                  --wait --timeout=120s
+
+                flux bootstrap github \
+                  --token-auth \
+                  --owner=soriphoono \
+                  --repository=homelab \
+                  --branch=main \
+                  --path=k3s/clusters/testing/ \
+                  --personal
               '';
             }}/bin/deploy-test-cluster";
           };
