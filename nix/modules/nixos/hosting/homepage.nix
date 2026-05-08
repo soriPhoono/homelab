@@ -88,7 +88,6 @@ in
         enable = true;
         inherit (cfg) listenPort;
         openFirewall = false;
-        allowedHosts = lib.mkIf (proxyCfg.enable && proxyCfg.dns.localSubdomain != "") "${proxyCfg.dns.localSubdomain}.${proxyCfg.dns.baseDomain}";
 
         settings = {
           title = "Data Fortress";
@@ -126,10 +125,6 @@ in
               "External Control" = externalServiceLayerCards;
             }
           ];
-      };
-
-      hosting.proxy.services.default = mkIf proxyCfg.enable {
-        proxyPort = cfg.listenPort;
       };
     };
   }
