@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{...}: {
   imports = [
     ./settings.nix
     ./mcp.nix
@@ -6,6 +6,6 @@
   ];
 
   userapps.development.editors.vscode = {
-    package = pkgs.code-cursor;
+    vendor = "cursor";
   };
 }

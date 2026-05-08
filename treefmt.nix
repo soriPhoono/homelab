@@ -3,6 +3,7 @@ _: {
 
   settings.global.excludes = [
     ".agents/skills/*"
+    ".cursor/rules/*"
     ".gemini/agents/*"
   ];
 

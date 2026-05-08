@@ -11,10 +11,15 @@ in
     options.userapps.development.editors.vscode = {
       enable = mkEnableOption "Enable vscode text editor";
 
-      package = mkOption {
-        type = types.package;
-        default = pkgs.vscodium;
-        description = "The vscode package to use.";
+      vendor = mkOption {
+        type = with types; enum ["oss-code" "vscode" "cursor"];
+        default = "oss-code";
+        description = ''
+          Which VSCode-family editor vendor to use.
+          - "oss-code" -> default (pkgs.vscodium)
+          - "vscode" -> pkgs.vscode
+          - "cursor" -> pkgs.code-cursor
+        '';
       };
 
       priority = mkOption {
@@ -36,16 +41,24 @@ in
       };
     };
 
-    config =
-      mkIf cfg.enable
-      {
+    config = mkIf cfg.enable (mkMerge [
+      (let
+        package =
+          if cfg.vendor == "vscode"
+          then pkgs.vscode
+          else if cfg.vendor == "cursor"
+          then pkgs.code-cursor
+          else if cfg.vendor == "oss-code"
+          then pkgs.vscodium
+          else null;
+      in {
         home.sessionVariables = {
-          EDITOR = mkOverride cfg.priority (lib.getExe cfg.package);
-          VISUAL = mkOverride cfg.priority (lib.getExe cfg.package);
+          EDITOR = mkOverride cfg.priority (lib.getExe package);
+          VISUAL = mkOverride cfg.priority (lib.getExe package);
         };
 
         xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-          editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
+          editor = ["${baseNameOf (lib.getExe package)}.desktop"];
         in
           mkOverride cfg.priority {
             "text/plain" = editor;
@@ -54,7 +67,7 @@ in
           });
 
         programs.vscode = {
-          inherit (cfg) package;
+          inherit package;
 
           enable = true;
           mutableExtensionsDir = false;
@@ -66,5 +79,22 @@ in
             enableUpdateCheck = false;
           };
         };
-      };
+      })
+      (mkIf (cfg.vendor != "oss-code") {
+        userapps.development.infrastructure.github = {
+          enable = mkDefault true;
+          enableDesktop = mkDefault true;
+        };
+      })
+      (mkIf (cfg.vendor == "vscode") {
+        userapps.development.agents.github-copilot = {
+          enable = mkDefault true;
+        };
+      })
+      (mkIf (cfg.vendor == "cursor") {
+        userapps.development.agents.cursor = {
+          enable = mkDefault true;
+        };
+      })
+    ]);
   }

@@ -26,7 +26,7 @@
       - **Nix**: Use `nh os switch .` or `nh home switch .` for system/home updates.
 
       ---
-      *This data provides GEMINI.md-style context provider for the current system session.*
+      *This data feeds declarative agent context (Gemini `GEMINI.md`, OpenCode `AGENTS.md`, Cursor `~/.cursor/rules` and `~/.cursor/AGENTS.md`).*
     '';
   };
 }
