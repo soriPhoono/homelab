@@ -70,6 +70,9 @@ in
                   "order.1" = "DuckDuckGo";
                 };
               };
+              "browser.startup.page" = 1;
+              "browser.startup.homepage" = "http://127.0.0.1:8082";
+              "browser.newtabpage.enabled" = false;
             };
           };
 

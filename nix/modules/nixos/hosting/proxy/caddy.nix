@@ -8,6 +8,16 @@
   proxyConfig = config.hosting.proxy;
   dnsConfig = proxyConfig.dns;
   cfg = proxyConfig.caddy;
+  rootLocalDomain =
+    if dnsConfig.localSubdomain != ""
+    then "${dnsConfig.localSubdomain}.${dnsConfig.baseDomain}"
+    else dnsConfig.baseDomain;
+  wildcardDomain =
+    if dnsConfig.localSubdomain != ""
+    then "*.${dnsConfig.localSubdomain}.${dnsConfig.baseDomain}"
+    else "*.${dnsConfig.baseDomain}";
+  defaultService = proxyConfig.services.default;
+  nonDefaultServices = lib.filterAttrs (name: _: name != "default") proxyConfig.services;
   # Custom caddy with cloudflare DNS plugin
   # Note: Standard nixpkgs caddy doesn't have withPlugins in a simple way
   # unless using an overlay. We'll use a more standard buildGoModule approach
@@ -34,21 +44,30 @@ in
             hash = "sha256-J0HWjCPoOoARAxDpG2bS9c0x5Wv4Q23qWZbTjd8nW84=";
           };
 
-          extraConfig = let
-            wildcardDomain =
-              if dnsConfig.localSubdomain != ""
-              then "*.${dnsConfig.localSubdomain}.${dnsConfig.baseDomain}"
-              else "*.${dnsConfig.baseDomain}";
-          in ''
+          extraConfig = ''
             (wildcard_tls) {
               tls {
-                ${optionalString (dnsConfig.provider == "cloudflare") "dns cloudflare {env.CLOUDFLARE_API_TOKEN}"}
+                ${optionalString (dnsConfig.provider == "cloudflare") ''
+              issuer acme {
+                dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+                resolvers 1.1.1.1 1.0.0.1
+                propagation_delay 30s
+                propagation_timeout 5m
+              }
+            ''}
               }
             }
 
-            # Define the wildcard domain once to ensure a single cert is requested
-            ${wildcardDomain} {
+            # Define local + wildcard once so one cert can cover both names
+            # while keeping local traffic routed to the default service.
+            ${rootLocalDomain}, ${wildcardDomain} {
               import wildcard_tls
+
+              @root host ${rootLocalDomain}
+              handle @root {
+                reverse_proxy 127.0.0.1:${toString defaultService.proxyPort}
+              }
+
               abort
             }
           '';
@@ -63,7 +82,6 @@ in
             nameValuePair fullHost {
               extraConfig = ''
                 bind 127.0.0.1 ::1
-                import wildcard_tls
 
                 ${concatStringsSep "\n" (mapAttrsToList (path: target: let
                   proxyBlock = ''
@@ -94,7 +112,7 @@ in
                 ''}
               '';
             })
-          proxyConfig.services;
+          nonDefaultServices;
         };
       }
       (mkIf (options ? sops && dnsConfig.provider == "cloudflare") {

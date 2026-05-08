@@ -23,9 +23,9 @@ in
             attrsOf (submodule {
               options = {
                 name = mkOption {
-                  type = types.str;
+                  type = with types; nullOr str;
                   default = null;
-                  description = "The name of the service to expose";
+                  description = "Unused; reserved for future Tailscale serve metadata";
                 };
 
                 proxy = mkOption {
@@ -39,8 +39,10 @@ in
           description = "List of services to expose on tailscale serve";
           example = {
             plex = {
-              "tcp:443" = "https://localhost:443";
-              "tcp:80" = "http://localhost:80";
+              proxy = {
+                "tcp:443" = "https://localhost:443";
+                "tcp:80" = "http://localhost:80";
+              };
             };
           };
         };
@@ -54,14 +56,18 @@ in
           useRoutingFeatures = "client";
           openFirewall = true;
           disableUpstreamLogging = true;
-
-          serve.services =
+        };
+      }
+      (mkIf (cfg.serve.enable && cfg.serve.services != {}) {
+        services.tailscale.serve = {
+          enable = true;
+          services =
             mapAttrs (_name: value: {
-              endpoints = value;
+              endpoints = value.proxy;
             })
             cfg.serve.services;
         };
-      }
+      })
       (lib.optionalAttrs (options ? sops) (mkIf cfg.auth.internal {
         sops.secrets."api/tailscale" = {};
 
