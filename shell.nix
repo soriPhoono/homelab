@@ -8,6 +8,9 @@ with pkgs;
   mkShell {
     packages =
       [
+        # Infrastructure
+        gh
+
         # Nix
         nixd
         alejandra
