@@ -66,6 +66,7 @@
 
   hosting = {
     media.enable = true;
+    homepage.enable = true;
     proxy.dns = {
       baseDomain = "cryptic-coders.net";
       email = "soriphoono@gmail.com";
