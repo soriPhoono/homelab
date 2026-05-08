@@ -16,7 +16,8 @@
     if dnsConfig.localSubdomain != ""
     then "*.${dnsConfig.localSubdomain}.${dnsConfig.baseDomain}"
     else "*.${dnsConfig.baseDomain}";
-  defaultService = proxyConfig.services.default;
+  defaultService =
+    proxyConfig.services.default or null;
   nonDefaultServices = lib.filterAttrs (name: _: name != "default") proxyConfig.services;
   # Custom caddy with cloudflare DNS plugin
   # Note: Standard nixpkgs caddy doesn't have withPlugins in a simple way
@@ -59,15 +60,17 @@ in
             }
 
             # Define local + wildcard once so one cert can cover both names
-            # while keeping local traffic routed to the default service.
+            # while keeping local traffic routed to the default service (if any).
             ${rootLocalDomain}, ${wildcardDomain} {
               import wildcard_tls
 
+              ${optionalString (defaultService != null) ''
               @root host ${rootLocalDomain}
               handle @root {
                 reverse_proxy 127.0.0.1:${toString defaultService.proxyPort}
               }
 
+            ''}
               abort
             }
           '';
