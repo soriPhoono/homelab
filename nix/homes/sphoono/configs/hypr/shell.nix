@@ -134,6 +134,9 @@ in
                   id = "SystemMonitor";
                 }
                 {
+                  id = "plugin:pomoduro";
+                }
+                {
                   id = "plugin:screen-recorder";
                 }
               ];
