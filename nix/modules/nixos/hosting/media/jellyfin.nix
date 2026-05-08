@@ -78,6 +78,9 @@ in
             after = ["tailscale-serve.service"];
             wants = ["tailscale-serve.service"];
           };
+
+          # Allow direct Jellyfin HTTP on the tailnet interface only (default services.jellyfin.openFirewall is false).
+          networking.firewall.interfaces.${config.services.tailscale.interfaceName}.allowedTCPPorts = [8096];
         })
     ]);
   }
