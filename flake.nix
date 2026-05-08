@@ -246,37 +246,6 @@
         githubActions = import ./actions.nix {inherit self lib;};
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
-
-        apps = {
-          deploy-test-cluster = {
-            type = "app";
-            program = "${pkgs.writeShellApplication {
-              name = "deploy-test-cluster";
-              runtimeInputs = with pkgs; [
-                k3d
-                kubectl
-                kubeseal
-                kubernetes-helm
-                fluxcd
-              ];
-              text = ''
-                # Disable k3s-bundled Traefik; Flux installs Traefik from the official Helm chart (testing path).
-                k3d cluster create test-cluster \
-                  --k3s-arg '--disable=traefik@server:0' \
-                  --image rancher/k3s:v1.31.5-k3s1 \
-                  --wait --timeout=120s
-
-                flux bootstrap github \
-                  --token-auth \
-                  --owner=soriphoono \
-                  --repository=homelab \
-                  --branch=main \
-                  --path=k3s/clusters/testing/ \
-                  --personal
-              '';
-            }}/bin/deploy-test-cluster";
-          };
-        };
       };
 
       flake = {

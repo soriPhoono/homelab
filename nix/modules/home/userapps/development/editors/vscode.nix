@@ -6,33 +6,20 @@
   ...
 }: let
   cfg = config.userapps.development.editors.vscode;
-  cursorAgentsCfg = config.userapps.development.agents.cursor;
-  cursorAgentCliEnabled =
-    if cfg.cursorAgentCli.enable == null
-    then cfg.package.pname == "cursor"
-    else cfg.cursorAgentCli.enable;
-  cursorCliInstalledByAgents = cursorAgentsCfg.enable && cursorAgentsCfg.secrets != [];
 in
   with lib; {
     options.userapps.development.editors.vscode = {
       enable = mkEnableOption "Enable vscode text editor";
 
-      cursorAgentCli = {
-        enable = mkOption {
-          type = types.nullOr types.bool;
-          default = null;
-          description = ''
-            Install the Cursor Agent CLI (`cursor-agent` from pkgs.cursor-cli) alongside the editor.
-            When null, it enables automatically when `package.pname` is `"cursor"` (the `code-cursor` package).
-            Disabled automatically when `userapps.development.agents.cursor` supplies a secret-wrapped CLI.
-          '';
-        };
-      };
-
-      package = mkOption {
-        type = types.package;
-        default = pkgs.vscodium;
-        description = "The vscode package to use.";
+      vendor = mkOption {
+        type = with types; enum ["oss-code" "vscode" "cursor"];
+        default = "oss-code";
+        description = ''
+          Which VSCode-family editor vendor to use.
+          - "oss-code" -> default (pkgs.vscodium)
+          - "vscode" -> pkgs.vscode
+          - "cursor" -> pkgs.code-cursor
+        '';
       };
 
       priority = mkOption {
@@ -54,15 +41,24 @@ in
       };
     };
 
-    config = mkMerge [
-      (mkIf cfg.enable {
+    config = mkIf cfg.enable (mkMerge [
+      (let
+        package =
+          if cfg.vendor == "vscode"
+          then pkgs.vscode
+          else if cfg.vendor == "cursor"
+          then pkgs.code-cursor
+          else if cfg.vendor == "oss-code"
+          then pkgs.vscodium
+          else null;
+      in {
         home.sessionVariables = {
-          EDITOR = mkOverride cfg.priority (lib.getExe cfg.package);
-          VISUAL = mkOverride cfg.priority (lib.getExe cfg.package);
+          EDITOR = mkOverride cfg.priority (lib.getExe package);
+          VISUAL = mkOverride cfg.priority (lib.getExe package);
         };
 
         xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-          editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
+          editor = ["${baseNameOf (lib.getExe package)}.desktop"];
         in
           mkOverride cfg.priority {
             "text/plain" = editor;
@@ -71,7 +67,7 @@ in
           });
 
         programs.vscode = {
-          inherit (cfg) package;
+          inherit package;
 
           enable = true;
           mutableExtensionsDir = false;
@@ -84,8 +80,21 @@ in
           };
         };
       })
-      (mkIf (cfg.enable && cursorAgentCliEnabled && !cursorCliInstalledByAgents) {
-        home.packages = [pkgs.cursor-cli];
+      (mkIf (cfg.vendor != "oss-code") {
+        userapps.development.infrastructure.github = {
+          enable = mkDefault true;
+          enableDesktop = mkDefault true;
+        };
       })
-    ];
+      (mkIf (cfg.vendor == "vscode") {
+        userapps.development.agents.github-copilot = {
+          enable = mkDefault true;
+        };
+      })
+      (mkIf (cfg.vendor == "cursor") {
+        userapps.development.agents.cursor = {
+          enable = mkDefault true;
+        };
+      })
+    ]);
   }

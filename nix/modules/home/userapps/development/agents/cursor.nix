@@ -38,27 +38,10 @@ in
         description = "Secret names to load from sops for Cursor Agent CLI (same pattern as Gemini/OpenCode).";
         default = [];
       };
-
-      ruleFileName = mkOption {
-        type = types.str;
-        default = "data-fortress-context.mdc";
-        description = "Filename under ~/.cursor/rules/ for the always-on global rule.";
-      };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
-        home.file.".cursor/rules/${cfg.ruleFileName}" = mkIf (combinedContext != null) {
-          text = ''
-            ---
-            description: Declarative homelab agent context (system + user) from Nix
-            alwaysApply: true
-            ---
-
-            ${ruleBody}
-          '';
-        };
-
         home.file.".cursor/AGENTS.md" = mkIf (combinedContext != null) {
           text = ''
             # Agent context
