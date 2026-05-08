@@ -61,6 +61,15 @@ in
             showIpAddress = true;
             refreshInterval = 5000;
           };
+          # 25m work + 15m break, repeated 6 times = 4h; long break same length as short here
+          pomodoro = {
+            workDuration = 25;
+            shortBreakDuration = 15;
+            longBreakDuration = 15;
+            sessionsBeforeLongBreak = 6;
+            autoStartBreaks = true;
+            autoStartWork = true;
+          };
         };
         settings = let
           monitors = map (monitor: monitor.name) cfg.monitors;
@@ -90,7 +99,7 @@ in
           };
           idle.enabled = true;
           location = {
-            name = "Denton, TX";
+            name = "Fort Worth, TX";
             useFahrenheit = true;
             use12hourFormat = true;
           };
@@ -123,9 +132,6 @@ in
                 }
                 {
                   id = "SystemMonitor";
-                }
-                {
-                  id = "plugin:pomoduro";
                 }
                 {
                   id = "plugin:screen-recorder";
