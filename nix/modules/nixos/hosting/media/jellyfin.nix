@@ -13,8 +13,19 @@ in
         type = types.bool;
         default = true;
         description = ''
-          Expose Jellyfin on the Tailscale network via Tailscale Serve (HTTPS on port 443 of the node's tailnet address).
-          Phones can open https:// followed by this machine's MagicDNS name (shown in Tailscale clients as the device name).
+          Expose Jellyfin on the Tailscale network via Tailscale Serve: HTTPS on port 443 of this machine's tailnet address,
+          terminating TLS and proxying to Jellyfin's HTTP listener on loopback (implemented by NixOS
+          {option}`services.tailscale.serve`, which runs `tailscale serve set-config`).
+          Other tailnet devices should open `https://` plus this machine's Tailscale name (same idea as `networking.hostName` / MagicDNS).
+        '';
+      };
+
+      tailscaleServe.allowDirectHttpOnTailnet = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          When true, opens Jellyfin's HTTP port (8096) on the Tailscale interface in addition to HTTPS via Serve.
+          Leave false so tailnet clients use only the HTTPS endpoint (recommended).
         '';
       };
     };
@@ -69,7 +80,8 @@ in
           core.networking.tailscale.serve = {
             enable = lib.mkDefault true;
             services.jellyfin.proxy = {
-              # Terminate HTTPS on tailnet and proxy to Jellyfin HTTP
+              # Equivalent CLI idea: tailscale serve --https=443 http://127.0.0.1:8096
+              # TLS is terminated by Tailscale; Jellyfin sees plain HTTP from loopback.
               "tcp:443" = "http://127.0.0.1:8096";
             };
           };
@@ -79,8 +91,8 @@ in
             wants = ["tailscale-serve.service"];
           };
 
-          # Allow direct Jellyfin HTTP on the tailnet interface only (default services.jellyfin.openFirewall is false).
-          networking.firewall.interfaces.${config.services.tailscale.interfaceName}.allowedTCPPorts = [8096];
+          networking.firewall.interfaces.${config.services.tailscale.interfaceName}.allowedTCPPorts =
+            lib.mkIf cfg.tailscaleServe.allowDirectHttpOnTailnet [8096];
         })
     ]);
   }
