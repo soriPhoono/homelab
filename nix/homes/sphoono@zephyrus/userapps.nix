@@ -43,6 +43,7 @@ _: {
       agents = {
         opencode.enable = true;
         gemini.enable = true;
+        cursor.enable = true;
       };
     };
     data-fortress = {

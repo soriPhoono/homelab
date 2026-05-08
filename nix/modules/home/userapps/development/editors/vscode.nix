@@ -6,10 +6,28 @@
   ...
 }: let
   cfg = config.userapps.development.editors.vscode;
+  cursorAgentsCfg = config.userapps.development.agents.cursor;
+  cursorAgentCliEnabled =
+    if cfg.cursorAgentCli.enable == null
+    then cfg.package.pname == "cursor"
+    else cfg.cursorAgentCli.enable;
+  cursorCliInstalledByAgents = cursorAgentsCfg.enable && cursorAgentsCfg.secrets != [];
 in
   with lib; {
     options.userapps.development.editors.vscode = {
       enable = mkEnableOption "Enable vscode text editor";
+
+      cursorAgentCli = {
+        enable = mkOption {
+          type = types.nullOr types.bool;
+          default = null;
+          description = ''
+            Install the Cursor Agent CLI (`cursor-agent` from pkgs.cursor-cli) alongside the editor.
+            When null, it enables automatically when `package.pname` is `"cursor"` (the `code-cursor` package).
+            Disabled automatically when `userapps.development.agents.cursor` supplies a secret-wrapped CLI.
+          '';
+        };
+      };
 
       package = mkOption {
         type = types.package;
@@ -36,9 +54,8 @@ in
       };
     };
 
-    config =
-      mkIf cfg.enable
-      {
+    config = mkMerge [
+      (mkIf cfg.enable {
         home.sessionVariables = {
           EDITOR = mkOverride cfg.priority (lib.getExe cfg.package);
           VISUAL = mkOverride cfg.priority (lib.getExe cfg.package);
@@ -66,5 +83,9 @@ in
             enableUpdateCheck = false;
           };
         };
-      };
+      })
+      (mkIf (cfg.enable && cursorAgentCliEnabled && !cursorCliInstalledByAgents) {
+        home.packages = [pkgs.cursor-cli];
+      })
+    ];
   }
