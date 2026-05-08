@@ -41,13 +41,7 @@
 
     networking = {
       network-manager.enable = true;
-      netbird.enable = true;
-
-      mullvad = {
-        enable = true;
-        excludeDocker.enable = true;
-        allowLocalNetwork = true;
-      };
+      tailscale.enable = true;
     };
 
     secrets = {

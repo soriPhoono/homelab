@@ -3,8 +3,6 @@
     ./openssh.nix
     ./network-manager.nix
     ./tailscale.nix
-    ./netbird.nix
-    ./mullvad.nix
   ];
 
   config = {

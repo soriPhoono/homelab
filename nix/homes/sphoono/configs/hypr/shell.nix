@@ -45,7 +45,7 @@ in
             screen-recorder = standardPlugin;
             network-manager-vpn = standardPlugin;
             usb-drive-manager = standardPlugin;
-            netbird = standardPlugin;
+            tailscale = standardPlugin;
           };
         };
         pluginSettings = {
@@ -55,11 +55,10 @@ in
             fileBrowser = "xdg-open";
             terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
           };
-          netbird = {
+          tailscale = {
             showPeerCount = false;
             terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
-            showIpAddress = true;
-            refreshInterval = 5000;
+            taildropReceiveMode = "pkexec";
           };
           # 25m work + 15m break, repeated 6 times = 4h; long break same length as short here
           pomodoro = {
@@ -153,7 +152,7 @@ in
                   id = "plugin:network-manager-vpn";
                 }
                 {
-                  id = "plugin:netbird";
+                  id = "plugin:tailscale";
                 }
                 {
                   id = "Brightness";

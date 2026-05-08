@@ -1,9 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - jetstack-helmrepository.yaml
-  - longhorn-helmrepository.yaml
-  - netbird-helmrepository.yaml
-  - sealed-secrets-helmrepository.yaml
-  - traefik-helmrepository.yaml
-  - traefik.yaml

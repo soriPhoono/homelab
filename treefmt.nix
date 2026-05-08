@@ -4,8 +4,6 @@ _: {
   settings.global.excludes = [
     ".agents/skills/*"
     ".gemini/agents/*"
-    # Flux bootstrap manifests; yamlfmt output diverges from `flux install --export`.
-    "k3s/clusters/**/flux-system/**"
   ];
 
   programs = {

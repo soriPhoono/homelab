@@ -5,9 +5,6 @@
       mkhl.direnv
       jnoortheen.nix-ide
 
-      # Git / Extra
-      eamodio.gitlens
-
       # Agentic AI
       google.gemini-cli-vscode-ide-companion
 

@@ -15,18 +15,27 @@ in
       systemd.services = {
         flatpak-configure-flathub = {
           description = "Configure Flathub remote";
-          wants = ["network-online.target"];
-          after = ["network-online.target" "flatpak.service"];
           wantedBy = ["multi-user.target"];
+          wants = ["network-online.target"];
+          # There is no flatpak.service in nixpkgs; wait for D-Bus so SystemHelper can start.
+          after = [
+            "network-online.target"
+            "dbus.service"
+          ];
+          requires = ["dbus.service"];
           serviceConfig = {
             Type = "oneshot";
+            RemainAfterExit = true;
+            Restart = "on-failure";
+            RestartSec = "5s";
+            StartLimitBurst = 3;
             ExecStart = "${pkgs.writeShellApplication {
               name = "configure-flathub";
               runtimeInputs = with pkgs; [
                 flatpak
               ];
               text = ''
-                flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+                exec flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
               '';
             }}/bin/configure-flathub";
           };
