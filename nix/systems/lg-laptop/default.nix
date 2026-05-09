@@ -1,4 +1,9 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  lib,
+  ...
+}:
+with lib; {
   imports = [
     ./disko.nix
   ];
@@ -43,7 +48,10 @@
 
     networking = {
       network-manager.enable = true;
-      tailscale.enable = true;
+      tailscale = {
+        enable = true;
+        serve.tailnetOrigin = mkForce "https://laptop-spooky.xerus-augmented.ts.net";
+      };
     };
 
     users = {
@@ -65,8 +73,8 @@
   };
 
   hosting = {
-    media.enable = true;
     homepage.enable = true;
+    media.enable = true;
     proxy.dns = {
       baseDomain = "cryptic-coders.net";
       email = "soriphoono@gmail.com";

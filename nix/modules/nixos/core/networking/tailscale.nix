@@ -18,6 +18,13 @@ in
       serve = {
         enable = mkEnableOption "Enable tailscale serve";
 
+        tailnetOrigin = mkOption {
+          type = with types; nullOr str;
+          default = null;
+          example = "https://{TS_HOSTNAME}.{TAILNET_MAGIC_DNS}.ts.net";
+          description = "The origin of the tailnet for Tailscale Serve";
+        };
+
         services = mkOption {
           type = with types;
             attrsOf (submodule {
@@ -68,13 +75,13 @@ in
             cfg.serve.services;
         };
       })
-      (lib.optionalAttrs (options ? sops) (mkIf cfg.auth.internal {
+      (mkIf (options ? sops && cfg.auth.internal) {
         sops.secrets."api/tailscale" = {};
 
         services.tailscale = {
           authKeyFile = config.sops.secrets."api/tailscale".path;
         };
-      }))
+      })
       (mkIf config.core.networking.network-manager.enable {
         networking.networkmanager.unmanaged = [config.services.tailscale.interfaceName];
       })

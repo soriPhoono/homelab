@@ -59,9 +59,12 @@ in
               }
             }
 
-            # Define local + wildcard once so one cert can cover both names
-            # while keeping local traffic routed to the default service (if any).
+            # Bind loopback only so port 443 on the Tailscale/LAN addresses stays available for
+            # Tailscale Serve (e.g. Jellyfin on https://<machine>.<tailnet>.ts.net). A global bind
+            # would make Caddy terminate TLS for 443 first and break *.ts.net with TLS alert internal error.
             ${rootLocalDomain}, ${wildcardDomain} {
+              bind 127.0.0.1 ::1
+
               import wildcard_tls
 
               ${optionalString (defaultService != null) ''

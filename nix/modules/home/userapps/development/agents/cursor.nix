@@ -42,22 +42,25 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        home.file.".cursor/AGENTS.md" = mkIf (combinedContext != null) {
-          text = ''
-            # Agent context
+        home = {
+          file.".cursor/AGENTS.md" = mkIf (combinedContext != null) {
+            text = ''
+              # Agent context
 
-            ${ruleBody}
-          '';
+              ${ruleBody}
+            '';
+          };
+          packages = with pkgs; [cursor-cli];
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {
         sops.secrets = genAttrs cfg.secrets (_: {});
 
-        home.packages = [
-          (pkgs.symlinkJoin {
+        home.packages = with pkgs; [
+          (symlinkJoin {
             name = "cursor-cli-wrapped";
-            paths = [pkgs.cursor-cli];
-            buildInputs = [pkgs.makeWrapper];
+            paths = [cursor-cli];
+            buildInputs = [makeWrapper];
 
             postBuild = ''
               for bin in $out/bin/*; do
