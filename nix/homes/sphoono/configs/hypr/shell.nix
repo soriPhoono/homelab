@@ -133,7 +133,7 @@ in
                   id = "SystemMonitor";
                 }
                 {
-                  id = "plugin:pomoduro";
+                  id = "plugin:pomodoro";
                 }
                 {
                   id = "plugin:screen-recorder";

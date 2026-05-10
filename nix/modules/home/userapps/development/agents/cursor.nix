@@ -29,8 +29,8 @@ in
   with lib; {
     options.userapps.development.agents.cursor = {
       enable = mkEnableOption ''
-        Cursor Agent context files under ~/.cursor (rules + AGENTS.md), optional secret wrapping for Cursor CLI,
-        and coordination with the VS Code/Cursor editor module for installing `cursor-cli`.
+        Cursor Agent context under ~/.cursor: `AGENTS.md`, a user-level rule in `.cursor/rules/` for the Cursor editor
+        (VS Code fork, `programs.cursor`), optional secret wrapping for Cursor CLI, and coordination with the editor module for `cursor-cli`.
       '';
 
       secrets = mkOption {
@@ -46,6 +46,17 @@ in
           file.".cursor/AGENTS.md" = mkIf (combinedContext != null) {
             text = ''
               # Agent context
+
+              ${ruleBody}
+            '';
+          };
+          # User-level rule for the Cursor desktop editor (same `.mdc` format as project `.cursor/rules/`).
+          file.".cursor/rules/homelab-agent-context.mdc" = mkIf (combinedContext != null) {
+            text = ''
+              ---
+              description: Data Fortress homelab context from userapps.development.agents.context (Nix-managed)
+              alwaysApply: true
+              ---
 
               ${ruleBody}
             '';
