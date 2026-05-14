@@ -141,13 +141,13 @@ with lib; {
       };
       managers.hyprland.enable = true;
     };
-    services.asusd.enable = true;
-    features = {
+    services = {
+      asusd.enable = true;
       printing.enable = true;
-      gaming = {
-        enable = true;
-        console.enable = true;
-      };
+    };
+    features.gaming = {
+      enable = true;
+      console.enable = true;
     };
     tools = {
       partition-manager.enable = true;

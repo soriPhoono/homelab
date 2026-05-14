@@ -4,13 +4,17 @@
   config,
   ...
 }: let
-  cfg = config.desktop.features.virtualisation;
+  cfg = config.desktop.services.virtualisation;
 in
   with lib; {
-    options.desktop.features.virtualisation = {
+    options.desktop.services.virtualisation = {
       enable = mkEnableOption "Enable virtualisation with virt-manager";
       mode = mkOption {
-        type = with types; enum ["host" "guest"];
+        type = with types;
+          enum [
+            "host"
+            "guest"
+          ];
         default = "host";
         description = "Mode of virtualisation";
       };

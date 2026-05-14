@@ -66,10 +66,8 @@ with lib; {
 
   desktop = {
     environments.kde.enable = true;
-    features = {
-      printing.enable = true;
-      gaming.enable = true;
-    };
+    features.gaming.enable = true;
+    services.printing.enable = true;
   };
 
   hosting = {

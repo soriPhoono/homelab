@@ -4,9 +4,9 @@
   config,
   ...
 }: let
-  cfg = config.desktop.features.printing;
+  cfg = config.desktop.services.printing;
 in {
-  options.desktop.features.printing = {
+  options.desktop.services.printing = {
     enable = lib.mkEnableOption "Enable printing on the system";
   };
 
