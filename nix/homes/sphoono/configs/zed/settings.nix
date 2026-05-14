@@ -15,23 +15,5 @@
       gemini.type = "registry";
       opencode.type = "registry";
     };
-    agent = {
-      default_model = {
-        provider = "openrouter";
-        model = "google/gemini-3-flash-preview";
-      };
-      inline_assistant_model = {
-        provider = "openrouter";
-        model = "google/gemini-3.1-flash-lite";
-      };
-      commit_message_model = {
-        provider = "openrouter";
-        model = "free";
-      };
-      thread_summary_model = {
-        provider = "openrouter";
-        model = "free";
-      };
-    };
   };
 }

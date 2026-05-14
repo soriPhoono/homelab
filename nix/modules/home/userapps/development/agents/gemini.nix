@@ -24,6 +24,14 @@ in
           For example, if you have a secret named `MY_SECRET` that corresponds to a file at `config.sops.secrets.MY_SECRET.path`, it will be available in the `gemini-cli` environment as an environment variable `MY_SECRET` with the contents of that file.
         '';
       };
+
+      settings = mkOption {
+        type = with types; attrs;
+        default = {};
+        description = ''
+          Extra settings outside of critical integrations that are automatically handled, or MCP servers that are handled via the agentics library. This is intended for more advanced users who want to customize their Gemini CLI experience beyond the standard configuration options provided by this module.
+        '';
+      };
     };
 
     config = mkIf cfg.enable (mkMerge [
@@ -43,57 +51,73 @@ in
             '';
           };
 
-          settings = {
-            mcpServers =
-              builtins.mapAttrs (
-                _: mcpServer:
-                  if (mcpServer.transport == "stdio")
-                  then {
-                    inherit (mcpServer) command args;
-                    env =
-                      builtins.mapAttrs (
-                        _: value:
-                          if value ? "secret"
-                          then "${
-                            if value.prefix != null
-                            then value.prefix
-                            else ""
-                          }\$${value.environmentVariable}${
-                            if value.suffix != null
-                            then value.suffix
-                            else ""
-                          }"
-                          else value
-                      )
-                      mcpServer.env;
-                  }
-                  else if (mcpServer.transport == "http")
-                  then {
-                    httpUrl = mcpServer.url;
-                    headers =
-                      builtins.mapAttrs (
-                        _: value:
-                          if value ? "secret"
-                          then "${
-                            if value.prefix != null
-                            then value.prefix
-                            else ""
-                          }\$${value.environmentVariable}${
-                            if value.suffix != null
-                            then value.suffix
-                            else ""
-                          }"
-                          else value
-                      )
-                      mcpServer.headers;
-                  }
-                  else if (mcpServer.transport == "sse")
-                  then {
-                  }
-                  else throw "Unsupported transport protocol: ${mcpServer.transport}"
-              )
-              agentsCfg.mcp;
-          };
+          settings =
+            {
+              ide = {
+                enabled = true;
+              };
+              privacy = {
+                usageStatisticsEnabled = false;
+              };
+              security = {
+                auth = {
+                  selectedType = "oauth-personal";
+                };
+              };
+              tools = {
+                autoAccept = false;
+              };
+              mcpServers =
+                builtins.mapAttrs (
+                  _: mcpServer:
+                    if (mcpServer.transport == "stdio")
+                    then {
+                      inherit (mcpServer) command args;
+                      env =
+                        builtins.mapAttrs (
+                          _: value:
+                            if value ? "secret"
+                            then "${
+                              if value.prefix != null
+                              then value.prefix
+                              else ""
+                            }\$${value.environmentVariable}${
+                              if value.suffix != null
+                              then value.suffix
+                              else ""
+                            }"
+                            else value
+                        )
+                        mcpServer.env;
+                    }
+                    else if (mcpServer.transport == "http")
+                    then {
+                      httpUrl = mcpServer.url;
+                      headers =
+                        builtins.mapAttrs (
+                          _: value:
+                            if value ? "secret"
+                            then "${
+                              if value.prefix != null
+                              then value.prefix
+                              else ""
+                            }\$${value.environmentVariable}${
+                              if value.suffix != null
+                              then value.suffix
+                              else ""
+                            }"
+                            else value
+                        )
+                        mcpServer.headers;
+                    }
+                    else if (mcpServer.transport == "sse")
+                    then {
+                    }
+                    else throw "Unsupported transport protocol: ${mcpServer.transport}"
+                )
+                agentsCfg.mcp;
+            }
+            // cfg.settings;
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {
