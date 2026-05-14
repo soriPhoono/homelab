@@ -5,34 +5,95 @@
   options,
   ...
 }: let
+  agentsCfg = config.userapps.development.agentics.agents;
   cfg = config.userapps.development.agents.gemini;
-  agentContext = config.userapps.development.agents.context;
-  combinedContext = let
-    parts =
-      (lib.optional (agentContext.system != null) agentContext.system)
-      ++ (lib.optional (agentContext.user != null) agentContext.user);
-  in
-    if parts == []
-    then null
-    else lib.concatStringsSep "\n\n" parts;
 in
   with lib; {
     options.userapps.development.agents.gemini = {
-      enable = mkEnableOption "Gemini agent for development";
+      enable = mkEnableOption ''
+        Enable the Gemini CLI agent runtime and write shared system/user
+        context to `~/.gemini/GEMINI.md`.
+      '';
 
       secrets = mkOption {
         type = with types; listOf str;
-        description = "Secret names to load in from sops for Gemini agent functionality";
         default = [];
+        description = ''
+          A list of secrets to be made available to the `gemini-cli` environment.
+          Each secret will be exposed as an environment variable with the same name as the secret, and its value will be sourced from a file specified in the `sops` configuration.
+          For example, if you have a secret named `MY_SECRET` that corresponds to a file at `config.sops.secrets.MY_SECRET.path`, it will be available in the `gemini-cli` environment as an environment variable `MY_SECRET` with the contents of that file.
+        '';
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
-        programs.gemini-cli.enable = true;
+        programs.gemini-cli = {
+          enable = true;
 
-        home.file.".gemini/GEMINI.md" = mkIf (combinedContext != null) {
-          text = combinedContext;
+          context = {
+            AGENTS = ''
+              # Gemini CLI Context
+
+              This file provides machine-level and user-level context for Gemini CLI.
+              Project-level repository guidance stays in the repository root
+              `AGENTS.md` and `.agents/AGENTS.md`.
+
+              ${agentsCfg.context {}}
+            '';
+          };
+
+          settings = {
+            mcpServers =
+              builtins.mapAttrs (
+                _: mcpServer:
+                  if (mcpServer.transport == "stdio")
+                  then {
+                    inherit (mcpServer) command args;
+                    env =
+                      builtins.mapAttrs (
+                        _: value:
+                          if value ? "secret"
+                          then "${
+                            if value.prefix != null
+                            then value.prefix
+                            else ""
+                          }\$${value.environmentVariable}${
+                            if value.suffix != null
+                            then value.suffix
+                            else ""
+                          }"
+                          else value
+                      )
+                      mcpServer.env;
+                  }
+                  else if (mcpServer.transport == "http")
+                  then {
+                    httpUrl = mcpServer.url;
+                    headers =
+                      builtins.mapAttrs (
+                        _: value:
+                          if value ? "secret"
+                          then "${
+                            if value.prefix != null
+                            then value.prefix
+                            else ""
+                          }\$${value.environmentVariable}${
+                            if value.suffix != null
+                            then value.suffix
+                            else ""
+                          }"
+                          else value
+                      )
+                      mcpServer.headers;
+                  }
+                  else if (mcpServer.transport == "sse")
+                  then {
+                  }
+                  else throw "Unsupported transport protocol: ${mcpServer.transport}"
+              )
+              agentsCfg.mcp;
+          };
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {
@@ -50,8 +111,11 @@ in
                 # Pass ALL --run commands into a SINGLE wrapProgram invocation
                 wrapProgram "$bin" \
                   ${concatStringsSep " \\\n                  " (
-              map
-              (secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${config.sops.secrets.${secret}.path})\"'")
+              map (
+                secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
+                  config.sops.secrets.${secret}.path
+                })\"'"
+              )
               cfg.secrets
             )}
               fi

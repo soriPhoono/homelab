@@ -1,4 +1,5 @@
 {
+  inputs,
   lib,
   pkgs,
   config,
@@ -12,7 +13,16 @@ in
     };
 
     config = mkIf cfg.enable {
-      desktop.environments.managers.enable = true;
+      nix.settings = {
+        substituters = ["https://hyprland.cachix.org"];
+        trusted-substituters = ["https://hyprland.cachix.org"];
+        trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
+      };
+
+      desktop.environments = {
+        selectedEnvironment = "hyprland-uwsm";
+        managers.enable = true;
+      };
 
       environment.sessionVariables = {
         NIXOS_OZONE_WL = "1";
@@ -34,6 +44,8 @@ in
         hyprland = {
           enable = true;
           withUWSM = true;
+          package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+          portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
         };
       };
 

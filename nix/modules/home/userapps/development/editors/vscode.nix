@@ -1,174 +1,133 @@
-# TODO: finish implementing mcp servers for antigravity to comply with immutable extension dirs
 {
   lib,
   pkgs,
   config,
-  inputs,
+  options,
   ...
 }: let
   cfg = config.userapps.development.editors.vscode;
 
-  # Must not be named `package`: that shadows `types.package` in `listOf package` below.
-  editorPackage =
-    if cfg.vendor == "vscode"
-    then pkgs.vscode
-    else if cfg.vendor == "cursor"
-    then pkgs.code-cursor
-    else if cfg.vendor == "oss-code"
-    then pkgs.vscodium
-    else null;
-
-  # Stylix only ships programs.vscode integration (nix-community/stylix modules/vscode/hm.nix).
-  stylixVscodeModule = inputs.stylix + "/modules/vscode";
-in
-  with lib; {
-    options.userapps.development.editors.vscode = {
-      enable = mkEnableOption "Enable vscode text editor";
-
-      vendor = mkOption {
-        type = with types; enum ["oss-code" "vscode" "cursor"];
-        default = "oss-code";
-        description = ''
-          Which VSCode-family editor vendor to use.
-          - "oss-code" -> default (pkgs.vscodium)
-          - "vscode" -> pkgs.vscode
-          - "cursor" -> pkgs.code-cursor
-        '';
-      };
-
-      priority = mkOption {
-        type = types.int;
-        default = 40;
-        description = "Priority for being the default editor. Lower is higher priority.";
-      };
-
-      extensions = mkOption {
-        type = with types; listOf types.package;
-        default = [];
-        description = "List of VSCode extensions to install.";
-      };
-
-      userSettings = mkOption {
-        type = with types; attrs;
-        default = {};
-        description = "User settings for VSCode.";
+  vendorSpecs = {
+    "oss-code" = {
+      package = pkgs.vscodium;
+      enableGithubDesktop = false;
+      enableGithubCopilot = false;
+      mcp = null;
+    };
+    vscode = {
+      package = pkgs.vscode;
+      enableGithubDesktop = true;
+      enableGithubCopilot = true;
+      mcp = {
+        rootKey = "servers";
+        includeTransportType = true;
+        remoteUrlField = "url";
+        target = {
+          kind = "xdgConfig";
+          path = "Code/User/mcp.json";
+        };
+        templateName = "vscode/mcp.json";
+        secretMessage = "VS Code MCP config needs sops to render secret-backed values from `userapps.development.agents.mcp`.";
       };
     };
-
+    antigravity = {
+      package = pkgs.antigravity;
+      enableGithubDesktop = true;
+      enableGithubCopilot = false;
+      mcp = {
+        rootKey = "mcpServers";
+        includeTransportType = false;
+        remoteUrlField = "serverUrl";
+        target = {
+          kind = "homeFile";
+          path = ".gemini/antigravity/mcp_config.json";
+        };
+        templateName = "antigravity/mcp.json";
+        secretMessage = "Antigravity MCP config needs sops to render secret-backed values from `userapps.development.agents.mcp`.";
+      };
+    };
+  };
+in
+  with lib; {
     config = mkIf cfg.enable (mkMerge [
-      {
-        home.sessionVariables = {
-          EDITOR = mkOverride cfg.priority (lib.getExe editorPackage);
-          VISUAL = mkOverride cfg.priority (lib.getExe editorPackage);
-        };
-
-        xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-          editor = ["${baseNameOf (lib.getExe editorPackage)}.desktop"];
-        in
-          mkOverride cfg.priority {
-            "text/plain" = editor;
-            "text/markdown" = editor;
-            "application/x-shellscript" = editor;
-          });
-      }
-      (mkIf (cfg.vendor != "oss-code") {
-        userapps.development.infrastructure.github = {
-          enable = mkDefault true;
-          enableDesktop = mkDefault true;
-        };
-      })
-      (mkIf (cfg.vendor == "oss-code") {
-        programs.vscode = {
-          package = editorPackage;
-
-          enable = true;
-          mutableExtensionsDir = false;
-
-          profiles.default = {
-            inherit (cfg) extensions userSettings;
-
-            enableExtensionUpdateCheck = false;
-            enableUpdateCheck = false;
-          };
-        };
-      })
-      (mkIf (cfg.vendor == "vscode") {
+      (mkIf activeVendor.enableGithubCopilot {
         userapps.development.agents.github-copilot = {
           enable = mkDefault true;
         };
-
-        programs.vscode = {
-          package = editorPackage;
-
-          enable = true;
-          mutableExtensionsDir = false;
-
-          profiles.default = {
-            inherit (cfg) extensions userSettings;
-
-            enableExtensionUpdateCheck = false;
-            enableUpdateCheck = false;
-          };
-        };
       })
-      (mkIf (cfg.vendor == "cursor") (mkMerge [
-        {
-          userapps.development.agents.cursor = {
-            enable = mkDefault true;
+      (mkIf (cfg.vendor == "oss-code") {
+        programs.vscodium = editorProgramSettings;
+      })
+      (mkIf (cfg.vendor == "vscode") {
+        programs.vscode = editorProgramSettings;
+      })
+      (mkIf (cfg.vendor == "antigravity") {
+        userapps.development.agents.gemini.enable = true;
+        programs.antigravity = editorProgramSettings;
+      })
+      (mkIf (cfg.vendor == "vscode" && mcpCfg.consumers.editors.vscode.enable) (mkMerge [
+        (mkIf (vscodeMcpSecretNames == []) {
+          xdg.configFile."Code/User/mcp.json".text = builtins.toJSON renderedVscodeMcpConfig;
+        })
+        (mkIf (options ? sops && vscodeMcpSecretNames != []) {
+          sops.secrets = genAttrs vscodeMcpSecretNames (_: {});
+
+          sops.templates."${vendorSpecs.vscode.mcp.templateName}" = {
+            content = builtins.toJSON renderedVscodeMcpConfig;
+            path = "${config.xdg.configHome}/${vendorSpecs.vscode.mcp.target.path}";
           };
+        })
+        (mkIf (!(options ? sops) && vscodeMcpSecretNames != []) {
+          assertions = [
+            {
+              assertion = false;
+              message = vendorSpecs.vscode.mcp.secretMessage;
+            }
+          ];
+        })
+      ]))
+      (mkIf (cfg.vendor == "antigravity" && mcpCfg.consumers.editors.vscode.enable) (mkMerge [
+        (mkIf (vscodeMcpSecretNames == []) {
+          home.file."${vendorSpecs.antigravity.mcp.target.path}".text =
+            builtins.toJSON renderedAntigravityMcpConfig;
+        })
+        (mkIf (options ? sops && vscodeMcpSecretNames != []) {
+          sops.secrets = genAttrs vscodeMcpSecretNames (_: {});
 
-          programs.cursor = {
-            package = editorPackage;
-
-            enable = true;
-            mutableExtensionsDir = false;
-
-            profiles.default = {
-              inherit (cfg) extensions userSettings;
-
-              enableExtensionUpdateCheck = false;
-              enableUpdateCheck = false;
-            };
+          sops.templates."${vendorSpecs.antigravity.mcp.templateName}" = {
+            content = builtins.toJSON renderedAntigravityMcpConfig;
+            path = "${config.home.homeDirectory}/${vendorSpecs.antigravity.mcp.target.path}";
           };
-        }
-        (mkIf (config.stylix.enable && config.programs.cursor.enable) (let
-          inherit (config.stylix.targets.vscode) profileNames;
-        in
-          mkMerge [
+        })
+        (mkIf (!(options ? sops) && vscodeMcpSecretNames != []) {
+          assertions = [
             {
-              stylix.targets.vscode.enable = mkDefault false;
+              assertion = false;
+              message = vendorSpecs.antigravity.mcp.secretMessage;
             }
+          ];
+        })
+      ]))
+      (mkIf (cfg.vendor == "cursor" && mcpCfg.consumers.editors.vscode.enable) (mkMerge [
+        (mkIf (vscodeMcpSecretNames == []) {
+          home.file."${vendorSpecs.cursor.mcp.target.path}".text = builtins.toJSON renderedCursorMcpConfig;
+        })
+        (mkIf (options ? sops && vscodeMcpSecretNames != []) {
+          sops.secrets = genAttrs vscodeMcpSecretNames (_: {});
+
+          sops.templates."${vendorSpecs.cursor.mcp.templateName}" = {
+            content = builtins.toJSON renderedCursorMcpConfig;
+            path = "${config.home.homeDirectory}/${vendorSpecs.cursor.mcp.target.path}";
+          };
+        })
+        (mkIf (!(options ? sops) && vscodeMcpSecretNames != []) {
+          assertions = [
             {
-              warnings =
-                optional
-                (profileNames == [])
-                "stylix (cursor editor): `config.stylix.targets.vscode.profileNames` is empty. No Stylix theming will be applied to Cursor; set profile names (e.g. [ \"default\" ]).";
+              assertion = false;
+              message = vendorSpecs.cursor.mcp.secretMessage;
             }
-            {
-              programs.cursor.profiles = genAttrs profileNames (_: {
-                extensions = singleton (
-                  pkgs.runCommandLocal "stylix-vscode"
-                  {
-                    vscodeExtUniqueId = "stylix.stylix";
-                    vscodeExtPublisher = "stylix";
-                    version = "0.0.0";
-                    theme = builtins.toJSON (import (stylixVscodeModule + "/templates/theme.nix") config.lib.stylix.colors);
-                    passAsFile = ["theme"];
-                  }
-                  ''
-                    mkdir -p "$out/share/vscode/extensions/$vscodeExtUniqueId/themes"
-                    ln -s ${stylixVscodeModule + "/package.json"} "$out/share/vscode/extensions/$vscodeExtUniqueId/package.json"
-                    cp "$themePath" "$out/share/vscode/extensions/$vscodeExtUniqueId/themes/stylix.json"
-                  ''
-                );
-              });
-            }
-            {
-              programs.cursor.profiles = genAttrs profileNames (_: {
-                userSettings = import (stylixVscodeModule + "/templates/settings.nix") config.stylix.fonts;
-              });
-            }
-          ]))
+          ];
+        })
       ]))
     ]);
   }

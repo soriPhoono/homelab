@@ -5,40 +5,49 @@
   ...
 }: let
   cfg = config.desktop.features.gaming;
+  inherit (config.desktop.environments) selectedEnvironment;
+
+  consoleUser = "steam-user";
 in {
   options.desktop.features.gaming = {
     enable = lib.mkEnableOption "Enable steam integration";
-    wivrn.enable = lib.mkEnableOption "Enable WiVRn OpenXR streaming server";
 
-    gamescope = {
-      enable = lib.mkEnableOption "Enable Steam Gamescope session";
-      width = lib.mkOption {
-        type = lib.types.int;
-        default = 1920;
-        description = "Width of the gamescope session";
-      };
-      height = lib.mkOption {
-        type = lib.types.int;
-        default = 1080;
-        description = "Height of the gamescope session";
-      };
-      refreshRate = lib.mkOption {
-        type = lib.types.int;
-        default = 60;
-        description = "Refresh rate of the gamescope session";
+    vr.enable = lib.mkEnableOption "Enable WiVRn OpenXR streaming server";
+
+    console = {
+      enable = lib.mkEnableOption "Enable the Jovian Steam/GameScope session";
+      autoStart = lib.mkEnableOption "Enable Jovian login takeover and boot directly into gaming mode";
+      configureSystem = lib.mkEnableOption "Configure the system for steamdeck-like behaviour";
+      environment = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        default = {};
+        description = ''
+          Environment variables to apply to the Jovian gamescope session.
+        '';
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !cfg.console.enable || !cfg.console.autoStart || selectedEnvironment != null;
+        message = ''
+          desktop.features.gaming.console.autoStart requires a supported desktop environment to provide a Jovian desktop fallback session automatically.
+          Detected environment: ${selectedEnvironment}
+        '';
+      }
+    ];
+
     environment.systemPackages = with pkgs;
       [
-        mangohud # Overlay for monitoring
         moonlight-qt # Cloud streaming
-      ]
-      ++ lib.optional cfg.wivrn.enable sidequest;
 
-    services.wivrn = lib.mkIf cfg.wivrn.enable {
+        mangohud # Overlay for monitoring
+      ]
+      ++ lib.optional cfg.vr.enable sidequest;
+
+    services.wivrn = lib.mkIf cfg.vr.enable {
       enable = true;
       openFirewall = true;
       autoStart = true;
@@ -59,6 +68,27 @@ in {
           proton-ge-bin
         ];
       };
+    };
+
+    core.users = lib.mkIf cfg.console.enable {
+      ${consoleUser} = {
+        description = "Dedicated Jovian console session account";
+        hashedPassword = "!";
+      };
+    };
+
+    jovian = lib.mkIf cfg.console.enable {
+      steam =
+        {
+          inherit (cfg.console) autoStart environment;
+
+          enable = true;
+          user = consoleUser;
+        }
+        // lib.optionalAttrs cfg.console.autoStart {
+          desktopSession = selectedEnvironment;
+        };
+      steamos.useSteamOSConfig = cfg.console.configureSystem;
     };
 
     networking.networkmanager.dispatcherScripts = [

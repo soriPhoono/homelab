@@ -12,7 +12,10 @@ in
     };
 
     config = mkIf cfg.enable {
-      desktop.enable = true;
+      desktop = {
+        enable = true;
+        environments.selectedEnvironment = "cosmic";
+      };
 
       environment = {
         sessionVariables = {

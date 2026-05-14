@@ -4,7 +4,7 @@ _: {
     desktop = {
       file-browser = {
         plugins.gdrive.enable = true;
-        pcmanfm.enable = true;
+        nautilus.enable = true;
       };
       players = {
         imv.enable = true;
@@ -27,24 +27,17 @@ _: {
       };
       virtualization = {
         distrobox.enable = true;
+        # bottles.enable = true;
       };
     };
     development = {
       enable = true;
       terminal.ghostty.enable = true;
+      agents.gemini.enable = true;
       editors = {
         zed.enable = true;
-        vscode.enable = true;
       };
-      inference.lmstudio.enable = true;
-      appliances = {
-        bambu-studio.enable = true;
-      };
-      agents = {
-        opencode.enable = true;
-        gemini.enable = true;
-        cursor.enable = true;
-      };
+      appliances.bambu-studio.enable = true;
     };
     data-fortress = {
       cloud.nextcloud.enable = true;
@@ -55,12 +48,13 @@ _: {
     content-creation = {
       asset-creation = {
         gimp.enable = true;
+        blender.enable = true;
       };
+      streaming.obs-studio.enable = true;
       editors = {
         audacity.enable = true;
         kdenlive.enable = true;
       };
-      streaming.obs-studio.enable = true;
     };
   };
 }

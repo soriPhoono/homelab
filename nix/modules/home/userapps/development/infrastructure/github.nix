@@ -14,12 +14,6 @@ in
         with token-based gh authentication via sops.
       '';
 
-      enableCli = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Install and configure GitHub CLI (`gh`).";
-      };
-
       enableDesktop = mkOption {
         type = types.bool;
         default = false;
@@ -29,13 +23,11 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        home.packages =
-          (optionals cfg.enableCli [pkgs.gh])
-          ++ (optionals cfg.enableDesktop [pkgs.github-desktop]);
+        home.packages = optionals cfg.enableDesktop [pkgs.github-desktop];
 
-        programs.gh.enable = mkDefault cfg.enableCli;
+        programs.gh.enable = true;
       }
-      (mkIf (options ? sops && cfg.enableCli) {
+      (mkIf (options ? sops) {
         sops.secrets."api/GITHUB_API_KEY" = {};
 
         home.activation.ghAuth = hm.dag.entryAfter ["writeBoundary"] ''

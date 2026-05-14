@@ -42,6 +42,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    jovian = {
+      url = "github:Jovian-Experiments/Jovian-NixOS";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     comin = {
       url = "github:nlewo/comin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -54,6 +59,11 @@
 
     stylix = {
       url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -98,15 +108,21 @@
     # --- System Support & Package Cache --- #
     systems = import inputs.systems;
 
-    pkgsBatch = lib.genAttrs systems (system:
-      import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = builtins.attrValues (import ./nix/overlays {inherit inputs lib;}
-          // {
-            nur = nur.overlays.default;
-          });
-      });
+    pkgsBatch = lib.genAttrs systems (
+      system: let
+        basePkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays = builtins.attrValues (
+            import ./nix/overlays {inherit inputs lib;}
+            // {
+              nur = nur.overlays.default;
+            }
+          );
+        };
+      in
+        basePkgs // {inherit lib;}
+    );
 
     # --- System Builder Parameters --- #
     homeManagerModules = with inputs; [
@@ -124,8 +140,10 @@
       comin.nixosModules.comin
       sops-nix.nixosModules.sops
       stylix.nixosModules.stylix
+      jovian.nixosModules.default
       nix-index-database.nixosModules.nix-index
       home-manager.nixosModules.home-manager
+      hyprland.nixosModules.default
     ];
 
     # --- System Builders --- #
@@ -159,6 +177,7 @@
           homeManagerModules
           ++ [
             {
+              _module.args.lib = lib;
               home = {
                 inherit username;
                 homeDirectory = lib.mkDefault (
@@ -256,7 +275,9 @@
         # --- Automatic Discovery & Construction --- #
 
         # All systems in the /systems folder
-        nixosConfigurations = lib.mapAttrs (hostName: _: mkSystem hostName) (lib.homelab.discover ./nix/systems);
+        nixosConfigurations = lib.mapAttrs (hostName: _: mkSystem hostName) (
+          lib.homelab.core.discover ./nix/systems
+        );
 
         # All standalone homes in the /homes folder
         # Scans for <user> and <user>@<homeName>, combines them if both exist.
@@ -290,9 +311,7 @@
         in
           # Execute single pass, strip out skipped directories (nulls), and build the final set
           builtins.listToAttrs (
-            builtins.filter (x: x != null) (
-              lib.mapAttrsToList processHomeDir homesContent
-            )
+            builtins.filter (x: x != null) (lib.mapAttrsToList processHomeDir homesContent)
           );
       };
     };

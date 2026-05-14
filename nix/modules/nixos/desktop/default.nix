@@ -31,7 +31,6 @@ in
       desktop = {
         services = {
           pipewire.enable = true;
-          flatpak.enable = true;
         };
         tools.appimage.enable = true;
       };

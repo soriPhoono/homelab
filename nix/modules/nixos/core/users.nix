@@ -12,11 +12,32 @@ in
       type = with types;
         attrsOf (submodule {
           options = {
-            admin = mkOption {
-              type = bool;
+            description = mkOption {
+              type = str;
+              description = "Account description for the user.";
+              example = "Primary administrator";
+            };
+
+            admin = mkEnableOption "Enable admin privileges for the user";
+            secrets = mkOption {
+              type = types.bool;
               default = false;
               description = "Whether the user should have admin privileges.";
               example = true;
+            };
+
+            shell = mkOption {
+              type = with types; nullOr package;
+              default = pkgs.bashInteractive;
+              description = "The shell for the user.";
+              example = pkgs.zsh;
+            };
+
+            publicKey = mkOption {
+              type = nullOr str;
+              default = null;
+              description = "The public key for the user.";
+              example = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...";
             };
 
             hashedPassword = mkOption {
@@ -31,20 +52,6 @@ in
               default = [];
               description = "Additional groups the user should belong to.";
               example = ["wheel" "docker"];
-            };
-
-            shell = mkOption {
-              type = package;
-              default = pkgs.bashInteractive;
-              description = "The shell for the user.";
-              example = pkgs.zsh;
-            };
-
-            publicKey = mkOption {
-              type = nullOr str;
-              default = null;
-              description = "The public key for the user.";
-              example = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...";
             };
           };
         });
@@ -76,8 +83,6 @@ in
       users = {
         mutableUsers = false;
 
-        users.root.openssh.authorizedKeys.keys = mapAttrsToList (_name: user: user.publicKey) (filterAttrs (_name: user: user.admin) cfg.users);
-
         extraUsers =
           mapAttrs (name: user: {
             inherit (user) hashedPassword shell;
@@ -85,6 +90,7 @@ in
             extraGroups = user.extraGroups ++ optional user.admin "wheel";
             group = name;
 
+            description = mkIf (user.description != null) user.description;
             openssh.authorizedKeys.keys = optional (user.publicKey != null) user.publicKey;
           })
           cfg.users;

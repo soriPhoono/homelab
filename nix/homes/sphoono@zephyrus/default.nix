@@ -1,13 +1,10 @@
 {
   imports = [
     ./hypr.nix
-    ./agents.nix
     ./userapps.nix
   ];
 
   core = {
-    secrets.enable = true;
-
     shells = {
       shellAliases = {
         gs = "git status";

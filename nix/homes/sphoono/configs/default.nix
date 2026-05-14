@@ -1,10 +1,12 @@
 {
   imports = [
-    ./hypr
-    ./zen
+    ./agents
+    ./cursor
     ./gemini
-    ./vscode
+    ./hypr
+    ./noctalia
     ./opencode
     ./zed
+    ./zen
   ];
 }

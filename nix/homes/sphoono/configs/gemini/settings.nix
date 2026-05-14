@@ -1,3 +1,4 @@
+# TODO: Migrate this configuration into dedicated module inputs for gemini-cli
 {
   programs.gemini-cli.settings = {
     ide = {

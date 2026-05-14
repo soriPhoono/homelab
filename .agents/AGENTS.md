@@ -6,6 +6,28 @@ This directory (`.agents/`) is the central hub for agent-specific intelligence, 
 
 This is a **NixOS Homelab ("The Data Fortress")** repository. It is highly modular and utilizes dynamic discovery for configurations.
 
+## Context Tiers
+
+Keep agent guidance in the correct tier instead of mixing scopes:
+
+- **System-level context** belongs in `userapps.development.agents.context.system` for host, hardware, OS, and platform details.
+- **User-level context** belongs in `userapps.development.agents.context.user` for operator identity, workflow preferences, aliases, and personal tooling.
+- **Project-level context** belongs in repository docs such as the root `AGENTS.md` and this `.agents/AGENTS.md` for repo-wide workflows, conventions, and agent guidance.
+
+When configuring Cursor specifically:
+
+- Keep editor/runtime-specific behavior in `nix/modules/home/userapps/development/editors/vscode.nix`.
+- Keep Cursor CLI agent-specific behavior in `nix/modules/home/userapps/development/agents/cursor.nix`.
+- Do not move project-wide repository guidance into user-level or system-level agent context files.
+
+For the broader agent module set under `nix/modules/home/userapps/development/agents/`:
+
+- Reuse `userapps.development.agents.context.system` and `.user` only for local machine/operator context.
+- Prefer the derived shared runtime context from `userapps.development.agents.context.shared` instead of re-merging tiers inside each agent module.
+- Keep repository workflow guidance in the root `AGENTS.md` and `.agents/AGENTS.md`, not in per-agent runtime context files.
+- Keep editor-integrated behavior in the relevant editor module. For example, `github-copilot.nix` should stay CLI-only while VSCode/Cursor integration lives with the editor layer.
+- If an agent does not support or benefit from a dedicated context file, keep its module minimal rather than inventing extra configuration.
+
 ### Directory Structure Map
 
 - **`/nix/`**: Core Nix logic.

@@ -12,51 +12,167 @@ in
         bind =
           [
             # Window Control
-            "SUPER, Q, killactive"
+            {
+              _args = [
+                "SUPER + Q"
+                (lib.generators.mkLuaInline "hl.dsp.window.close()")
+              ];
+            }
 
-            "SUPER, T, togglefloating"
-            "SUPER SHIFT, T, fullscreen, 0"
+            {
+              _args = [
+                "SUPER + T"
+                (lib.generators.mkLuaInline "hl.dsp.window.float()")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + SHIFT + T"
+                (lib.generators.mkLuaInline "hl.dsp.window.fullscreen()")
+              ];
+            }
 
             # Scratching
-            "SUPER, grave, togglespecialworkspace, scratchpad"
-            "SUPER SHIFT, grave, movetoworkspace, special:scratchpad"
+            {
+              _args = [
+                "SUPER + grave"
+                (lib.generators.mkLuaInline "hl.dsp.workspace.toggle_special('scratchpad')")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + SHIFT + grave"
+                (lib.generators.mkLuaInline "hl.dsp.window.move({workspace = 'special:scratchpad'})")
+              ];
+            }
 
             # Screenshots using grimblast
-            ", Print, exec, ${pkgs.grimblast}/bin/grimblast --notify copy output"
-            "SUPER, Print, exec, ${pkgs.grimblast}/bin/grimblast --notify copy area"
-            "SUPER SHIFT, Print, exec, ${pkgs.grimblast}/bin/grimblast --notify copy active"
+            {
+              _args = [
+                "Print"
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.grimblast}/bin/grimblast --notify copy output\")")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + Print"
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.grimblast}/bin/grimblast --notify copy area\")")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + SHIFT + Print"
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.grimblast}/bin/grimblast --notify copy active\")")
+              ];
+            }
 
             # Focus navigation with arrows
-            "SUPER, left, movefocus, l"
-            "SUPER, right, movefocus, r"
-            "SUPER, up, movefocus, u"
-            "SUPER, down, movefocus, d"
+            {
+              _args = [
+                "SUPER + left"
+                (lib.generators.mkLuaInline "hl.dsp.focus({direction = 'l'})")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + right"
+                (lib.generators.mkLuaInline "hl.dsp.focus({direction = 'r'})")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + up"
+                (lib.generators.mkLuaInline "hl.dsp.focus({direction = 'u'})")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + down"
+                (lib.generators.mkLuaInline "hl.dsp.focus({direction = 'd'})")
+              ];
+            }
 
-            "SUPER SHIFT, left, swapwindow, l"
-            "SUPER SHIFT, right, swapwindow, r"
-            "SUPER SHIFT, up, swapwindow, u"
-            "SUPER SHIFT, down, swapwindow, d"
+            {
+              _args = [
+                "SUPER + SHIFT + left"
+                (lib.generators.mkLuaInline "hl.dsp.window.swap({direction = 'l'})")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + SHIFT + right"
+                (lib.generators.mkLuaInline "hl.dsp.window.swap({direction = 'r'})")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + SHIFT + up"
+                (lib.generators.mkLuaInline "hl.dsp.window.swap({direction = 'u'})")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + SHIFT + down"
+                (lib.generators.mkLuaInline "hl.dsp.window.swap({direction = 'd'})")
+              ];
+            }
 
-            "SUPER, Return, exec, ${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL}"
-            "SUPER, F, exec, ${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.FILE_BROWSER}"
-            "SUPER, B, exec, ${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.BROWSER}"
+            {
+              _args = [
+                "SUPER + Return"
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL}\")")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + E"
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.FILE_BROWSER}\")")
+              ];
+            }
+            {
+              _args = [
+                "SUPER + B"
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.BROWSER}\")")
+              ];
+            }
+
+            # Mouse binds
+            {
+              _args = [
+                "SUPER + Control_L"
+                (lib.generators.mkLuaInline "hl.dsp.window.drag()")
+                {mouse = true;}
+              ];
+            }
+            {
+              _args = [
+                "SUPER + ALT_L"
+                (lib.generators.mkLuaInline "hl.dsp.window.resize()")
+                {mouse = true;}
+              ];
+            }
           ]
           ++ (builtins.concatLists (
             builtins.genList (
               i: let
                 ws = toString (i + 1);
               in [
-                "SUPER, ${toString ws}, workspace, ${toString ws}"
-                "SUPER SHIFT, ${toString ws}, movetoworkspace, ${toString ws}"
+                {
+                  _args = [
+                    "SUPER + ${ws}"
+                    (lib.generators.mkLuaInline "hl.dsp.focus({workspace = '${ws}'})")
+                  ];
+                }
+                {
+                  _args = [
+                    "SUPER + SHIFT + ${ws}"
+                    (lib.generators.mkLuaInline "hl.dsp.window.move({workspace = '${ws}'})")
+                  ];
+                }
               ]
             )
             9
           ));
-
-        bindm = [
-          "SUPER, Control_L, movewindow"
-          "SUPER, ALT_L, resizewindow"
-        ];
       };
     };
   }

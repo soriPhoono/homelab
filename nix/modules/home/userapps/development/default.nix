@@ -7,12 +7,13 @@
 in
   with lib; {
     imports = [
+      ./agentics
       ./agents
+      ./appliances
       ./editors
+      ./inference
       ./infrastructure
       ./terminal
-      ./inference
-      ./appliances
     ];
 
     options.userapps.development = {

@@ -5,25 +5,25 @@
   options,
   ...
 }: let
+  agentsCfg = config.userapps.development.agentics.agents;
   cfg = config.userapps.development.agents.opencode;
-  agentContext = config.userapps.development.agents.context;
-  combinedContext = let
-    parts =
-      (lib.optional (agentContext.system != null) agentContext.system)
-      ++ (lib.optional (agentContext.user != null) agentContext.user);
-  in
-    if parts == []
-    then null
-    else lib.concatStringsSep "\n\n" parts;
 in
   with lib; {
     options.userapps.development.agents.opencode = {
-      enable = mkEnableOption "Enable OpenCode AI agent";
+      enable = mkEnableOption ''
+        Enable the OpenCode agent runtime and write shared system/user context
+        to `~/.config/opencode/AGENTS.md`.
+      '';
       enableDesktop = mkEnableOption "Enable OpenCode desktop application (requires opencode-desktop package)";
 
       secrets = mkOption {
         type = with types; listOf str;
-        description = "Secret names to load in from sops for opencode functionality";
+        description = ''
+          List of secrets to be injected into OpenCode runtime environment. Each secret
+          will be defined in `config.sops.secrets` and will be made available as an
+          environment variable with the same name as the secret key.
+          e.g.: api/GITHUB_API_TOKEN will be available as {env:GITHUB_API_TOKEN} in OpenCode runtime.
+        '';
         default = [];
       };
     };
@@ -35,10 +35,93 @@ in
             opencode-desktop
           ];
 
-        programs.opencode.enable = true;
+        programs.opencode = {
+          enable = true;
+          context = ''
+            # OpenCode Runtime Context
 
-        home.file.".config/opencode/AGENTS.md" = mkIf (combinedContext != null) {
-          text = combinedContext;
+            This file provides machine-level and user-level context for OpenCode.
+            Project-level repository guidance stays in the repository root
+            `AGENTS.md` and `.agents/AGENTS.md`.
+
+            ${agentsCfg.context {}}
+          '';
+          settings.mcp =
+            builtins.mapAttrs (
+              _: mcpServer:
+                if (mcpServer.transport == "stdio")
+                then {
+                  enabled = true;
+                  type = "local";
+                  command =
+                    [
+                      "${mcpServer.command}"
+                    ]
+                    ++ (mcpServer.args or []);
+                  env =
+                    builtins.mapAttrs (
+                      _: value:
+                        if value ? "secret"
+                        then "${
+                          if value.prefix != null
+                          then value.prefix
+                          else ""
+                        }\${env:${value.environmentVariable}}${
+                          if value.suffix != null
+                          then value.suffix
+                          else ""
+                        }"
+                        else value
+                    )
+                    mcpServer.env;
+                }
+                else if (mcpServer.transport == "http")
+                then {
+                  inherit (mcpServer) url;
+                  enabled = true;
+                  type = "remote";
+                  headers =
+                    builtins.mapAttrs (
+                      _: value:
+                        if value ? "secret"
+                        then "${
+                          if value.prefix != null
+                          then value.prefix
+                          else ""
+                        }\${env:${value.environmentVariable}}${
+                          if value.suffix != null
+                          then value.suffix
+                          else ""
+                        }"
+                        else value
+                    )
+                    mcpServer.headers;
+                }
+                else if (mcpServer.transport == "sse")
+                then {
+                  inherit (mcpServer) url;
+                  enabled = true;
+                  type = "remote";
+                  headers =
+                    builtins.mapAttrs (
+                      _: value:
+                        if value ? "secret"
+                        then "${
+                          if value.prefix != null
+                          then value.prefix
+                          else ""
+                        }\${env:${value.environmentVariable}}${
+                          if value.suffix != null
+                          then value.suffix
+                          else ""
+                        }"
+                        else value
+                    )
+                    mcpServer.headers;
+                }
+                else throw "Unsupported transport protocol: ${mcpServer.transport}"
+            )
+            agentsCfg.mcp;
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {
@@ -56,8 +139,11 @@ in
                 # Pass ALL --run commands into a SINGLE wrapProgram invocation
                 wrapProgram "$bin" \
                   ${concatStringsSep " \\\n                  " (
-              map
-              (secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${config.sops.secrets.${secret}.path})\"'")
+              map (
+                secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
+                  config.sops.secrets.${secret}.path
+                })\"'"
+              )
               cfg.secrets
             )}
               fi

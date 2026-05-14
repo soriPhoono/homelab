@@ -45,7 +45,7 @@ in
                 group = "users";
               };
             })
-            config.core.users;
+            (lib.filterAttrs (_name: user: user.secrets) config.core.users);
         };
       })
     ]);

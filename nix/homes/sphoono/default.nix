@@ -6,7 +6,10 @@
   ];
 
   core = {
-    secrets.defaultSopsFile = ./secrets.yml;
+    secrets = {
+      enable = true;
+      defaultSopsFile = ./secrets.yml;
+    };
 
     email = {
       enable = true;

@@ -1,6 +1,6 @@
 {
   imports = [
+    ./cursor.nix
     ./zed.nix
-    ./vscode.nix
   ];
 }

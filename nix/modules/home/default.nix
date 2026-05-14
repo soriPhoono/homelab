@@ -1,5 +1,5 @@
 {lib, ...}: let
-  modules = lib.homelab.discover ./.;
+  modules = lib.homelab.core.discover ./.;
 in
   modules
   // {

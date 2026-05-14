@@ -13,6 +13,7 @@ with pkgs;
 
         # Nix
         nixd
+        nil
         alejandra
         vulnix
 

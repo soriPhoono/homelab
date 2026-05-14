@@ -20,6 +20,14 @@ in {
   ];
 
   options.core = {
+    context = lib.mkOption {
+      type = with types; nullOr str;
+      description = "System-level context to be included in agent guidance.";
+      default = null;
+      example = ''
+        This system is a NixOS server running in a homelab environment. It is used for hosting various services and applications, and is managed using NixOps for deployment and configuration. The server has limited resources, so efficiency and security are important considerations when making changes to the system.
+      '';
+    };
     timeZone = lib.mkOption {
       type = with types; nullOr str;
       description = "The current system time zone";
