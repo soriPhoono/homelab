@@ -7,7 +7,6 @@ _: {
       "browser.startup.homepage" = "http://127.0.0.1:8082";
       "browser.newtabpage.enabled" = false;
 
-      "zen.workspaces.continue-where-left-off" = true;
       "zen.workspaces.natural-scroll" = true;
       "zen.view.compact.hide-tabbar" = true;
       "zen.view.compact.hide-toolbar" = true;

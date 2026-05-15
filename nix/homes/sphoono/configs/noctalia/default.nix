@@ -5,6 +5,7 @@
   ...
 }: let
   cfg = config.personal.noctalia;
+  terminal = config.home.sessionVariables.TERMINAL;
 in
   with lib; {
     options.personal.noctalia = {
@@ -66,11 +67,11 @@ in
               autoMount = true;
               hideWhenEmpty = true;
               fileBrowser = "xdg-open";
-              terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
+              terminalCommand = "${pkgs.run-application}/bin/run-application ${terminal} -e";
             };
             tailscale = {
               showPeerCount = false;
-              terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
+              terminalCommand = "${pkgs.run-application}/bin/run-application ${terminal} -e";
               taildropReceiveMode = "pkexec";
             };
             # 25m work + 15m break, repeated 6 times = 4h; long break same length as short here
@@ -87,7 +88,7 @@ in
             appLauncher = {
               enableClipboardHistory = true;
               position = "follow_bar";
-              terminalCommand = "${config.home.sessionVariables.TERMINAL} -e";
+              terminalCommand = "${terminal} -e";
               customLaunchPrefixEnabled = true;
               customLaunchPrefix = "${pkgs.run-application}/bin/run-application";
               density = "compact";
@@ -121,7 +122,7 @@ in
             nightLight.enabled = true;
             noctaliaPerformance.disableWallpaper = true;
             sessionMenu.position = "center";
-            systemMonitor.externalMonitor = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e ${config.programs.btop.package}/bin/btop";
+            systemMonitor.externalMonitor = "${pkgs.run-application}/bin/run-application ${terminal} -e ${config.programs.btop.package}/bin/btop";
             wallpaper.directory = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers";
             bar = {
               inherit (cfg) monitors;
@@ -199,17 +200,6 @@ in
       (mkIf config.wayland.windowManager.hyprland.enable {
         # TODO: Migrate this back to hyprland module
         wayland.windowManager.hyprland.settings = {
-          on = {
-            _args = [
-              "hyprland.start"
-              (lib.generators.mkLuaInline ''
-                function()
-                  hl.exec_cmd("${pkgs.uwsm}/bin/uwsm app -s b -t service noctalia-shell")
-                end
-              '')
-            ];
-          };
-
           layer_rule = [
             {
               match = {

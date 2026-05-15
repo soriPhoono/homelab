@@ -33,10 +33,11 @@ _: {
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      agents = {
-        gemini.enable = true;
+      agents.gemini.enable = true;
+      editors = {
+        neovim.enable = true;
+        zed.enable = true;
       };
-      editors.zed.enable = true;
       appliances.bambu-studio.enable = true;
     };
     data-fortress = {

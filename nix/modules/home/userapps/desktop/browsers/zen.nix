@@ -52,26 +52,26 @@ in
     config = mkIf cfg.enable {
       stylix.targets.zen-browser.enable = false;
 
-      home.sessionVariables.BROWSER = "zen-twilight";
+      home.sessionVariables.BROWSER = mkOverride cfg.priority "zen-twilight";
 
       userapps.desktop.browsers.enable = true;
 
-      xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (let
-        browser = ["zen-twilight.desktop"];
-      in
-        mkOverride cfg.priority {
-          "text/html" = browser;
-          "text/xml" = browser;
-          "x-scheme-handler/http" = browser;
-          "x-scheme-handler/https" = browser;
-          "x-scheme-handler/about" = browser;
-          "x-scheme-handler/unknown" = browser;
-        });
+      xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (
+        let
+          browser = ["zen-twilight.desktop"];
+        in
+          mkOverride cfg.priority {
+            "text/html" = browser;
+            "text/xml" = browser;
+            "x-scheme-handler/http" = browser;
+            "x-scheme-handler/https" = browser;
+            "x-scheme-handler/about" = browser;
+            "x-scheme-handler/unknown" = browser;
+          }
+      );
 
       programs.zen-browser = recursiveUpdate baseConfig (
-        recursiveUpdate
-        cfg.extraConfig
-        {profiles = cfg.profileConfig;}
+        recursiveUpdate cfg.extraConfig {profiles = cfg.profileConfig;}
       );
     };
   }

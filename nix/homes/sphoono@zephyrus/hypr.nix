@@ -5,6 +5,10 @@
 }: {
   personal.hyprland = {
     enable = true;
+    autostart = [
+      "vesktop"
+      "zen-twilight & sleep 5 && xdg-open 'https://messages.google.com/web' && xdg-open 'https://gemini.google.com' && xdg-open 'https://media.local.cryptic-coders.net/watch'"
+    ];
     monitors = [
       {
         name = "eDP-1";

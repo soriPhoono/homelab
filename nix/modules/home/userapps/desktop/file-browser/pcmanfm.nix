@@ -12,7 +12,7 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.sessionVariables.FILE_BROWSER = "pcmanfm";
+      home.sessionVariables.FILE_BROWSER = mkOverride cfg.priority "pcmanfm";
 
       xdg.mimeApps.defaultApplications = mkIf config.userapps.defaultApplications.enable {
         "inode/directory" = ["pcmanfm.desktop"];
