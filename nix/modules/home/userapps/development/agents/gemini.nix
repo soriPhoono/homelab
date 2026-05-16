@@ -37,8 +37,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         home.file =
-          lib.mapAttrs'
-          (name: pkg: {
+          lib.mapAttrs' (name: pkg: {
             name = ".gemini/skills/${name}";
             value = {
               source = pkg;

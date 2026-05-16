@@ -97,128 +97,122 @@
     };
   };
 
-  outputs =
-    inputs@{
-      self,
-      nixpkgs,
-      flake-parts,
-      nur,
-      nix-skills,
-      ...
-    }:
-    let
-      readMeta =
-        dir:
-        if builtins.pathExists (dir + "/meta.json") then
-          builtins.fromJSON (builtins.readFile (dir + "/meta.json"))
-        else
-          { };
+  outputs = inputs @ {
+    self,
+    nixpkgs,
+    flake-parts,
+    nur,
+    nix-skills,
+    ...
+  }: let
+    readMeta = dir:
+      if builtins.pathExists (dir + "/meta.json")
+      then builtins.fromJSON (builtins.readFile (dir + "/meta.json"))
+      else {};
 
-      lib = nixpkgs.lib.extend (import ./nix/lib.nix);
+    lib = nixpkgs.lib.extend (import ./nix/lib.nix);
 
-      # --- System Support & Package Cache --- #
-      systems = import inputs.systems;
+    # --- System Support & Package Cache --- #
+    systems = import inputs.systems;
 
-      pkgsBatch = lib.genAttrs systems (
-        system:
-        let
-          basePkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-            overlays = builtins.attrValues (
-              import ./nix/overlays { inherit inputs lib; }
-              // {
-                nur = nur.overlays.default;
-                nix-skills = nix-skills.overlays.default;
-              }
-            );
-          };
-        in
-        basePkgs // { inherit lib; }
-      );
-
-      # --- System Builder Parameters --- #
-      homeManagerModules = with inputs; [
-        self.homeModules.default
-        sops-nix.homeManagerModules.sops
-        stylix.homeModules.stylix
-        noctalia.homeModules.default
-      ];
-
-      nixosModules = with inputs; [
-        self.nixosModules.default
-        nixos-facter-modules.nixosModules.facter
-        disko.nixosModules.disko
-        determinate.nixosModules.default
-        comin.nixosModules.comin
-        sops-nix.nixosModules.sops
-        stylix.nixosModules.stylix
-        jovian.nixosModules.default
-        nix-index-database.nixosModules.nix-index
-        home-manager.nixosModules.home-manager
-        hyprland.nixosModules.default
-      ];
-
-      # Standalone Home Manager Builder
-      mkHome =
-        username: homeName:
-        let
-          basePath = ./nix/homes + "/${username}";
-          homePath = ./nix/homes + "/${username}@${homeName}";
-
-          # Optimization: Short-circuit the filesystem check if this is just a base user
-          hasBase = builtins.pathExists basePath;
-          hasHome = homeName != "" && builtins.pathExists homePath;
-
-          # Read meta from home first, then base, fallback to empty
-          meta =
-            if hasHome then
-              readMeta homePath
-            else if hasBase then
-              readMeta basePath
-            else
-              { };
-
-          systemArch = meta.system or "x86_64-linux";
-          pkgs = pkgsBatch.${systemArch};
-        in
-        inputs.home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = {
-            inherit inputs self;
-          };
-          modules =
-            homeManagerModules
-            ++ [
-              {
-                _module.args.lib = lib;
-                home = {
-                  inherit username;
-                  homeDirectory = lib.mkDefault (
-                    if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}"
-                  );
-                };
-              }
-            ]
-            ++ lib.optional hasBase (basePath + "/default.nix")
-            ++ lib.optional hasHome (homePath + "/default.nix");
+    pkgsBatch = lib.genAttrs systems (
+      system: let
+        basePkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays = builtins.attrValues (
+            import ./nix/overlays {inherit inputs lib;}
+            // {
+              nur = nur.overlays.default;
+              nix-skills = nix-skills.overlays.default;
+            }
+          );
         };
+      in
+        basePkgs // {inherit lib;}
+    );
 
-      # Base NixOS System Builder
-      mkSystem =
-        hostName:
-        let
-          path = ./nix/systems/${hostName};
-          meta = readMeta path;
-          system = meta.system or "x86_64-linux";
-          pkgs = pkgsBatch.${system};
-        in
-        lib.nixosSystem {
-          inherit pkgs;
-          specialArgs = {
-            inherit inputs self;
-          };
-          modules = nixosModules ++ [
+    # --- System Builder Parameters --- #
+    homeManagerModules = with inputs; [
+      self.homeModules.default
+      sops-nix.homeManagerModules.sops
+      stylix.homeModules.stylix
+      noctalia.homeModules.default
+    ];
+
+    nixosModules = with inputs; [
+      self.nixosModules.default
+      nixos-facter-modules.nixosModules.facter
+      disko.nixosModules.disko
+      determinate.nixosModules.default
+      comin.nixosModules.comin
+      sops-nix.nixosModules.sops
+      stylix.nixosModules.stylix
+      jovian.nixosModules.default
+      nix-index-database.nixosModules.nix-index
+      home-manager.nixosModules.home-manager
+      hyprland.nixosModules.default
+    ];
+
+    # Standalone Home Manager Builder
+    mkHome = username: homeName: let
+      basePath = ./nix/homes + "/${username}";
+      homePath = ./nix/homes + "/${username}@${homeName}";
+
+      # Optimization: Short-circuit the filesystem check if this is just a base user
+      hasBase = builtins.pathExists basePath;
+      hasHome = homeName != "" && builtins.pathExists homePath;
+
+      # Read meta from home first, then base, fallback to empty
+      meta =
+        if hasHome
+        then readMeta homePath
+        else if hasBase
+        then readMeta basePath
+        else {};
+
+      systemArch = meta.system or "x86_64-linux";
+      pkgs = pkgsBatch.${systemArch};
+    in
+      inputs.home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = {
+          inherit inputs self;
+        };
+        modules =
+          homeManagerModules
+          ++ [
+            {
+              _module.args.lib = lib;
+              home = {
+                inherit username;
+                homeDirectory = lib.mkDefault (
+                  if pkgs.stdenv.isDarwin
+                  then "/Users/${username}"
+                  else "/home/${username}"
+                );
+              };
+            }
+          ]
+          ++ lib.optional hasBase (basePath + "/default.nix")
+          ++ lib.optional hasHome (homePath + "/default.nix");
+      };
+
+    # Base NixOS System Builder
+    mkSystem = hostName: let
+      path = ./nix/systems/${hostName};
+      meta = readMeta path;
+      system = meta.system or "x86_64-linux";
+      pkgs = pkgsBatch.${system};
+    in
+      lib.nixosSystem {
+        inherit pkgs;
+        specialArgs = {
+          inherit inputs self;
+        };
+        modules =
+          nixosModules
+          ++ [
             {
               networking.hostName = hostName;
 
@@ -234,9 +228,9 @@
             }
             path
           ];
-        };
-    in
-    flake-parts.lib.mkFlake { inherit inputs; } {
+      };
+  in
+    flake-parts.lib.mkFlake {inherit inputs;} {
       imports = with inputs; [
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
@@ -255,38 +249,36 @@
         };
       };
 
-      perSystem =
-        {
-          pkgs,
-          config,
-          system,
-          ...
-        }:
-        {
-          # --- Package Cache --- #
-          _module.args.pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-          };
+      perSystem = {
+        pkgs,
+        config,
+        system,
+        ...
+      }: {
+        # --- Package Cache --- #
+        _module.args.pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
 
-          # --- Configuration Builders --- #
-          githubActions = import ./actions.nix { inherit self lib; };
-          treefmt = import ./treefmt.nix { inherit lib pkgs; };
-          pre-commit = import ./pre-commit.nix { inherit lib pkgs; };
+        # --- Configuration Builders --- #
+        githubActions = import ./actions.nix {inherit self lib;};
+        treefmt = import ./treefmt.nix {inherit lib pkgs;};
+        pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
 
-          # --- Development Shells & Checks --- #
-          devShells.default = import ./shell.nix {
-            inherit lib pkgs;
-            config = {
-              inherit (config) pre-commit agenix-shell githubActions;
-            };
+        # --- Development Shells & Checks --- #
+        devShells.default = import ./shell.nix {
+          inherit lib pkgs;
+          config = {
+            inherit (config) pre-commit agenix-shell githubActions;
           };
         };
+      };
 
       flake = {
         # Global Module Exports
-        nixosModules = import ./nix/modules/nixos { inherit lib self; };
-        homeModules = import ./nix/modules/home { inherit lib self; };
+        nixosModules = import ./nix/modules/nixos {inherit lib self;};
+        homeModules = import ./nix/modules/home {inherit lib self;};
 
         # --- Automatic Discovery & Construction --- #
 
@@ -297,35 +289,34 @@
 
         # All standalone homes in the /homes folder
         # Scans for <user> and <user>@<homeName>, combines them if both exist.
-        homeConfigurations =
-          let
-            # Retrieve raw directory contents as attribute sets { "name" = "type"; }
-            homesContent = builtins.readDir ./nix/homes;
-            systemsContent = builtins.readDir ./nix/systems;
+        homeConfigurations = let
+          # Retrieve raw directory contents as attribute sets { "name" = "type"; }
+          homesContent = builtins.readDir ./nix/homes;
+          systemsContent = builtins.readDir ./nix/systems;
 
-            # Optimization: Keep systems as an attribute set for O(1) lookups
-            systemHosts = lib.filterAttrs (_n: type: type == "directory") systemsContent;
+          # Optimization: Keep systems as an attribute set for O(1) lookups
+          systemHosts = lib.filterAttrs (_n: type: type == "directory") systemsContent;
 
-            # Single-pass evaluation: maps the directory name to { name, value } or drops it (null)
-            processHomeDir =
-              name: type:
-              if type != "directory" then
-                null
-              else
-                let
-                  parts = lib.splitString "@" name;
-                  username = lib.head parts;
-                  hostName = if lib.length parts > 1 then lib.last parts else "";
-                in
-                # Optimization: Simplified boolean logic and O(1) existence check
-                if hostName != "droid" && !(lib.hasAttr hostName systemHosts) then
-                  {
-                    inherit name;
-                    value = mkHome username hostName;
-                  }
-                else
-                  null;
-          in
+          # Single-pass evaluation: maps the directory name to { name, value } or drops it (null)
+          processHomeDir = name: type:
+            if type != "directory"
+            then null
+            else let
+              parts = lib.splitString "@" name;
+              username = lib.head parts;
+              hostName =
+                if lib.length parts > 1
+                then lib.last parts
+                else "";
+            in
+              # Optimization: Simplified boolean logic and O(1) existence check
+              if hostName != "droid" && !(lib.hasAttr hostName systemHosts)
+              then {
+                inherit name;
+                value = mkHome username hostName;
+              }
+              else null;
+        in
           # Execute single pass, strip out skipped directories (nulls), and build the final set
           builtins.listToAttrs (
             builtins.filter (x: x != null) (lib.mapAttrsToList processHomeDir homesContent)

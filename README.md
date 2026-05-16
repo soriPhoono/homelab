@@ -1,66 +1,143 @@
 # Homelab
 
-## 🏰 Project Overview: The Data Fortress
+## The Data Fortress
 
-This repository is a comprehensive, declarative configuration for my personal infrastructure (homelab). It manages everything from physical servers and desktops to virtualized environments and single-board computers leveraging the declarative nature of the nix ecosystem, docker-compose, and kubernetes manifests via fluxCD.
+This repository is a comprehensive, declarative infrastructure-as-code configuration for a personal homelab. It manages physical machines, user environments, and hosted services through NixOS, Home Manager, and Nix Flakes.
 
-### NixOS
+## Core Philosophy
 
-Built on **NixOS** and **Home Manager**, it leverages **Nix Flakes** for reproducibility and hermetic builds.
+1. **Declarative Everything**: Infrastructure state is defined exclusively in code. Manual mutations are ephemeral and will be overwritten on next deployment.
+1. **Single Command Deployment**: System activation uses `nh os switch .` (NixOS) or `nh home switch .` (standalone Home Manager).
+1. **Dynamic Discovery**: Module auto-import via `lib.homelab.core.discover` eliminates manual `imports` lists. Adding a file to the correct directory is sufficient.
+1. **Validation-Driven Development**: `nix flake check` is the gate. Pre-commit hooks enforce formatting and evaluation before any commit.
 
-### Docker Compose
+## Architecture
 
-#### Todo
+### Flake Outputs
 
-### Kubernetes
-
-#### Todo
-
-## 🧠 Core Philosophy
-
-1. **Declarative everything**: If it's not in code, it doesn't exist (outside of personal documents and other individually controlled files).
-1. **Single Command Invocation**: Deployment and updates should be one command using `nh` (i.e. `nh os switch .` or `nh home switch .` for environments running standalone HM).
-1. **Dynamic Discovery**: The system automatically finds code. You shouldn't have to manually import every new file outside of defining module structure.
-1. **Stability**: `nix flake check` is the law. If it fails, fix it before pushing.
-
-## 🏗️ Architecture
-
-This repository uses a modern Flake-based structure with automatic discovery logic.
+| Output | Description |
+| :--- | :--- |
+| `nixosConfigurations` | Auto-discovered from `nix/systems/`. Current: **zephyrus**, **lg-laptop** |
+| `homeConfigurations` | Auto-discovered from `nix/homes/` for non-system-bound homes. Current: **sphoono**, **spookyskelly** |
+| `nixosModules` | Auto-discovered from `nix/modules/nixos/`. Exported: `core`, `desktop`, `hosting`, `themes`, `default` |
+| `homeModules` | Auto-discovered from `nix/modules/home/`. Exported: `core`, `userapps`, `default` |
+| `devShells.default` | Development environment with Nix tooling, secret managers, and CI generators |
+| `checks` | Pre-commit hooks and treefmt validation across supported architectures |
+| `githubActions` | CI workflow definitions generated from `actions.nix` |
 
 ### Directory Structure
 
-| Directory | Role | Description |
-| :--- | :--- | :--- |
-| **`homes/`** | **Users** | Home Manager configurations. Core (`user`), Standalone (`user@home-name`) or system-bound (`user@hostname`). |
-| **`lib/`** | **Helpers** | Utility functions used throughout the flake. |
-| **`modules/`** | **Logic** | Reusable modules. `nixos/` for NixOS-level, `home/` for user-level. |
-| **`overlays/`** | **Overlays** | Package overlays used throughout the flake. (Internal pkg modifications) |
-| **`pkgs/`** | **Software** | Custom package declarations. |
-| **`secrets/`** | **Secrets** | Encrypted secrets used throughout the flake for developer facing integrations. |
-| **`systems/`** | **Hosts** | Top-level NixOS configurations for machines. Each folder is a host toplevel module. |
-| **`templates/`** | **Scaffolding** | Boilerplates for creating new systems, modules, or general projects. |
+| Path | Role |
+| :--- | :--- |
+| `nix/homes/` | Home Manager configurations. Base (`user`), host-specific (`user@hostname`), or standalone (`user@home-name`) |
+| `nix/lib.nix` | Custom library: `homelab.core.discover` (auto-import), `homelab.types.ai` (MCP server types) |
+| `nix/modules/nixos/` | System-level modules: `core`, `desktop`, `hosting`, `themes` |
+| `nix/modules/home/` | User-level modules: `core`, `userapps` (desktop, development, data-fortress, content-creation) |
+| `nix/overlays/` | Auto-discovered package overlays modifying the global `pkgs` set |
+| `nix/pkgs/` | Custom package declarations, auto-exported as flake `packages` |
+| `nix/secrets/` | Encrypted secrets managed via `sops-nix` |
+| `nix/systems/` | Top-level NixOS host configurations. Each directory is a machine |
+| `nix/templates/` | Scaffolding for new systems, modules, and projects |
+
+### Key Inputs
+
+| Input | Purpose |
+| :--- | :--- |
+| `nixpkgs` (unstable) | Primary package set |
+| `home-manager` | User environment management |
+| `flake-parts` | Flake composition framework |
+| `disko` | Declarative disk partitioning |
+| `sops-nix` | Secret management (system and user) |
+| `stylix` | System-wide theming via base16 |
+| `hyprland` | Wayland compositor |
+| `jovian` | SteamOS/Deck integration |
+| `comin` | GitOps-based NixOS deployment |
+| `nixos-facter-modules` | Hardware fact collection |
+| `agenix-shell` | Dev shell secret decryption |
+| `treefmt-nix` | Multi-language formatting |
+| `git-hooks-nix` | Pre-commit hook management |
+| `determinate` | Determinate Systems Nix enhancements |
 
 ### Dynamic Discovery
 
-The `lib/` directory includes custom logic to automatically import configurations:
+The `lib.homelab.core.discover` function performs filesystem introspection to automatically import modules:
 
-- **Systems**: Any directory in `systems/` with a `default.nix` is automatically exposed as a `nixosConfiguration`.
-- **Homes**: The flake scans `homes/` for three naming patterns:
-  - `user` — Base configuration, used everywhere as a base configuration layer.
-  - `user@home-name` — Supplementary config for standalone installs. Combined with the base and exported as `homeConfigurations.user@home-name`.
-  - `user@hostname` — Machine-specific overrides, imported by the NixOS system configuration itself. **Not** exported as a standalone `homeConfiguration`.
+- **NixOS Modules**: Any `.nix` file or directory with `default.nix` in `nix/modules/nixos/` is exported.
+- **Home Manager Modules**: Same pattern applied to `nix/modules/home/`.
+- **NixOS Systems**: Any directory in `nix/systems/` with a `default.nix` becomes a `nixosConfiguration`.
+- **Overlays**: Any `.nix` file or directory in `nix/overlays/` is applied to the global `pkgs` set.
+- **Home Configurations**: The flake evaluates `nix/homes/` with three naming patterns:
+  - `user` — Base configuration layer, shared across all deployments
+  - `user@home-name` — Standalone Home Manager export (hostname not in `nix/systems/`)
+  - `user@hostname` — System-bound overrides (hostname exists in `nix/systems/`), imported by the NixOS config, not exported standalone
 
-## 🚀 Quick Start
+## Systems Inventory
+
+### zephyrus
+
+ASUS ROG Zephyrus G14 (`GA401QM`) — primary development workstation.
+
+- **CPU**: AMD Ryzen 9 5900HS (8C/16T)
+- **GPU**: AMD Radeon iGPU + NVIDIA RTX 3060 (laptop mode)
+- **RAM**: 16GB DDR4
+- **Desktop**: Hyprland + SDDM (sddm-astronaut, jake_the_dog theme)
+- **Key Services**: Docker, VirtualBox, media stack (Jellyfin, \*arr suite), Caddy reverse proxy
+- **Theme**: Catppuccin Macchiato
+- **Full hardware facts**: [`nix/systems/zephyrus/facter.json`](nix/systems/zephyrus/facter.json)
+
+### lg-laptop
+
+LG laptop — secondary workstation.
+
+- **GPU**: Intel Arc (device ID `a7a0`)
+- **Desktop**: KDE Plasma
+- **Key Services**: Media stack, Caddy reverse proxy
+- **Theme**: Catppuccin Macchiato
+- **Full hardware facts**: [`nix/systems/lg-laptop/facter.json`](nix/systems/lg-laptop/facter.json)
+
+## Module System
+
+### NixOS Module Options
+
+| Option Namespace | Purpose |
+| :--- | :--- |
+| `core.*` | Base system: hardware, networking, boot, users, secrets, Nix configuration |
+| `core.hardware.*` | Hardware abstraction: CPU vendor, GPU drivers (AMD/Intel/NVIDIA), HID devices, ADB, Bluetooth |
+| `core.networking.*` | NetworkManager, OpenSSH, Tailscale with Serve integration |
+| `core.boot.*` | Bootloader (systemd-boot), Plymouth splash, kernel selection |
+| `core.users.*` | User provisioning with admin roles, SSH keys, and secret access |
+| `desktop.*` | Desktop environment stack (gated by `desktop.enable`) |
+| `desktop.environments.*` | Display managers (SDDM, greetd), window managers (Hyprland), desktop environments (KDE, Cosmic) |
+| `desktop.services.*` | ASUS daemon, Flatpak, PipeWire, printing, virtualization |
+| `desktop.tools.*` | Docker, VirtualBox, AppImage, partition manager |
+| `desktop.features.*` | Gaming profiles with console support |
+| `hosting.*` | Self-hosted services: Caddy proxy, media stack, homepage dashboard |
+| `hosting.media.*` | Jellyfin, Overseerr, Sonarr, Radarr, Prowlarr, FlareSolverr, qBittorrent |
+| `hosting.proxy.*` | Declarative Caddy reverse proxy with DNS configuration |
+| `themes.*` | Stylix integration with base16 scheme selection |
+
+### Home Manager Module Options
+
+| Option Namespace | Purpose |
+| :--- | :--- |
+| `core.*` | Base user environment: shells, applications, email, SSH, secrets |
+| `core.shells.*` | Bash, Fish, Starship prompt, Fastfetch |
+| `core.apps.*` | Git, Yazi file manager |
+| `userapps.*` | User-facing applications organized by category |
+| `userapps.desktop.*` | Browsers (Firefox, Zen), communication (Discord, Matrix, Signal, Telegram), file managers, office suites, media players |
+| `userapps.development.*` | Editors (Neovim, VSCode, Zed, Cursor), AI agents (Gemini, OpenCode, Cursor), terminal emulators (Ghostty, Kitty), MCP servers, GitHub CLI |
+| `userapps.data-fortress.*` | Personal data: Bitwarden, Nextcloud, Obsidian, media management |
+| `userapps.content-creation.*` | Blender, GIMP, Inkscape, Krita, Kdenlive, Audacity, OBS Studio |
+
+## Quick Start
 
 ### Prerequisites
 
-- Nix installed with Flakes enabled.
-- `direnv` (recommended) for automatic dev shell loading.
-- `determinate-nix` (recommended) for caching and build performance.
+- Nix with flakes enabled
+- `direnv` for automatic dev shell activation
+- Determinate Nix (recommended for caching)
 
 ### Development Environment
-
-Simply `cd` into the directory. `direnv` will automatically load a dev shell with all necessary tools (`nix`, `sops`, `age`, etc.).
 
 ```bash
 direnv allow
@@ -68,34 +145,44 @@ direnv allow
 nix develop
 ```
 
-### Validating Changes
+The dev shell provides: `nixd`, `nil`, `alejandra`, `vulnix`, `gh`, `age`, `agenix`, `sops`, `disko`, `nixos-facter`, and auto-deploys GitHub Actions from `actions.nix`.
 
-Always run the flake check before pushing or deploying.
+### Validation
 
 ```bash
-nix flake check
+nix fmt        # Format Nix, YAML, and Markdown
+nix flake check # Run all checks (pre-commit + treefmt)
 ```
-
-This is enforced via pre-commit hooks.
 
 ### Deployment
 
-**Deploy a NixOS System:**
+**NixOS system:**
 
 ```bash
-nixos-rebuild switch --flake .#<hostname>
+nh os switch .#<hostname>
 ```
 
-**Deploy a Home Manager Configuration:**
+**Standalone Home Manager:**
 
 ```bash
-home-manager switch --flake .#<username>
+nh home switch .#<username>
 ```
 
-## 🔐 Secrets Management
+**System-integrated Home Manager:**
 
-Secrets are managed using `agenix` for developer integration required secrets, exported automatically into the devshell when a compatible age key is available as an environment variable. Encrypted secrets are stored in the repo, and keys are derived from host SSH keys or age user keys (for home manager based sops secrets), which are version controlled and deployed to the target system via `sops-nix` if the system has a compatible host ssh key, or age key for home manager based sops secrets.
+Home configurations for users on NixOS hosts are deployed automatically via `nh os switch`. The `core.users` module in each system configuration handles user creation and Home Manager integration.
 
-## 🤝 Contributing
+## Secrets Management
 
-See [docs/Meta/CONTRIBUTING](docs/Meta/CONTRIBUTING.md) for detailed guidelines.
+Two complementary systems manage secrets at different layers:
+
+| System | Scope | Mechanism |
+| :--- | :--- | :--- |
+| **sops-nix** | System and user secrets at deployment time | Encrypted YAML in repo, decrypted via host SSH keys (NixOS) or age keys (Home Manager) |
+| **agenix** | Dev shell secrets for developer tooling | Encrypted files decrypted on dev shell entry via age identity key |
+
+Sops rules are defined in `.sops.yaml` with path-based encryption targeting specific hosts and users. Age keys are managed per-system and per-admin.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow, branching strategy, and commit conventions.

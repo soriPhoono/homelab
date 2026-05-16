@@ -1,7 +1,7 @@
 {
   imports = [
-    ./cursor.nix
     ./neovim.nix
     ./zed.nix
+    ./cursor.nix
   ];
 }
