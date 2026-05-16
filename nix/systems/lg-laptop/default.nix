@@ -43,7 +43,7 @@ with lib; {
 
     secrets = {
       enable = true;
-      defaultSopsFile = ./secrets.yaml;
+      defaultSopsFile = ./secrets.yml;
     };
 
     networking = {
