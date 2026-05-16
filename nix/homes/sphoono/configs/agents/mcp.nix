@@ -6,30 +6,20 @@
   userapps.development.agentics.mcp = {
     filesystem = {
       transport = "stdio";
-      command = "${pkgs.nodejs}/bin/npx";
+      command = "${pkgs.mcp-server-filesystem}/bin/mcp-server-filesystem";
       args = [
-        "-y"
-        "@modelcontextprotocol/server-filesystem"
         config.home.homeDirectory
       ];
     };
 
     memory = {
       transport = "stdio";
-      command = "${pkgs.nodejs}/bin/npx";
-      args = [
-        "-y"
-        "@modelcontextprotocol/server-memory"
-      ];
+      command = "${pkgs.mcp-server-memory}/bin/mcp-server-memory";
     };
 
     sequential-thinking = {
       transport = "stdio";
-      command = "${pkgs.nodejs}/bin/npx";
-      args = [
-        "-y"
-        "@modelcontextprotocol/server-sequential-thinking"
-      ];
+      command = "${pkgs.mcp-server-sequential-thinking}/bin/mcp-server-sequential-thinking";
     };
 
     obsidian = {
@@ -44,18 +34,12 @@
 
     fetch = {
       transport = "stdio";
-      command = "${pkgs.uv}/bin/uvx";
-      args = [
-        "mcp-server-fetch"
-      ];
+      command = "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch";
     };
 
     git = {
       transport = "stdio";
-      command = "${pkgs.uv}/bin/uvx";
-      args = [
-        "mcp-server-git"
-      ];
+      command = "${pkgs.mcp-server-git}/bin/mcp-server-git";
     };
 
     github = {

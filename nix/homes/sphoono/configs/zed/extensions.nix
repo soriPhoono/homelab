@@ -104,7 +104,6 @@
     "mcp-server-gitlab" # GitLab CI/CD
     "mcp-server-buildkite" # Buildkite CI/CD
     "mcp-server-digitalocean" # DigitalOcean cloud
-    "datadog-mcp" # Datadog monitoring
     "sentry-mcp" # Sentry error tracking
 
     # Web2 Development
