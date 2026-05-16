@@ -89,6 +89,11 @@
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-skills = {
+      url = "github:sudosubin/nix-skills";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -96,6 +101,7 @@
     nixpkgs,
     flake-parts,
     nur,
+    nix-skills,
     ...
   }: let
     readMeta = dir:
@@ -117,6 +123,7 @@
             import ./nix/overlays {inherit inputs lib;}
             // {
               nur = nur.overlays.default;
+              nix-skills = nix-skills.overlays.default;
             }
           );
         };

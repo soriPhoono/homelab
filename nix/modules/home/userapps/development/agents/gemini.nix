@@ -36,6 +36,17 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        home.file =
+          builtins.mapAttrs'
+          (name: pkg: {
+            name = ".gemini/skills/${name}";
+            value = {
+              source = pkg;
+              recursive = true;
+            };
+          })
+          agentsCfg.skills;
+
         programs.gemini-cli = {
           enable = true;
 
