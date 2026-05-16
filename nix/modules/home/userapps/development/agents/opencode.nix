@@ -35,6 +35,17 @@ in
             opencode-desktop
           ];
 
+        home.file =
+          builtins.mapAttrs'
+          (name: pkg: {
+            name = ".config/opencode/skills/${name}";
+            value = {
+              source = pkg;
+              recursive = true;
+            };
+          })
+          agentsCfg.skills;
+
         programs.opencode = {
           enable = true;
           context = ''

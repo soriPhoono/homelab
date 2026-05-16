@@ -16,19 +16,30 @@ in
     };
 
     config = mkIf cfg.enable {
-      home.file = {
-        ".cursor/AGENTS.md" = {
-          text = ''
-            # Cursor CLI Context
+      home.file =
+        {
+          ".cursor/AGENTS.md" = {
+            text = ''
+              # Cursor CLI Context
 
-            This file provides machine-level and user-level context for Cursor CLI.
-            Project-level repository guidance stays in the repository root
-            `AGENTS.md` and `.agents/AGENTS.md`.
+              This file provides machine-level and user-level context for Cursor CLI.
+              Project-level repository guidance stays in the repository root
+              `AGENTS.md` and `.agents/AGENTS.md`.
 
-            ${agentsCfg.context {}}
-          '';
-        };
-      };
+              ${agentsCfg.context {}}
+            '';
+          };
+        }
+        // builtins.mapAttrs'
+        (name: pkg: {
+          name = ".cursor/skills/${name}";
+          value = {
+            source = pkg;
+            recursive = true;
+          };
+        })
+        agentsCfg.skills;
+
       home.packages = with pkgs; [cursor-cli];
     };
   }
