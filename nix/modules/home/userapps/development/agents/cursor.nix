@@ -30,7 +30,7 @@ in
             '';
           };
         }
-        // builtins.mapAttrs'
+        // lib.mapAttrs'
         (name: pkg: {
           name = ".cursor/skills/${name}";
           value = {

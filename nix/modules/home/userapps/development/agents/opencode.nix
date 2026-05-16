@@ -36,7 +36,7 @@ in
           ];
 
         home.file =
-          builtins.mapAttrs'
+          lib.mapAttrs'
           (name: pkg: {
             name = ".config/opencode/skills/${name}";
             value = {
