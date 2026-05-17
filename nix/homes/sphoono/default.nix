@@ -1,8 +1,6 @@
 {
   imports = [
     ./configs
-
-    ./theme.nix
   ];
 
   core = {

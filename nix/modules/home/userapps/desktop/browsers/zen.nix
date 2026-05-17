@@ -17,11 +17,7 @@ in
     ];
 
     options.userapps.desktop.browsers.zen = {
-      enable =
-        mkEnableOption "Enable Zen Browser"
-        // {
-          default = true;
-        };
+      enable = mkEnableOption "Enable Zen Browser";
 
       priority = mkOption {
         type = types.int;

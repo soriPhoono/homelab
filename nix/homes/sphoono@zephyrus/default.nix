@@ -1,5 +1,11 @@
 {
   imports = [
+    # Desktop-specific configs (moved from base sphoono/configs/ for CI optimization)
+    ../sphoono/configs/zen
+    ../sphoono/configs/hypr
+    ../sphoono/configs/noctalia
+    ../sphoono/theme.nix
+
     ./hypr.nix
     ./userapps.nix
   ];

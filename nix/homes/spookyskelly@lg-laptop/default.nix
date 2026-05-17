@@ -1,4 +1,9 @@
 {
+  imports = [
+    # Desktop-specific configs (moved from base spookyskelly/configs/ for CI optimization)
+    ../spookyskelly/configs/zen
+  ];
+
   core = {
     secrets.enable = true;
 
