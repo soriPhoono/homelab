@@ -76,8 +76,14 @@ in
         createDirectories = true;
       };
 
-      # Set session variables
-      home.sessionVariables = cfg.sessionVariables;
+      # Set session variables with sensible defaults
+      home.sessionVariables =
+        {
+          TERMINAL = mkDefault "ghostty";
+          BROWSER = mkDefault "firefox";
+          FILE_BROWSER = mkDefault "nautilus";
+        }
+        // cfg.sessionVariables;
 
       # XDG MIME apps
       xdg.mimeApps.enable = mkIf cfg.xdg.mimeApps true;

@@ -70,12 +70,20 @@ in {
       };
     };
 
-    core.users = lib.mkIf cfg.console.enable {
-      ${consoleUser} = {
-        description = "Dedicated Jovian console session account";
-        hashedPassword = "!";
-      };
+    # The Jovian module requires a dedicated system user for the gamescope session.
+    # Define it directly rather than via core.users (which would force isNormalUser).
+    users.groups.${consoleUser} = {};
+    users.users.${consoleUser} = {
+      description = "Dedicated Jovian console session account";
+      hashedPassword = "!";
+      isSystemUser = true;
+      group = consoleUser;
     };
+
+    # Ensure Stylix doesn't fail on the steam-user (it's not a full desktop user).
+    # Inherit the system theme, falling back to a dark default.
+    home-manager.users.${consoleUser}.stylix.base16Scheme =
+      lib.mkDefault (config.themes.base16Scheme or "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml");
 
     jovian = lib.mkIf cfg.console.enable {
       steam =
