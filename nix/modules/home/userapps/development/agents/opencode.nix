@@ -88,6 +88,9 @@ in
           commands =
             mapAttrs cmdFromEntry
             agentsCfg.commands.registry;
+          agents =
+            mapAttrs cmdFromEntry
+            agentsCfg.subagents.registry;
           settings =
             {
               mcp =
@@ -167,6 +170,7 @@ in
                 )
                 agentsCfg.mcp;
             }
+            // cfg.settings
             // lib.optionalAttrs (cfg.plugins != []) {
               plugin = cfg.plugins;
             };
