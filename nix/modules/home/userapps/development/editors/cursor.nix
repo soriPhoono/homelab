@@ -110,9 +110,6 @@ in
             enable = true;
             enableDesktop = true;
           };
-          agents.cursor = {
-            enable = true;
-          };
         };
 
         programs.cursor = {

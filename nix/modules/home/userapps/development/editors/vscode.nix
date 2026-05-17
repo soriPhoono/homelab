@@ -62,7 +62,6 @@ in
         programs.vscode = editorProgramSettings;
       })
       (mkIf (cfg.vendor == "antigravity") {
-        userapps.development.agents.gemini.enable = true;
         programs.antigravity = editorProgramSettings;
       })
       (mkIf (cfg.vendor == "vscode" && mcpCfg.consumers.editors.vscode.enable) (mkMerge [

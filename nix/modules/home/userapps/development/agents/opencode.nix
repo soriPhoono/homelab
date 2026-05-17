@@ -7,6 +7,11 @@
 }: let
   agentsCfg = config.userapps.development.agentics.agents;
   cfg = config.userapps.development.agents.opencode;
+
+  cmdFromEntry = _name: value:
+    if builtins.isPath value
+    then builtins.readFile value
+    else value;
 in
   with lib; {
     options.userapps.development.agents.opencode = {
@@ -80,6 +85,9 @@ in
 
             ${agentsCfg.context {}}
           '';
+          commands =
+            mapAttrs cmdFromEntry
+            agentsCfg.commands.registry;
           settings =
             {
               mcp =
