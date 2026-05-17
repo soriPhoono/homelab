@@ -79,7 +79,49 @@ in
       settings = mkOption {
         type = with types; attrs;
         default = {};
-        description = "Additional Noctalia shell settings.";
+        description = "Additional Noctalia shell settings (merged into base config).";
+      };
+
+      pluginSettings = mkOption {
+        type = with types; attrsOf attrs;
+        default = {};
+        description = "Per-plugin settings overrides (e.g. usb-drive-manager, tailscale).";
+      };
+
+      wallpaperDir = mkOption {
+        type = types.str;
+        default = "${config.home.homeDirectory}/Pictures/Wallpapers";
+        description = "Directory containing wallpapers for Noctalia.";
+      };
+
+      avatarImage = mkOption {
+        type = types.nullOr str;
+        default = null;
+        description = "Path to the avatar image for the lock screen and user menu.";
+      };
+
+      location = mkOption {
+        type = with types;
+          nullOr (submodule {
+            options = {
+              name = mkOption {
+                type = str;
+                description = "Display name for the location.";
+              };
+              useFahrenheit = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether to use Fahrenheit for temperature.";
+              };
+              use12HourFormat = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether to use 12-hour time format.";
+              };
+            };
+          });
+        default = null;
+        description = "Location configuration for weather and time display.";
       };
     };
 
@@ -119,6 +161,8 @@ in
           })
           cfg.pluginStates;
 
+        inherit (cfg) pluginSettings;
+
         settings =
           {
             appLauncher = {
@@ -134,16 +178,25 @@ in
               visualizerType = "mirrored";
             };
             colorSchemes.schedulingMode = "dark";
-            general = {
-              enableLockScreenMediaControls = true;
-              showScreenCorners = true;
-              forceBlackScreenCorners = true;
-              lockScreenAnimations = true;
-              lockScreenBlur = 0.5;
-              lockScreenTint = 0.5;
-              passwordChars = true;
-            };
+            general =
+              {
+                enableLockScreenMediaControls = true;
+                showScreenCorners = true;
+                forceBlackScreenCorners = true;
+                lockScreenAnimations = true;
+                lockScreenBlur = 0.5;
+                lockScreenTint = 0.5;
+                passwordChars = true;
+              }
+              // optionalAttrs (cfg.avatarImage != null) {
+                inherit (cfg) avatarImage;
+              };
             idle.enabled = true;
+            location = optionalAttrs (cfg.location != null) {
+              name = cfg.location.name;
+              useFahrenheit = cfg.location.useFahrenheit;
+              use12HourFormat = cfg.location.use12HourFormat;
+            };
             network = {
               bluetoothHideUnnamedDevices = true;
               bluetoothRssiPollingEnabled = true;
@@ -153,6 +206,7 @@ in
             sessionMenu.position = "center";
             systemMonitor.externalMonitor = "${pkgs.run-application}/bin/run-application ${terminal} -e ${config.programs.btop.package}/bin/btop";
             noctaliaPerformance.disableWallpaper = true;
+            wallpaper.directory = cfg.wallpaperDir;
             bar = {
               inherit (cfg) monitors;
               barType = "floating";
