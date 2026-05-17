@@ -12,7 +12,8 @@
         pullRequest = {};
       };
       permissions = {
-        contents = "write";
+        contents = "read";
+        id-token = "read";
       };
       jobs =
         (lib.mapAttrs' (name: _value: {

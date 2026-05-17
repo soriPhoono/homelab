@@ -138,6 +138,7 @@ in
             inherit (config.services.caddy) group;
 
             owner = config.services.caddy.user;
+            mode = "0400";
 
             content = ''
               CLOUDFLARE_API_TOKEN="${config.sops.placeholder."api/cloudflare-${dnsConfig.baseDomain}-token"}"
