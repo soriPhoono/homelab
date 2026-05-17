@@ -6,6 +6,7 @@
 
     settings = {
       model = "opencode/deepseek-v4-flash";
+      default_agent = "multi-agent-coordinator";
     };
   };
 }
