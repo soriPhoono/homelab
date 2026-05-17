@@ -19,7 +19,6 @@ in
           (lib.generators.mkLuaInline ''
             function()
               hl.exec_cmd("${pkgs.uwsm}/bin/uwsm app -s b -t service noctalia-shell")
-              ${concatStringsSep "\n              " (map (cmd: ''hl.exec_cmd("${cmd}")'') cfg.autostart)}
             end
           '')
         ];
