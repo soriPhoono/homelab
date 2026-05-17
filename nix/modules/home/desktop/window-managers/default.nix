@@ -48,6 +48,8 @@ in
     };
 
     config = mkIf cfg.enable {
+      desktop.enable = true;
+
       # Default session variables for WM users
       home.sessionVariables = {
         XDG_CURRENT_DESKTOP = mkOverride 500 "wlroots";

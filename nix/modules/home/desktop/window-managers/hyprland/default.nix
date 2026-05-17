@@ -101,6 +101,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        desktop.window-managers.enable = true;
+
         wayland.windowManager.hyprland = {
           enable = true;
           systemd.enable = true;

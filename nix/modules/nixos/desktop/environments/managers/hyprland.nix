@@ -78,16 +78,10 @@ in
           ];
 
           # Activate the desktop framework: core → WM base → Hyprland
-          desktop = {
+          desktop.window-managers.hyprland = {
             enable = true;
-            window-managers = {
-              enable = true;
-              hyprland = {
-                enable = true;
-                package = hyprlandPkg;
-                portalPackage = hyprlandPortalPkg;
-              };
-            };
+            package = hyprlandPkg;
+            portalPackage = hyprlandPortalPkg;
           };
 
           home.sessionVariables = {
