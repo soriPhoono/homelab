@@ -4,12 +4,12 @@
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.environments.window-managers.hyprland.shells.noctalia;
-  hyprCfg = config.userapps.desktop.environments.window-managers.hyprland;
+  cfg = config.desktop.window-managers.hyprland.shells.noctalia;
+  hyprCfg = config.desktop.window-managers.hyprland;
   terminal = config.home.sessionVariables.TERMINAL or "ghostty";
 in
   with lib; {
-    options.userapps.desktop.environments.window-managers.hyprland.shells.noctalia = {
+    options.desktop.window-managers.hyprland.shells.noctalia = {
       enable = mkEnableOption "Noctalia shell for Hyprland (bar, OSD, lockscreen, notifications)";
 
       monitors = mkOption {

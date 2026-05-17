@@ -6,7 +6,7 @@
   nixosConfig ? null,
   ...
 }: let
-  framework = config.userapps.desktop.environments;
+  framework = config.desktop;
 in
   with lib; {
     imports = [
@@ -19,7 +19,7 @@ in
 
     config = mkIf (config.personal.hyprland.enable or framework.window-managers.hyprland.enable) {
       # Activate the full desktop environment framework stack
-      userapps.desktop.environments = {
+      desktop = {
         enable = true;
         window-managers = {
           enable = true;

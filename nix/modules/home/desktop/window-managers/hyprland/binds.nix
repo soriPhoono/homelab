@@ -4,8 +4,8 @@
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.environments.window-managers.hyprland;
-  wmCfg = config.userapps.desktop.environments.window-managers;
+  cfg = config.desktop.window-managers.hyprland;
+  wmCfg = config.desktop.window-managers;
 in
   with lib; {
     config = mkIf cfg.enable {

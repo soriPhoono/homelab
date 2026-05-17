@@ -8,7 +8,7 @@
   personal.hyprland.enable = true;
 
   # ── Monitor Configuration ──────────────────────────────────────────
-  userapps.desktop.environments.window-managers.hyprland.monitors = [
+  desktop.window-managers.hyprland.monitors = [
     {
       name = "eDP-1";
       primary = true;
@@ -26,7 +26,7 @@
   ];
 
   # ── Autostart Applications ─────────────────────────────────────────
-  userapps.desktop.environments.xdg.autostart = [
+  desktop.xdg.autostart = [
     {
       name = "Vesktop";
       command = "vesktop";
@@ -39,7 +39,7 @@
   ];
 
   # ── ROG-Specific Binds ─────────────────────────────────────────────
-  userapps.desktop.environments.window-managers.hyprland.settings = {
+  desktop.window-managers.hyprland.settings = {
     bind = [
       # ROG Key → Settings
       {
@@ -84,7 +84,7 @@
   };
 
   # ── Noctalia Shell ─────────────────────────────────────────────────
-  userapps.desktop.environments.window-managers.hyprland.shells.noctalia = {
+  desktop.window-managers.hyprland.shells.noctalia = {
     enable = true;
     monitors = ["eDP-1"];
     wallpaperDir = "${config.home.homeDirectory}/Nextcloud/Pictures/Wallpapers";

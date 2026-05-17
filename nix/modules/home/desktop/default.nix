@@ -4,14 +4,14 @@
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.environments;
+  cfg = config.desktop;
 in
   with lib; {
     imports = [
       ./window-managers
     ];
 
-    options.userapps.desktop.environments = {
+    options.desktop = {
       enable = mkEnableOption "Desktop environment support (core deps, XDG, portals)";
 
       sessionVariables = mkOption {

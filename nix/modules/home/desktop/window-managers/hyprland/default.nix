@@ -3,7 +3,7 @@
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.environments.window-managers.hyprland;
+  cfg = config.desktop.window-managers.hyprland;
 in
   with lib; {
     imports = [
@@ -13,7 +13,7 @@ in
       ./shells
     ];
 
-    options.userapps.desktop.environments.window-managers.hyprland = {
+    options.desktop.window-managers.hyprland = {
       enable = mkEnableOption "Hyprland Wayland compositor configuration";
 
       package = mkOption {

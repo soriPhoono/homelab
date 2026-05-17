@@ -3,7 +3,7 @@
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.environments.window-managers.hyprland;
+  cfg = config.desktop.window-managers.hyprland;
 in
   with lib; {
     config = mkIf (cfg.enable && cfg.monitors != []) {

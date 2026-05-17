@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  envCfg = config.userapps.desktop.environments;
+  envCfg = config.desktop;
   hyprCfg = envCfg.window-managers.hyprland;
 in
   with lib; {

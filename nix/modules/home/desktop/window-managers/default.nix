@@ -3,14 +3,14 @@
   config,
   ...
 }: let
-  cfg = config.userapps.desktop.environments.window-managers;
+  cfg = config.desktop.window-managers;
 in
   with lib; {
     imports = [
       ./hyprland
     ];
 
-    options.userapps.desktop.environments.window-managers = {
+    options.desktop.window-managers = {
       enable = mkEnableOption "Window manager support for desktop environments";
 
       common = {

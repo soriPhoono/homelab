@@ -7,6 +7,5 @@
     ./office
     ./virtualization
     ./tools
-    ./environments
   ];
 }

@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  cfg = config.userapps.desktop.environments.window-managers.hyprland;
+  cfg = config.desktop.window-managers.hyprland;
   colors = config.lib.stylix.colors or {};
 in
   with lib; {
