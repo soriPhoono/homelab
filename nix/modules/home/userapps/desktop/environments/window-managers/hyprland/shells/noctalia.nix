@@ -72,7 +72,38 @@ in
               };
             };
           });
-        default = {};
+        default = let
+          url = "https://github.com/noctalia-dev/noctalia-plugins";
+        in {
+          "polkit-agent" = {
+            enable = true;
+            sourceUrl = url;
+          };
+          "special-workspaces" = {
+            enable = true;
+            sourceUrl = url;
+          };
+          pomodoro = {
+            enable = true;
+            sourceUrl = url;
+          };
+          "screen-recorder" = {
+            enable = true;
+            sourceUrl = url;
+          };
+          "network-manager-vpn" = {
+            enable = true;
+            sourceUrl = url;
+          };
+          "usb-drive-manager" = {
+            enable = true;
+            sourceUrl = url;
+          };
+          tailscale = {
+            enable = true;
+            sourceUrl = url;
+          };
+        };
         description = "Plugin states for Noctalia shell plugins.";
       };
 
@@ -95,7 +126,7 @@ in
       };
 
       avatarImage = mkOption {
-        type = types.nullOr str;
+        type = types.nullOr types.str;
         default = null;
         description = "Path to the avatar image for the lock screen and user menu.";
       };
@@ -145,21 +176,22 @@ in
         enable = true;
         inherit (cfg) package;
 
-        sources =
-          map (source: {
-            inherit (source) url;
-            inherit (source) enabled;
-            inherit (source) name;
-          })
-          cfg.pluginSources;
+        plugins = {
+          sources =
+            map (source: {
+              inherit (source) url;
+              inherit (source) enabled;
+              inherit (source) name;
+            })
+            cfg.pluginSources;
 
-        plugins =
-          mapAttrsToList (name: state: {
-            inherit name;
-            enabled = state.enable;
-            inherit (state) sourceUrl;
-          })
-          cfg.pluginStates;
+          states =
+            mapAttrs (_name: state: {
+              enabled = state.enable;
+              inherit (state) sourceUrl;
+            })
+            cfg.pluginStates;
+        };
 
         inherit (cfg) pluginSettings;
 

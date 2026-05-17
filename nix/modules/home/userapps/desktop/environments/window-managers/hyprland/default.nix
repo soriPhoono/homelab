@@ -103,11 +103,8 @@ in
       {
         wayland.windowManager.hyprland = {
           enable = true;
-          systemdIntegration = true;
-          xwayland = {
-            enable = true;
-            forceZeroScaling = true;
-          };
+          systemd.enable = true;
+          xwayland.enable = true;
 
           settings =
             {
