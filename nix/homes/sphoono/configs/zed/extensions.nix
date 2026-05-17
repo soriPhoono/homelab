@@ -90,37 +90,5 @@
 
     # Extra useful
     "git-firefly" # Enhanced Git integration (commits, branches, etc.)
-
-    # Assistant / MCP Servers
-    # General
-    "serena-context-server" # Serena code assistant
-
-    # Desktop
-    "arch-mcp" # Arch Linux package management
-    "mcp-server-godot" # Godot game engine
-
-    # DevOps
-    "mcp-server-grafana" # Grafana monitoring
-    "mcp-server-gitlab" # GitLab CI/CD
-    "mcp-server-buildkite" # Buildkite CI/CD
-    "mcp-server-digitalocean" # DigitalOcean cloud
-    "sentry-mcp" # Sentry error tracking
-
-    # Web2 Development
-    "browser-tools-context-server" # Browser developer tools
-    "bun-docs-mcp" # Bun runtime docs
-    "prisma-mcp" # Prisma ORM
-    "libsql-context-server" # libsql database
-    "postgres-context-server" # PostgreSQL database
-    "mcp-server-mysql" # MySQL database
-    "postman-context-server" # Postman API testing
-    "shadcn-mcp" # shadcn/ui components
-    "svelte-mcp" # Svelte framework
-    "mcp-server-resend" # Resend email API
-    "mcp-server-shopify-dev" # Shopify development
-    "polar-context-server" # Polar payment processing
-
-    # Web3 / Blockchain (Sky/MakerDAO + Linea focused)
-    "ask-starknet-mcp" # StarkNet MCP server
   ];
 }

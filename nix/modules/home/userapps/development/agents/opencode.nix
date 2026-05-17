@@ -26,6 +26,30 @@ in
         '';
         default = [];
       };
+
+      plugins = mkOption {
+        type = with types; listOf str;
+        default = [];
+        description = ''
+          npm package names to register as OpenCode plugins. Each name is added
+          to the `plugin` array in OpenCode's config, causing OpenCode to
+          auto-install and load them from npm at startup.
+
+          e.g.: [ "opencode-swarm-plugin" ]
+        '';
+        example = ["opencode-swarm-plugin"];
+      };
+
+      settings = mkOption {
+        type = with types; attrs;
+        default = {};
+        description = ''
+          Attrs to express extra settings passed to opencode that do not belong to any other specific category. Also allows for advanced configuration via direct setting of configuration options
+        '';
+        example = {
+          model = "opencode/deepseek-v4-flash";
+        };
+      };
     };
 
     config = mkIf cfg.enable (mkMerge [
@@ -56,82 +80,88 @@ in
 
             ${agentsCfg.context {}}
           '';
-          settings.mcp =
-            builtins.mapAttrs (
-              _: mcpServer:
-                if (mcpServer.transport == "stdio")
-                then {
-                  enabled = true;
-                  type = "local";
-                  command =
-                    [
-                      "${mcpServer.command}"
-                    ]
-                    ++ (mcpServer.args or []);
-                  env =
-                    builtins.mapAttrs (
-                      _: value:
-                        if value ? "secret"
-                        then "${
-                          if value.prefix != null
-                          then value.prefix
-                          else ""
-                        }\${env:${value.environmentVariable}}${
-                          if value.suffix != null
-                          then value.suffix
-                          else ""
-                        }"
-                        else value
-                    )
-                    mcpServer.env;
-                }
-                else if (mcpServer.transport == "http")
-                then {
-                  inherit (mcpServer) url;
-                  enabled = true;
-                  type = "remote";
-                  headers =
-                    builtins.mapAttrs (
-                      _: value:
-                        if value ? "secret"
-                        then "${
-                          if value.prefix != null
-                          then value.prefix
-                          else ""
-                        }\${env:${value.environmentVariable}}${
-                          if value.suffix != null
-                          then value.suffix
-                          else ""
-                        }"
-                        else value
-                    )
-                    mcpServer.headers;
-                }
-                else if (mcpServer.transport == "sse")
-                then {
-                  inherit (mcpServer) url;
-                  enabled = true;
-                  type = "remote";
-                  headers =
-                    builtins.mapAttrs (
-                      _: value:
-                        if value ? "secret"
-                        then "${
-                          if value.prefix != null
-                          then value.prefix
-                          else ""
-                        }\${env:${value.environmentVariable}}${
-                          if value.suffix != null
-                          then value.suffix
-                          else ""
-                        }"
-                        else value
-                    )
-                    mcpServer.headers;
-                }
-                else throw "Unsupported transport protocol: ${mcpServer.transport}"
-            )
-            agentsCfg.mcp;
+          settings =
+            {
+              mcp =
+                builtins.mapAttrs (
+                  _: mcpServer:
+                    if (mcpServer.transport == "stdio")
+                    then {
+                      enabled = true;
+                      type = "local";
+                      command =
+                        [
+                          "${mcpServer.command}"
+                        ]
+                        ++ (mcpServer.args or []);
+                      env =
+                        builtins.mapAttrs (
+                          _: value:
+                            if value ? "secret"
+                            then "${
+                              if value.prefix != null
+                              then value.prefix
+                              else ""
+                            }\${env:${value.environmentVariable}}${
+                              if value.suffix != null
+                              then value.suffix
+                              else ""
+                            }"
+                            else value
+                        )
+                        mcpServer.env;
+                    }
+                    else if (mcpServer.transport == "http")
+                    then {
+                      inherit (mcpServer) url;
+                      enabled = true;
+                      type = "remote";
+                      headers =
+                        builtins.mapAttrs (
+                          _: value:
+                            if value ? "secret"
+                            then "${
+                              if value.prefix != null
+                              then value.prefix
+                              else ""
+                            }\${env:${value.environmentVariable}}${
+                              if value.suffix != null
+                              then value.suffix
+                              else ""
+                            }"
+                            else value
+                        )
+                        mcpServer.headers;
+                    }
+                    else if (mcpServer.transport == "sse")
+                    then {
+                      inherit (mcpServer) url;
+                      enabled = true;
+                      type = "remote";
+                      headers =
+                        builtins.mapAttrs (
+                          _: value:
+                            if value ? "secret"
+                            then "${
+                              if value.prefix != null
+                              then value.prefix
+                              else ""
+                            }\${env:${value.environmentVariable}}${
+                              if value.suffix != null
+                              then value.suffix
+                              else ""
+                            }"
+                            else value
+                        )
+                        mcpServer.headers;
+                    }
+                    else throw "Unsupported transport protocol: ${mcpServer.transport}"
+                )
+                agentsCfg.mcp;
+            }
+            // lib.optionalAttrs (cfg.plugins != []) {
+              plugin = cfg.plugins;
+            };
         };
       }
       (mkIf (options ? sops && cfg.secrets != []) {

@@ -16,8 +16,7 @@
     if dnsConfig.localSubdomain != ""
     then "*.${dnsConfig.localSubdomain}.${dnsConfig.baseDomain}"
     else "*.${dnsConfig.baseDomain}";
-  defaultService =
-    proxyConfig.services.default or null;
+  defaultService = proxyConfig.services.default or null;
   nonDefaultServices = lib.filterAttrs (name: _: name != "default") proxyConfig.services;
   # Custom caddy with cloudflare DNS plugin
   # Note: Standard nixpkgs caddy doesn't have withPlugins in a simple way
@@ -42,7 +41,7 @@ in
           # Or we can build it here. Building it here is safer for a drop-in module.
           package = pkgs.caddy.withPlugins {
             plugins = ["github.com/caddy-dns/cloudflare@v0.2.4"];
-            hash = "sha256-J0HWjCPoOoARAxDpG2bS9c0x5Wv4Q23qWZbTjd8nW84=";
+            hash = "sha256-VHm9POg2KixGsMsAcfFFDMK9x6niRJ1iJV9kkSwkSjc=";
           };
 
           extraConfig = ''
@@ -78,47 +77,58 @@ in
             }
           '';
 
-          virtualHosts = mapAttrs' (name: service: let
-            subdomain =
-              if dnsConfig.localSubdomain != ""
-              then "${dnsConfig.localSubdomain}."
-              else "";
-            fullHost = "${name}.${subdomain}${dnsConfig.baseDomain}";
-          in
-            nameValuePair fullHost {
-              extraConfig = ''
-                bind 127.0.0.1 ::1
+          virtualHosts =
+            mapAttrs' (
+              name: service: let
+                subdomain =
+                  if dnsConfig.localSubdomain != ""
+                  then "${dnsConfig.localSubdomain}."
+                  else "";
+                fullHost = "${name}.${subdomain}${dnsConfig.baseDomain}";
+              in
+                nameValuePair fullHost {
+                  extraConfig = ''
+                    bind 127.0.0.1 ::1
 
-                ${concatStringsSep "\n" (mapAttrsToList (path: target: let
-                  proxyBlock = ''
-                    reverse_proxy 127.0.0.1:${toString target.proxyPort} ${optionalString (target.extraConfig != null) ''
-                      {
-                        ${target.extraConfig}
-                      }
-                    ''}
+                    ${concatStringsSep "\n" (
+                      mapAttrsToList (
+                        path: target: let
+                          proxyBlock = ''
+                            reverse_proxy 127.0.0.1:${toString target.proxyPort} ${
+                              optionalString (target.extraConfig != null) ''
+                                {
+                                  ${target.extraConfig}
+                                }
+                              ''
+                            }
+                          '';
+                        in
+                          if target.handlePath
+                          then ''
+                            handle_path ${path}* {
+                              ${proxyBlock}
+                            }
+                          ''
+                          else ''
+                            handle ${path}* {
+                              ${proxyBlock}
+                            }
+                          ''
+                      )
+                      service.extraPaths
+                    )}
+
+                    reverse_proxy 127.0.0.1:${toString service.proxyPort} ${
+                      optionalString (service.extraConfig != null) ''
+                        {
+                          ${service.extraConfig}
+                        }
+                      ''
+                    }
                   '';
-                in
-                  if target.handlePath
-                  then ''
-                    handle_path ${path}* {
-                      ${proxyBlock}
-                    }
-                  ''
-                  else ''
-                    handle ${path}* {
-                      ${proxyBlock}
-                    }
-                  '')
-                service.extraPaths)}
-
-                reverse_proxy 127.0.0.1:${toString service.proxyPort} ${optionalString (service.extraConfig != null) ''
-                  {
-                    ${service.extraConfig}
-                  }
-                ''}
-              '';
-            })
-          nonDefaultServices;
+                }
+            )
+            nonDefaultServices;
         };
       }
       (mkIf (options ? sops && dnsConfig.provider == "cloudflare") {
@@ -135,7 +145,8 @@ in
           };
         };
 
-        services.caddy.environmentFile = config.sops.templates."hosting/caddy-${dnsConfig.baseDomain}.env".path;
+        services.caddy.environmentFile =
+          config.sops.templates."hosting/caddy-${dnsConfig.baseDomain}.env".path;
       })
     ]);
   }

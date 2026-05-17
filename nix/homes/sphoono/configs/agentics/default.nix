@@ -2,6 +2,7 @@
   imports = [
     ./context.nix
     ./mcp.nix
-    ./skills.nix
+    ./agents/skills.nix
+    ./editors/mcp.nix
   ];
 }

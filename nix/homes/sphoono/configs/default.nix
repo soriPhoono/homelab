@@ -1,8 +1,9 @@
 {
   imports = [
-    ./agents
+    ./agentics
     ./hypr
     ./noctalia
+    ./opencode
     ./zed
     ./zen
   ];
