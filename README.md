@@ -18,9 +18,10 @@ This repository is a comprehensive, declarative infrastructure-as-code configura
 | Output | Description |
 | :--- | :--- |
 | `nixosConfigurations` | Auto-discovered from `nix/systems/`. Current: **zephyrus**, **lg-laptop** |
-| `homeConfigurations` | Auto-discovered from `nix/homes/` for non-system-bound homes. Current: **sphoono**, **spookyskelly** |
+| `homeConfigurations` | Auto-discovered from `nix/homes/`. Current: **sphoono**, **spookyskelly** |
 | `nixosModules` | Auto-discovered from `nix/modules/nixos/`. Exported: `core`, `desktop`, `hosting`, `themes`, `default` |
 | `homeModules` | Auto-discovered from `nix/modules/home/`. Exported: `core`, `userapps`, `default` |
+| `packages` | Auto-discovered from `nix/pkgs/` (currently empty, ready for custom package declarations) |
 | `devShells.default` | Development environment with Nix tooling, secret managers, and CI generators |
 | `checks` | Pre-commit hooks and treefmt validation across supported architectures |
 | `githubActions` | CI workflow definitions generated from `actions.nix` |
@@ -29,15 +30,14 @@ This repository is a comprehensive, declarative infrastructure-as-code configura
 
 | Path | Role |
 | :--- | :--- |
-| `nix/homes/` | Home Manager configurations. Base (`user`), host-specific (`user@hostname`), or standalone (`user@home-name`) |
-| `nix/lib.nix` | Custom library: `homelab.core.discover` (auto-import), `homelab.types.ai` (MCP server types) |
+| `nix/homes/` | Home Manager configurations. Base (`user`), host-specific (`user@hostname`), or standalone (`user@profile-name`) |
+| `nix/lib.nix` | Custom library: `homelab.core.discover` (auto-import), `homelab.types.ai` (MCP server types for AI agents) |
 | `nix/modules/nixos/` | System-level modules: `core`, `desktop`, `hosting`, `themes` |
 | `nix/modules/home/` | User-level modules: `core`, `userapps` (desktop, development, data-fortress, content-creation) |
-| `nix/overlays/` | Auto-discovered package overlays modifying the global `pkgs` set |
-| `nix/pkgs/` | Custom package declarations, auto-exported as flake `packages` |
+| `nix/overlays/` | Auto-discovered package overlays modifying the global `pkgs` set. Current: `run-application`, `opencode-swarm` |
+| `nix/pkgs/` | Custom package declarations, auto-exported as flake `packages` (ready for new packages) |
 | `nix/secrets/` | Encrypted secrets managed via `sops-nix` |
 | `nix/systems/` | Top-level NixOS host configurations. Each directory is a machine |
-| `nix/templates/` | Scaffolding for new systems, modules, and projects |
 
 ### Key Inputs
 
@@ -57,6 +57,11 @@ This repository is a comprehensive, declarative infrastructure-as-code configura
 | `treefmt-nix` | Multi-language formatting |
 | `git-hooks-nix` | Pre-commit hook management |
 | `determinate` | Determinate Systems Nix enhancements |
+| `nix-index-database` | Command-not-found suggestions |
+| `zen-browser` | Zen Browser flake for Home Manager integration |
+| `noctalia` | Noctalia shell (Hyprland IPC/OSD) |
+| `nur` | Nix User Repository (community packages) |
+| `nix-skills` | Nix-specific agent skill overlays |
 
 ### Dynamic Discovery
 
@@ -66,10 +71,10 @@ The `lib.homelab.core.discover` function performs filesystem introspection to au
 - **Home Manager Modules**: Same pattern applied to `nix/modules/home/`.
 - **NixOS Systems**: Any directory in `nix/systems/` with a `default.nix` becomes a `nixosConfiguration`.
 - **Overlays**: Any `.nix` file or directory in `nix/overlays/` is applied to the global `pkgs` set.
-- **Home Configurations**: The flake evaluates `nix/homes/` with three naming patterns:
-  - `user` — Base configuration layer, shared across all deployments
-  - `user@home-name` — Standalone Home Manager export (hostname not in `nix/systems/`)
-  - `user@hostname` — System-bound overrides (hostname exists in `nix/systems/`), imported by the NixOS config, not exported standalone
+- **Home Configurations**: The flake evaluates `nix/homes/` with naming patterns:
+  - `user` — Base configuration. Exported as a standalone `homeConfiguration`; can also be combined with host-specific overrides.
+  - `user@profile-name` — Standalone Home Manager export (when profile-name is not in `nix/systems/`).
+  - `user@hostname` — System-bound overrides (when hostname exists in `nix/systems/`). Imported by the NixOS config via `core.users`, not exported standalone.
 
 ## Systems Inventory
 
@@ -81,8 +86,9 @@ ASUS ROG Zephyrus G14 (`GA401QM`) — primary development workstation.
 - **GPU**: AMD Radeon iGPU + NVIDIA RTX 3060 (laptop mode)
 - **RAM**: 16GB DDR4
 - **Desktop**: Hyprland + SDDM (sddm-astronaut, jake_the_dog theme)
-- **Key Services**: Docker, VirtualBox, media stack (Jellyfin, \*arr suite), Caddy reverse proxy
-- **Theme**: Catppuccin Macchiato
+- **Key Services**: Docker, VirtualBox, media stack (Jellyfin, \*arr suite), Caddy reverse proxy, Homepage dashboard
+- **ASUS Daemon**: Laptop-specific hardware controls enabled
+- **Theme**: Catppuccin Macchiato (system-wide via Stylix)
 - **Full hardware facts**: [`nix/systems/zephyrus/facter.json`](nix/systems/zephyrus/facter.json)
 
 ### lg-laptop
@@ -91,8 +97,8 @@ LG laptop — secondary workstation.
 
 - **GPU**: Intel Arc (device ID `a7a0`)
 - **Desktop**: KDE Plasma
-- **Key Services**: Media stack, Caddy reverse proxy
-- **Theme**: Catppuccin Macchiato
+- **Key Services**: Media stack (Jellyfin, \*arr suite), Caddy reverse proxy, Homepage dashboard
+- **Features**: Gaming profile, printing, tablet HID support
 - **Full hardware facts**: [`nix/systems/lg-laptop/facter.json`](nix/systems/lg-laptop/facter.json)
 
 ## Module System
@@ -101,32 +107,42 @@ LG laptop — secondary workstation.
 
 | Option Namespace | Purpose |
 | :--- | :--- |
-| `core.*` | Base system: hardware, networking, boot, users, secrets, Nix configuration |
-| `core.hardware.*` | Hardware abstraction: CPU vendor, GPU drivers (AMD/Intel/NVIDIA), HID devices, ADB, Bluetooth |
+| `core.*` | Base system |
+| `core.hardware.*` | Hardware abstraction: CPU vendor, GPU drivers (AMD/Intel/NVIDIA), HID devices (keyboards, Logitech, tablet, Xbox controllers), ADB, Bluetooth |
 | `core.networking.*` | NetworkManager, OpenSSH, Tailscale with Serve integration |
-| `core.boot.*` | Bootloader (systemd-boot), Plymouth splash, kernel selection |
-| `core.users.*` | User provisioning with admin roles, SSH keys, and secret access |
+| `core.boot.*` | Bootloader (systemd-boot), secure boot (lanzaboote), Plymouth splash, kernel selection |
+| `core.users.*` | User provisioning with admin roles, SSH keys, secrets, and shell assignment |
+| `core.secrets.*` | sops-nix integration for system-level secret decryption |
+| `core.security.*` | System security hardening (sudo configuration) |
+| `core.nixconf.*` | Nix daemon configuration, Determinate Nix integration, build cores, substituters |
+| `core.gitops.*` | GitOps deployment configuration via comin |
+| `core.clamav.*` | ClamAV antivirus daemon, updater, scanner, and on-access scanning |
 | `desktop.*` | Desktop environment stack (gated by `desktop.enable`) |
-| `desktop.environments.*` | Display managers (SDDM, greetd), window managers (Hyprland), desktop environments (KDE, Cosmic) |
-| `desktop.services.*` | ASUS daemon, Flatpak, PipeWire, printing, virtualization |
+| `desktop.environments.*` | Display managers (SDDM, greetd), window managers (Hyprland), desktop environments (KDE Plasma, COSMIC) |
+| `desktop.services.*` | ASUS daemon, Flatpak, PipeWire, printing, virtualization services |
 | `desktop.tools.*` | Docker, VirtualBox, AppImage, partition manager |
 | `desktop.features.*` | Gaming profiles with console support |
-| `hosting.*` | Self-hosted services: Caddy proxy, media stack, homepage dashboard |
+| `hosting.*` | Self-hosted services |
 | `hosting.media.*` | Jellyfin, Overseerr, Sonarr, Radarr, Prowlarr, FlareSolverr, qBittorrent |
 | `hosting.proxy.*` | Declarative Caddy reverse proxy with DNS configuration |
+| `hosting.homepage.*` | Homepage dashboard with dynamic service cards from proxy routes |
 | `themes.*` | Stylix integration with base16 scheme selection |
 
 ### Home Manager Module Options
 
 | Option Namespace | Purpose |
 | :--- | :--- |
-| `core.*` | Base user environment: shells, applications, email, SSH, secrets |
+| `core.*` | Base user environment |
 | `core.shells.*` | Bash, Fish, Starship prompt, Fastfetch |
 | `core.apps.*` | Git, Yazi file manager |
+| `core.email.*` | Email account configuration with primary account designation |
+| `core.ssh.*` | SSH client configuration, key management, agent integration |
+| `core.secrets.*` | sops-nix user-level secrets via age keys, environment variable injection |
+| `core.gitops.*` | GitOps sync timer for standalone Home Manager auto-updates |
 | `userapps.*` | User-facing applications organized by category |
-| `userapps.desktop.*` | Browsers (Firefox, Zen), communication (Discord, Matrix, Signal, Telegram), file managers, office suites, media players |
-| `userapps.development.*` | Editors (Neovim, VSCode, Zed, Cursor), AI agents (Gemini, OpenCode, Cursor), terminal emulators (Ghostty, Kitty), MCP servers, GitHub CLI |
-| `userapps.data-fortress.*` | Personal data: Bitwarden, Nextcloud, Obsidian, media management |
+| `userapps.desktop.*` | Browsers (Firefox, Zen), communication (Discord, Matrix, Signal, Telegram), file managers, office suites (LibreOffice, OnlyOffice, Slack), media players, tools (EasyEffects), virtualization (Distrobox, Bottles) |
+| `userapps.development.*` | Editors (Neovim via nvf, VSCode, Zed, Cursor), AI agents (Gemini CLI, OpenCode, Cursor CLI), terminal emulators (Ghostty, Kitty), MCP server configuration, GitHub CLI, Bambu Studio, LM Studio |
+| `userapps.data-fortress.*` | Personal data: Bitwarden, Nextcloud, Obsidian, Grayjay, qBittorrent |
 | `userapps.content-creation.*` | Blender, GIMP, Inkscape, Krita, Kdenlive, Audacity, OBS Studio |
 
 ## Quick Start
@@ -145,13 +161,18 @@ direnv allow
 nix develop
 ```
 
-The dev shell provides: `nixd`, `nil`, `alejandra`, `vulnix`, `gh`, `age`, `agenix`, `sops`, `disko`, `nixos-facter`, and auto-deploys GitHub Actions from `actions.nix`.
+The dev shell provides:
+
+- **Nix tooling**: `nixd`, `nil`, `alejandra`, `vulnix`
+- **Secrets management**: `age`, `agenix`, `sops`, `ssh-to-age`
+- **Infrastructure**: `gh`, `disko` (Linux), `nixos-facter` (Linux)
+- **CI**: Auto-deploys GitHub Actions from `actions.nix`
 
 ### Validation
 
 ```bash
-nix fmt        # Format Nix, YAML, and Markdown
-nix flake check # Run all checks (pre-commit + treefmt)
+nix fmt        # Format Nix, YAML, and Markdown (via treefmt)
+nix flake check # Run all checks (pre-commit hooks + treefmt)
 ```
 
 ### Deployment

@@ -3,7 +3,7 @@
     ./context.nix
     ./mcp.nix
     ./agents/skills.nix
-    ./agents/commands.nix
+    ./agents/subagents.nix
     ./editors/mcp.nix
   ];
 }

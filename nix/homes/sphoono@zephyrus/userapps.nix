@@ -35,7 +35,6 @@ _: {
       terminal.ghostty.enable = true;
 
       editors = {
-        neovim.enable = true;
         zed.enable = true;
       };
       appliances.bambu-studio.enable = true;

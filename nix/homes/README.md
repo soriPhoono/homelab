@@ -1,16 +1,29 @@
 # Homes Directory
 
-This directory contains Home Manager configurations for users. These can be standalone configurations or integrated into NixOS systems, but this folder specifically targets **standalone** or **externally buildable** home configurations.
+This directory contains Home Manager user configurations. The flake evaluates these directories using a naming convention that determines whether a configuration is exported as a standalone Home Manager environment or integrated into a NixOS system.
 
-## Adding a New Home
+## Naming Convention
 
-1. Create a new directory. Valid naming patterns:
-   - `username` (Generic home for that user)
-   - `username@hostname` (Host-specific home for that user)
-1. Create a `default.nix` file.
-1. Create a `meta.json` file.
+| Pattern | Export Behavior | Use Case |
+| :--- | :--- | :--- |
+| `user` | Exported as `homeConfigurations.<user>` | Standalone Home Manager base configuration |
+| `user@hostname` where hostname exists in `nix/systems/` | **Not** exported standalone | System-bound overrides, imported by the NixOS config via `core.users` |
+| `user@standalone-name` where name is **not** in `nix/systems/` | Exported as `homeConfigurations.<user@standalone-name>` | Standalone Home Manager with a specific profile name |
 
-### `meta.json` Format
+### How Layering Works
+
+When the flake builds a `homeConfiguration`, it composes modules in this order:
+
+1. **Shared Home Manager modules**: sops-nix, stylix, noctalia, and the flake's `homeModules.default`
+1. **Base arguments**: `username`, `homeDirectory`, `lib`
+1. **Base configuration** (`nix/homes/<user>/default.nix`) — if it exists
+1. **Host/standalone overrides** (`nix/homes/<user>@<name>/default.nix`) — if it exists
+
+Later layers can override earlier values via `lib.mkForce` or standard NixOS option precedence rules. This allows sharing common user configuration in the base directory while keeping machine-specific settings in the override directory.
+
+### Meta Support
+
+Home directories may include a `meta.json` file to override build parameters:
 
 ```json
 {
@@ -18,35 +31,59 @@ This directory contains Home Manager configurations for users. These can be stan
 }
 ```
 
-## Discovery
+Supported fields:
 
-### Standalone Home Configurations (`homeConfigurations`)
+- `system` — Target architecture for the Home Manager build (default: `x86_64-linux`)
 
-The `flake.nix` automatically discovers user configurations for standalone Home Manager installation.
-It combines:
+Meta is read from the host-specific directory first, then the base directory, with fallback to defaults.
 
-1. `homes/<user>` (Base configuration)
-1. `homes/<user>@global` (Supplementary configuration for non-NixOS systems, if present)
+## Adding a New Home Configuration
 
-These are exported as `homeConfigurations.<user>`.
+### For a NixOS System User
 
-### Nix-on-Droid Configurations
+1. Create base config: `nix/homes/<user>/default.nix`
+1. Create host-specific config: `nix/homes/<user>@<hostname>/default.nix`
+1. Add user definition to `core.users.<user>` in `nix/systems/<hostname>/default.nix`
+1. The system will automatically import the home configuration — no manual import needed
 
-For Nix-on-Droid systems, the `modules/droid/users.nix` module handles user configuration.
-It automatically imports:
+### For a Standalone Home Manager User
 
-1. `homes/<user>` (Base configuration)
-1. `homes/<user>@droid` (Supplementary configuration for Droid environment, if present)
+1. Create the directory: `nix/homes/<user>/`
+1. Create `nix/homes/<user>/default.nix`
+1. Deploy with: `nh home switch .#<user>`
 
-### System-Bound Homes
+If you need different profiles for different standalone machines, create `nix/homes/<user>@<profile-name>/` where `<profile-name>` does **not** match any directory in `nix/systems/`.
 
-Configurations named `user@hostname` (e.g., `soriphoono@zephyrus`) are **system-bound supplementary configurations**.
-These are **not** standalone; they are imported **in addition to** the base `homes/<user>` configuration by the NixOS system's `core.users` module.
-This allows `homes/soriphoono` to provide the universal base (shell, common apps), while `homes/soriphoono@zephyrus` provides machine-specific overrides (monitors, keybindings, specific hardware settings).
-These are NOT exported as `homeConfigurations` in the flake.
+## Current Configurations
 
-## Future Plans: System Manager
+### sphoono (`nix/homes/sphoono/`)
 
-We plan to integrate **System Manager** for non-NixOS Linux distributions (e.g., Debian, Ubuntu servers).
-These configurations will reside in `environments/` and will function similarly to Droid or NixOS systems, providing system-level configuration management without full OS replacement.
-Homes for these systems will likely follow a similar pattern: `user` + `user@<environment-name>`. The `user` directory will contain the base configuration, and `user@<environment-name>` will contain the environment-specific configuration. Like system services and etc entries.
+Base user configuration for the primary operator (soriphoono).
+
+- **Git**: Identity configured as `soriphoono`
+- **Email**: Primary account `soriphoono@gmail.com`
+- **Secrets**: sops-nix integration
+- **Theme**: Catppuccin Macchiato via Stylix (dark polarity, Papirus icons, custom fonts)
+- **Configs**: Agent context, MCP server definitions, Hyprland overrides, Zed editor preferences, Zen Browser configuration, Noctalia shell settings, Helix editor config
+
+### sphoono@zephyrus (`nix/homes/sphoono@zephyrus/`)
+
+Zephyrus-specific overrides for the sphoono user. Deployed automatically via `nh os switch .#zephyrus`.
+
+- **Shell**: Git/docker aliases, Starship prompt, Fastfetch
+- **Display**: Hyprland monitor configuration (1920×1080 @ 144Hz, 1.25× scale), ASUS ROG key bindings
+- **User Applications**: Full suite — Zen Browser, communication apps (Discord, Telegram, Signal, Matrix), office (LibreOffice, Zathura, Slack), development tools (Zed, Ghostty), media tools, content creation, data fortress apps
+
+### spookyskelly (`nix/homes/spookyskelly/`)
+
+Base user configuration for the secondary operator.
+
+- **Secrets**: sops-nix integration
+- **Zen Browser**: Configuration present
+
+### spookyskelly@lg-laptop (`nix/homes/spookyskelly@lg-laptop/`)
+
+LG-laptop-specific overrides for the spookyskelly user. Deployed automatically via `nh os switch .#lg-laptop`.
+
+- **Shell**: Starship prompt, Fastfetch
+- **User Applications**: Browsers (Firefox, Zen), communication (Discord, Telegram, Signal, Matrix), office (LibreOffice, OnlyOffice), data fortress apps (Nextcloud, Bitwarden, Obsidian), content creation (GIMP, Blender, Krita, Audacity, Kdenlive, OBS Studio)

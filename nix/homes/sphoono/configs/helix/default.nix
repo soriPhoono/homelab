@@ -33,6 +33,7 @@
       helm-ls
 
       # Formatters / Linters
+      alejandra
       ruff
       prettier
       stylelint
@@ -63,6 +64,10 @@
           command = "${pkgs.pyright}/bin/pyright-langserver";
           args = ["--stdio"];
         };
+        biome = {
+          command = "${pkgs.biome}/bin/biome";
+          args = ["lsp-proxy"];
+        };
       };
 
       language = [
@@ -70,6 +75,9 @@
           name = "nix";
           auto-format = true;
           language-servers = ["nixd"];
+          formatter = {
+            command = "${pkgs.alejandra}/bin/alejandra";
+          };
         }
         {
           name = "rust";
@@ -86,18 +94,40 @@
         }
         {
           name = "javascript";
-          language-servers = ["typescript-language-server"];
-          formatter = {
-            command = "${pkgs.prettier}/bin/prettier";
-            args = ["--parser" "babel"];
-          };
+          auto-format = true;
+          language-servers = ["biome"];
         }
         {
           name = "typescript";
-          language-servers = ["typescript-language-server"];
+          auto-format = true;
+          language-servers = ["biome"];
+        }
+        {
+          name = "jsx";
+          auto-format = true;
+          language-servers = ["biome"];
+        }
+        {
+          name = "tsx";
+          auto-format = true;
+          language-servers = ["biome"];
+        }
+        {
+          name = "css";
+          auto-format = true;
+          language-servers = ["biome"];
+        }
+        {
+          name = "json";
+          auto-format = true;
+          language-servers = ["biome"];
+        }
+        {
+          name = "html";
+          language-servers = ["vscode-html-language-server"];
           formatter = {
             command = "${pkgs.prettier}/bin/prettier";
-            args = ["--parser" "typescript"];
+            args = ["--parser" "html"];
           };
         }
         {

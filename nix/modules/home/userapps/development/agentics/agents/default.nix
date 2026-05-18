@@ -4,5 +4,6 @@
     ./mcp.nix
     ./skills.nix
     ./commands.nix
+    ./subagents.nix
   ];
 }
