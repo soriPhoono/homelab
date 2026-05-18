@@ -17,6 +17,7 @@ in
             function()
               ${optionalString (envCfg.window-managers.hyprland.shells.noctalia.enable or false) ''
               hl.exec_cmd("${pkgs.uwsm}/bin/uwsm app -s b -t service noctalia-shell")
+            ''}
             end
           '')
         ];
