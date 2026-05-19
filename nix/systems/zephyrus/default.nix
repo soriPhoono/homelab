@@ -123,6 +123,9 @@ with lib; {
     };
   };
 
+  # Required for MediaTek MT7921 Bluetooth — WMT function control fails with USB autosuspend
+  boot.extraModprobeConfig = "options btusb enable_autosuspend=0";
+
   desktop = {
     environments = {
       display_managers.sddm = {
