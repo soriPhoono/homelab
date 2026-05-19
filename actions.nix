@@ -13,7 +13,7 @@
       };
       permissions = {
         contents = "read";
-        id-token = "read";
+        id-token = "write";
       };
       jobs =
         (lib.mapAttrs' (name: _value: {
