@@ -11,15 +11,5 @@
         "start-mcp-server"
       ];
     };
-
-    # Desktop
-    arch-mcp = {
-      transport = "stdio";
-      command = "${pkgs.nodejs}/bin/npx";
-      args = [
-        "-y"
-        "arch-mcp"
-      ];
-    };
   };
 }

@@ -108,7 +108,7 @@ LG-laptop-specific overrides for the spookyskelly user. Deployed as part of the 
 
 1. Create base config: `nix/homes/user/default.nix` (if not exists)
 1. Create host-specific config: `nix/homes/user@hostname/`
-1. Add user definition to `core.users.user` in `nix/systems/hostname/default.nix`
+1. Add user definition to `core.users.user` in `nix/systems/<hostname>/default.nix`
 1. The system will automatically import the home configuration
 
 ### For a Standalone Home Manager User
