@@ -68,7 +68,7 @@ with lib; {
 
     boot = {
       enable = true;
-      # kernel.packages = pkgs.linuxPackages_zen;
+      kernel.packages = pkgs.linuxPackages_zen;
       plymouth.enable = true;
     };
 
@@ -123,8 +123,8 @@ with lib; {
     };
   };
 
-  # Required for MediaTek MT7921 Bluetooth — WMT function control fails with USB autosuspend
-  boot.extraModprobeConfig = "options btusb enable_autosuspend=0";
+  # Required for MediaTek MT7921 Bluetooth — HCI reset + USB autosuspend break WMT function control
+  boot.extraModprobeConfig = "options btusb enable_autosuspend=0 reset=0";
 
   desktop = {
     environments = {
