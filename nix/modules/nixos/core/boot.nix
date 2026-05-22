@@ -15,7 +15,7 @@ in
       kernel = {
         packages = lib.mkOption {
           type = lib.types.raw;
-          default = pkgs.linuxPackages_latest;
+          default = pkgs.linuxPackages;
           description = "Kernel packages to use";
         };
         params = lib.mkOption {

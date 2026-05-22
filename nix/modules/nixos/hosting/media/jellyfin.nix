@@ -58,7 +58,13 @@
 
   tailscaleServeJellyfinStart = pkgs.writeShellScript "tailscale-serve-jellyfin-start.sh" ''
     set -euo pipefail
-    export PATH="${lib.makeBinPath [pkgs.jq pkgs.coreutils pkgs.curl]}"
+    export PATH="${
+      lib.makeBinPath [
+        pkgs.jq
+        pkgs.coreutils
+        pkgs.curl
+      ]
+    }"
     ts=${tailscaleExe}
     # Clear any stale Serve config so flags match what we enable below (Tailscale CLI 1.52+).
     "$ts" serve reset 2>/dev/null || true
@@ -111,23 +117,19 @@ in
     options.hosting.media.jellyfin = {
       enable = mkEnableOption "Enable Jellyfin media server for edge device media archiving";
       acceleration.enable = mkEnableOption "Enable hardware acceleration (VAAPI) on the integrated GPU";
-      tailscaleServe.enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Expose Jellyfin on your tailnet using Tailscale Serve on **this machine's** HTTPS URL (shown when Serve starts:
-          `https://<machine>.<tailnet>.ts.net`, often also reachable via your short MagicDNS name).
+      tailscaleServe.enable = mkEnableOption ''
+        Expose Jellyfin on your tailnet using Tailscale Serve on **this machine's** HTTPS URL (shown when Serve starts:
+        `https://<machine>.<tailnet>.ts.net`, often also reachable via your short MagicDNS name).
 
-          Implemented with `tailscale serve --yes --bg 8096` (plain Serve on the node; not NixOS
-          `services.tailscale.serve`, whose `svc:…` keys target Tailscale **Services**, not MagicDNS).
+        Implemented with `tailscale serve --yes --bg 8096` (plain Serve on the node; not NixOS
+        `services.tailscale.serve`, whose `svc:…` keys target Tailscale **Services**, not MagicDNS).
 
-          On each start, a privileged **ExecStartPre** updates `network.xml`: sets **Allow remote connections**
-          (`<EnableRemoteAccess>`) to **on** while this integration is active and **off** when it is not, and when Serve is
-          enabled expands the default empty `<KnownProxies />` to **127.0.0.1** and **[::1]** so Jellyfin trusts forwarded
-          headers from Serve. If you already customized Known proxies, add those addresses manually (see
-          [Jellyfin reverse proxy](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy/)).
-        '';
-      };
+        On each start, a privileged **ExecStartPre** updates `network.xml`: sets **Allow remote connections**
+        (`<EnableRemoteAccess>`) to **on** while this integration is active and **off** when it is not, and when Serve is
+        enabled expands the default empty `<KnownProxies />` to **127.0.0.1** and **[::1]** so Jellyfin trusts forwarded
+        headers from Serve. If you already customized Known proxies, add those addresses manually (see
+        [Jellyfin reverse proxy](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy/)).
+      '';
 
       tailscaleServe.publishedServerUrl = mkOption {
         type = types.nullOr types.str;
@@ -187,45 +189,52 @@ in
         users = {
           groups.media.members = ["jellyfin"];
           users.jellyfin = {
-            extraGroups = ["video" "render"];
+            extraGroups = [
+              "video"
+              "render"
+            ];
           };
         };
       })
-      (mkIf (
-          cfg.tailscaleServe.enable
-          && config.core.networking.tailscale.enable
-        ) {
-          systemd.services = {
-            tailscale-serve-jellyfin = {
-              description = "Tailscale Serve HTTPS for Jellyfin (node MagicDNS / *.ts.net)";
-              after = [
-                "tailscaled.service"
-                "tailscaled-autoconnect.service"
-                "jellyfin.service"
-              ];
-              wants = ["tailscaled.service" "jellyfin.service"];
-              wantedBy = ["multi-user.target"];
-              serviceConfig = {
-                Type = "oneshot";
-                RemainAfterExit = true;
-                Restart = "on-failure";
-                RestartSec = "5s";
-                # tailscaled wait (120s) + Jellyfin HTTP probe (≈120–240s worst case) + serve CLI.
-                TimeoutStartSec = "600s";
-                ExecStart = "${tailscaleServeJellyfinStart}";
-                ExecStop = "${tailscaleServeJellyfinStop}";
-              };
+      (mkIf (cfg.tailscaleServe.enable && config.core.networking.tailscale.enable) {
+        systemd.services = {
+          tailscale-serve-jellyfin = {
+            description = "Tailscale Serve HTTPS for Jellyfin (node MagicDNS / *.ts.net)";
+            after = [
+              "tailscaled.service"
+              "tailscaled-autoconnect.service"
+              "jellyfin.service"
+            ];
+            wants = [
+              "tailscaled.service"
+              "jellyfin.service"
+            ];
+            wantedBy = ["multi-user.target"];
+            serviceConfig = {
+              Type = "oneshot";
+              RemainAfterExit = true;
+              Restart = "on-failure";
+              RestartSec = "5s";
+              # tailscaled wait (120s) + Jellyfin HTTP probe (≈120–240s worst case) + serve CLI.
+              TimeoutStartSec = "600s";
+              ExecStart = "${tailscaleServeJellyfinStart}";
+              ExecStop = "${tailscaleServeJellyfinStop}";
             };
           };
-        })
-      (mkIf (
+        };
+      })
+      (
+        mkIf
+        (
           cfg.tailscaleServe.enable
           && config.core.networking.tailscale.enable
           && cfg.tailscaleServe.publishedServerUrl != null
-        ) {
+        )
+        {
           systemd.services.jellyfin.environment = {
             JELLYFIN_PublishedServerUrl = lib.removeSuffix "/" cfg.tailscaleServe.publishedServerUrl;
           };
-        })
+        }
+      )
     ]);
   }

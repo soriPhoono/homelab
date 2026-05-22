@@ -42,6 +42,18 @@
       command = "${pkgs.mcp-server-git}/bin/mcp-server-git";
     };
 
+    # Assistant / General (via uvx, original serena-agent PyPI package)
+    serena = {
+      transport = "stdio";
+      command = "${pkgs.uv}/bin/uvx";
+      args = [
+        "--from"
+        "serena-agent"
+        "serena"
+        "start-mcp-server"
+      ];
+    };
+
     github = {
       url = "https://api.githubcopilot.com/mcp";
       headers.Authorization = {

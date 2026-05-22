@@ -2,12 +2,26 @@
   description = "A system flake for my homelab and personal devices";
 
   inputs = {
-    templates.url = "github:soriPhoono/templates";
-
     systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.998534";
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+
+    templates = {
+      url = "github:soriPhoono/templates";
+      inputs = {
+        systems.follows = "systems";
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+        agenix-shell.follows = "agenix-shell";
+        git-hooks-nix.follows = "git-hooks-nix";
+        treefmt-nix.follows = "treefmt-nix";
+      };
+    };
+
+    determinate = {
+      url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     agenix-shell = {
       url = "github:aciceri/agenix-shell";

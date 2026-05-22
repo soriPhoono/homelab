@@ -4,6 +4,5 @@
     ./mcp.nix
     ./agents/skills.nix
     ./agents/subagents.nix
-    ./editors/mcp.nix
   ];
 }

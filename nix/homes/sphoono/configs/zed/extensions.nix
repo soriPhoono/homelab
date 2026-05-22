@@ -55,7 +55,6 @@
     "sway" # Sway language (Fuel)
     "aiken" # Aiken language (Cardano)
     "cosmos" # Cosmos SDK
-    "ask-starknet-mcp" # StarkNet MCP server
     "ink" # Ink! smart contracts (Polkadot)
     "authzed" # Authzed policy language
     "rego" # Rego policy language (OPA)
