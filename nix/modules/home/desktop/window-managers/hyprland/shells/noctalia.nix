@@ -31,19 +31,19 @@ in
         type = with types;
           listOf (submodule {
             options = {
-              url = mkOption {
-                type = str;
-                description = "Git URL for the plugin source.";
+              enabled = mkOption {
+                type = bool;
+                default = true;
+                description = "Whether to enable this plugin source.";
               };
               name = mkOption {
                 type = str;
                 default = "Official Noctalia Plugins";
                 description = "Display name for the plugin source.";
               };
-              enabled = mkOption {
-                type = bool;
-                default = true;
-                description = "Whether to enable this plugin source.";
+              url = mkOption {
+                type = str;
+                description = "Git URL for the plugin source.";
               };
             };
           });
@@ -61,7 +61,7 @@ in
         type = with types;
           attrsOf (submodule {
             options = {
-              enable = mkOption {
+              enabled = mkOption {
                 type = bool;
                 default = true;
                 description = "Whether to enable this plugin.";
@@ -76,31 +76,31 @@ in
           url = "https://github.com/noctalia-dev/noctalia-plugins";
         in {
           "polkit-agent" = {
-            enable = true;
+            enabled = true;
             sourceUrl = url;
           };
           "special-workspaces" = {
-            enable = true;
+            enabled = true;
             sourceUrl = url;
           };
           pomodoro = {
-            enable = true;
+            enabled = true;
             sourceUrl = url;
           };
           "screen-recorder" = {
-            enable = true;
+            enabled = true;
             sourceUrl = url;
           };
           "network-manager-vpn" = {
-            enable = true;
+            enabled = true;
             sourceUrl = url;
           };
           "usb-drive-manager" = {
-            enable = true;
+            enabled = true;
             sourceUrl = url;
           };
           tailscale = {
-            enable = true;
+            enabled = true;
             sourceUrl = url;
           };
         };
@@ -179,16 +179,13 @@ in
         plugins = {
           sources =
             map (source: {
-              inherit (source) url;
-              inherit (source) enabled;
-              inherit (source) name;
+              inherit (source) enabled name url;
             })
             cfg.pluginSources;
 
           states =
             mapAttrs (_name: state: {
-              enabled = state.enable;
-              inherit (state) sourceUrl;
+              inherit (state) enabled sourceUrl;
             })
             cfg.pluginStates;
         };
@@ -199,11 +196,10 @@ in
           {
             appLauncher = {
               enableClipboardHistory = true;
-              position = "follow_bar";
               terminalCommand = "${terminal} -e";
               customLaunchPrefixEnabled = true;
               customLaunchPrefix = "${pkgs.run-application}/bin/run-application";
-              density = "compact";
+              viewMode = "grid";
             };
             audio = {
               spectrumFrameRate = 60;
@@ -225,23 +221,21 @@ in
               };
             idle.enabled = true;
             location = optionalAttrs (cfg.location != null) {
-              name = cfg.location.name;
-              useFahrenheit = cfg.location.useFahrenheit;
-              use12HourFormat = cfg.location.use12HourFormat;
+              inherit (cfg.location) name useFahrenheit use12HourFormat;
             };
             network = {
               bluetoothHideUnnamedDevices = true;
-              bluetoothRssiPollingEnabled = true;
               disableDiscoverability = true;
             };
             nightLight.enabled = true;
-            sessionMenu.position = "center";
             systemMonitor.externalMonitor = "${pkgs.run-application}/bin/run-application ${terminal} -e ${config.programs.btop.package}/bin/btop";
-            noctaliaPerformance.disableWallpaper = true;
-            wallpaper.directory = cfg.wallpaperDir;
+            wallpaper = {
+              overviewEnabled = true;
+              directory = cfg.wallpaperDir;
+            };
             bar = {
               inherit (cfg) monitors;
-              barType = "floating";
+              barType = "simple";
               widgets = {
                 left = [
                   {id = "plugin:pomodoro";}
@@ -269,6 +263,7 @@ in
             notifications.monitors = cfg.monitors;
             osd.monitors = cfg.monitors;
             ui = {
+              panelBackgroundOpacity = 0.9;
               boxBorderEnabled = true;
               settingsPanelSideBarCardStyle = true;
               translucentWidgets = true;
