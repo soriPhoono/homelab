@@ -28,7 +28,7 @@ _final: prev: {
         */
         envType = oneOf [
           (submodule (sub: {
-            options = rec {
+            options = {
               secret = mkOption {
                 type = with types; str;
                 default = null;
@@ -61,49 +61,51 @@ _final: prev: {
           str
         ];
 
-        mcpServerSet = attrsOf (submodule (_: {
-          options = {
-            transport = mkOption {
-              type = with types;
-                enum [
-                  "stdio"
-                  "http"
-                  "sse"
-                ];
-              default = "http";
-              description = "Transport protocol for the MCP server.";
-            };
+        mcpServerSet = attrsOf (
+          submodule (_: {
+            options = {
+              transport = mkOption {
+                type = with types;
+                  enum [
+                    "stdio"
+                    "http"
+                    "sse"
+                  ];
+                default = "http";
+                description = "Transport protocol for the MCP server.";
+              };
 
-            # Stdio server options
-            command = mkOption {
-              type = with types; nullOr str;
-              default = null;
-              description = "Executable path for stdio-backed MCP servers.";
-            };
-            args = mkOption {
-              type = with types; listOf str;
-              default = [];
-              description = "Arguments for stdio-backed MCP servers.";
-            };
-            env = mkOption {
-              type = with types; attrsOf envType;
-              default = {};
-              description = "Environment variables passed to stdio-backed MCP servers.";
-            };
+              # Stdio server options
+              command = mkOption {
+                type = with types; nullOr str;
+                default = null;
+                description = "Executable path for stdio-backed MCP servers.";
+              };
+              args = mkOption {
+                type = with types; listOf str;
+                default = [];
+                description = "Arguments for stdio-backed MCP servers.";
+              };
+              env = mkOption {
+                type = with types; attrsOf envType;
+                default = {};
+                description = "Environment variables passed to stdio-backed MCP servers.";
+              };
 
-            # HTTP server options
-            url = mkOption {
-              type = with types; nullOr str;
-              default = null;
-              description = "Endpoint URL for remote MCP servers.";
+              # HTTP server options
+              url = mkOption {
+                type = with types; nullOr str;
+                default = null;
+                description = "Endpoint URL for remote MCP servers.";
+              };
+              headers = mkOption {
+                type = with types; attrsOf envType;
+                default = {};
+                description = "Headers sent to remote MCP servers.";
+              };
             };
-            headers = mkOption {
-              type = with types; attrsOf envType;
-              default = {};
-              description = "Headers sent to remote MCP servers.";
-            };
-          };
-        }));
+          })
+        );
       };
     };
   };
