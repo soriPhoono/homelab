@@ -35,6 +35,10 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    mcp-servers-nix = {
+      url = "github:natsukium/mcp-servers-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     github-actions-nix = {
       url = "github:synapdeck/github-actions-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -244,6 +248,7 @@
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
+        mcp-servers-nix.flakeModule
         github-actions-nix.flakeModule
       ];
 
@@ -276,11 +281,23 @@
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
 
         # --- Development Shells & Checks --- #
-        devShells.default = import ./shell.nix {
-          inherit lib pkgs;
-          config = {
-            inherit (config) pre-commit agenix-shell githubActions;
+        devShells.default =
+          (import ./shell.nix {
+            inherit lib pkgs;
+            config = {
+              inherit (config) pre-commit agenix-shell githubActions;
+            };
+          })
+          // config.mcp-servers.devShell;
+
+        # --- MCP Server Configuration --- #
+        mcp-servers = {
+          settings.servers = {
+            mcp-nixos = {
+              command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
+            };
           };
+          flavors.opencode.enable = true;
         };
       };
 

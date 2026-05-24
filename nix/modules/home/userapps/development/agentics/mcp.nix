@@ -17,6 +17,7 @@ in
     config = {
       userapps.development.agentics = {
         agents.mcp = cfg;
+        editors.mcp = cfg;
       };
     };
   }
