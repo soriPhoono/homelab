@@ -1,4 +1,5 @@
-{
+{lib, ...}:
+with lib; {
   programs.zed-editor.userSettings = {
     terminal = {
       toolbar.breadcrumbs = true;
@@ -15,5 +16,16 @@
       gemini.type = "registry";
       opencode.type = "registry";
     };
+    agent = {
+      inline_assistant_model = {
+        provider = "opencode";
+        model = "deepseek-v4-pro";
+      };
+      commit_message_model = {
+        provider = "opencode";
+        model = "big-pickle";
+      };
+    };
+    context_servers = mkForce {};
   };
 }

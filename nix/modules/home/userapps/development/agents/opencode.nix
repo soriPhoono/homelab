@@ -12,6 +12,31 @@
     if builtins.isPath value
     then builtins.readFile value
     else value;
+
+  # Auto-discover MCP server secrets from the agentics/agent MCP config.
+  # Merges harness secrets (e.g. OPENROUTER_API_KEY for the model provider)
+  # with MCP server secrets (e.g. CONTEXT7_API_KEY for MCP tools), so that
+  # manually-declared provider secrets in cfg.secrets and auto-injected MCP
+  # secrets from agentics/agents/mcp.nix both flow into the binary wrapper.
+  mcpSecrets = let
+    extractSecretNames = attrs:
+      lib.filter (v: v != null) (
+        lib.mapAttrsToList (
+          _: val:
+            if builtins.isAttrs val && val ? "secret"
+            then val.secret
+            else null
+        )
+        attrs
+      );
+  in
+    lib.flatten (lib.mapAttrsToList (
+        _: srv:
+          extractSecretNames (srv.env or {} // srv.headers or {})
+      )
+      agentsCfg.mcp);
+
+  allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
 in
   with lib; {
     options.userapps.development.agents.opencode = {
@@ -59,8 +84,12 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        warnings =
+          optionals (!(options ? sops) && cfg.secrets != [])
+          "Failed to install opencode as it was requested with secrets embedment, which requires sops, which is currently disabled";
+
         home.packages = with pkgs;
-          mkIf cfg.enableDesktop [
+          mkIf (cfg.enableDesktop && allSecrets == []) [
             opencode-desktop
           ];
 
@@ -85,17 +114,13 @@ in
 
             ${agentsCfg.context {}}
           '';
-          commands =
-            mapAttrs cmdFromEntry
-            agentsCfg.commands.registry;
-          agents =
-            mapAttrs cmdFromEntry
-            agentsCfg.subagents.registry;
+          commands = mapAttrs cmdFromEntry agentsCfg.commands.registry;
+          agents = mapAttrs cmdFromEntry agentsCfg.subagents.registry;
           settings =
             {
               mcp =
                 builtins.mapAttrs (
-                  _: mcpServer:
+                  name: mcpServer:
                     if (mcpServer.transport == "stdio")
                     then {
                       enabled = true;
@@ -122,49 +147,42 @@ in
                         )
                         mcpServer.env;
                     }
-                    else if (mcpServer.transport == "http")
-                    then {
-                      inherit (mcpServer) url;
-                      enabled = true;
-                      type = "remote";
-                      headers =
-                        builtins.mapAttrs (
-                          _: value:
+                    else if (mcpServer.transport == "http" || mcpServer.transport == "sse")
+                    then let
+                      wrapperName = "mcp-proxy-${name}";
+                      # Build --headers flags with runtime env var expansion via the shell wrapper.
+                      headerFlags = lib.concatStringsSep " \\\n                " (
+                        lib.mapAttrsToList (
+                          headerName: value:
                             if value ? "secret"
-                            then "${
+                            then "--headers '${headerName}' \"${
                               if value.prefix != null
                               then value.prefix
                               else ""
-                            }\${env:${value.environmentVariable}}${
+                            }\${${value.environmentVariable}}${
                               if value.suffix != null
                               then value.suffix
                               else ""
-                            }"
-                            else value
-                        )
-                        mcpServer.headers;
-                    }
-                    else if (mcpServer.transport == "sse")
-                    then {
-                      inherit (mcpServer) url;
+                            }\""
+                            else "--headers '${headerName}' '${value}'"
+                        ) (mcpServer.headers or {})
+                      );
+                      transportFlag =
+                        if mcpServer.transport == "sse"
+                        then ""
+                        else "--transport streamablehttp";
+                      wrapper = pkgs.writeShellScriptBin wrapperName ''
+                        exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
+                          ${transportFlag} \
+                          ${headerFlags} \
+                          '${mcpServer.url}'
+                      '';
+                    in {
                       enabled = true;
-                      type = "remote";
-                      headers =
-                        builtins.mapAttrs (
-                          _: value:
-                            if value ? "secret"
-                            then "${
-                              if value.prefix != null
-                              then value.prefix
-                              else ""
-                            }\${env:${value.environmentVariable}}${
-                              if value.suffix != null
-                              then value.suffix
-                              else ""
-                            }"
-                            else value
-                        )
-                        mcpServer.headers;
+                      type = "local";
+                      command = [
+                        "${wrapper}/bin/${wrapperName}"
+                      ];
                     }
                     else throw "Unsupported transport protocol: ${mcpServer.transport}"
                 )
@@ -176,32 +194,69 @@ in
             };
         };
       }
-      (mkIf (options ? sops && cfg.secrets != []) {
-        sops.secrets = genAttrs cfg.secrets (_: {});
+      (mkIf (options ? sops && allSecrets != []) {
+        sops.secrets = genAttrs allSecrets (_: {});
 
-        programs.opencode.package = pkgs.symlinkJoin {
-          name = "opencode-wrapped";
-          paths = [pkgs.opencode];
-          buildInputs = [pkgs.makeWrapper];
+        home.packages = let
+          package = pkgs.opencode-desktop;
+        in
+          with pkgs; [
+            (symlinkJoin {
+              inherit (package) pname;
+              name = "${package.name}-wrapped";
+              inherit (package) version;
 
-          postBuild = ''
-            for bin in $out/bin/*; do
-              # Ensure it is actually a file and is executable before wrapping
-              if [ -f "$bin" ] && [ -x "$bin" ]; then
-                # Pass ALL --run commands into a SINGLE wrapProgram invocation
-                wrapProgram "$bin" \
-                  ${concatStringsSep " \\\n                  " (
-              map (
-                secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
-                  config.sops.secrets.${secret}.path
-                })\"'"
-              )
-              cfg.secrets
-            )}
-              fi
-            done
-          '';
-        };
+              paths = [package];
+              buildInputs = [makeWrapper];
+              postBuild = ''
+                for bin in $out/bin/*; do
+                  # Ensure it is actually a file and is executable before wrapping
+                  if [ -f "$bin" ] && [ -x "$bin" ]; then
+                    # Pass ALL --run commands into a SINGLE wrapProgram invocation
+                    wrapProgram "$bin" \
+                      ${concatStringsSep " \\\n                  " (
+                  map (
+                    secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
+                      config.sops.secrets.${secret}.path
+                    })\"'"
+                  )
+                  allSecrets
+                )}
+                  fi
+                done
+              '';
+            })
+          ];
+
+        programs.opencode.package = let
+          package = pkgs.opencode;
+        in
+          with pkgs;
+            symlinkJoin {
+              inherit (package) pname;
+              name = "${package.name}-wrapped";
+              inherit (package) version;
+
+              paths = [package];
+              buildInputs = [makeWrapper];
+              postBuild = ''
+                for bin in $out/bin/*; do
+                  # Ensure it is actually a file and is executable before wrapping
+                  if [ -f "$bin" ] && [ -x "$bin" ]; then
+                    # Pass ALL --run commands into a SINGLE wrapProgram invocation
+                    wrapProgram "$bin" \
+                      ${concatStringsSep " \\\n                  " (
+                  map (
+                    secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
+                      config.sops.secrets.${secret}.path
+                    })\"'"
+                  )
+                  allSecrets
+                )}
+                  fi
+                done
+              '';
+            };
       })
     ]);
   }

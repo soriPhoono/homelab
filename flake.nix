@@ -279,25 +279,14 @@
         githubActions = import ./actions.nix {inherit self lib;};
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
+        mcp-servers = import ./mcp.nix {inherit lib pkgs;};
 
         # --- Development Shells & Checks --- #
-        devShells.default =
-          (import ./shell.nix {
-            inherit lib pkgs;
-            config = {
-              inherit (config) pre-commit agenix-shell githubActions;
-            };
-          })
-          // config.mcp-servers.devShell;
-
-        # --- MCP Server Configuration --- #
-        mcp-servers = {
-          settings.servers = {
-            mcp-nixos = {
-              command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
-            };
+        devShells.default = import ./shell.nix {
+          inherit lib pkgs;
+          config = {
+            inherit (config) pre-commit agenix-shell githubActions mcp-servers;
           };
-          flavors.opencode.enable = true;
         };
       };
 

@@ -18,6 +18,28 @@ Zed editor module
   editorCfg = config.userapps.development.agentics.editors;
   cfg = config.userapps.development.editors.zed;
 
+  # Auto-discover MCP server secrets from the editor MCP config and merge
+  # with the user-declared harness secrets, so both flow into the wrapper.
+  mcpSecrets = let
+    extractSecretNames = attrs:
+      lib.filter (v: v != null) (
+        lib.mapAttrsToList (
+          _: val:
+            if builtins.isAttrs val && val ? "secret"
+            then val.secret
+            else null
+        )
+        attrs
+      );
+  in
+    lib.flatten (lib.mapAttrsToList (
+        _: srv:
+          extractSecretNames (srv.env or {} // srv.headers or {})
+      )
+      editorCfg.mcp);
+
+  allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
+
   codeMimeTypes = [
     "inode/x-empty"
     "text/plain"
@@ -121,7 +143,7 @@ in
             {
               context_servers =
                 builtins.mapAttrs (
-                  _: mcpServer:
+                  name: mcpServer:
                     if (mcpServer.transport == "stdio")
                     then {
                       inherit (mcpServer) command args;
@@ -142,45 +164,39 @@ in
                         )
                         mcpServer.env;
                     }
-                    else if (mcpServer.transport == "http")
-                    then {
-                      inherit (mcpServer) url;
-                      headers =
-                        builtins.mapAttrs (
-                          _: value:
+                    else if (mcpServer.transport == "http" || mcpServer.transport == "sse")
+                    then let
+                      wrapperName = "mcp-proxy-${name}";
+                      # Build --headers flags with runtime env var expansion via the shell wrapper.
+                      headerFlags = lib.concatStringsSep " \\\n                      " (
+                        lib.mapAttrsToList (
+                          headerName: value:
                             if value ? "secret"
-                            then "${
+                            then "--headers '${headerName}' \"${
                               if value.prefix != null
                               then value.prefix
                               else ""
-                            }{env:${value.environmentVariable}}${
+                            }\${${value.environmentVariable}}${
                               if value.suffix != null
                               then value.suffix
                               else ""
-                            }"
-                            else value
-                        )
-                        mcpServer.headers;
-                    }
-                    else if (mcpServer.transport == "sse")
-                    then {
-                      inherit (mcpServer) url;
-                      headers =
-                        builtins.mapAttrs (
-                          _: value:
-                            if value ? "secret"
-                            then "${
-                              if value.prefix != null
-                              then value.prefix
-                              else ""
-                            }{env:${value.environmentVariable}}${
-                              if value.suffix != null
-                              then value.suffix
-                              else ""
-                            }"
-                            else value
-                        )
-                        mcpServer.headers;
+                            }\""
+                            else "--headers '${headerName}' '${value}'"
+                        ) (mcpServer.headers or {})
+                      );
+                      transportFlag =
+                        if mcpServer.transport == "sse"
+                        then ""
+                        else "--transport streamablehttp";
+                      wrapper = pkgs.writeShellScriptBin wrapperName ''
+                        exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
+                          ${transportFlag} \
+                          ${headerFlags} \
+                          '${mcpServer.url}'
+                      '';
+                    in {
+                      command = "${wrapper}/bin/${wrapperName}";
+                      args = [];
                     }
                     else throw "Unsupported MCP transport: ${mcpServer.transport}"
                 )
@@ -193,8 +209,8 @@ in
         let
           editor = pkgs.zed-editor;
         in
-          mkIf (options ? sops && cfg.secrets != []) {
-            sops.secrets = genAttrs cfg.secrets (_: {});
+          mkIf (options ? sops && allSecrets != []) {
+            sops.secrets = genAttrs allSecrets (_: {});
 
             programs.zed-editor.package = mkForce (
               pkgs.symlinkJoin {
@@ -214,7 +230,7 @@ in
                         config.sops.secrets.${secret}.path
                       })\"'"
                     )
-                    cfg.secrets
+                    allSecrets
                   )}
                     fi
                   done
