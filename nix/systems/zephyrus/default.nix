@@ -9,6 +9,7 @@ with lib; {
   ];
 
   core = {
+    stateVersion = "26.05";
     context = ''
       # System Environment: Zephyrus
 

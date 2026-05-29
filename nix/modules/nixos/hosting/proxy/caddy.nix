@@ -18,13 +18,6 @@
     else "*.${dnsConfig.baseDomain}";
   defaultService = proxyConfig.services.default or null;
   nonDefaultServices = lib.filterAttrs (name: _: name != "default") proxyConfig.services;
-  # Custom caddy with cloudflare DNS plugin
-  # Note: Standard nixpkgs caddy doesn't have withPlugins in a simple way
-  # unless using an overlay. We'll use a more standard buildGoModule approach
-  # if needed, but first let's try the common 'caddy.withPlugins' pattern
-  # assuming it's available or we provide it.
-  # For now, I'll use a generic placeholder or the buildGoModule if I'm not sure.
-  # Actually, soriPhoono/homelab might have specific needs.
 in
   with lib; {
     options.hosting.proxy.caddy = {
@@ -41,7 +34,7 @@ in
           # Or we can build it here. Building it here is safer for a drop-in module.
           package = pkgs.caddy.withPlugins {
             plugins = ["github.com/caddy-dns/cloudflare@v0.2.4"];
-            hash = "sha256-VHm9POg2KixGsMsAcfFFDMK9x6niRJ1iJV9kkSwkSjc=";
+            hash = "sha256-bzMqxWTqrJ1skZmRTXyEMCKStXpljbqe5r0Ve2cnBfM=";
           };
 
           extraConfig = ''
@@ -58,9 +51,6 @@ in
               }
             }
 
-            # Bind loopback only so port 443 on the Tailscale/LAN addresses stays available for
-            # Tailscale Serve (e.g. Jellyfin on https://<machine>.<tailnet>.ts.net). A global bind
-            # would make Caddy terminate TLS for 443 first and break *.ts.net with TLS alert internal error.
             ${rootLocalDomain}, ${wildcardDomain} {
               bind 127.0.0.1 ::1
 

@@ -14,16 +14,19 @@
 
           ## Shell & Terminal
           - **Primary Shell**: Fish (with Starship prompt and Fastfetch).
-          - **Key Tools**:
-            - **Lazygit (`lzg`)**: Interactive git management.
-            - **Lazydocker (`lzd`)**: Interactive container management.
-            - **Yazi**: Terminal file manager.
           - **Development**:
-            - **Editors**: VSCode, Zed, Zen Browser (configured with specific extensions and policies).
+            - **Editors**: Zed, Zen Browser (configured with specific extensions and policies).
             - **Agents**:
               - Gemini-CLI (For frontier model inference)
               - OpenCode (For multi-model inference and complex workflows)
-              - Cursor (For terminal-driven development and automation with Cursor CLI)
+
+
+          ## LLM Wiki (Research Knowledge Base)
+          - **Location**: `~/GoogleDrive/Documents/LLM-Wiki` — an Obsidian vault based on Karpathy's LLM Wiki design.
+          - **Purpose**: Serves as the primary research and knowledge repository for software development tasks. Contains design notes, architecture decisions, technical research, and project-specific documentation accumulated across sessions.
+          - **Tooling**: The Obsidian MCP server (configured as `obsidian` in the MCP configuration) provides full read/write access to the vault. Use `obsidian_search_notes`, `obsidian_read_note`, `obsidian_write_note`, and related tools to interact with the wiki.
+          - **Workflow Requirement**: Before beginning any non-trivial software development task, **consult the LLM Wiki** for relevant prior research, design decisions, or existing context. After completing significant research or making architectural decisions, **record findings** in the wiki to build durable institutional knowledge across agent sessions.
+          - **Pre-Alteration Protocol**: Ensure the wiki's `agents.md` (operational best practices, agentic principles, and established conventions) is fully loaded into context before making alterations. Read it once at the start of a session or after context compaction — do not re-read redundantly if it is already in context.
         '';
       };
 

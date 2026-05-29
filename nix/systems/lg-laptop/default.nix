@@ -9,12 +9,13 @@ with lib; {
   ];
 
   core = {
+    stateVersion = "26.05";
     timeZone = "America/Chicago";
     nixconf.determinate.enable = true;
 
     boot = {
       enable = true;
-      kernelPackages = pkgs.linuxPackages_latest;
+      kernel.packages = pkgs.linuxPackages_latest;
       plymouth.enable = true;
     };
 

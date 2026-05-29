@@ -57,6 +57,7 @@ with lib; {
         - VirtualBox enabled
         - Partition manager enabled
     '';
+    stateVersion = "26.05";
     timeZone = "America/Chicago";
     nixconf.determinate.enable = true;
 
@@ -77,7 +78,7 @@ with lib; {
           enable = true;
           integrated = {
             enable = true;
-            deviceId = "";
+            deviceID = "a780";
           };
         };
         amd = {
@@ -148,6 +149,8 @@ with lib; {
       docker.enable = true;
     };
   };
+
+  networking.hostId = "f0470582";
 
   themes = {
     enable = true;

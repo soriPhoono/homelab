@@ -20,6 +20,12 @@ in {
   ];
 
   options.core = {
+    stateVersion = mkOption {
+      type = with types; nullOr str;
+      description = "The NixOS release version to use for system state management. This should be set to the current release version of NixOS in use (e.g. '23.05') to ensure proper handling of system state across updates. If null, the system will use the default state management behavior, which may lead to issues during major updates if the release version changes.";
+      default = null;
+      example = "23.05";
+    };
     context = lib.mkOption {
       type = with types; nullOr str;
       description = "System-level context to be included in agent guidance.";
@@ -71,6 +77,9 @@ in {
       };
     };
 
-    system.stateVersion = config.system.nixos.release;
+    system.stateVersion =
+      if cfg.stateVersion != null
+      then cfg.stateVersion
+      else config.system.nixos.release;
   };
 }

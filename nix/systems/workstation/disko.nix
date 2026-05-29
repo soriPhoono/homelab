@@ -143,7 +143,7 @@
           compression = "zstd";
           "com.sun:auto-snapshot" = "false";
         };
-        mountpoint = "/mnt/";
+        mountpoint = "/mnt";
       };
     };
   };

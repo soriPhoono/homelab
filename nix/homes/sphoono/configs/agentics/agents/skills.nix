@@ -49,21 +49,11 @@
     playwright = openai.skills.playwright;
     playwright-interactive = openai.skills.playwright-interactive;
     webapp-testing = github.awesome-copilot.webapp-testing;
-    web-coder = github.awesome-copilot.web-coder;
     web-design-reviewer = github.awesome-copilot.web-design-reviewer;
 
     # Developer Experience & Workflow
-    gh-cli = github.awesome-copilot.gh-cli;
-    my-pull-requests = github.awesome-copilot.my-pull-requests;
-    my-issues = github.awesome-copilot.my-issues;
     github-issues = github.awesome-copilot.github-issues;
     dependabot = github.awesome-copilot.dependabot;
-    create-github-action-workflow-specification =
-      github.awesome-copilot.create-github-action-workflow-specification;
-    create-github-pull-request-from-specification =
-      github.awesome-copilot.create-github-pull-request-from-specification;
-    create-github-issue-feature-from-specification =
-      github.awesome-copilot.create-github-issue-feature-from-specification;
 
     # MCP Server Development
     python-mcp-server-generator = github.awesome-copilot.python-mcp-server-generator;
