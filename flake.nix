@@ -108,6 +108,11 @@
       url = "github:sudosubin/nix-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    skills = {
+      url = "github:soriPhoono/skills";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {

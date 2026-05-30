@@ -1398,12 +1398,29 @@
         "nixpkgs": "nixpkgs_3",
         "noctalia": "noctalia",
         "nur": "nur",
+        "skills": "skills",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
         "systems": "systems_4",
         "templates": "templates",
         "treefmt-nix": "treefmt-nix_4",
         "zen-browser": "zen-browser"
+      }
+    },
+    "skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780166268,
+        "narHash": "sha256-zuPFCfRIHwRh8OgGEZtmcRTxrbZoG8rP2wsow3QMep8=",
+        "owner": "soriPhoono",
+        "repo": "skills",
+        "rev": "dc411c5596d5646482348e4ab3bda1761f84d1ce",
+        "type": "github"
+      },
+      "original": {
+        "owner": "soriPhoono",
+        "repo": "skills",
+        "type": "github"
       }
     },
     "sops-nix": {
