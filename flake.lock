@@ -1410,11 +1410,11 @@
     "skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1780180575,
-        "narHash": "sha256-IuO9re9gsRVaIXQ7fUWl7KWi5ZTqUzjXpC7x+3aJAM8=",
+        "lastModified": 1780181978,
+        "narHash": "sha256-8quhTT7eG1WYWhrzUX9jzi6wUhWRaQLzfJb7trRz01o=",
         "owner": "soriPhoono",
         "repo": "skills",
-        "rev": "a4d10a0958ffce68850eb5d9945be0f479ded98d",
+        "rev": "7de973e5b75227da0abcbd19305b1b161982d73d",
         "type": "github"
       },
       "original": {

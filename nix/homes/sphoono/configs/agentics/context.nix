@@ -90,7 +90,13 @@
              - Search the wiki (`wiki/index.md` + relevant concept pages) for prior context, existing decisions, and related research before implementing.
              - Search tasks for any blocked or related items.
 
-          ### Mandatory Confirmation Protocol
+           5. **Git Workflow — Branch, Commit, Push**
+              - **Branch first**: If currently on `main` (or the default branch) of a repository, create a new branch before making any alterations. Name the branch based on the purpose of the work (e.g., `feat/add-monitoring`, `fix/netbird-oidc`, `refactor/k8s-structure`).
+              - **Commit meaningfully**: After a meaningful unit of work has been completed (a logical change that is self-contained and verifiable), load and invoke the `git-commit` skill to commit your changes. Do not batch unrelated changes into a single commit.
+              - **Push all commits**: After each commit (or batch of related commits), push the branch to the remote (`git push origin <branch-name>`). Do not leave committed work sitting unpushed on a local branch.
+              - **Branch lifecycle**: Once the work is complete, the PR has been created (if applicable), and/or the user has confirmed, the branch can be merged. Clean up by deleting the remote branch after merge.
+
+           ### Mandatory Confirmation Protocol
 
           **Always confirm plans with the user before enacting them.** This applies at every stage:
 
