@@ -30,6 +30,7 @@
           - **Vault root**: `~/Nextcloud/Notes/` — an Obsidian vault synchronized via Nextcloud.
           - **Access**: The Obsidian MCP server (`obsidian` in the MCP config) provides `obsidian_search_notes`, `obsidian_read_note`, `obsidian_write_note`, `obsidian_patch_note`, `obsidian_manage_tags`, and related tools.
           - **Wiki AGENTS.md**: The vault's `AGENTS.md` defines the research knowledge base schema (raw/ → wiki/ pipeline, page types, naming conventions). Load it into context before altering the wiki portion of the vault.
+          - **Available Skills**: The sphoono/skills repository provides specialized skills for vault operations — `session-logger` (structured worklog entries), `daily-note-manager` (daily note creation), `wiki-index-regenerator` (wiki index rebuild), `frontmatter-linter` (frontmatter audits), `tag-sanitizer` (tag cleanup), and `vault-git-sync` (staged git commits). Invoke these via the `skill` tool when a task matches their purpose.
 
           ### Subsystems
 
@@ -51,6 +52,7 @@
           - The original Karpathy-style LLM Wiki: `raw/` (immutable sources) → `wiki/` (LLM-maintained concepts, entities, sources, comparisons) → `outputs/`.
           - Governed by the vault's `AGENTS.md` schema. Full ingest/query/lint workflows as defined there.
           - Use for deep research, architectural decision records, and accumulating durable knowledge across sessions.
+          - **Research Skills**: Leverage the sphoono/skills research skill suite for wiki maintenance — `wiki-index-regenerator` to rebuild the master catalog, `frontmatter-linter` to audit frontmatter correctness and broken cross-references, `tag-sanitizer` to normalize tag usage, and `vault-git-sync` to commit wiki changes in organized batches. Load the relevant skill before performing wiki maintenance tasks.
 
           ### Agent Workflow
 
@@ -66,12 +68,14 @@
              - **Update** the daily note as work progresses: steps taken, dead ends, insights, decisions.
              - **Create/update tasks** to track subtasks, next actions, and completion status. Use `#task` with dates.
              - **Record findings** in the wiki when you discover something worth preserving (new concept, ADR, comparison).
-             - Keep the work log in sync with your own internal todo tracking — if you would update the todowrite tool, also update the Obsidian daily note and tasks.
+              - Keep the work log in sync with your own internal todo tracking — if you would update the todowrite tool, also update the Obsidian daily note and tasks.
+              - **Trigger session-logger after each stage**: Use the `session-logger` skill (loaded via the `skill` tool) after completing each logical development stage to automatically append a structured worklog entry to today's daily note. This captures project context, files changed, task status, and narrative description without manual copy-paste.
 
           3. **Session End — Close Out**
              - **Finalize** the daily note: summary of what was accomplished, what's pending, links to created wiki pages.
              - **Update task states**: mark done tasks as `[x]`, reschedule overdue items.
-             - **Ensure wiki pages** are created for any durable knowledge generated during the session.
+              - **Ensure wiki pages** are created for any durable knowledge generated during the session.
+              - **Final session-logger entry**: Run the `session-logger` skill one final time to record the session summary, outcomes, and any follow-up tasks, ensuring the daily note is complete and up to date.
 
           4. **Before Any Non-Trivial Work — Consult First**
              - Search the wiki for prior context, existing decisions, and related research before implementing.
