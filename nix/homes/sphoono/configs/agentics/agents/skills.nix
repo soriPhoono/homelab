@@ -107,10 +107,6 @@
         src = inputs.skills;
         subpath = "skills/obsidian/deep-research";
       };
-      obsidian-quick-research = {
-        src = inputs.skills;
-        subpath = "skills/obsidian/quick-research";
-      };
       obsidian-source-ingest = {
         src = inputs.skills;
         subpath = "skills/obsidian/source-ingest";

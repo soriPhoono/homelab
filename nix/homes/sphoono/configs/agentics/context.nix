@@ -25,12 +25,16 @@
 
           This is an integrated Obsidian-based system spanning three complementary subsystems: a daily work log (Daily Notes + Calendar), a task/todo tracker (Tasks plugin), and a research knowledge base (LLM Wiki). All live in the same vault and are accessed via the `obsidian` MCP server.
 
-          ### Vault Location & Tooling
+           ### Vault Location & Tooling
 
-          - **Vault root**: `~/Nextcloud/Notes/` — an Obsidian vault synchronized via Nextcloud.
-          - **Access**: The Obsidian MCP server (`obsidian` in the MCP config) provides `obsidian_search_notes`, `obsidian_read_note`, `obsidian_write_note`, `obsidian_patch_note`, `obsidian_manage_tags`, and related tools.
-          - **Wiki AGENTS.md**: The vault's `AGENTS.md` defines the research knowledge base schema (raw/ → wiki/ pipeline, page types, naming conventions). Load it into context before altering the wiki portion of the vault.
-          - **Available Skills**: The sphoono/skills repository provides specialized skills for vault operations — `session-logger` (structured worklog entries), `daily-note-manager` (daily note creation), `wiki-index-regenerator` (wiki index rebuild), `frontmatter-linter` (frontmatter audits), `tag-sanitizer` (tag cleanup), and `vault-git-sync` (staged git commits). Invoke these via the `skill` tool when a task matches their purpose.
+           - **Vault root**: `~/Nextcloud/Notes/` — an Obsidian vault synchronized via Nextcloud.
+           - **Access**: The Obsidian MCP server (`obsidian` in the MCP config) provides `obsidian_search_notes`, `obsidian_read_note`, `obsidian_write_note`, `obsidian_patch_note`, `obsidian_manage_tags`, and related tools.
+           - **Governance files**: The vault has four `AGENTS.md` files that define schemas, workflows, and naming conventions for each subsystem. These MUST be read before modifying any vault content:
+             - `AGENTS.md` (root) — Vault architecture overview, three-subsystem model, integrated agent workflow
+             - `Daily/AGENTS.md` — Daily note format specification (section ordering, task formatting, tags)
+             - `LLM-Wiki/AGENTS.md` — Full wiki schema (page types, templates, naming conventions, research pipeline)
+             - `Projects/AGENTS.md` — Project management system (kanban format, task-kanban relationship)
+           - **Available Skills**: The sphoono/skills repository provides specialized skills for vault operations — `session-logger` (structured worklog entries), `daily-note-manager` (daily note creation), `wiki-index-regenerator` (wiki index rebuild), `frontmatter-linter` (frontmatter audits), `tag-sanitizer` (tag cleanup), and `vault-git-sync` (staged git commits). Invoke these via the `skill` tool when a task matches their purpose.
 
           ### Subsystems
 
@@ -78,7 +82,12 @@
               - **Final session-logger entry**: Run the `session-logger` skill one final time to record the session summary, outcomes, and any follow-up tasks, ensuring the daily note is complete and up to date.
 
           4. **Before Any Non-Trivial Work — Consult First**
-             - Search the wiki for prior context, existing decisions, and related research before implementing.
+             - Read the vault's **root `AGENTS.md`** for the three-subsystem architecture overview.
+             - Read the **relevant feature sub-directory's `AGENTS.md`** before modifying that subsystem:
+               - `Daily/AGENTS.md` — before creating/restructuring daily notes or tasks
+               - `LLM-Wiki/AGENTS.md` — before altering wiki pages, sources, or running research
+               - `Projects/AGENTS.md` — before creating/restructuring project kanban boards
+             - Search the wiki (`wiki/index.md` + relevant concept pages) for prior context, existing decisions, and related research before implementing.
              - Search tasks for any blocked or related items.
 
           ### Mandatory Confirmation Protocol
@@ -92,12 +101,24 @@
 
           **Exception:** Trivial corrections (typos, formatting, obvious broken links) and the ingest workflow (raw/ → wiki/ pipeline as defined in the vault's AGENTS.md) may proceed without confirmation, but report what was done.
 
-          ### Pre-Alteration Protocol for the Wiki
+           ### Pre-Alteration Protocol for the Vault
 
-          When altering the vault's AGENTS.md (the schema file, not the daily/task system):
-          - Ensure it is fully loaded into context first.
-          - Read it once at session start or after context compaction — do not re-read redundantly.
-          - This applies only to the wiki schema; daily notes and tasks are free-form and do not require schema loading before modification.
+           Before modifying any vault content, you MUST:
+
+           1. **Load the relevant AGENTS.md** — Read the vault `AGENTS.md` for the subsystem you're about to modify. Each subsystem has its own schema:
+              - `Daily/AGENTS.md` for daily notes and tasks
+              - `LLM-Wiki/AGENTS.md` for wiki research pages
+              - `Projects/AGENTS.md` for kanban boards
+              - Root `AGENTS.md` for the overall architecture (read at session start or after context compaction)
+
+           2. **Read the relevant sub-directory** — Explore the current state of the directory you're modifying:
+              - For daily notes: list `Daily/` to see existing notes and templates
+              - For wiki pages: list `LLM-Wiki/raw/<topic>/` and `LLM-Wiki/wiki/<type>/<topic>/` for existing content
+              - For projects: list `Projects/` for existing kanban boards
+
+           3. **Understand conventions** — Check existing files for naming patterns, tag usage, frontmatter structure, and link formats before creating new ones.
+
+           Do not re-read AGENTS.md files redundantly within the same session — read once at session start or after context compaction.
         '';
       };
 
