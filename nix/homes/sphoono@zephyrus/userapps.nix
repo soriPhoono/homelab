@@ -38,6 +38,7 @@ _: {
       };
       editors = {
         zed.enable = true;
+        vscode.enable = true;
       };
       appliances.bambu-studio.enable = true;
     };

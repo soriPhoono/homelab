@@ -299,7 +299,7 @@ in
         userapps.development.agents.github-copilot.enable = mkDefault true;
 
         warnings =
-          optionals (agentsCfg.commands.registry != {})
+          optional (agentsCfg.commands.registry != {})
           ''
             userapps.development.editors.vscode: commands are defined in
             `agentics.agents.commands.registry` but GitHub Copilot inside VSCode
@@ -308,7 +308,7 @@ in
             into `agentics.agents.subagents.registry` or provide them via
             `context` instead.
           ''
-          ++ optionals (agentsCfg.subagents.registry != {})
+          ++ optional (agentsCfg.subagents.registry != {})
           ''
             userapps.development.editors.vscode: subagents are defined in
             `agentics.agents.subagents.registry` but GitHub Copilot inside VSCode
@@ -316,7 +316,7 @@ in
             standalone CLI only).  These agents will not be available in the
             VSCode Copilot chat.
           ''
-          ++ optionals (agentsCfg.skills != {})
+          ++ optional (agentsCfg.skills != {})
           ''
             userapps.development.editors.vscode: skills are defined in
             `agentics.agents.skills` but GitHub Copilot inside VSCode does not
