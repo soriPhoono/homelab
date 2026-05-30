@@ -219,7 +219,16 @@ in
 
           mcpServers = mapAttrs translateMcpServer agentsCfg.mcp;
 
-          skills = mapAttrs (_name: pkg: pkg) agentsCfg.skills;
+          # Skill derivations contain SKILL.md as their primary output.
+          # Read the content so the github-copilot-cli HM module can write it
+          # to ~/.copilot/skills/<name>/SKILL.md (its .text field expects a
+          # string, not a package).
+          skills =
+            mapAttrs (
+              _name: pkg:
+                builtins.readFile "${pkg}/SKILL.md"
+            )
+            agentsCfg.skills;
 
           inherit (cfg) settings;
         };

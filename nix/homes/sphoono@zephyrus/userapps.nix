@@ -33,7 +33,9 @@ _: {
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-
+      agents = {
+        github-copilot.enable = true;
+      };
       editors = {
         zed.enable = true;
       };

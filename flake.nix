@@ -272,7 +272,14 @@
         # --- Package Cache --- #
         _module.args.pkgs = import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
+          config = {
+            allowUnfree = true;
+            # mcp-nixos transitively depends on arrow-cpp which is marked broken on
+            # x86_64-darwin.  Since we only deploy NixOS systems (Linux), this is
+            # safe to allow — the package simply won't build on unsupported platforms
+            # but won't crash evaluation either.
+            allowBroken = true;
+          };
         };
 
         # --- Configuration Builders --- #

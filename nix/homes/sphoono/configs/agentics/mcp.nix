@@ -28,7 +28,7 @@
       args = [
         "-y"
         "@bitbonsai/mcpvault@latest"
-        "${config.home.homeDirectory}/GoogleDrive/Documents/LLM-Wiki"
+        "${config.home.homeDirectory}/Nextcloud/Notes"
       ];
     };
 

@@ -6,6 +6,7 @@
     # Core developer skills
     editorconfig = github.awesome-copilot.editorconfig;
     cli-mastery = github.awesome-copilot.cli-mastery;
+    obsidian = bitbonsai.mcpvault.obsidian;
 
     # Git Workflows
     conventional-commit = github.awesome-copilot.git-commit;
