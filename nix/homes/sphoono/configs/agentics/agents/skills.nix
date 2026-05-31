@@ -11,6 +11,13 @@
       # Core developer skills
       editorconfig = github.awesome-copilot.editorconfig;
       cli-mastery = github.awesome-copilot.cli-mastery;
+
+      # Obsidian tooling
+      obsidian-markdown = kepano.obsidian-skills.obsidian-markdown;
+      obsidian-cli = kepano.obsidian-skills.obsidian-cli;
+      obsidian-bases = kepano.obsidian-skills.obsidian-bases;
+      json-canvas = kepano.obsidian-skills.json-canvas;
+      defuddle = kepano.obsidian-skills.defuddle;
       obsidian = bitbonsai.mcpvault.obsidian;
 
       # Git Workflows
@@ -72,14 +79,59 @@
       build-mcp-server = anthropics.claude-plugins-official.build-mcp-server;
       build-mcp-app = anthropics.claude-plugins-official.build-mcp-app;
       mcp-builder = anthropics.skills.mcp-builder;
+
+      # Obsidian Wiki (ar9av/obsidian-wiki) — LLM Wiki pattern framework
+      wiki-setup = ar9av.obsidian-wiki.wiki-setup;
+      wiki-ingest = ar9av.obsidian-wiki.wiki-ingest;
+      wiki-history-ingest = ar9av.obsidian-wiki.wiki-history-ingest;
+      claude-history-ingest = ar9av.obsidian-wiki.claude-history-ingest;
+      codex-history-ingest = ar9av.obsidian-wiki.codex-history-ingest;
+      hermes-history-ingest = ar9av.obsidian-wiki.hermes-history-ingest;
+      openclaw-history-ingest = ar9av.obsidian-wiki.openclaw-history-ingest;
+      copilot-history-ingest = ar9av.obsidian-wiki.copilot-history-ingest;
+      pi-history-ingest = ar9av.obsidian-wiki.pi-history-ingest;
+      data-ingest = ar9av.obsidian-wiki.data-ingest;
+      ingest-url = ar9av.obsidian-wiki.ingest-url;
+      obsidian-wiki-ingest = ar9av.obsidian-wiki.obsidian-wiki-ingest;
+      wiki-status = ar9av.obsidian-wiki.wiki-status;
+      wiki-rebuild = ar9av.obsidian-wiki.wiki-rebuild;
+      wiki-query = ar9av.obsidian-wiki.wiki-query;
+      wiki-lint = ar9av.obsidian-wiki.wiki-lint;
+      cross-linker = ar9av.obsidian-wiki.cross-linker;
+      tag-taxonomy = ar9av.obsidian-wiki.tag-taxonomy;
+      llm-wiki = ar9av.obsidian-wiki.llm-wiki;
+      wiki-update = ar9av.obsidian-wiki.wiki-update;
+      wiki-export = ar9av.obsidian-wiki.wiki-export;
+      wiki-capture = ar9av.obsidian-wiki.wiki-capture;
+      wiki-quick-chat-capture = ar9av.obsidian-wiki.wiki-quick-chat-capture;
+      wiki-research = ar9av.obsidian-wiki.wiki-research;
+      wiki-dashboard = ar9av.obsidian-wiki.wiki-dashboard;
+      wiki-synthesize = ar9av.obsidian-wiki.wiki-synthesize;
+      wiki-agent = ar9av.obsidian-wiki.wiki-agent;
+      wiki-context-pack = ar9av.obsidian-wiki.wiki-context-pack;
+      wiki-dedup = ar9av.obsidian-wiki.wiki-dedup;
+      wiki-digest = ar9av.obsidian-wiki.wiki-digest;
+      wiki-import = ar9av.obsidian-wiki.wiki-import;
+      wiki-stage-commit = ar9av.obsidian-wiki.wiki-stage-commit;
+      wiki-switch = ar9av.obsidian-wiki.wiki-switch;
+      memory-bridge = ar9av.obsidian-wiki.memory-bridge;
+      daily-update = ar9av.obsidian-wiki.daily-update;
+      impl-validator = ar9av.obsidian-wiki.impl-validator;
+      graph-colorize = ar9av.obsidian-wiki.graph-colorize;
+      skill-creator = ar9av.obsidian-wiki.skill-creator;
     })
     // {
       # Custom Obsidian vault skills from github:soriPhoono/skills
       # These are { src, subpath } specs — auto-coerced to derivations by the
       # types.coercedTo in the skills module option.
+      # Session management
       obsidian-session-logger = {
         src = inputs.skills;
         subpath = "skills/obsidian/session-logger";
+      };
+      obsidian-session-closeout = {
+        src = inputs.skills;
+        subpath = "skills/obsidian/session-closeout";
       };
       obsidian-daily-note-manager = {
         src = inputs.skills;
@@ -107,9 +159,29 @@
         src = inputs.skills;
         subpath = "skills/obsidian/deep-research";
       };
+      obsidian-quick-research = {
+        src = inputs.skills;
+        subpath = "skills/obsidian/quick-research";
+      };
       obsidian-source-ingest = {
         src = inputs.skills;
         subpath = "skills/obsidian/source-ingest";
+      };
+
+      # Source organization
+      obsidian-organize-raw-sources = {
+        src = inputs.skills;
+        subpath = "skills/obsidian/organize-raw-sources";
+      };
+
+      # Project management
+      obsidian-create-project = {
+        src = inputs.skills;
+        subpath = "skills/obsidian/create-project";
+      };
+      obsidian-task-issue-auditor = {
+        src = inputs.skills;
+        subpath = "skills/obsidian/task-issue-auditor";
       };
     };
 }
