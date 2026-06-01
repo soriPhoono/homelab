@@ -37,7 +37,7 @@ in {
       chmod +x $out/lib/omp/bun
 
       mkdir -p $out/bin
-      makeWrapper $out/lib/omp/bun $out/bin/omp \
+      makeWrapper $out/lib/omp/bun $out/bin/pi \
         --add-flags "run $out/lib/omp/node_modules/@oh-my-pi/pi-coding-agent/src/cli.ts"
     '';
 

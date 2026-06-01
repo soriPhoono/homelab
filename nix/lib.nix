@@ -36,7 +36,7 @@ _final: prev: {
                 example = "api/OPENROUTER_API_KEY";
               };
               environmentVariable = mkOption {
-                type = with types; str;
+                type = with types; nullOr str;
                 default =
                   if sub.config.secret != null
                   then "${baseNameOf sub.config.secret}"

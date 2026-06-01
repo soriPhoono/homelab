@@ -52,18 +52,34 @@
 
     renderEnvValue = value:
       if value ? "secret"
-      then "$" + value.environmentVariable
+      then
+        "$"
+        + (
+          if value.environmentVariable or null != null
+          then value.environmentVariable
+          else baseNameOf value.secret
+        )
       else value;
 
     renderHeaderValue = value:
       if value ? "secret"
-      then (value.prefix or "") + "$" + value.environmentVariable
+      then
+        (
+          if value.prefix or null != null
+          then value.prefix
+          else ""
+        )
+        + "$"
+        + (
+          if value.environmentVariable or null != null
+          then value.environmentVariable
+          else baseNameOf value.secret
+        )
       else value;
-
     renderServer = name: srv:
       if srv.transport == "http" && hasAnySecret (srv.headers or {})
       then let
-        wrapperName = "omp-mcp-proxy-${name}";
+        wrapperName = "${flavorBinName}-mcp-proxy-${name}";
         headerFlags = lib.concatStringsSep " \\\n        " (
           lib.mapAttrsToList (
             hname: val:
