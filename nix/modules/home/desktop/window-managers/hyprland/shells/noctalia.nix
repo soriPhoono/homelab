@@ -198,7 +198,7 @@ in
               enableClipboardHistory = true;
               terminalCommand = "${terminal} -e";
               customLaunchPrefixEnabled = true;
-              customLaunchPrefix = "${pkgs.run-application}/bin/run-application";
+              customLaunchPrefix = "${pkgs.runapp}/bin/runapp";
               viewMode = "grid";
             };
             audio = {
@@ -228,7 +228,7 @@ in
               disableDiscoverability = true;
             };
             nightLight.enabled = true;
-            systemMonitor.externalMonitor = "${pkgs.run-application}/bin/run-application ${terminal} -e ${config.programs.btop.package}/bin/btop";
+            systemMonitor.externalMonitor = "${pkgs.runapp}/bin/runapp -- ${terminal} -e ${config.programs.btop.package}/bin/btop";
             wallpaper = {
               overviewEnabled = true;
               directory = cfg.wallpaperDir;

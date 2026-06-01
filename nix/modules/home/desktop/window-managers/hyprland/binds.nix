@@ -122,19 +122,19 @@ in
             {
               _args = [
                 "${wmCfg.common.mod} + Return"
-                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL}\")")
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.TERMINAL}\")")
               ];
             }
             {
               _args = [
                 "${wmCfg.common.mod} + E"
-                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.FILE_BROWSER}\")")
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.FILE_BROWSER}\")")
               ];
             }
             {
               _args = [
                 "${wmCfg.common.mod} + B"
-                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.BROWSER}\")")
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.BROWSER}\")")
               ];
             }
 

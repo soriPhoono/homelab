@@ -99,11 +99,11 @@
         autoMount = true;
         hideWhenEmpty = true;
         fileBrowser = "xdg-open";
-        terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
+        terminalCommand = "${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.TERMINAL} -e";
       };
       tailscale = {
         showPeerCount = false;
-        terminalCommand = "${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL} -e";
+        terminalCommand = "${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.TERMINAL} -e";
         taildropReceiveMode = "pkexec";
       };
       pomodoro = {
