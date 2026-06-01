@@ -120,19 +120,19 @@ in
             {
               _args = [
                 "SUPER + Return"
-                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.TERMINAL}\")")
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.TERMINAL}\")")
               ];
             }
             {
               _args = [
                 "SUPER + E"
-                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.FILE_BROWSER}\")")
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.FILE_BROWSER}\")")
               ];
             }
             {
               _args = [
                 "SUPER + B"
-                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.run-application}/bin/run-application ${config.home.sessionVariables.BROWSER}\")")
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.BROWSER}\")")
               ];
             }
 
