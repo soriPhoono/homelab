@@ -19,6 +19,7 @@
             - **Agents**:
               - Gemini-CLI (For frontier model inference)
               - OpenCode (For multi-model inference and complex workflows)
+              - Pi Agent (For every day agentic operations, integrated with Obsidian vault management)
 
 
           ## Daily Work Log, Planner & Wiki System

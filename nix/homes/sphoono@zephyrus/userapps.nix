@@ -35,6 +35,10 @@ _: {
       terminal.ghostty.enable = true;
       agents = {
         github-copilot.enable = true;
+        pi-agent = {
+          enable = true;
+          flavor = "omp";
+        };
       };
       editors = {
         zed.enable = true;
