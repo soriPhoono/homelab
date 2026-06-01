@@ -25,10 +25,12 @@ in {
 
     sourceRoot = "pi";
 
+    dontStrip = true;
+
     installPhase = ''
-      mkdir -p $out/bin $out/share/pi
+      mkdir -p $out/bin
       cp pi $out/bin/
-      cp -r docs examples assets theme export-html node_modules package.json CHANGELOG.md README.md $out/share/pi/
+      cp -r docs examples assets theme export-html node_modules package.json CHANGELOG.md README.md photon_rs_bg.wasm $out/bin/
     '';
 
     meta = {
