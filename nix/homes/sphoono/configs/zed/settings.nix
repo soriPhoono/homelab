@@ -15,6 +15,7 @@ with lib; {
     agent_servers = {
       gemini.type = "registry";
       opencode.type = "registry";
+      pi.type = "registry";
     };
     agent = {
       inline_assistant_model = {
