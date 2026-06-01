@@ -12,6 +12,7 @@ High-signal context for AI agents working in this Nix-based homelab repository (
 - **Formatting:** Run `nix fmt`. Do not run individual formatters (it uses `treefmt` under the hood for Nix, YAML, and Markdown).
 - **Validation:** Always run `nix flake check` before committing. Pre-commit hooks are also enabled in the dev shell.
 - **Deployment:** Use `nh os switch .` (for NixOS) or `nh home switch .` (for standalone Home Manager).
+  - **⚠ Critical:** Never deploy a standalone home config (`nh home switch .#sphoono`) on this system — `sphoono` is system-integrated via `nix/homes/sphoono@zephyrus` and deployed as part of `nh os switch .`. Doing so creates a conflicting parallel generation.
 
 ## Architecture & Discovery Quirks
 
@@ -23,6 +24,7 @@ This repo relies heavily on dynamic discovery (`nix/lib/discover`). You rarely n
 - **Home Manager Quirks (VERY IMPORTANT):**
   - **Standalone Homes:** Directories like `nix/homes/user` or `nix/homes/user@hostname` (where `hostname` does **not** exist in `nix/systems/`) are exported as standalone `homeConfigurations`.
   - **System-integrated Homes:** Directories like `nix/homes/user@hostname` (where `hostname` **exists** in `nix/systems/`) are **NOT** standalone. They are automatically imported by the NixOS configuration via the `core.users` module (`nix/modules/nixos/core/users.nix`).
+  - **Never deploy a standalone home config on this system.** Running `nh home switch .#sphoono` on `zephyrus` creates a conflicting parallel generation because `sphoono` is already deployed as part of the NixOS config (`nix/homes/sphoono@zephyrus`). Use `nh home switch` only for truly standalone configs (e.g., on non-NixOS systems).
   - When adding a user to a NixOS system, add them to `core.users` in the system config, and create the corresponding `nix/homes/user` and/or `nix/homes/user@hostname` folders. The system will auto-import them.
 
 ## Hardware & Disk
@@ -62,3 +64,4 @@ See the "Important Commands & Workflows" section above. The essential commands a
 - `nix fmt` may reformat YAML files in `k3s/`. If your task does not involve those files, revert formatting-only changes with `git checkout -- k3s/`.
 - Warnings about `eval-cores` and `lazy-trees` unknown settings are harmless and can be ignored.
 - Current configs: NixOS hosts are `zephyrus` and `lg-laptop`; standalone Home Manager configs are `sphoono` and `spookyskelly`.
+- **⚠ Critical:** `sphoono` is system-integrated on `zephyrus` (`nix/homes/sphoono@zephyrus`). Never run `nh home switch .#sphoono` on this machine — deploy everything via `nh os switch .` instead.

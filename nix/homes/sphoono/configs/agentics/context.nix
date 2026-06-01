@@ -84,9 +84,9 @@
           4. **Before Any Non-Trivial Work — Consult First**
              - Read the vault's **root `AGENTS.md`** for the three-subsystem architecture overview.
              - Read the **relevant feature sub-directory's `AGENTS.md`** before modifying that subsystem:
-               - `Daily/AGENTS.md` — before creating/restructuring daily notes or tasks
-               - `LLM-Wiki/AGENTS.md` — before altering wiki pages, sources, or running research
-               - `Projects/AGENTS.md` — before creating/restructuring project kanban boards
+                - `Daily/AGENTS.md` — before creating/restructuring daily notes or tasks
+                - `LLM-Wiki/AGENTS.md` — before altering wiki pages, sources, or running research
+                - `Projects/AGENTS.md` — before creating/restructuring project directories (kanban boards, issue write-ups, project structure)
              - Search the wiki (`wiki/index.md` + relevant concept pages) for prior context, existing decisions, and related research before implementing.
              - Search tasks for any blocked or related items.
 
@@ -114,13 +114,13 @@
            1. **Load the relevant AGENTS.md** — Read the vault `AGENTS.md` for the subsystem you're about to modify. Each subsystem has its own schema:
               - `Daily/AGENTS.md` for daily notes and tasks
               - `LLM-Wiki/AGENTS.md` for wiki research pages
-              - `Projects/AGENTS.md` for kanban boards
+              - `Projects/AGENTS.md` for project directories (kanban boards, issue write-ups, project structure)
               - Root `AGENTS.md` for the overall architecture (read at session start or after context compaction)
 
            2. **Read the relevant sub-directory** — Explore the current state of the directory you're modifying:
               - For daily notes: list `Daily/` to see existing notes and templates
               - For wiki pages: list `LLM-Wiki/raw/<topic>/` and `LLM-Wiki/wiki/<type>/<topic>/` for existing content
-              - For projects: list `Projects/` for existing kanban boards
+              - For projects: each project lives in `Projects/<Name>/` with three files — `About.md` (project write-up), `Project.md` (kanban board), and `Issues/` (issue write-ups from problem solving). List `Projects/<Name>/` to see all files and check `Issues/README.md` for the issue index.
 
            3. **Understand conventions** — Check existing files for naming patterns, tag usage, frontmatter structure, and link formats before creating new ones.
 
