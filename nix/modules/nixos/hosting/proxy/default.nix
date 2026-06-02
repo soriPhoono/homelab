@@ -46,51 +46,92 @@ in
       };
 
       services = mkOption {
-        type = types.attrsOf (types.submodule {
-          options = let
-            proxyConfig = with types;
-              submodule {
-                options = {
-                  proxyPort = mkOption {
-                    type = int;
-                    description = "The port to proxy to";
-                    example = 8096;
+        type = types.attrsOf (
+          types.submodule {
+            options = let
+              proxyConfig = with types;
+                submodule {
+                  options = {
+                    name = mkOption {
+                      type = str;
+                      description = "Name of the service (e.g., jellyfin)";
+                      example = "jellyfin";
+                    };
+                    description = mkOption {
+                      type = str;
+                      description = "Description of the service (e.g., Media Server)";
+                      example = "Media Server";
+                    };
+                    proxyPort = mkOption {
+                      type = int;
+                      description = "The port to proxy to";
+                      example = 8096;
+                    };
+                    handlePath = mkEnableOption "Strip the /{path} from the url before proxying";
+                    extraConfig = mkOption {
+                      type = nullOr str;
+                      default = null;
+                      description = "Extra Caddyfile configuration";
+                      example = "reverse_proxy localhost:8096";
+                    };
                   };
-                  handlePath = mkEnableOption "Strip the /{path} from the url before proxying";
-                  extraConfig = mkOption {
-                    type = nullOr str;
-                    default = null;
-                    description = "Extra Caddyfile configuration";
-                    example = "reverse_proxy localhost:8096";
+                };
+            in {
+              name = mkOption {
+                type = types.str;
+                description = "Name of the service (e.g., jellyfin)";
+                example = "jellyfin";
+              };
+              description = mkOption {
+                type = types.str;
+                description = "Description of the service (e.g., Media Server)";
+                example = "Media Server";
+              };
+              proxyPort = mkOption {
+                type = types.int;
+                description = "The port to proxy to";
+                example = 8096;
+              };
+              extraConfig = mkOption {
+                type = with types; nullOr str;
+                default = null;
+                description = "Extra Caddyfile configuration";
+                example = "reverse_proxy localhost:8096";
+              };
+              extraPaths = mkOption {
+                type = types.attrsOf proxyConfig;
+                default = {};
+                description = "Virtual folders (paths) and their ports";
+                example = {
+                  "/watch" = {
+                    name = "Jellyfin";
+                    description = ''
+                      Jellyfin is a free software media server that puts you in control of your media. It allows you to organize, manage, and stream your media collection to various devices, both locally and remotely. With features like live TV support, DVR capabilities, and a user-friendly interface, Jellyfin is a popular choice for media enthusiasts looking for an open-source alternative to commercial media servers.
+                    '';
+                    proxyPort = 8096;
+                    handlePath = true;
                   };
                 };
               };
-          in {
-            proxyPort = mkOption {
-              type = types.int;
-              description = "The port to proxy to";
-              example = 8096;
             };
-            extraConfig = mkOption {
-              type = with types; nullOr str;
-              default = null;
-              description = "Extra Caddyfile configuration";
-              example = "reverse_proxy localhost:8096";
-            };
-            extraPaths = mkOption {
-              type = types.attrsOf proxyConfig;
-              default = {};
-              description = "Virtual folders (paths) and their ports";
-              example = {
-                "/watch" = {
-                  proxyPort = 8096;
-                  handlePath = true;
-                };
+          }
+        );
+        default = {};
+        example = {
+          media = {
+            name = "Seer";
+            description = "Media Server Request Interface";
+            proxyPort = 5055;
+            extraPaths = {
+              "/watch" = {
+                name = "Jellyfin";
+                description = "Jellyfin is a free software media server that puts you in control of your media. It allows you to organize, manage, and stream your media collection to various devices, both locally and remotely. With features like live TV support, DVR capabilities, and a user-friendly interface, Jellyfin is a popular choice for media enthusiasts looking for an open-source alternative to commercial media servers.";
+                proxyPort = 8096;
+                handlePath = true;
               };
             };
           };
-        });
-        default = {};
+        };
         description = "Services to expose via proxy";
       };
     };

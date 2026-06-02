@@ -46,9 +46,7 @@
   # Translate agentics MCP server config to standard MCP config format
   # (compatible with pi-mcp-extension and omp's built-in MCP).
   mcpServerConfig = let
-    hasAnySecret = attrs:
-      lib.any (v: builtins.isAttrs v && v ? "secret")
-      (lib.attrValues attrs);
+    hasAnySecret = attrs: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues attrs);
 
     renderEnvValue = value:
       if value ? "secret"

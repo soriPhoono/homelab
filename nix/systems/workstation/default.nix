@@ -146,7 +146,6 @@ with lib; {
     tools = {
       partition-manager.enable = true;
       virtualbox.enable = true;
-      docker.enable = true;
     };
   };
 
