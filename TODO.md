@@ -1,0 +1,14 @@
+- [ ] Configure pi coding agent
+  - [ ] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
+    - [ ] Finish updating mcp server types in [lib](./nix/lib.nix)
+  - [ ] Finish installing packages
+  - [ ] Create extensions for pi coding agent
+    - [ ] Remove bash tool
+    - [ ] Agent orchestration
+    - [ ] stop-slop skill
+    - [ ] office skills
+      - [ ] pdf skills
+      - [ ] docx skills
+      - [ ] xlsx skills
+      - [ ] pptx skills
+    - [ ] reddit search skill

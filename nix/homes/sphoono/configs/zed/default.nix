@@ -1,4 +1,6 @@
 {
+  stylix.targets.zed.enable = false;
+
   imports = [
     ./settings.nix
     ./extensions.nix
@@ -6,6 +8,5 @@
 
   userapps.development.editors.zed.secrets = [
     "api/OPENCODE_API_KEY"
-    "api/OPENROUTER_API_KEY"
   ];
 }

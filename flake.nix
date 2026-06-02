@@ -78,7 +78,10 @@
 
     stylix = {
       url = "github:nix-community/stylix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        nur.follows = "nur";
+      };
     };
 
     hyprland = {
@@ -297,7 +300,13 @@
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
-            inherit (config) pre-commit agenix-shell githubActions mcp-servers;
+            inherit
+              (config)
+              pre-commit
+              agenix-shell
+              githubActions
+              mcp-servers
+              ;
           };
         };
       };

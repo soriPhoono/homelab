@@ -1,11 +1,9 @@
 {
   imports = [
-    ./agentics
-    ./helix
-    ./hypr
-    ./opencode
     ./pi
+    ./helix
     ./zed
     ./zen
+    ./hypr
   ];
 }

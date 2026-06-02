@@ -30,11 +30,9 @@
         attrs
       );
   in
-    lib.flatten (lib.mapAttrsToList (
-        _: srv:
-          extractSecretNames (srv.env or {} // srv.headers or {})
-      )
-      agentsCfg.mcp);
+    lib.flatten (
+      lib.mapAttrsToList (_: srv: extractSecretNames (srv.env or {} // srv.headers or {})) agentsCfg.mcp
+    );
 
   allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
 in

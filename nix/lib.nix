@@ -1,4 +1,5 @@
-_final: prev: {
+final: prev:
+with prev; {
   homelab = {
     core = {
       discover = dir:
@@ -16,17 +17,127 @@ _final: prev: {
         );
     };
 
-    types = with prev;
-    with types; {
+    agentics = {
+      mkAgent = {
+        name,
+        extraOptions ? {},
+      }:
+        {
+          enable = mkEnableOption "Enable the ${name} coding agent.";
+
+          package = mkOption {
+            inherit default;
+
+            type = with types; package;
+            description = "Package providing the ${name} agent.";
+          };
+
+          secrets = mkOption {
+            type = with types; listOf str;
+            default = [];
+            description = "List of secrets to inject into the ${name} agent.";
+          };
+
+          userSettings = mkOption {
+            type = with types;
+              attrsOf (oneOf [
+                # NOTE: Can grow as needed
+                str
+                int
+                bool
+              ]);
+            default = {};
+            description = "";
+          };
+
+          context = {
+            system = mkOption {
+              type = with types;
+                oneOf [
+                  str
+                  path
+                ];
+              description = ''
+                The general AGENTS.md content for the ${name} agent. This provides the agent with
+                foundational context, instructions, and guidelines that define its purpose,
+                behavior, and operational rules.
+              '';
+            };
+            user = mkOption {
+              type = with types;
+                oneOf [
+                  str
+                  path
+                ];
+              description = ''
+                The general AGENTS.md content for the ${name} agent.
+                This provides the agent with user-specific context, such as preferences,
+                project details, or other relevant information that can help the agent
+                better understand and serve the user's needs.
+              '';
+            };
+          };
+
+          skills = mkOption {
+            type = with types;
+              attrsOf (oneOf [
+                package
+                path
+                str
+              ]);
+            default = {};
+            description = ''
+              The skills to use for the ${name} agent.
+            '';
+          };
+
+          mcpServers = {
+            stdio = mkOption {
+              type = with types; attrsOf final.homelab.types.ai.stdioMcpServer;
+              default = {};
+              description = ''
+                The MCP servers to use for the ${name} agent that are backed by stdio communication.
+              '';
+            };
+            http = mkOption {
+              type = with types; attrsOf final.types.ai.httpMcpServer;
+              default = {};
+              description = ''
+                The MCP servers to use for the ${name} agent that are backed by HTTP communication.
+                Will be processed down to mcp-proxy configuration scripts.
+              '';
+            };
+          };
+
+          commands = mkOption {
+            type = with types; attrsOf str;
+            default = {};
+            description = ''
+              The commands to use for the ${name} agent.
+            '';
+          };
+
+          subagents = mkOption {
+            type = with types;
+              oneOf [
+                (attrsOf (oneOf [
+                  str
+                  path
+                ]))
+                path
+              ];
+            default = {};
+            description = ''
+              The subagents to use for the ${name} agent.
+            '';
+          };
+        }
+        // extraOptions;
+    };
+
+    types = with types; {
       ai = rec {
-        /**
-        Editors will load the secret as a sops placeholder in template
-        settings files, and the environmentVariable will be used by cli agents
-        to read in environment variables baked in via sops, until a better solution
-        can be found for editors to use the same mechanic as opposed to hardcoding
-        secrets at rest in MCP config files.
-        */
-        envType = oneOf [
+        env = oneOf [
           (submodule (sub: {
             options = {
               secret = mkOption {
@@ -35,8 +146,8 @@ _final: prev: {
                 description = "Sops secret name to load.";
                 example = "api/OPENROUTER_API_KEY";
               };
-              environmentVariable = mkOption {
-                type = with types; nullOr str;
+              name = mkOption {
+                type = with types; str;
                 default =
                   if sub.config.secret != null
                   then "${baseNameOf sub.config.secret}"
@@ -44,68 +155,77 @@ _final: prev: {
                 description = "Environment variable name to set.";
                 example = "OPENROUTER_API_KEY";
               };
-              prefix = mkOption {
-                type = with types; nullOr str;
-                default = null;
-                description = "Prefix to add to the secret value.";
-                example = "Bearer ";
-              };
-              suffix = mkOption {
-                type = with types; nullOr str;
-                default = null;
-                description = "Suffix to add to the secret value.";
-                example = "token";
-              };
             };
           }))
           str
         ];
 
-        mcpServerSet = attrsOf (
-          submodule (_: {
+        stdioMcpServer = submodule {
+          options = {
+            command = mkOption {
+              type = with types; str;
+              description = "Executable path for stdio-backed MCP server.";
+            };
+            args = mkOption {
+              type = with types; listOf str;
+              default = [];
+              description = "Arguments for stdio-backed MCP server.";
+            };
+            env = mkOption {
+              type = with types; attrsOf envType;
+              default = {};
+              description = "Environment variables passed to stdio-backed MCP server.";
+            };
+          };
+        };
+
+        header = oneOf [
+          (submodule (sub: {
             options = {
-              transport = mkOption {
-                type = with types;
-                  enum [
-                    "stdio"
-                    "http"
-                    "sse"
-                  ];
-                default = "http";
-                description = "Transport protocol for the MCP server.";
-              };
-
-              # Stdio server options
-              command = mkOption {
-                type = with types; nullOr str;
+              secret = mkOption {
+                type = with types; str;
                 default = null;
-                description = "Executable path for stdio-backed MCP servers.";
+                description = "Sops secret name to load.";
+                example = "api/OPENROUTER_API_KEY";
               };
-              args = mkOption {
-                type = with types; listOf str;
-                default = [];
-                description = "Arguments for stdio-backed MCP servers.";
+              name = mkOption {
+                type = with types; str;
+                default =
+                  if sub.config.secret != null
+                  then "${baseNameOf sub.config.secret}"
+                  else null;
+                description = "Header name to set.";
+                example = "OPENROUTER_API_KEY";
               };
-              env = mkOption {
-                type = with types; attrsOf envType;
-                default = {};
-                description = "Environment variables passed to stdio-backed MCP servers.";
+              prefix = mkOption {
+                type = with types; str;
+                default = "";
+                description = "Prefix to prepend to the header value (e.g. 'Bearer ').";
+                example = "Bearer ";
               };
-
-              # HTTP server options
-              url = mkOption {
-                type = with types; nullOr str;
-                default = null;
-                description = "Endpoint URL for remote MCP servers.";
-              };
-              headers = mkOption {
-                type = with types; attrsOf envType;
-                default = {};
-                description = "Headers sent to remote MCP servers.";
+              suffix = mkOption {
+                type = with types; str;
+                default = "";
+                description = "Suffix to append to the header value.";
+                example = "";
               };
             };
-          })
-        );
+          }))
+        ];
+
+        httpMcpServer = submodule {
+          options = {
+            url = mkOption {
+              type = with types; str;
+              description = "Endpoint URL for remote MCP server.";
+            };
+            headers = mkOption {
+              type = with types; attrsOf header;
+              default = {};
+              description = "Headers sent to remote MCP server.";
+            };
+          };
+        };
       };
     };
   };

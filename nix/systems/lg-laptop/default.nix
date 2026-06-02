@@ -74,7 +74,6 @@ with lib; {
   };
 
   hosting = {
-    homepage.enable = true;
     media.enable = true;
     proxy.dns = {
       baseDomain = "cryptic-coders.net";

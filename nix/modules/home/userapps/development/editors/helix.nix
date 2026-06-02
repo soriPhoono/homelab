@@ -41,7 +41,13 @@ in
       };
 
       themes = mkOption {
-        type = types.attrsOf (types.oneOf [types.attrs types.path types.str]);
+        type = types.attrsOf (
+          types.oneOf [
+            types.attrs
+            types.path
+            types.str
+          ]
+        );
         default = {};
         description = "Helix themes to install.";
       };
@@ -60,7 +66,15 @@ in
 
           package = mkIf (cfg.package != null) cfg.package;
 
-          inherit (cfg) extraPackages defaultEditor settings languages themes ignores;
+          inherit
+            (cfg)
+            extraPackages
+            defaultEditor
+            settings
+            languages
+            themes
+            ignores
+            ;
         };
       }
 

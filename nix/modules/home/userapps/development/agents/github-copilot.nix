@@ -1,3 +1,4 @@
+# TODO: test this file
 {
   lib,
   pkgs,
@@ -28,11 +29,9 @@
         attrs
       );
   in
-    lib.flatten (lib.mapAttrsToList (
-        _: srv:
-          extractSecretNames (srv.env or {} // srv.headers or {})
-      )
-      agentsCfg.mcp);
+    lib.flatten (
+      lib.mapAttrsToList (_: srv: extractSecretNames (srv.env or {} // srv.headers or {})) agentsCfg.mcp
+    );
 
   allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
 
@@ -42,10 +41,7 @@
   # exports them via makeWrapper).  The wrapper is then registered as a local
   # MCP server, identical to the opencode mcp-proxy approach.
   translateMcpServer = name: mcpServer: let
-    hasAnySecret = attrs:
-      lib.any (v: builtins.isAttrs v && v ? "secret") (
-        lib.attrValues attrs
-      );
+    hasAnySecret = attrs: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues attrs);
 
     hasEnvSecrets = hasAnySecret (mcpServer.env or {});
     hasHeaderSecrets = hasAnySecret (mcpServer.headers or {});
@@ -64,7 +60,7 @@
           then value.suffix
           else ""
         }''
-      else ''${lib.escapeShellArg value}'';
+      else "${lib.escapeShellArg value}";
   in
     if (mcpServer.transport == "stdio")
     then
@@ -79,9 +75,7 @@
               else "export ${envName}=${lib.escapeShellArg value}"
           ) (mcpServer.env or {})
         );
-        argsStr = lib.concatStringsSep " " (
-          map lib.escapeShellArg (mcpServer.args or [])
-        );
+        argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (mcpServer.args or []));
         wrapper = pkgs.writeShellScriptBin wrapperName ''
           ${envExports}
           exec ${lib.escapeShellArg mcpServer.command} ${argsStr}
@@ -96,12 +90,12 @@
         type = "local";
         inherit (mcpServer) command;
         args = mcpServer.args or [];
-        env = lib.mapAttrs (
-          _: v:
-            if builtins.isAttrs v
-            then v.environmentVariable
-            else v
-        ) (mcpServer.env or {});
+        env = lib.mapAttrs (_: v:
+          if builtins.isAttrs v
+          then v.environmentVariable
+          else v) (
+          mcpServer.env or {}
+        );
         tools = ["*"];
       }
     else if (mcpServer.transport == "http" || mcpServer.transport == "sse")
@@ -188,8 +182,7 @@ in
         warnings =
           optionals (!(options ? sops) && cfg.secrets != [])
           "Failed to install github-copilot-cli as it was requested with secrets embedment, which requires sops, which is currently disabled"
-          ++ optionals (agentsCfg.commands.registry != {})
-          ''
+          ++ optionals (agentsCfg.commands.registry != {}) ''
             userapps.development.agents.github-copilot: commands are defined in
             `agentics.agents.commands.registry` but GitHub Copilot CLI does not
             support custom slash commands.  These commands will not be available
@@ -223,12 +216,7 @@ in
           # Read the content so the github-copilot-cli HM module can write it
           # to ~/.copilot/skills/<name>/SKILL.md (its .text field expects a
           # string, not a package).
-          skills =
-            mapAttrs (
-              _name: pkg:
-                builtins.readFile "${pkg}/SKILL.md"
-            )
-            agentsCfg.skills;
+          skills = mapAttrs (_name: pkg: builtins.readFile "${pkg}/SKILL.md") agentsCfg.skills;
 
           inherit (cfg) settings;
         };
