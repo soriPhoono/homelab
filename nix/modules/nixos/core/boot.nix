@@ -79,7 +79,7 @@ in
               # Windows
               "ntfs"
               # Apple
-              # "apfs"
+              "apfs"
             ];
 
             loader = {

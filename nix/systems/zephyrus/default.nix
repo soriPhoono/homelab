@@ -157,17 +157,16 @@ with lib; {
     tools = {
       partition-manager.enable = true;
       virtualbox.enable = true;
-      docker.enable = true;
     };
   };
 
   hosting = {
-    homepage.enable = true;
     media.enable = true;
     proxy.dns = {
       baseDomain = "cryptic-coders.net";
       email = "soriphoono@gmail.com";
     };
+    platforms.docker.enable = true;
   };
 
   themes = {

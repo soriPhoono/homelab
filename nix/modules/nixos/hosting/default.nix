@@ -1,7 +1,7 @@
 {
   imports = [
-    ./proxy
     ./media
-    ./homepage.nix
+    ./platforms
+    ./proxy
   ];
 }

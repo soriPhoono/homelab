@@ -46,29 +46,74 @@
   # Translate agentics MCP server config to standard MCP config format
   # (compatible with pi-mcp-extension and omp's built-in MCP).
   mcpServerConfig = let
+    hasAnySecret = attrs: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues attrs);
+
     renderEnvValue = value:
       if value ? "secret"
-      then "$" + value.environmentVariable
+      then
+        "$"
+        + (
+          if value.environmentVariable or null != null
+          then value.environmentVariable
+          else baseNameOf value.secret
+        )
       else value;
 
-    renderServer = _name: srv:
-      {
-        inherit (srv) transport;
+    renderHeaderValue = value:
+      if value ? "secret"
+      then
+        (
+          if value.prefix or null != null
+          then value.prefix
+          else ""
+        )
+        + "$"
+        + (
+          if value.environmentVariable or null != null
+          then value.environmentVariable
+          else baseNameOf value.secret
+        )
+      else value;
+    renderServer = name: srv:
+      if srv.transport == "http" && hasAnySecret (srv.headers or {})
+      then let
+        wrapperName = "${flavorBinName}-mcp-proxy-${name}";
+        headerFlags = lib.concatStringsSep " \\\n        " (
+          lib.mapAttrsToList (
+            hname: val:
+              if val ? "secret"
+              then "--headers '${hname}' \"${renderHeaderValue val}\""
+              else "--headers '${hname}' '${val}'"
+          ) (srv.headers or {})
+        );
+        wrapper = pkgs.writeShellScriptBin wrapperName ''
+          exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
+            --transport streamablehttp \
+            ${headerFlags} \
+            '${srv.url}'
+        '';
+      in {
+        command = "${wrapper}/bin/${wrapperName}";
+        args = [];
         lifecycle = "eager";
+        transport = "stdio";
       }
-      // (
-        if srv.transport == "stdio"
-        then {
-          inherit (srv) command;
-          args = srv.args or [];
+      else
+        {
+          inherit (srv) transport;
+          lifecycle = "eager";
         }
-        else {
-          inherit (srv) url;
-        }
-      )
-      // (lib.optionalAttrs (srv.env or {} != {}) {
-        env = lib.mapAttrs (_: renderEnvValue) srv.env;
-      });
+        // (
+          if srv.transport == "stdio"
+          then {
+            inherit (srv) command;
+            args = srv.args or [];
+          }
+          else {inherit (srv) url;}
+        )
+        // (lib.optionalAttrs (srv.env or {} != {}) {
+          env = lib.mapAttrs (_: renderEnvValue) srv.env;
+        });
   in {
     mcpServers = builtins.mapAttrs renderServer agentsCfg.mcp;
   };
