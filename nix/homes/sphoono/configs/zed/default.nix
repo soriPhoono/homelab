@@ -1,6 +1,4 @@
 {
-  stylix.targets.zed.enable = false;
-
   imports = [
     ./settings.nix
     ./extensions.nix

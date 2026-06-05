@@ -20,16 +20,16 @@ with prev; {
     agentics = {
       mkAgent = {
         name,
+        package,
         extraOptions ? {},
       }:
         {
           enable = mkEnableOption "Enable the ${name} coding agent.";
 
           package = mkOption {
-            inherit default;
-
-            type = with types; package;
+            type = types.package;
             description = "Package providing the ${name} agent.";
+            default = package;
           };
 
           secrets = mkOption {
@@ -50,44 +50,26 @@ with prev; {
             description = "";
           };
 
-          context = {
-            system = mkOption {
-              type = with types;
-                oneOf [
-                  str
-                  path
-                ];
-              description = ''
-                The general AGENTS.md content for the ${name} agent. This provides the agent with
-                foundational context, instructions, and guidelines that define its purpose,
-                behavior, and operational rules.
-              '';
-            };
-            user = mkOption {
-              type = with types;
-                oneOf [
-                  str
-                  path
-                ];
-              description = ''
-                The general AGENTS.md content for the ${name} agent.
-                This provides the agent with user-specific context, such as preferences,
-                project details, or other relevant information that can help the agent
-                better understand and serve the user's needs.
-              '';
-            };
+          context = mkOption {
+            type = with types;
+              oneOf [
+                str
+                path
+              ];
+            description = ''
+              The general AGENTS.md content for the ${name} agent.
+              This provides the agent with user-specific context, such as preferences,
+              project details, or other relevant information that can help the agent
+              better understand and serve the user's needs.
+            '';
           };
 
           skills = mkOption {
-            type = with types;
-              attrsOf (oneOf [
-                package
-                path
-                str
-              ]);
+            type = with types; attrsOf types.package;
             default = {};
             description = ''
-              The skills to use for the ${name} agent.
+              The packages to symlink into the skills directory for the ${name} agent.
+              Each package should contain a SKILL.md at its root.
             '';
           };
 
@@ -100,7 +82,7 @@ with prev; {
               '';
             };
             http = mkOption {
-              type = with types; attrsOf final.types.ai.httpMcpServer;
+              type = with types; attrsOf final.homelab.types.ai.httpMcpServer;
               default = {};
               description = ''
                 The MCP servers to use for the ${name} agent that are backed by HTTP communication.
@@ -172,7 +154,7 @@ with prev; {
               description = "Arguments for stdio-backed MCP server.";
             };
             env = mkOption {
-              type = with types; attrsOf envType;
+              type = with types; attrsOf env;
               default = {};
               description = "Environment variables passed to stdio-backed MCP server.";
             };

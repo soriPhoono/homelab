@@ -57,7 +57,7 @@ with lib; {
         - VirtualBox enabled
         - Partition manager enabled
     '';
-    stateVersion = "26.05";
+    stateVersion = "26.11";
     timeZone = "America/Chicago";
     nixconf.determinate.enable = true;
 

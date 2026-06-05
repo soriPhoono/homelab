@@ -1,67 +1,109 @@
 # AGENTS.md
 
-High-signal context for AI agents working in this Nix-based homelab repository ("The Data Fortress").
+## Project Overview
 
-> [!TIP]
-> For a detailed guide on agent skills, repository structure, and operational mandates, see [**`.agents/AGENTS.md`**](.agents/AGENTS.md).
+NixOS homelab using flakes with dynamic discovery. Infrastructure-as-code. Host configs in `nix/systems/`, user configs in `nix/homes/`, reusable modules in `nix/modules/`.
 
-## Important Commands & Workflows
+## Setup Commands
 
-- **Dev Shell is Mandatory:** Always run `direnv allow` or enter `nix develop`. This automatically evaluates `actions.nix` and regenerates `.github/workflows/`.
-- **Do not edit `.github/workflows/*.yml` manually.** Edit `actions.nix`, then enter the dev shell to regenerate workflows.
-- **Formatting:** Run `nix fmt`. Do not run individual formatters (it uses `treefmt` under the hood for Nix, YAML, and Markdown).
-- **Validation:** Always run `nix flake check` before committing. Pre-commit hooks are also enabled in the dev shell.
-- **Deployment:** Use `nh os switch .` (for NixOS) or `nh home switch .` (for standalone Home Manager).
-  - **⚠ Critical:** Never deploy a standalone home config (`nh home switch .#sphoono`) on this system — `sphoono` is system-integrated via `nix/homes/sphoono@zephyrus` and deployed as part of `nh os switch .`. Doing so creates a conflicting parallel generation.
+- Enter dev shell: `direnv allow` or `nix develop`. Evaluates `actions.nix` and regenerates `.github/workflows/`.
+- Format: `nix fmt` (treefmt for Nix, YAML, Markdown).
+- Validate: `nix flake check` (treefmt + pre-commit hooks).
+- Deploy NixOS: `nh os switch .`
+- Deploy standalone home: `nh home switch .#<config>`
 
-## Architecture & Discovery Quirks
+## Critical Rules
 
-This repo relies heavily on dynamic discovery (`nix/lib/discover`). You rarely need to manually add files to an `imports` list.
+- **Never deploy `nh home switch .#sphoono` on `zephyrus`.** Sphoono is system-integrated via `nix/homes/sphoono@zephyrus`. It deploys as part of `nh os switch .`. Standalone deployment creates conflicting parallel generations.
+- **Never edit `.github/workflows/*.yml` by hand.** Edit `actions.nix`, then enter the dev shell to regenerate workflows.
 
-- **Modules:** Any directory in `nix/modules/nixos/` or `nix/modules/home/` with a `default.nix` (or any standalone `.nix` file) is automatically imported.
-- **Custom Packages:** Files or directories in `nix/pkgs/` are automatically exported as flake `packages`.
-- **NixOS Systems:** Directories in `nix/systems/<hostname>` with a `default.nix` are automatically exported as `nixosConfigurations`.
-- **Home Manager Quirks (VERY IMPORTANT):**
-  - **Standalone Homes:** Directories like `nix/homes/user` or `nix/homes/user@hostname` (where `hostname` does **not** exist in `nix/systems/`) are exported as standalone `homeConfigurations`.
-  - **System-integrated Homes:** Directories like `nix/homes/user@hostname` (where `hostname` **exists** in `nix/systems/`) are **NOT** standalone. They are automatically imported by the NixOS configuration via the `core.users` module (`nix/modules/nixos/core/users.nix`).
-  - **Never deploy a standalone home config on this system.** Running `nh home switch .#sphoono` on `zephyrus` creates a conflicting parallel generation because `sphoono` is already deployed as part of the NixOS config (`nix/homes/sphoono@zephyrus`). Use `nh home switch` only for truly standalone configs (e.g., on non-NixOS systems).
-  - When adding a user to a NixOS system, add them to `core.users` in the system config, and create the corresponding `nix/homes/user` and/or `nix/homes/user@hostname` folders. The system will auto-import them.
+## Architecture
+
+### Dynamic Discovery
+
+`nix/lib/discover` auto-imports modules. You rarely add files to `imports` lists.
+
+- **Modules.** Any `.nix` file or `default.nix` directory under `nix/modules/nixos/` or `nix/modules/home/` is auto-imported.
+- **Packages.** Files in `nix/pkgs/` become flake `packages`.
+- **NixOS systems.** Directories in `nix/systems/<hostname>/` with `default.nix` become `nixosConfigurations`.
+- **Home configs.** Directories in `nix/homes/` are auto-discovered.
+
+### Home Manager
+
+- **Standalone.** `nix/homes/user` or `nix/homes/user@hostname` where `hostname` does not exist in `nix/systems/`. Deploy with `nh home switch .#<name>`.
+- **System-integrated.** `nix/homes/user@hostname` where `hostname` exists in `nix/systems/`. Not standalone. Auto-imported via `core.users` module (`nix/modules/nixos/core/users.nix`). Deploys as part of `nh os switch .`.
+- **Adding a user.** Add them to `core.users` in the system config. Create `nix/homes/user` and/or `nix/homes/user@hostname` folders. The system auto-imports.
+
+### Directory Layout
+
+```
+nix/
+  systems/<hostname>/   Host configs (default.nix + disko.nix)
+  homes/user@hostname/  Per-host user overrides
+  homes/user/           Base user configs
+  modules/nixos/        System-level modules
+  modules/home/         Home Manager modules
+  overlays/             Package overrides
+  lib.nix               Custom library (includes discover)
+  pkgs/                 Custom packages
+.agents/                Agent skills and configuration
+docs/                   Project documentation
+```
+
+### Context Tiers
+
+Keep guidance in the correct scope.
+
+- **System context.** Host, hardware, OS, platform details. Belongs in NixOS config (`userapps.development.agents.context.system`).
+- **User context.** Operator identity, workflow preferences, aliases, personal tooling. Belongs in NixOS config (`userapps.development.agents.context.user`).
+- **Project context.** Repository workflows, conventions, agent guidance. Belongs in this file and `.agents/`.
 
 ## Hardware & Disk
 
-- **Disko:** Declarative disk partitioning is defined in `nix/systems/<hostname>/disko.nix`.
-- **Hardware constraints:** We use `nixos-facter` for hardware support. To add a new system, run `nixos-facter > facter.json` to generate the facts, then set `reportPath = ./facter.json;` in the system's `default.nix`.
+- Disko manages partitions declaratively in `nix/systems/<hostname>/disko.nix`.
+- Hardware facts use `nixos-facter`. To add a system: run `nixos-facter > facter.json`, set `reportPath = ./facter.json;` in its `default.nix`.
 
 ## Secrets
 
-- **System/User Secrets:** Managed via `sops-nix`. Keys are typically host SSH keys. Encrypted files must match the rules in `.sops.yaml`.
-- **Dev Shell Secrets:** Managed via `agenix` and `agenix-shell` (configured in `secrets.nix`). Decrypted automatically in the `nix develop` shell if the required identity key is present.
+- System/user secrets use `sops-nix`. Keys are host SSH keys. Encrypted files must match `.sops.yaml` rules.
+- Dev shell secrets use `agenix` + `agenix-shell` (configured in `secrets.nix`). They decrypt automatically in `nix develop` if the identity key is present.
+- Never read or print `.yml`/`.yaml` files in `secrets/` or `homes/` without explicit instruction.
 
-## Cursor Cloud specific instructions
+## Validation
 
-This is a Nix flake-based infrastructure-as-code repository. There is no traditional application to "run" — validation means the flake evaluates and builds correctly.
+- Run `nix flake check` before committing.
+- Pre-commit hooks run automatically in the dev shell.
+- List NixOS hosts: `nix eval .#nixosConfigurations --apply builtins.attrNames`
+- List standalone homes: `nix eval .#homeConfigurations --apply builtins.attrNames`
+- Dry-run a home build: `nix build .#homeConfigurations.<name>.activationPackage --dry-run`
+- Evaluate a host config: `nix eval .#nixosConfigurations.<host>.config.networking.hostName`
 
-### Environment startup
+## Cloud Environment (Cursor)
 
-The update script handles installing Nix (Determinate installer) and direnv if not already present, starting `nix-daemon`, and sourcing the Nix profile. After the update script completes, the dev shell is ready via `nix develop` or `direnv allow`.
+### Startup
 
-### Key commands
-
-See the "Important Commands & Workflows" section above. The essential commands are:
-
-- `nix develop` — enter the dev shell (installs pre-commit hooks, provides `alejandra`, `nixd`, `sops`, `kubectl`, etc.)
-- `nix fmt` — format all Nix, YAML, and Markdown files via treefmt
-- `nix flake check` — run all validation checks (treefmt + pre-commit)
-- `nix eval .#nixosConfigurations --apply builtins.attrNames` — list NixOS hosts
-- `nix eval .#homeConfigurations --apply builtins.attrNames` — list standalone Home Manager configs
-- `nix build .#homeConfigurations.<name>.activationPackage --dry-run` — dry-run build a home config
-- `nix eval .#nixosConfigurations.<host>.config.networking.hostName` — evaluate a NixOS config
+The update script installs Nix (Determinate installer) and direnv, starts `nix-daemon`, and sources the Nix profile. After that, the dev shell is ready via `nix develop` or `direnv allow`.
 
 ### Gotchas
 
-- The `nix-daemon` must be running for multi-user Nix operations. The update script starts it automatically, but if builds fail with "cannot connect to socket", run `nix-daemon &>/dev/null &`.
-- The `[agenix] WARNING: no readable identities found!` warning in the dev shell is expected — the cloud VM has no SSH keys for decrypting secrets. This does not block evaluation or builds.
-- `nix fmt` may reformat YAML files in `k3s/`. If your task does not involve those files, revert formatting-only changes with `git checkout -- k3s/`.
-- Warnings about `eval-cores` and `lazy-trees` unknown settings are harmless and can be ignored.
-- Current configs: NixOS hosts are `zephyrus` and `lg-laptop`; standalone Home Manager configs are `sphoono` and `spookyskelly`.
-- **⚠ Critical:** `sphoono` is system-integrated on `zephyrus` (`nix/homes/sphoono@zephyrus`). Never run `nh home switch .#sphoono` on this machine — deploy everything via `nh os switch .` instead.
+- `nix-daemon` must run for multi-user operations. If builds fail with "cannot connect to socket", run `nix-daemon &>/dev/null &`.
+- `[agenix] WARNING: no readable identities found!` is expected in cloud VMs. It does not block evaluation or builds.
+- `nix fmt` may reformat YAML in `k3s/`. Revert unrelated changes with `git checkout -- k3s/`.
+- Warnings about `eval-cores` and `lazy-trees` are harmless.
+- Current NixOS hosts: `zephyrus`, `lg-laptop`. Standalone homes: `sphoono`, `spookyskelly`.
+
+## Agent Skills
+
+Skills live in `.agents/skills/`. Use them for domain-specific guidance.
+
+- `nixos-best-practices` -- mandatory for structural NixOS or Home Manager changes
+- `nix-evaluator` -- run as final check after Nix code modifications
+- `find-skills` -- discover available skills
+- `skill-creator` -- create new skills
+
+## Operational Guidelines
+
+- Prefer surgical edits to existing modules. Create new modules only for new feature sets.
+- Commit style: concise, why-focused. Follow the pattern in `git log`.
+- Use `nix-evaluator` skill to verify Nix syntax and basic evaluation after changes.
+- For system changes, tell the user to run `nh os switch .` or `nh home switch .`.

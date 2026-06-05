@@ -12,3 +12,7 @@
       - [ ] xlsx skills
       - [ ] pptx skills
     - [ ] reddit search skill
+- [ ] Bifrucate noctalia shell configuration from core to home
+  - [ ] Move shell configuration to home
+  - [ ] Create a nix module option for shell configuration
+  - [ ] Update noctalia configuration to use new shell configuration

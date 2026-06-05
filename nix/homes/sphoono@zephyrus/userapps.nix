@@ -26,7 +26,7 @@ _: {
         slack.enable = true;
       };
       virtualization = {
-        distrobox.enable = true;
+        # distrobox.enable = true;
         # bottles.enable = true;
       };
     };
@@ -35,18 +35,18 @@ _: {
       terminal.ghostty.enable = true;
       agents.pi.enable = true;
       editors.zed.enable = true;
-      appliances.bambu-studio.enable = true;
+      # appliances.bambu-studio.enable = true;
     };
     data-fortress = {
-      cloud.nextcloud.enable = true;
-      auth.bitwarden.enable = true;
+      # cloud.nextcloud.enable = true;
+      # auth.bitwarden.enable = true;
       notes.obsidian.enable = true;
       p2p.qbittorrent.enable = true;
     };
     content-creation = {
       asset-creation = {
         gimp.enable = true;
-        blender.enable = true;
+        # blender.enable = true;
       };
       streaming.obs-studio.enable = true;
       editors = {

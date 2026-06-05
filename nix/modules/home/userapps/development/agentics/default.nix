@@ -1,7 +1,0 @@
-{
-  imports = [
-    ./context.nix
-
-    ./agents
-  ];
-}

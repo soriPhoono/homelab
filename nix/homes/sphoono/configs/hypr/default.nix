@@ -1,9 +1,6 @@
 {
-  inputs,
   lib,
-  pkgs,
   config,
-  nixosConfig ? null,
   ...
 }: let
   framework = config.desktop;
@@ -24,10 +21,6 @@ in
         window-managers = {
           enable = true;
           hyprland.enable = true;
-          hyprland = {
-            package = mkIf (nixosConfig != null) (mkDefault inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland);
-            portalPackage = mkIf (nixosConfig != null) (mkDefault inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland);
-          };
         };
       };
     };

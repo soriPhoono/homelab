@@ -1,15 +1,10 @@
 {
-  inputs,
   lib,
   pkgs,
   config,
   ...
 }: let
   cfg = config.desktop.environments.managers.hyprland;
-
-  # Resolve Hyprland packages from flake input
-  hyprlandPkg = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-  hyprlandPortalPkg = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
 in
   with lib; {
     options.desktop.environments.managers.hyprland = {
@@ -48,8 +43,6 @@ in
         hyprland = {
           enable = true;
           withUWSM = true;
-          package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-          portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
         };
       };
 
@@ -68,20 +61,21 @@ in
       home-manager.users =
         builtins.mapAttrs (_: _: {
           imports = [
-            ({
-              config,
-              nixosConfig,
-              ...
-            }: {
-              xdg.configFile."uwsm/env".source = mkIf nixosConfig.programs.uwsm.enable "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
-            })
+            (
+              {
+                config,
+                nixosConfig,
+                ...
+              }: {
+                xdg.configFile."uwsm/env".source =
+                  mkIf nixosConfig.programs.uwsm.enable "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
+              }
+            )
           ];
 
           # Activate the desktop framework: core → WM base → Hyprland
           desktop.window-managers.hyprland = {
             enable = true;
-            package = hyprlandPkg;
-            portalPackage = hyprlandPortalPkg;
           };
 
           home.sessionVariables = {

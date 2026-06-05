@@ -4,19 +4,8 @@
   inputs = {
     systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1.998534";
-
-    templates = {
-      url = "github:soriPhoono/templates";
-      inputs = {
-        systems.follows = "systems";
-        nixpkgs.follows = "nixpkgs";
-        flake-parts.follows = "flake-parts";
-        agenix-shell.follows = "agenix-shell";
-        git-hooks-nix.follows = "git-hooks-nix";
-        treefmt-nix.follows = "treefmt-nix";
-      };
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    templates.url = "github:soriPhoono/templates";
 
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
@@ -35,10 +24,6 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    mcp-servers-nix = {
-      url = "github:natsukium/mcp-servers-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     github-actions-nix = {
       url = "github:synapdeck/github-actions-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -48,8 +33,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
 
     disko = {
       url = "github:nix-community/disko";
@@ -78,14 +61,6 @@
 
     stylix = {
       url = "github:nix-community/stylix";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        nur.follows = "nur";
-      };
-    };
-
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -96,10 +71,7 @@
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        home-manager.follows = "home-manager";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nur = {
@@ -107,14 +79,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-skills = {
-      url = "github:sudosubin/nix-skills";
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    skills = {
-      url = "github:soriPhoono/skills";
-      flake = false;
+    nix-skills = {
+      url = "github:sudosubin/nix-skills";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -140,7 +112,12 @@
       system: let
         basePkgs = import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
+          config = {
+            allowUnfree = true;
+            permittedInsecurePackages = [
+              "electron-39.8.10"
+            ];
+          };
           overlays = builtins.attrValues (
             import ./nix/overlays {inherit inputs lib;}
             // {
@@ -163,7 +140,6 @@
 
     nixosModules = with inputs; [
       self.nixosModules.default
-      nixos-facter-modules.nixosModules.facter
       disko.nixosModules.disko
       determinate.nixosModules.default
       comin.nixosModules.comin
@@ -171,8 +147,8 @@
       stylix.nixosModules.stylix
       jovian.nixosModules.default
       nix-index-database.nixosModules.nix-index
+      hermes-agent.nixosModules.default
       home-manager.nixosModules.home-manager
-      hyprland.nixosModules.default
     ];
 
     # Standalone Home Manager Builder
@@ -256,7 +232,6 @@
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
-        mcp-servers-nix.flakeModule
         github-actions-nix.flakeModule
       ];
 
@@ -294,7 +269,6 @@
         githubActions = import ./actions.nix {inherit self lib;};
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
-        mcp-servers = import ./mcp.nix {inherit lib pkgs;};
 
         # --- Development Shells & Checks --- #
         devShells.default = import ./shell.nix {
@@ -305,7 +279,6 @@
               pre-commit
               agenix-shell
               githubActions
-              mcp-servers
               ;
           };
         };

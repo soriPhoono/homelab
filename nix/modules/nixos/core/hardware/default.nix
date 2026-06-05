@@ -1,7 +1,6 @@
 {
   lib,
   config,
-  options,
   ...
 }: let
   cfg = config.core.hardware;
@@ -27,12 +26,12 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        hardware.enableAllFirmware = true;
-      }
-      (optionalAttrs (options ? facter) {
-        facter = {
-          report = builtins.fromJSON (builtins.readFile cfg.reportPath);
+        hardware = {
+          enableAllFirmware = true;
+          facter = {
+            inherit (cfg) reportPath;
+          };
         };
-      })
+      }
     ]);
   }
