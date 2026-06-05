@@ -27,6 +27,19 @@ jobs:
           use-flakehub: false
       - name: Build
         run: nix build .#homeConfigurations.spookyskelly.activationPackage
+  build-nixos-ares:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+        with:
+          use-flakehub: false
+      - name: Build
+        run: nix build .#nixosConfigurations.ares.config.system.build.toplevel
   build-nixos-lg-laptop:
     runs-on: ubuntu-24.04
     steps:
@@ -40,19 +53,6 @@ jobs:
           use-flakehub: false
       - name: Build
         run: nix build .#nixosConfigurations.lg-laptop.config.system.build.toplevel
-  build-nixos-workstation:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
-        with:
-          use-flakehub: false
-      - name: Build
-        run: nix build .#nixosConfigurations.workstation.config.system.build.toplevel
   build-nixos-zephyrus:
     runs-on: ubuntu-24.04
     steps:

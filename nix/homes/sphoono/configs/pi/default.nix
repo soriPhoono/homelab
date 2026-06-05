@@ -1,4 +1,8 @@
-{
+{pkgs, ...}: {
+  imports = [
+    ./mcp.nix
+  ];
+
   userapps.development.agents.pi = {
     userSettings = {
       defaultProvider = "opencode-go";
@@ -6,12 +10,24 @@
       defaultThinkingLevel = "high";
     };
 
-    context = {
-      system = ./SYSTEM.md;
-      user = ./AGENTS.md;
-    };
+    context = ./AGENTS.md;
+
+    secrets = [
+      "api/GITHUB_API_KEY"
+      "api/EXA_API_KEY"
+      "api/CONTEXT7_API_KEY"
+    ];
 
     packages = [
+      "git:git@github.com:soriPhoono/pi-package"
     ];
+
+    skills = {
+      create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
+
+      stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
+
+      git-commit = pkgs.skills.github.awesome-copilot.git-commit;
+    };
   };
 }

@@ -7,7 +7,6 @@
 in
   with lib; {
     imports = [
-      ./agentics
       ./agents
       ./appliances
       ./editors

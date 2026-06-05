@@ -8,41 +8,34 @@
   cfg = config.core.boot;
 in
   with lib; {
+    imports = [
+      ./zram.nix
+      ./plymouth.nix
+    ];
+
     options.core.boot = {
-      enable = lib.mkEnableOption "Enable system boot configuration with systemd-boot and ZRAM swap";
-      secure-boot.enable = lib.mkEnableOption "Enable bootloader hardening features via lanzaboote";
+      enable = lib.mkEnableOption ''
+        Enable system boot configuration with systemd-boot and ZRAM swap
+      '';
+      secure-boot = lib.mkEnableOption ''
+        Enable bootloader hardening features via lanzaboote dependency
+      '';
 
       kernel = {
         packages = lib.mkOption {
           type = lib.types.raw;
           default = pkgs.linuxPackages;
-          description = "Kernel packages to use";
+          description = ''
+            Linux kernel packages to compile against for the system, use to adjust performance or apply patches via overlays.
+          '';
+          example = pkgs.linuxPackages-rt_latest;
         };
         params = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [];
-          description = "Kernel parameters to use";
-        };
-      };
-
-      plymouth = {
-        enable = lib.mkEnableOption "Enable plymouth boot splash screen";
-        theme = mkOption {
-          type = with types;
-            nullOr (submodule {
-              options = {
-                name = mkOption {
-                  type = str;
-                  default = "nixos-bgrt";
-                };
-                package = mkOption {
-                  type = types.package;
-                  default = pkgs.nixos-bgrt-plymouth;
-                };
-              };
-            });
-          default = null;
-          description = "Plymouth theme to use";
+          description = ''
+            Kernel parameters to use to augment system performance
+          '';
         };
       };
     };
@@ -85,20 +78,11 @@ in
             loader = {
               efi.canTouchEfiVariables = true;
               systemd-boot = {
-                enable = lib.mkForce (!cfg.secure-boot.enable);
+                enable = lib.mkForce (!cfg.secure-boot);
                 configurationLimit = 3;
               };
             };
-
-            plymouth = {
-              inherit (cfg.plymouth) enable;
-
-              theme = lib.mkIf (cfg.plymouth.theme != null) (lib.mkForce cfg.plymouth.theme.name);
-              themePackages = lib.mkIf (cfg.plymouth.theme != null) (lib.mkForce [cfg.plymouth.theme.package]);
-            };
           };
-
-          zramSwap.enable = true;
         }
         (lib.optionalAttrs (options ? boot.lanzaboote) {
           # TODO: this needs upgrading and refactoring

@@ -8,7 +8,9 @@
 in
   with lib; {
     options.core.secrets = {
-      enable = mkEnableOption "Enable the core secrets module";
+      enable = mkEnableOption ''
+        Enable the core secrets module
+      '';
 
       defaultSopsFile = mkOption {
         type = with types; nullOr path;
@@ -35,17 +37,15 @@ in
 
           age.sshKeyPaths = map (key: key.path) config.services.openssh.hostKeys;
 
-          secrets =
-            lib.mapAttrs' (username: _: {
-              name = "users/${username}/age_key";
-              value = {
-                path = "/home/${username}/.config/sops/age/keys.txt";
-                mode = "0400";
-                owner = username;
-                group = "users";
-              };
-            })
-            (lib.filterAttrs (_name: user: user.secrets) config.core.users);
+          secrets = lib.mapAttrs' (username: _: {
+            name = "users/${username}/age_key";
+            value = {
+              path = "/home/${username}/.config/sops/age/keys.txt";
+              mode = "0400";
+              owner = username;
+              group = "users";
+            };
+          }) (lib.filterAttrs (_name: user: user.secrets) config.core.users);
         };
       })
     ]);

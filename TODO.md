@@ -1,5 +1,24 @@
+# TODO
+
+These are the tasks that are intended for future development goals
+
+- [ ] For each module
+  - [] Update option descriptions (multiline strings, accurate descriptions, examples where applicable)
+  - [] Each module uses with lib;
+  - [] Each module has slim imports
+  - [] Each module declares as little as possible in the root let in binding
+  - [] Each module has an enable option
+  - [] Each module uses mkMerge EVEN IF IT IS NOT NEEDED
+  - [] Each module guards dependencies (options ? "dependency name") for easy removal
+  - [] Each home manager option from nixos configuration is apropriately set
+  - [] Each home manager feature requiring prerequisite nixos configuration is apropriately guarded or errors
+  - [] EVERY variable read is properly guarded or throws documented errors
+- [ ] Configure hermes agent in some form
+  - [ ] Research if hermes agent supports multi user configuration
+    - [x] if yes create server deployment as this is an always on service
+    - [ ] otherwise rig up podman based user services, work on backup plan
 - [ ] Configure pi coding agent
-  - [ ] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
+  - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
     - [ ] Finish updating mcp server types in [lib](./nix/lib.nix)
   - [ ] Finish installing packages
   - [ ] Create extensions for pi coding agent
@@ -12,3 +31,12 @@
       - [ ] xlsx skills
       - [ ] pptx skills
     - [ ] reddit search skill
+- [ ] Bifrucate noctalia shell configuration from core to home
+  - [ ] Move shell configuration to home
+  - [ ] Create a nix module option for shell configuration
+  - [ ] Update noctalia configuration to use new shell configuration
+- [ ] Create unified API for editor snippets and shared configuration
+- [ ] Add support for multiple bootloaders
+- [ ] Finish configuring greetd display manager
+- [ ] Organize desktop module and check integrations
+- [ ] Test vr support on desktop

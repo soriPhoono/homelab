@@ -8,7 +8,6 @@
     ./shells
     ./apps
 
-    ./gitops.nix
     ./email.nix
     ./secrets.nix
     ./ssh.nix
@@ -48,6 +47,6 @@
   home.stateVersion = lib.mkDefault (
     if nixosConfig != null
     then nixosConfig.system.stateVersion
-    else "26.05"
+    else "26.11"
   );
 }

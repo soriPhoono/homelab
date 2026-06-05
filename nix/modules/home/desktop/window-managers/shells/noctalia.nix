@@ -4,12 +4,12 @@
   config,
   ...
 }: let
-  cfg = config.desktop.window-managers.hyprland.shells.noctalia;
+  cfg = config.desktop.window-managers.shells.noctalia;
   hyprCfg = config.desktop.window-managers.hyprland;
-  terminal = config.home.sessionVariables.TERMINAL or "ghostty";
+  terminal = config.home.sessionVariables.TERMINAL;
 in
   with lib; {
-    options.desktop.window-managers.hyprland.shells.noctalia = {
+    options.desktop.window-managers.shells.noctalia = {
       enable = mkEnableOption "Noctalia shell for Hyprland (bar, OSD, lockscreen, notifications)";
 
       monitors = mkOption {
@@ -72,7 +72,7 @@ in
               };
             };
           });
-        default = let
+        example = let
           url = "https://github.com/noctalia-dev/noctalia-plugins";
         in {
           "polkit-agent" = {
@@ -126,7 +126,7 @@ in
       };
 
       avatarImage = mkOption {
-        type = types.nullOr types.str;
+        type = types.nullOr types.path;
         default = null;
         description = "Path to the avatar image for the lock screen and user menu.";
       };
@@ -184,10 +184,44 @@ in
             cfg.pluginSources;
 
           states =
-            mapAttrs (_name: state: {
-              inherit (state) enabled sourceUrl;
-            })
-            cfg.pluginStates;
+            (
+              let
+                url = "https://github.com/noctalia-dev/noctalia-plugins";
+              in {
+                "polkit-agent" = {
+                  enabled = true;
+                  sourceUrl = url;
+                };
+                "special-workspaces" = {
+                  enabled = true;
+                  sourceUrl = url;
+                };
+                pomodoro = {
+                  enabled = true;
+                  sourceUrl = url;
+                };
+                "screen-recorder" = {
+                  enabled = true;
+                  sourceUrl = url;
+                };
+                "network-manager-vpn" = {
+                  enabled = true;
+                  sourceUrl = url;
+                };
+                "usb-drive-manager" = {
+                  enabled = true;
+                  sourceUrl = url;
+                };
+                tailscale = {
+                  enabled = true;
+                  sourceUrl = url;
+                };
+              }
+            )
+            // (mapAttrs (_name: state: {
+                inherit (state) enabled sourceUrl;
+              })
+              cfg.pluginStates);
         };
 
         inherit (cfg) pluginSettings;
@@ -271,6 +305,10 @@ in
           }
           // cfg.settings;
       };
+
+      desktop.window-managers.hyprland.autostart = [
+        "noctalia-shell"
+      ];
 
       # Wire up Hyprland integration for Noctalia
       wayland.windowManager.hyprland.settings = mkIf hyprCfg.enable {

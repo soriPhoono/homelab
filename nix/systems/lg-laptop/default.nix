@@ -9,8 +9,9 @@ with lib; {
   ];
 
   core = {
-    stateVersion = "26.05";
+    stateVersion = "26.11";
     timeZone = "America/Chicago";
+
     nixconf.determinate.enable = true;
 
     boot = {

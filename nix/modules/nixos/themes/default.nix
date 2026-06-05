@@ -3,8 +3,7 @@
   config,
   ...
 }: let
-  cfg =
-    config.themes;
+  cfg = config.themes;
 in
   with lib; {
     options.themes = {
@@ -24,6 +23,8 @@ in
         homeManagerIntegration.autoImport = false;
 
         base16Scheme = mkIf (cfg.base16Scheme != null) cfg.base16Scheme;
+
+        targets.kmscon.enable = false;
       };
     };
   }

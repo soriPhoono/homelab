@@ -12,18 +12,12 @@ in
       type = with types;
         attrsOf (submodule {
           options = {
+            admin = mkEnableOption "Enable admin privileges for the user";
+
             description = mkOption {
               type = str;
               description = "Account description for the user.";
               example = "Primary administrator";
-            };
-
-            admin = mkEnableOption "Enable admin privileges for the user";
-            secrets = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether the user should have admin privileges.";
-              example = true;
             };
 
             shell = mkOption {
@@ -31,6 +25,13 @@ in
               default = pkgs.bashInteractive;
               description = "The shell for the user.";
               example = pkgs.zsh;
+            };
+
+            secrets = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Whether the user should have admin privileges.";
+              example = true;
             };
 
             publicKey = mkOption {

@@ -31,34 +31,6 @@ in
           default = true;
           description = "Whether to enable XDG MIME application defaults for desktop environments.";
         };
-
-        autostart = mkOption {
-          type = with types;
-            listOf (submodule {
-              options = {
-                name = mkOption {
-                  type = str;
-                  description = "Name of the autostart entry.";
-                };
-                command = mkOption {
-                  type = str;
-                  description = "Command to execute on desktop start.";
-                };
-                delay = mkOption {
-                  type = nullOr str;
-                  default = null;
-                  description = "Delay before running (e.g. '5s' or a systemd timer expression).";
-                };
-                condition = mkOption {
-                  type = nullOr str;
-                  default = null;
-                  description = "Condition for autostart (e.g. 'hyprland' to only run under Hyprland).";
-                };
-              };
-            });
-          default = [];
-          description = "List of applications to autostart on desktop login.";
-        };
       };
     };
 

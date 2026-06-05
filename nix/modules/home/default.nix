@@ -4,6 +4,6 @@ in
   modules
   // {
     default = {
-      imports = builtins.attrValues modules ++ [./desktop];
+      imports = builtins.attrValues modules;
     };
   }
