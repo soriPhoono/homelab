@@ -214,7 +214,17 @@
               networking.hostName = hostName;
 
               home-manager = {
-                sharedModules = homeManagerModules;
+                sharedModules =
+                  homeManagerModules
+                  ++ [
+                    {
+                      # suppress stylix home-module nixpkgs.overlays when
+                      # useGlobalPkgs is enabled; they are already applied
+                      # at the NixOS layer and would trigger a deprecation
+                      # warning (soon to be an error) in home-manager.
+                      stylix.overlays.enable = false;
+                    }
+                  ];
                 backupFileExtension = "bak";
                 useGlobalPkgs = true;
                 useUserPackages = true;

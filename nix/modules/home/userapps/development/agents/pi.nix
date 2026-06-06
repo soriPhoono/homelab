@@ -94,6 +94,40 @@ in
             The packages to install for the pi agent.
           '';
         };
+
+        defaultProvider = mkOption {
+          type = types.str;
+          default = "opencode-go";
+          description = ''
+            The name of the provider to register as default
+          '';
+          example = "openrouter";
+        };
+
+        defaultModel = mkOption {
+          type = types.str;
+          default = "deepseek-v4-flash";
+          description = ''
+            The name of the model to use as the default
+          '';
+          example = "deepseek-v4-pro";
+        };
+
+        defaultThinkingLevel = mkOption {
+          type = types.enum [
+            "off"
+            "minimal"
+            "low"
+            "medium"
+            "high"
+            "xhigh"
+          ];
+          default = "high";
+          description = ''
+            The thinking level of the model
+          '';
+          example = "low";
+        };
       };
     };
 
@@ -130,6 +164,22 @@ in
           ];
 
           file = mkMerge [
+            {
+              ".pi/agent/settings.json" = {
+                text = builtins.toJSON (
+                  {
+                    inherit
+                      (cfg)
+                      packages
+                      defaultProvider
+                      defaultModel
+                      defaultThinkingLevel
+                      ;
+                  }
+                  // cfg.userSettings
+                );
+              };
+            }
             (mkMerge [
               (mkIf (typeOf cfg.context == "path") {
                 "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (readFile cfg.context);
@@ -149,10 +199,6 @@ in
               })
               cfg.skills
             ))
-            # Wire packages to packages.json for pi agent to pick up.
-            (mkIf (cfg.packages != []) {
-              ".pi/packages.json".text = builtins.toJSON cfg.packages;
-            })
             # Wire MCP servers.
             (mkIf hasMcpServers {
               ".pi/agent/mcp.json".text = builtins.toJSON mcpServerConfig;

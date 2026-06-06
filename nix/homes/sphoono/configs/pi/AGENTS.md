@@ -158,6 +158,74 @@ Use **both**, not just one. Exa gives you current web context (news, blog posts,
 6. Proceed with changes only after research is complete
 ```
 
+## Subagent Delegation (pi-subagents)
+
+`pi-subagents` (v0.28.0) is installed and available for delegating work to focused child agents. Use it for code review, scouting, implementation, parallel audits, saved workflows, and background jobs. Package docs: [pi.dev/packages/pi-subagents](https://pi.dev/packages/pi-subagents)
+
+### Builtin agents
+
+| Agent | Use when | Context default | Edits files |
+|-------|----------|-----------------|-------------|
+| `scout` | You need fast codebase recon — entry points, data flow, risks, relevant files | fresh | No |
+| `researcher` | You need web/docs research with sources — official docs, specs, benchmarks, recent changes | fresh | No |
+| `planner` | You have context and need a concrete implementation plan | fork | No |
+| `worker` | You need implementation work done — edits files, validates, escalates unapproved decisions | fork | Yes |
+| `reviewer` | You need code review and small fixes — checks against task, tests, edge cases, simplicity | fresh | No (review only) |
+| `context-builder` | You need a strong context handoff before planning — gathers code context, meta-prompt | fresh | No |
+| `oracle` | You need a second opinion before acting — challenges assumptions, catches drift | fork | No |
+| `delegate` | You need a lightweight generic child agent that behaves close to the parent session | fresh | Yes |
+
+Use `fork` for advisory execution threads and oracle-style decision consistency checks. Use `fresh` for adversarial code review where reviewers should inspect the repo and diff directly.
+
+### Prompt shortcuts
+
+These packaged workflows live in the subagents extension. Use them when the shape fits:
+
+| Shortcut | What it does |
+|----------|--------------|
+| `/parallel-review` | Launches fresh-context `reviewer` agents with distinct angles, then synthesizes what to fix. Add `autofix` to apply fixes after review. |
+| `/review-loop` | Runs parent-controlled worker → fresh reviewers → fix worker cycles until clean or capped (default 3 rounds). |
+| `/parallel-research` | Combines `researcher` (external evidence) and `scout` (local code context) for grounded answers. |
+| `/parallel-context-build` | Runs `context-builder` agents in parallel to produce planning handoff context and meta-prompts. |
+| `/parallel-handoff-plan` | Combines external research and local context-building into an implementation handoff plan and meta-prompt. |
+| `/gather-context-and-clarify` | Scouts/researches first, then asks you clarification questions before planning or implementing. |
+| `/parallel-cleanup` | Runs two reviewers after implementation — one deslop pass, one verbosity pass. Add `autofix` to apply fixes. |
+
+You can also invoke these patterns directly with `subagent(...)` tool calls without slash commands.
+
+### When to delegate
+
+Delegate to subagents automatically in these situations:
+
+- **Adversarial review**: Launch fresh-context `reviewer` agents after implementation. Use distinct angles (correctness, tests, simplicity) instead of one generic reviewer.
+- **Second opinion**: Fork to `oracle` before making architectural decisions, merge conflict resolutions, or when drift is suspected.
+- **Implementation from a plan**: Use `worker` with explicit acceptance criteria. Do not let `worker` design unapproved architecture.
+- **Research**: Use `researcher` for external facts (docs, ecosystem, benchmarks) and `scout` for local code context. Synthesize results yourself.
+- **Context gathering before planning**: Use `scout` or `context-builder` to understand the codebase before writing a plan.
+- **Long-running work**: Set `async: true` for every subagent launch unless you need a blocking/foreground run.
+- **Parallel non-conflicting work**: Use `tasks: [...]` with distinct agents. Do not parallelize writes without worktree isolation.
+
+### Orchestration patterns
+
+For non-trivial work, sequence subagents in this order:
+
+1. **Clarify** — Gather context (`scout` or `context-builder`), research external references (`researcher`), then ask clarifying questions.
+1. **Plan** — Write or generate a plan (`planner`), get approval.
+1. **Implement** — Launch `worker` with the approved plan and acceptance criteria.
+1. **Review** — Run parallel fresh-context `reviewer` agents with distinct angles.
+1. **Fix** — Launch `worker` to apply synthesized review fixes.
+1. **Validate** — Run validation commands and inspect the final diff.
+
+Keep orchestration authority in the parent session. Child subagents must not launch their own subagents or manage the loop. Do not treat an async worker handoff as final completion — always review after implementation.
+
+### Key constraints
+
+- Forked context requires a persisted parent session. If unavailable, pass `context: "fresh"` explicitly.
+- Default subagent nesting depth is 2. This agent (`worker`, `planner`, `oracle`) cannot go deeper without configuration.
+- Advisory subagents (`reviewer`, `oracle`, `scout`, `researcher`) must not edit files unless explicitly authorized.
+- Use `subagent({ action: "status" })` to check active async runs. Use `subagent({ action: "interrupt", id: "..." })` to stop a drifting child.
+- Use `subagent({ action: "doctor" })` if setup or child startup looks wrong.
+
 ## Git workflow
 
 **Main branch is read-only.** When a request arrives and the working branch is `main`, create a feature branch before making changes.
