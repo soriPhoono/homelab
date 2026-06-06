@@ -381,6 +381,39 @@ nix build .#configKeys && cat result
 | `firecrawl` | Firecrawl web search |
 | `fal` | FAL image generation |
 
+### Container
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `container.backend` | `"docker" or "podman"` | `"docker"` | Container runtime backend |
+| `container.image` | `str` | `"ubuntu:24.04"` | OCI container image |
+| `container.extraVolumes` | `list of str` | `[]` | Extra volume mounts (host:container:mode) |
+| `container.extraOptions` | `list of str` | `[]` | Extra docker/podman create arguments |
+| `container.autoEnableRuntime` | `bool` | `true` | Auto-enable virtualisation.docker or virtualisation.podman |
+
+```nix
+{
+  hosting.hermes-agent.container = {
+    backend = "docker";
+    extraVolumes = ["/data/projects:/workspace:rw"];
+    extraOptions = ["--gpus" "all"];
+    # Runtime (docker/podman) is auto-enabled — set to false if managing separately
+    autoEnableRuntime = true;
+  };
+}
+```
+
+### Host Users
+
+Interactive users who get:
+
+- Added to the `hermes` group for runtime file access
+- A `~/.hermes` symlink to the service state directory (so `hermes chat`, `hermes setup --portal`, etc. share state with the container)
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hostUsers` | `list of str` | `[]` | Interactive users with state access |
+
 ______________________________________________________________________
 
 ## Secrets Architecture
@@ -508,6 +541,12 @@ ______________________________________________________________________
     model = "anthropic/claude-sonnet-4";
     provider.baseUrl = "https://openrouter.ai/api/v1";
 
+    # ── Container ──────────────────────────────────
+    container = {
+      backend = "docker";
+      extraVolumes = ["/data/projects:/workspace:rw"];
+    };
+
     # ── Secrets ────────────────────────────────────
     # API keys stored in sops-encrypted hermes/env
     # Additional secrets:
@@ -570,24 +609,23 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## Migration from Container Mode
+## Migration from Native Mode
 
-This module uses **native systemd service mode** (`container.enable = false`). If you're migrating from container mode:
+This module now uses **OCI container mode** by default. If you were previously using native mode or need to switch back:
 
-| Feature | Native (this module) | Container |
-|---------|---------------------|-----------|
-| Security | NoNewPrivileges, ProtectSystem=strict | Docker/Podman isolation |
-| Agent self-install | No — Nix-managed PATH only | Yes — apt, pip, npm |
+| Feature | Container (this module) | Native |
+|---------|------------------------|--------|
+| Security | Docker/Podman isolation | NoNewPrivileges, ProtectSystem=strict |
+| Agent self-install | Yes — apt, pip, npm | No — Nix-managed PATH only |
 | Config surface | Same | Same |
-| Performance | Lower overhead | Container overhead |
-| Use case | Declarative, reproducible | Mutable, experimental |
+| Performance | Container overhead | Lower overhead |
+| Use case | Mutable, self-improving | Declarative, reproducible |
 
-To switch to container mode, override the upstream option directly:
+To switch back to native mode, override the upstream option directly:
 
 ```nix
 {
-  services.hermes-agent.container.enable = true;
-  services.hermes-agent.container.backend = "podman";  # or "docker"
+  services.hermes-agent.container.enable = false;
 }
 ```
 

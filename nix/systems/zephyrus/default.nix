@@ -106,12 +106,40 @@ with lib; {
   };
 
   hosting = {
+    ai.enable = true;
     homepage.enable = true;
     platforms.docker.enable = true;
     media.enable = true;
     proxy.dns = {
       baseDomain = "cryptic-coders.net";
       email = "soriphoono@gmail.com";
+    };
+
+    hermes-agent = {
+      # Nous Portal — model + tool gateway + auth
+      portal.enable = true;
+      model = "deepseek/deepseek-v4-flash";
+
+      # Skip LSP/MCP for now — testing phase
+      lsp.enable = false;
+
+      # Web dashboard with Portal OAuth auth gate
+      dashboard = {
+        enable = true;
+        host = "0.0.0.0";
+      };
+
+      # OpenAI-compatible API gateway
+      gateway.enableApi = true;
+
+      # Proxy integration (Caddy routes to dashboard)
+      enableProxy = true;
+
+      # CLI + desktop app access for sphoono
+      hostUsers = ["sphoono"];
+
+      # Container backend (Docker already enabled above)
+      container.backend = "docker";
     };
   };
 

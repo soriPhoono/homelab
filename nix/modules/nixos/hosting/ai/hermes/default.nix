@@ -11,15 +11,17 @@ in
       enable = mkEnableOption ''
         the Hermes AI agent service. Hermes is a self-improving AI agent
         by Nous Research with persistent memory, agent-created skills, and
-        a messaging gateway supporting 21+ platforms. It runs as a native
-        systemd service on the host (not containerized).
+        a messaging gateway supporting 21+ platforms. It runs inside an OCI
+        container (Docker or Podman) for full self-modification support,
+        including runtime package installation via apt/pip/npm.
 
         When enabled, the module:
         - Creates the hermes system user and state directory
         - Generates config.yaml from declarative settings
         - Wires sops-nix secrets (API keys, tokens) via environmentFiles
-        - Starts the hermes gateway as a systemd service
+        - Starts the hermes gateway inside a container as a systemd service
         - Optionally adds the hermes CLI to system PATH
+        - Optionally creates ~/.hermes symlinks for host users
       '';
 
       model = mkOption {
@@ -562,13 +564,10 @@ in
         default = [];
         example = ["sphoono"];
         description = ''
-          Interactive users to add to the hermes group.  This gives them read
-          access to the state directory so CLI commands (hermes chat, hermes
-          setup --portal) can share state with the gateway service.
-
-          In container mode the upstream module also creates a ~/.hermes
-          symlink; in native mode (the default) only group membership is
-          granted.
+          Interactive users to add to the hermes group and create a ~/.hermes
+          symlink pointing to the service state directory. This gives them
+          access so CLI commands (hermes chat, hermes setup --portal) share
+          state with the gateway service running in the container.
         '';
       };
 
@@ -686,6 +685,72 @@ in
         };
       };
 
+      # ── Container ──────────────────────────────
+      container = {
+        backend = mkOption {
+          type = types.enum ["docker" "podman"];
+          default = "docker";
+          description = ''
+            Container runtime backend. Docker is the default. Change to
+            "podman" for rootless container operation.
+
+            The required runtime is automatically enabled on the host via
+            virtualisation.docker or virtualisation.podman unless
+            autoEnableRuntime is set to false.
+          '';
+        };
+
+        image = mkOption {
+          type = types.str;
+          default = "ubuntu:24.04";
+          description = ''
+            OCI container image for the Hermes agent runtime. The image is
+            pulled at container start via the configured backend.
+
+            The default ubuntu:24.04 provides apt, pip, and npm for runtime
+            self-modification. Custom images should include Python 3.12+
+            and the tools the agent needs to install packages.
+          '';
+        };
+
+        extraVolumes = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          example = ["/home/user/projects:/projects:rw"];
+          description = ''
+            Extra volume mounts passed to the container runtime in
+            host:container:mode format. Useful for giving the agent access
+            to project directories, datasets, or other host paths.
+
+            The state directory and secrets are mounted automatically.
+          '';
+        };
+
+        extraOptions = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          example = ["--gpus" "all"];
+          description = ''
+            Extra arguments passed to docker/podman create. Useful for GPU
+            passthrough (--gpus all), resource limits, or custom network
+            configuration.
+          '';
+        };
+
+        autoEnableRuntime = mkOption {
+          type = types.bool;
+          default = true;
+          description = ''
+            Automatically enable the container runtime on the host system.
+            When true, enables virtualisation.docker or virtualisation.podman
+            based on the configured backend.
+
+            Set to false if you manage the runtime separately or want to
+            configure it with custom options.
+          '';
+        };
+      };
+
       # ── Proxy Integration ───────────────────────
       enableProxy = mkOption {
         type = types.bool;
@@ -731,8 +796,12 @@ in
         services.hermes-agent = {
           enable = true;
 
-          # Native systemd service — no container
-          container.enable = false;
+          # OCI container mode — enables runtime self-modification (apt/pip/npm)
+          container.enable = true;
+          container.backend = cfg.container.backend;
+          container.image = cfg.container.image;
+          container.extraVolumes = cfg.container.extraVolumes;
+          container.extraOptions = cfg.container.extraOptions;
 
           # Add CLI to PATH and set HERMES_HOME system-wide
           inherit (cfg) addToSystemPackages;
@@ -842,16 +911,26 @@ in
       }
 
       # ──────────────────────────────────────────────
-      # 2. Host user group access
+      # 2. Container runtime
       # ──────────────────────────────────────────────
-      (mkIf (cfg.hostUsers != []) {
-        users.users = genAttrs cfg.hostUsers (_name: {
-          extraGroups = [config.services.hermes-agent.group];
-        });
+      (mkIf cfg.container.autoEnableRuntime {
+        virtualisation.${
+          if cfg.container.backend == "podman"
+          then "podman"
+          else "docker"
+        }.enable =
+          true;
       })
 
       # ──────────────────────────────────────────────
-      # 3. Web Dashboard service
+      # 3. Host user access
+      # ──────────────────────────────────────────────
+      (mkIf (cfg.hostUsers != []) {
+        services.hermes-agent.container.hostUsers = cfg.hostUsers;
+      })
+
+      # ──────────────────────────────────────────────
+      # 4. Web Dashboard service
       # ──────────────────────────────────────────────
       (mkIf cfg.dashboard.enable {
         systemd.services.hermes-dashboard = {
@@ -893,7 +972,7 @@ in
       })
 
       # ──────────────────────────────────────────────
-      # 4. Portal / Subscription configuration
+      # 5. Portal / Subscription configuration
       # ──────────────────────────────────────────────
       (mkIf cfg.portal.enable {
         services.hermes-agent.settings = {
@@ -909,7 +988,7 @@ in
       })
 
       # ──────────────────────────────────────────────
-      # 5. Proxy integration
+      # 6. Proxy integration
       # ──────────────────────────────────────────────
       (mkIf cfg.enableProxy {
         hosting.proxy.services.${cfg.proxy.subdomain} = {
@@ -945,7 +1024,7 @@ in
       })
 
       # ──────────────────────────────────────────────
-      # 6. SOPS secrets integration
+      # 7. SOPS secrets integration
       # ──────────────────────────────────────────────
       (mkIf (options ? sops) {
         sops.secrets."hosting/hermes-env" = {};
