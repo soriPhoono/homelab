@@ -389,6 +389,7 @@ nix build .#configKeys && cat result
 | `container.image` | `str` | `"ubuntu:24.04"` | OCI container image |
 | `container.extraVolumes` | `list of str` | `[]` | Extra volume mounts (host:container:mode) |
 | `container.extraOptions` | `list of str` | `[]` | Extra docker/podman create arguments |
+| `container.autoEnableRuntime` | `bool` | `true` | Auto-enable virtualisation.docker or virtualisation.podman |
 
 ```nix
 {
@@ -396,6 +397,8 @@ nix build .#configKeys && cat result
     backend = "docker";
     extraVolumes = ["/data/projects:/workspace:rw"];
     extraOptions = ["--gpus" "all"];
+    # Runtime (docker/podman) is auto-enabled — set to false if managing separately
+    autoEnableRuntime = true;
   };
 }
 ```

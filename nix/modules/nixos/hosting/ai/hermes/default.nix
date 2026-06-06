@@ -694,8 +694,9 @@ in
             Container runtime backend. Docker is the default. Change to
             "podman" for rootless container operation.
 
-            Note: The chosen runtime must be available on the host system
-            (e.g., via virtualisation.docker.enable or virtualisation.podman.enable).
+            The required runtime is automatically enabled on the host via
+            virtualisation.docker or virtualisation.podman unless
+            autoEnableRuntime is set to false.
           '';
         };
 
@@ -733,6 +734,19 @@ in
             Extra arguments passed to docker/podman create. Useful for GPU
             passthrough (--gpus all), resource limits, or custom network
             configuration.
+          '';
+        };
+
+        autoEnableRuntime = mkOption {
+          type = types.bool;
+          default = true;
+          description = ''
+            Automatically enable the container runtime on the host system.
+            When true, enables virtualisation.docker or virtualisation.podman
+            based on the configured backend.
+
+            Set to false if you manage the runtime separately or want to
+            configure it with custom options.
           '';
         };
       };
@@ -897,14 +911,26 @@ in
       }
 
       # ──────────────────────────────────────────────
-      # 2. Host user access
+      # 2. Container runtime
+      # ──────────────────────────────────────────────
+      (mkIf cfg.container.autoEnableRuntime {
+        virtualisation.${
+          if cfg.container.backend == "podman"
+          then "podman"
+          else "docker"
+        }.enable =
+          true;
+      })
+
+      # ──────────────────────────────────────────────
+      # 3. Host user access
       # ──────────────────────────────────────────────
       (mkIf (cfg.hostUsers != []) {
         services.hermes-agent.container.hostUsers = cfg.hostUsers;
       })
 
       # ──────────────────────────────────────────────
-      # 3. Web Dashboard service
+      # 4. Web Dashboard service
       # ──────────────────────────────────────────────
       (mkIf cfg.dashboard.enable {
         systemd.services.hermes-dashboard = {
@@ -946,7 +972,7 @@ in
       })
 
       # ──────────────────────────────────────────────
-      # 4. Portal / Subscription configuration
+      # 5. Portal / Subscription configuration
       # ──────────────────────────────────────────────
       (mkIf cfg.portal.enable {
         services.hermes-agent.settings = {
@@ -962,7 +988,7 @@ in
       })
 
       # ──────────────────────────────────────────────
-      # 5. Proxy integration
+      # 6. Proxy integration
       # ──────────────────────────────────────────────
       (mkIf cfg.enableProxy {
         hosting.proxy.services.${cfg.proxy.subdomain} = {
@@ -998,7 +1024,7 @@ in
       })
 
       # ──────────────────────────────────────────────
-      # 6. SOPS secrets integration
+      # 7. SOPS secrets integration
       # ──────────────────────────────────────────────
       (mkIf (options ? sops) {
         sops.secrets."hosting/hermes-env" = {};
