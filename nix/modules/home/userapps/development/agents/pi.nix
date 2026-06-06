@@ -133,30 +133,36 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        userapps.development.agents.pi.secrets = flatten (
-          (mapAttrsToList (
-              _name: server:
-                filter (val: val != null) (
-                  mapAttrsToList (_name: env:
-                    if env ? "secret"
-                    then env.secret
-                    else null)
-                  server.env
-                )
-            )
-            cfg.mcpServers.stdio)
-          ++ (mapAttrsToList (
-              _name: server:
-                filter (val: val != null) (
-                  mapAttrsToList (_name: header:
-                    if header ? "secret"
-                    then header.secret
-                    else null)
-                  server.headers
-                )
-            )
-            cfg.mcpServers.http)
-        );
+        userapps.development.agents.pi = {
+          secrets = flatten (
+            (mapAttrsToList (
+                _name: server:
+                  filter (val: val != null) (
+                    mapAttrsToList (_name: env:
+                      if env ? "secret"
+                      then env.secret
+                      else null)
+                    server.env
+                  )
+              )
+              cfg.mcpServers.stdio)
+            ++ (mapAttrsToList (
+                _name: server:
+                  filter (val: val != null) (
+                    mapAttrsToList (_name: header:
+                      if header ? "secret"
+                      then header.secret
+                      else null)
+                    server.headers
+                  )
+              )
+              cfg.mcpServers.http)
+          );
+
+          packages = mkIf (cfg.mcpServers.stdio != {} || cfg.mcpServers.http != {}) [
+            "npm:pi-mcp-extension"
+          ];
+        };
 
         home = {
           packages = mkIf (cfg.secrets == []) [
