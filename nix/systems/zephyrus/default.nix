@@ -10,67 +10,15 @@ with lib; {
 
   core = {
     stateVersion = "26.11";
-    context = ''
-      # System Environment: Zephyrus
-
-      ## Hardware Specifications
-      - **Device**: ASUS ROG Zephyrus G14 (`GA401QM`)
-      - **Firmware**: ASUS BIOS `GA401QM.415`
-      - **CPU**: AMD Ryzen 9 5900HS (8 cores / 16 threads)
-      - **RAM**: 16GB DDR4-3200 via 2x8GB Micron SODIMMs
-      - **Graphics**:
-        - Integrated: AMD Radeon Graphics
-        - Dedicated: NVIDIA GeForce RTX 3060 (NixOS laptop mode)
-      - **Storage**: Samsung NVMe SSD (`SAMSUNG MZVLQ1T0HBLB-00B00`)
-      - **Networking**: MediaTek Wi-Fi/Bluetooth hardware with NetworkManager and Tailscale enabled
-      - **Peripherals**:
-        - Goodix fingerprint reader
-        - Xbox Controller support enabled
-        - Logitech device support enabled
-        - Android ADB support enabled
-
-      ## Operating System & Core Config
-      - **OS**: NixOS (`x86_64-linux`)
-      - **Timezone**: `America/Chicago`
-      - **Nix Configuration**:
-        - Determinate Nix enabled with `nix-command` and `flakes`
-        - `nh` manages system/home switching and cleanup workflows
-        - Build cores are capped at 4 to reduce OOM risk on large evaluations
-        - `nix-ld` and `sops-nix` are enabled for binary compatibility and secret management
-      - **Boot & Console**:
-        - systemd-boot with Plymouth splash screen
-        - US keymap and Terminus console font
-      - **Security & Access**:
-        - Host secrets are sourced from `./secrets.yml`
-        - Tailscale Serve origin is pinned for this laptop node
-
-      ## Desktop & Local Services
-      - **Session Stack**: Hyprland (Wayland) with SDDM using the `sddm-astronaut-theme` `jake_the_dog` variant
-      - **Theming**: System-wide Catppuccin Macchiato base16 scheme
-      - **Laptop Integration**: `asusd` enabled for ASUS-specific controls
-      - **Desktop Features**:
-        - Printing enabled
-        - Gaming profile enabled, including console support
-      - **Local Tools**:
-        - Docker enabled
-        - VirtualBox enabled
-        - Partition manager enabled
-
-      ## Hosting & Infrastructure
-      - **Base Domain**: `cryptic-coders.net`
-      - **Hosted Roles**:
-        - Homepage dashboard enabled
-        - Media stack enabled: Jellyfin, Overseerr, Sonarr, Radarr, Prowlarr, FlareSolverr, qBittorrent
-        - Declarative Caddy proxy routes expose media and download services
-      - **Media Paths**: Managed under `/mnt/local/media` with service-specific movie, show, and download directories
-    '';
     timeZone = "America/Chicago";
+
     nixconf.determinate.enable = true;
 
     boot = {
       enable = true;
       kernel.packages = pkgs.linuxPackages_zen;
       plymouth.enable = true;
+      zram.enable = true;
     };
 
     hardware = {
@@ -101,10 +49,7 @@ with lib; {
 
     networking = {
       network-manager.enable = true;
-      tailscale = {
-        enable = true;
-        serve.tailnetOrigin = mkForce "https://laptop-sori.xerus-augmented.ts.net";
-      };
+      tailscale.enable = true;
     };
 
     secrets = {
@@ -166,141 +111,6 @@ with lib; {
     proxy.dns = {
       baseDomain = "cryptic-coders.net";
       email = "soriphoono@gmail.com";
-    };
-
-    hermes-agent = {
-      enable = true;
-
-      # Default model — overridden by Portal OAuth when portal.enable = true
-      model = "deepseek-v4-flash";
-      provider.baseUrl = "https://opencode.ai/zen/go/v1/chat/completions";
-
-      # ── LSP diagnostics ───────────────────────────
-      lsp = {
-        enable = true;
-        installStrategy = "auto";
-        servers = {
-          # Pin pyright for Python analysis
-          pyright = {
-            initializationOptions = {
-              python.analysis.typeCheckingMode = "basic";
-            };
-          };
-          # Disable Rust LSP on a laptop that may not have Rust toolchains
-          rust-analyzer.disable = true;
-        };
-      };
-
-      # ── MCP servers ──────────────────────────────
-      mcpServers = {
-        # Filesystem access — uses workspace dir which the hermes user
-        # owns, avoiding permission issues with user home dirs.
-        filesystem = {
-          command = "npx";
-          args = [
-            "-y"
-            "@modelcontextprotocol/server-filesystem"
-            "/var/lib/hermes/workspace"
-          ];
-        };
-
-        # GitHub integration (token from sops secrets)
-        github = {
-          command = "npx";
-          args = [
-            "-y"
-            "@modelcontextprotocol/server-github"
-          ];
-          env = {
-            GITHUB_PERSONAL_ACCESS_TOKEN = "\${GITHUB_TOKEN}";
-          };
-          tools = {
-            include = [
-              "list_issues"
-              "create_issue"
-              "search_code"
-              "list_repositories"
-            ];
-            resources = false;
-            prompts = false;
-          };
-        };
-      };
-
-      # ── Docs ────────────────────────────────────
-      documents = {
-        "USER.md" = ''
-          # Sori Phoono
-
-          You are running on **Zephyrus**, an ASUS ROG Zephyrus G14 laptop
-          (Ryzen 9 5900HS, RTX 3060) running NixOS.
-
-          ## What I work on
-          - NixOS homelab infrastructure with flakes
-          - Self-hosted media services (Jellyfin, *arr stack)
-          - Kubernetes (Guenivir cluster on Algo)
-          - Full-stack development
-
-          ## My preferences
-          - Nix for everything reproducible
-          - Hyprland on Wayland
-          - Fish shell, Helix editor
-          - Catppuccin Macchiato theme everywhere
-
-          ## Environment
-          - Tailnet: laptop-sori.xerus-augmented.ts.net
-          - Domain: cryptic-coders.net
-          - Local Docker with Tailscale bypass
-        '';
-      };
-
-      # ── Extra system packages for the agent ─────
-      extraPackages = with pkgs; [
-        ripgrep
-        jq
-        nix-output-monitor
-      ];
-
-      # ── Settings ────────────────────────────────
-      settings = {
-        display.personality = "professional";
-        memory.memory_enabled = true;
-        memory.user_profile_enabled = true;
-        terminal = {
-          backend = "local";
-          timeout = 180;
-        };
-        compression = {
-          enabled = true;
-          threshold = 0.85;
-          summary_model = "google/gemini-3-flash-preview";
-        };
-      };
-
-      # ── Portal / Subscription ───────────────────
-      # Enable Nous Portal as the default provider. The Portal bundles
-      # 300+ models plus Tool Gateway (web search, image gen, TTS,
-      # browser) under one OAuth-based subscription.
-      portal.enable = true;
-
-      # Add sphoono to the hermes group so CLI commands can read the
-      # state directory and share sessions with the gateway.
-      hostUsers = ["sphoono"];
-
-      # ── Dashboard ──────────────────────────────
-      # The web dashboard provides a browser UI for managing config,
-      # sessions, and chatting with the agent.
-      dashboard = {
-        enable = true;
-        # Bind to loopback — safe for local proxy access
-        host = "127.0.0.1";
-        # Disable embedded TUI chat — not supported in systemd context
-        enableChat = false;
-      };
-
-      # ── Proxy ──────────────────────────────────
-      # Expose the dashboard via Caddy at ai.local.cryptic-coders.net/hermes
-      enableProxy = true;
     };
   };
 

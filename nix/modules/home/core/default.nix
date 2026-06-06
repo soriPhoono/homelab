@@ -8,7 +8,6 @@
     ./shells
     ./apps
 
-    ./gitops.nix
     ./email.nix
     ./secrets.nix
     ./ssh.nix

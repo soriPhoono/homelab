@@ -8,6 +8,8 @@ in
   with lib; {
     imports = [
       ./hyprland
+
+      ./shells
     ];
 
     options.desktop.window-managers = {
@@ -18,31 +20,6 @@ in
           type = types.str;
           default = "SUPER";
           description = "Modifier key for window manager keybindings (e.g. SUPER, ALT).";
-        };
-
-        terminal = mkOption {
-          type = types.str;
-          description = "Default terminal emulator command.";
-          example = "ghostty";
-        };
-
-        launcher = mkOption {
-          type = types.str;
-          default = "rofi -show drun";
-          description = "Application launcher command.";
-        };
-
-        screenshot = {
-          tool = mkOption {
-            type = types.enum ["grimblast" "grim" "slurp"];
-            default = "grimblast";
-            description = "Screenshot tool to use.";
-          };
-          notify = mkOption {
-            type = types.bool;
-            default = true;
-            description = "Whether to show notifications for screenshots.";
-          };
         };
       };
     };

@@ -3,120 +3,101 @@
   config,
   ...
 }: let
-  cfg = config.personal.hyprland;
+  hyprCfg = config.desktop.window-managers.hyprland;
 in
   with lib; {
-    config = mkIf cfg.enable {
-      wayland.windowManager.hyprland.settings = {
-        curve = [
-          {
-            _args = [
-              "overshot"
-              {
-                type = "bezier";
-                points = [
-                  [
-                    0.05
-                    0.9
-                  ]
-                  [
-                    0.1
-                    1.05
-                  ]
-                ];
-              }
-            ];
-          }
-          {
-            _args = [
-              "smoothOut"
-              {
-                type = "bezier";
-                points = [
-                  [
-                    0.5
-                    0
-                  ]
-                  [
-                    0.99
-                    0.99
-                  ]
-                ];
-              }
-            ];
-          }
-          {
-            _args = [
-              "smoothIn"
-              {
-                type = "bezier";
-                points = [
-                  [
-                    0.5
-                    (-0.5)
-                  ]
-                  [
-                    0.68
-                    1.5
-                  ]
-                ];
-              }
-            ];
-          }
-        ];
+    config = mkIf hyprCfg.enable {
+      desktop.window-managers.hyprland.animations = {
+        curves = {
+          overshot = {
+            x1 = 0.05;
+            y1 = 0.9;
 
-        animation = [
-          {
-            leaf = "windows";
-            enabled = true;
-            speed = 5;
-            bezier = "overshot";
-            style = "slide";
-          }
-          {
-            leaf = "windowsOut";
-            enabled = true;
-            speed = 3;
-            bezier = "smoothOut";
-          }
-          {
-            leaf = "windowsIn";
-            enabled = true;
-            speed = 3;
-            bezier = "smoothOut";
-          }
-          {
-            leaf = "windowsMove";
-            enabled = true;
+            x2 = 0.1;
+            y2 = 1.05;
+          };
+          smoothOut = {
+            x1 = 0.5;
+            y1 = 0.0;
+
+            x2 = 0.99;
+            y2 = 0.99;
+          };
+          smoothIn = {
+            x1 = 0.5;
+            y1 = -0.5;
+
+            x2 = 0.68;
+            y2 = 1.5;
+          };
+          default = {
+            x1 = 0.0;
+            y1 = 0.0;
+
+            x2 = 1.0;
+            y2 = 1.0;
+          };
+        };
+        registry = {
+          windows = {
             speed = 4;
-            bezier = "smoothIn";
             style = "slide";
-          }
-          {
-            leaf = "border";
-            enabled = true;
+            curve = {
+              name = "overshot";
+              type = "bezier";
+            };
+          };
+          windowsOut = {
+            speed = 4;
+            curve = {
+              name = "smoothOut";
+              type = "bezier";
+            };
+          };
+          windowsIn = {
+            speed = 4;
+            curve = {
+              name = "smoothOut";
+              type = "bezier";
+            };
+          };
+          windowsMove = {
+            speed = 4;
+            style = "slide";
+            curve = {
+              name = "smoothIn";
+              type = "bezier";
+            };
+          };
+          border = {
             speed = 5;
-            bezier = "default";
-          }
-          {
-            leaf = "fade";
-            enabled = true;
+            curve = {
+              name = "smoothIn";
+              type = "bezier";
+            };
+          };
+          fade = {
             speed = 5;
-            bezier = "smoothIn";
-          }
-          {
-            leaf = "fadeDim";
-            enabled = true;
+            curve = {
+              name = "smoothIn";
+              type = "bezier";
+            };
+          };
+          fadeDim = {
             speed = 5;
-            bezier = "smoothIn";
-          }
-          {
-            leaf = "workspaces";
-            enabled = true;
-            speed = 6;
-            bezier = "default";
-          }
-        ];
+            curve = {
+              name = "smoothIn";
+              type = "bezier";
+            };
+          };
+          workspaces = {
+            speed = 3;
+            curve = {
+              name = "overshot";
+              type = "bezier";
+            };
+          };
+        };
       };
     };
   }

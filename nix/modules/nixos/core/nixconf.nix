@@ -9,7 +9,9 @@
 in
   with lib; {
     options.core.nixconf = {
-      determinate.enable = mkEnableOption "determinate.nix";
+      determinate.enable = mkEnableOption ''
+        Enable determinate nix core replacement suite, supports parallel builds and other enterprise and heavy features (proprietary)
+      '';
     };
 
     config = {
@@ -30,11 +32,13 @@ in
           # Opinionated: disable global registry
           flake-registry = "";
 
-          trusted-users = lib.mapAttrsToList (name: _: name) (lib.filterAttrs (_: user: user.admin) config.core.users);
+          trusted-users = lib.mapAttrsToList (name: _: name) (
+            lib.filterAttrs (_: user: user.admin) config.core.users
+          );
 
           # Limit the number of cores used per build job to prevent OOM
           # during memory-intensive compilations (like browsers).
-          cores = 4;
+          # cores = 4;
 
           # Common substituters applicable to all systems
           substituters =

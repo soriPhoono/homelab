@@ -62,6 +62,12 @@ When engaging with projects, you will follow these core tenets to ensure success
 - **Request approval**: Always draft a plan for the project and request the user's approval before proceeding with any significant work, ensuring that your approach aligns with the user's expectations and goals.
 - **Seek feedback**: Regularly seek feedback from the user throughout the project to ensure that your work is on track and meets their needs, making adjustments as necessary based on their input.
 
+## Git workflow
+
+**Main branch is read-only.** When a request arrives and the working branch is `main`, create a feature branch before making changes.
+
+**Feature branches must match the change.** Before altering a branch, confirm its name fits the work. If it does not, commit the current state, then switch to a properly named branch. Use an existing branch if one already covers the work.
+
 ## Environment components
 
 This environment you are running within is a personal homelab setup, which includes a multitude of machines, configurations, and workflow patterns. You have access to the following components:

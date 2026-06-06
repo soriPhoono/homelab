@@ -7,26 +7,14 @@
 in
   with lib; {
     imports = [
-      ./binds.nix
       ./monitors.nix
-      ./theme.nix
-      ./shells
+      ./binds.nix
+      ./animations.nix
+      ./autostart.nix
     ];
 
     options.desktop.window-managers.hyprland = {
       enable = mkEnableOption "Hyprland Wayland compositor configuration";
-
-      package = mkOption {
-        type = with types; nullOr package;
-        default = null;
-        description = "Hyprland package to use. Auto-resolves from flake input when null and run under NixOS.";
-      };
-
-      portalPackage = mkOption {
-        type = with types; nullOr package;
-        default = null;
-        description = "XDG Desktop Portal Hyprland package. Auto-resolves from flake input when null.";
-      };
 
       monitors = mkOption {
         type = with types;
@@ -86,6 +74,12 @@ in
         description = "Monitor configuration list.";
       };
 
+      autostart = mkOption {
+        type = with types; listOf str;
+        default = [];
+        description = "Autostart commands to invoke";
+      };
+
       settings = mkOption {
         type = with types; attrs;
         default = {};
@@ -105,7 +99,10 @@ in
 
         wayland.windowManager.hyprland = {
           enable = true;
-          systemd.enable = true;
+          systemd = {
+            enable = true;
+            enableXdgAutostart = true;
+          };
           xwayland.enable = true;
 
           settings =
@@ -116,6 +113,8 @@ in
                   gaps_in = 4;
                   gaps_out = 8;
                   float_gaps = 8;
+                  resize_on_border = true;
+                  resize_corner = 2;
                   snap.enabled = true;
                 };
 
@@ -124,6 +123,7 @@ in
                   active_opacity = 0.9;
                   inactive_opacity = 0.9;
                   shadow.sharp = true;
+                  glow.enabled = true;
                 };
 
                 binds = {
@@ -136,6 +136,7 @@ in
                   repeat_rate = 30;
                   repeat_delay = 200;
                   accel_profile = "flat";
+                  touchpad.clickfinger_behavior = true;
                 };
 
                 xwayland = {
@@ -152,6 +153,7 @@ in
 
                 misc = {
                   disable_hyprland_logo = true;
+                  disable_splash_rendering = true;
                   mouse_move_enables_dpms = true;
                   key_press_enables_dpms = true;
                   animate_manual_resizes = true;
@@ -165,12 +167,6 @@ in
             // cfg.settings;
         };
       }
-      (mkIf (cfg.package != null) {
-        wayland.windowManager.hyprland.package = cfg.package;
-      })
-      (mkIf (cfg.portalPackage != null) {
-        wayland.windowManager.hyprland.portalPackage = cfg.portalPackage;
-      })
       (mkIf (cfg.extraConfig != null) {
         wayland.windowManager.hyprland.extraConfig = cfg.extraConfig;
       })

@@ -9,56 +9,9 @@ with lib; {
   ];
 
   core = {
-    context = ''
-      # System Environment: Workstation
-
-      ## Hardware Specifications
-      - **Device**: Custom Workstation (MSI `PRO Z790-P WIFI DDR4`)
-      - **Firmware**: AMI BIOS `1.G0`
-      - **CPU**: Intel Core i9-14900K (24 cores / 32 threads)
-      - **RAM**: 32GB DDR4
-      - **Graphics**:
-        - Integrated: Intel UHD Graphics 770 (Raptor Lake-S GT1)
-        - Dedicated: AMD Radeon RX 7900 XTX (XFX Speedster MERC 310)
-      - **Storage**:
-        - System: Samsung SSD 970 EVO Plus 1TB NVMe
-        - Project Pool: 2x Samsung SSD 870 EVO 1TB SATA SSDs (ZFS mirror)
-        - Storage Pool: 2x Seagate BarraCuda 2TB SATA HDDs (ZFS stripe)
-      - **Networking**: Intel Ethernet & Wi-Fi/Bluetooth hardware with NetworkManager and Tailscale enabled
-      - **Peripherals**:
-        - Keychron Q10 keyboard
-        - Razer Basilisk V3 Pro mouse
-        - Depstech webcam
-        - Xbox Controller support enabled
-        - Logitech device support enabled
-        - Android ADB support enabled
-
-      ## Operating System & Core Config
-      - **OS**: NixOS (`x86_64-linux`)
-      - **Timezone**: `America/Chicago`
-      - **Nix Configuration**:
-        - Determinate Nix enabled with `nix-command` and `flakes`
-        - `nh` manages system/home switching and cleanup workflows
-        - `nix-ld` and `sops-nix` are enabled for binary compatibility and secret management
-      - **Boot & Console**:
-        - systemd-boot with Plymouth splash screen and Linux Zen kernel
-        - US keymap and Terminus console font
-      - **Security & Access**:
-        - Host secrets are sourced from `./secrets.yml`
-
-      ## Desktop & Local Services
-      - **Session Stack**: Hyprland (Wayland) with SDDM using the `sddm-astronaut-theme` `jake_the_dog` variant
-      - **Theming**: System-wide Catppuccin Macchiato base16 scheme
-      - **Desktop Features**:
-        - Printing enabled
-        - Gaming profile enabled, including Virtual Reality (VR) support
-      - **Local Tools**:
-        - Docker enabled
-        - VirtualBox enabled
-        - Partition manager enabled
-    '';
     stateVersion = "26.11";
     timeZone = "America/Chicago";
+
     nixconf.determinate.enable = true;
 
     boot = {
