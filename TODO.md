@@ -3,16 +3,16 @@
 These are the tasks that are intended for future development goals
 
 - [ ] For each module
-  - [] Update option descriptions (multiline strings, accurate descriptions, examples where applicable)
-  - [] Each module uses with lib;
-  - [] Each module has slim imports
-  - [] Each module declares as little as possible in the root let in binding
-  - [] Each module has an enable option
-  - [] Each module uses mkMerge EVEN IF IT IS NOT NEEDED
-  - [] Each module guards dependencies (options ? "dependency name") for easy removal
-  - [] Each home manager option from nixos configuration is apropriately set
-  - [] Each home manager feature requiring prerequisite nixos configuration is apropriately guarded or errors
-  - [] EVERY variable read is properly guarded or throws documented errors
+  - [ ] Update option descriptions (multiline strings, accurate descriptions, examples where applicable)
+  - [ ] Each module uses with lib;
+  - [ ] Each module has slim imports
+  - [ ] Each module declares as little as possible in the root let in binding
+  - [ ] Each module has an enable option
+  - [ ] Each module uses mkMerge EVEN IF IT IS NOT NEEDED
+  - [ ] Each module guards dependencies (options ? "dependency name") for easy removal
+  - [ ] Each home manager option from nixos configuration is apropriately set
+  - [ ] Each home manager feature requiring prerequisite nixos configuration is apropriately guarded or errors
+  - [ ] EVERY variable read is properly guarded or throws documented errors
 - [ ] Configure hermes agent in some form
   - [ ] Research if hermes agent supports multi user configuration
     - [x] if yes create server deployment as this is an always on service

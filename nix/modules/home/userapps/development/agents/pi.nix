@@ -94,35 +94,75 @@ in
             The packages to install for the pi agent.
           '';
         };
+
+        defaultProvider = mkOption {
+          type = types.str;
+          default = "opencode-go";
+          description = ''
+            The name of the provider to register as default
+          '';
+          example = "openrouter";
+        };
+
+        defaultModel = mkOption {
+          type = types.str;
+          default = "deepseek-v4-flash";
+          description = ''
+            The name of the model to use as the default
+          '';
+          example = "deepseek-v4-pro";
+        };
+
+        defaultThinkingLevel = mkOption {
+          type = types.enum [
+            "off"
+            "minimal"
+            "low"
+            "medium"
+            "high"
+            "xhigh"
+          ];
+          default = "high";
+          description = ''
+            The thinking level of the model
+          '';
+          example = "low";
+        };
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
-        userapps.development.agents.pi.secrets = flatten (
-          (mapAttrsToList (
-              _name: server:
-                filter (val: val != null) (
-                  mapAttrsToList (_name: env:
-                    if env ? "secret"
-                    then env.secret
-                    else null)
-                  server.env
-                )
-            )
-            cfg.mcpServers.stdio)
-          ++ (mapAttrsToList (
-              _name: server:
-                filter (val: val != null) (
-                  mapAttrsToList (_name: header:
-                    if header ? "secret"
-                    then header.secret
-                    else null)
-                  server.headers
-                )
-            )
-            cfg.mcpServers.http)
-        );
+        userapps.development.agents.pi = {
+          secrets = flatten (
+            (mapAttrsToList (
+                _name: server:
+                  filter (val: val != null) (
+                    mapAttrsToList (_name: env:
+                      if env ? "secret"
+                      then env.secret
+                      else null)
+                    server.env
+                  )
+              )
+              cfg.mcpServers.stdio)
+            ++ (mapAttrsToList (
+                _name: server:
+                  filter (val: val != null) (
+                    mapAttrsToList (_name: header:
+                      if header ? "secret"
+                      then header.secret
+                      else null)
+                    server.headers
+                  )
+              )
+              cfg.mcpServers.http)
+          );
+
+          packages = mkIf (cfg.mcpServers.stdio != {} || cfg.mcpServers.http != {}) [
+            "npm:pi-mcp-extension"
+          ];
+        };
 
         home = {
           packages = mkIf (cfg.secrets == []) [
@@ -130,6 +170,22 @@ in
           ];
 
           file = mkMerge [
+            {
+              ".pi/agent/settings.json" = {
+                text = builtins.toJSON (
+                  {
+                    inherit
+                      (cfg)
+                      packages
+                      defaultProvider
+                      defaultModel
+                      defaultThinkingLevel
+                      ;
+                  }
+                  // cfg.userSettings
+                );
+              };
+            }
             (mkMerge [
               (mkIf (typeOf cfg.context == "path") {
                 "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (readFile cfg.context);
@@ -149,10 +205,6 @@ in
               })
               cfg.skills
             ))
-            # Wire packages to packages.json for pi agent to pick up.
-            (mkIf (cfg.packages != []) {
-              ".pi/packages.json".text = builtins.toJSON cfg.packages;
-            })
             # Wire MCP servers.
             (mkIf hasMcpServers {
               ".pi/agent/mcp.json".text = builtins.toJSON mcpServerConfig;

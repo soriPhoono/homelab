@@ -1,5 +1,5 @@
 _: _final: prev: let
-  version = "0.78.0";
+  version = "0.78.1";
   system = prev.stdenv.hostPlatform.system;
 
   src =
@@ -7,7 +7,7 @@ _: _final: prev: let
     then
       prev.fetchurl {
         url = "https://github.com/earendil-works/pi/releases/download/v${version}/pi-linux-x64.tar.gz";
-        hash = "sha256-isAzQ9HhIoEG6BchV/Mta4goKeRrNP6vV38XGl8Th8w=";
+        hash = "sha256-10GwzeoLRIS0Ic+PnndqNe7t0eOPg2EF7imUi0JA5Dc=";
       }
     else if system == "aarch64-linux"
     then
@@ -37,7 +37,10 @@ in {
       description = "Minimal terminal coding agent";
       homepage = "https://pi.dev";
       license = prev.lib.licenses.mit;
-      platforms = ["x86_64-linux" "aarch64-linux"];
+      platforms = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
       maintainers = [];
     };
   };
