@@ -20,7 +20,7 @@
       pyright
       typescript-language-server
       biome
-      dockerfile-language-server-nodejs
+      dockerfile-language-server
       cmake-language-server
       phpactor
       solargraph
@@ -89,7 +89,10 @@
           language-servers = ["pyright"];
           formatter = {
             command = "${pkgs.ruff}/bin/ruff";
-            args = ["format" "-"];
+            args = [
+              "format"
+              "-"
+            ];
           };
         }
         {
@@ -127,7 +130,10 @@
           language-servers = ["vscode-html-language-server"];
           formatter = {
             command = "${pkgs.prettier}/bin/prettier";
-            args = ["--parser" "html"];
+            args = [
+              "--parser"
+              "html"
+            ];
           };
         }
         {

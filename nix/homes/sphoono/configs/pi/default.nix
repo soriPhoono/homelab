@@ -20,6 +20,8 @@
 
     packages = [
       "git:git@github.com:soriPhoono/pi-package"
+
+      "npm:pi-subagents"
     ];
 
     skills = {
