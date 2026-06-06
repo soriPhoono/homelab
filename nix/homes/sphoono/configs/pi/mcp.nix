@@ -13,6 +13,10 @@
             "run"
             "-i"
             "--rm"
+            "-e"
+            "MEMORY_FILE_PATH=/data/memory.jsonl"
+            "-v"
+            "${config.home.homeDirectory}/.local/share/pi/memory:/data"
             "mcp/memory"
           ];
         };
