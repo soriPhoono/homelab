@@ -916,26 +916,31 @@ in
       (mkIf cfg.container.autoEnableRuntime (
         let
           isDocker = cfg.container.backend != "podman";
-        in {
-          # Enable the container runtime on the host
-          virtualisation.${
+          runtimeName =
             if isDocker
             then "docker"
-            else "podman"
-          }.enable =
-            true;
+            else "podman";
+        in {
+          # Enable the container runtime on the host
+          virtualisation.${runtimeName}.enable = true;
 
           # The hermes system user needs access to the container runtime
           # socket so the CLI wrapper (and dashboard) can docker exec into
           # the container. The docker/podman group is created by the
           # virtualisation module above.
-          users.users.${config.services.hermes-agent.user}.extraGroups = [
-            (
-              if isDocker
-              then "docker"
-              else "podman"
-            )
-          ];
+          users.users.${
+            config.services.hermes-agent.user
+          }.extraGroups = [runtimeName];
+
+          # The dashboard service runs in a sandboxed systemd PATH that
+          # doesn't include /run/current-system/sw/bin. Without the
+          # container runtime on PATH, the hermes CLI wrapper cannot
+          # route commands into the container.
+          systemd.services.hermes-dashboard = lib.mkIf cfg.dashboard.enable {
+            serviceConfig.Environment = [
+              "PATH=/run/current-system/sw/bin"
+            ];
+          };
         }
       ))
 
