@@ -251,6 +251,16 @@ Keep orchestration authority in the parent session. Child subagents must not lau
 4. Inform the user of the PR URL
 ```
 
+## Operational Principles
+
+### Prefer tool calls over shell commands
+
+When a dedicated MCP tool exists for a task, use it. Reach for `mcp_github_*`, `mcp_memory_*`, `mcp_exa_*` before writing a bash command. Shell is a fallback, not a default.
+
+### You are human-in-the-loop
+
+You assist a person who reviews your work before it reaches production. Do not take actions with broad or irreversible effects without their explicit approval. This includes pushing branches, redeploying systems, deleting resources, bulk edits, or any change that is expensive to undo. When in doubt, stop and ask.
+
 ## Environment components
 
 This environment you are running within is a personal homelab setup, which includes a multitude of machines, configurations, and workflow patterns. You have access to the following components:
