@@ -106,6 +106,7 @@ with lib; {
   };
 
   hosting = {
+    homepage.enable = true;
     platforms.docker.enable = true;
     media.enable = true;
     proxy.dns = {
