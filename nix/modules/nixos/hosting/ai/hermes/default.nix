@@ -941,6 +941,21 @@ in
               "PATH=/run/current-system/sw/bin"
             ];
           };
+
+          # Expose host-side service ports from the container so the
+          # dashboard and gateway API are reachable from the host.
+          # The hermes CLI routes `hermes dashboard` into the container
+          # via docker exec, but port publishing must be set at container
+          # creation time — these mappings ensure the ports are accessible.
+          services.hermes-agent.container.extraOptions =
+            (lib.optionals cfg.dashboard.enable [
+              "-p"
+              "${toString cfg.dashboard.port}:${toString cfg.dashboard.port}"
+            ])
+            ++ (lib.optionals cfg.gateway.enableApi [
+              "-p"
+              "${toString cfg.gateway.apiPort}:${toString cfg.gateway.apiPort}"
+            ]);
         }
       ))
 
