@@ -22,6 +22,7 @@ _: {
       };
       office = {
         zathura.enable = true;
+        calibre.enable = true;
         libreoffice.enable = true;
         slack.enable = true;
       };
