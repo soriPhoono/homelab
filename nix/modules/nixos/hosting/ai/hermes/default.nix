@@ -913,14 +913,31 @@ in
       # ──────────────────────────────────────────────
       # 2. Container runtime
       # ──────────────────────────────────────────────
-      (mkIf cfg.container.autoEnableRuntime {
-        virtualisation.${
-          if cfg.container.backend == "podman"
-          then "podman"
-          else "docker"
-        }.enable =
-          true;
-      })
+      (mkIf cfg.container.autoEnableRuntime (
+        let
+          isDocker = cfg.container.backend != "podman";
+        in {
+          # Enable the container runtime on the host
+          virtualisation.${
+            if isDocker
+            then "docker"
+            else "podman"
+          }.enable =
+            true;
+
+          # The hermes system user needs access to the container runtime
+          # socket so the CLI wrapper (and dashboard) can docker exec into
+          # the container. The docker/podman group is created by the
+          # virtualisation module above.
+          users.users.${config.services.hermes-agent.user}.extraGroups = [
+            (
+              if isDocker
+              then "docker"
+              else "podman"
+            )
+          ];
+        }
+      ))
 
       # ──────────────────────────────────────────────
       # 3. Host user access
