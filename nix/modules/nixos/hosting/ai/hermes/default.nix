@@ -989,11 +989,11 @@ in
             EnvironmentFile = config.services.hermes-agent.environmentFiles;
 
             ExecStart = ''
-              ${config.services.hermes-agent.package}/bin/hermes dashboard \
+              ${config.services.hermes-agent.package}/bin/hermes \
+                ${lib.optionalString cfg.dashboard.enableChat "--tui"} \
+                dashboard \
                 --host ${cfg.dashboard.host} \
-                --port ${toString cfg.dashboard.port} \
-                ${lib.optionalString (!cfg.dashboard.openBrowser) "--no-open"} \
-                ${lib.optionalString cfg.dashboard.enableChat "--tui"}
+                --port ${toString cfg.dashboard.port}
             '';
 
             Restart = "on-failure";
