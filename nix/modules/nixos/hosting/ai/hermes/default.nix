@@ -970,6 +970,13 @@ in
         # Install the desktop Electron app if a package was provided
         environment.systemPackages = lib.optional (cfg.desktopPackage != null) cfg.desktopPackage;
 
+        # Wire up HERMES_DESKTOP_HERMES_ROOT so `hermes desktop` can find
+        # the Electron app source. The Python CLI looks for apps/desktop
+        # under this root path.
+        environment.variables = lib.optionalAttrs (cfg.desktopPackage != null) {
+          HERMES_DESKTOP_HERMES_ROOT = "${cfg.stateDir}/hermes-root";
+        };
+
         # Ensure files inside .hermes are group-readable so users in the
         # hermes group can run the CLI (chat, TUI, setup --portal) without
         # permission errors on runtime files (auth.lock, .env, state.db,
@@ -977,10 +984,16 @@ in
         #
         # - Z: recursively fix permissions on all existing content
         # - A: set default ACL so new files inherit group read/write (rw)
-        systemd.tmpfiles.rules = [
-          "Z ${cfg.stateDir}/.hermes 2770 ${config.services.hermes-agent.user} ${config.services.hermes-agent.group} -"
-          "A ${cfg.stateDir}/.hermes - - - - d:${config.services.hermes-agent.group}:rwX"
-        ];
+        #
+        # When a desktop package is configured, also create the symlink
+        # needed for `hermes desktop` to find the Electron app source.
+        systemd.tmpfiles.rules =
+          [
+            "Z ${cfg.stateDir}/.hermes 2770 ${config.services.hermes-agent.user} ${config.services.hermes-agent.group} -"
+            "A ${cfg.stateDir}/.hermes - - - - d:${config.services.hermes-agent.group}:rwX"
+          ]
+          ++ lib.optional (cfg.desktopPackage != null)
+          "L+ ${cfg.stateDir}/hermes-root/apps/desktop - - - - ${cfg.desktopPackage}/share/hermes-desktop";
       }
 
       # ──────────────────────────────────────────────
