@@ -124,19 +124,18 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard — bound to loopback since Caddy handles
-      # external TLS and auth. Multiple on-device users share the
-      # same gateway service via the hostUsers option below.
+      # Web dashboard — accessible via Tailscale IP (tailnet only).
+      # Bind to 0.0.0.0 so the OAuth auth gate engages when a client
+      # ID is configured, but no public proxy — only the tailnet can
+      # reach the dashboard port.
       dashboard = {
         enable = true;
-        host = "127.0.0.1";
+        host = "0.0.0.0";
+        # oauthClientId = "agent:01HXYZ...";  # set your Portal client ID
       };
 
-      # OpenAI-compatible API gateway
+      # OpenAI-compatible API gateway (also on Tailscale IP)
       gateway.enableApi = true;
-
-      # Proxy integration (Caddy routes to dashboard)
-      enableProxy = true;
 
       # Desktop Electron app — run with `hermes-desktop`
       desktopPackage = inputs.hermes-agent.packages.${pkgs.system}.desktop;
