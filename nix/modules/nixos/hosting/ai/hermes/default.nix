@@ -992,15 +992,10 @@ in
             # Fix group permissions on state files so host users (like
             # sphoono in the hermes group) can run `hermes setup --portal`
             # and other CLI commands that read ~/.hermes/.env.
-            #
             # The `-` prefix tells systemd to ignore non-zero exits
             # (files may not exist yet before first container run).
             ExecStartPre = [
-              "-${pkgs.coreutils}/bin/chmod"
-              "g+rwX"
-              "${cfg.stateDir}/.hermes"
-              "${cfg.stateDir}/.hermes/.env"
-              "${cfg.stateDir}/.hermes/config.yaml"
+              "-${pkgs.coreutils}/bin/chmod g+rwX ${cfg.stateDir}/.hermes ${cfg.stateDir}/.hermes/.env ${cfg.stateDir}/.hermes/config.yaml"
             ];
 
             ExecStart = ''
