@@ -1073,9 +1073,9 @@ in
             EnvironmentFile = config.services.hermes-agent.environmentFiles;
 
             # Set OAuth client ID for the dashboard auth gate (login screen)
-            Environment = lib.optionalAttrs (cfg.dashboard.oauthClientId != null) {
-              HERMES_DASHBOARD_OAUTH_CLIENT_ID = cfg.dashboard.oauthClientId;
-            };
+            Environment =
+              lib.optional (cfg.dashboard.oauthClientId != null)
+              "HERMES_DASHBOARD_OAUTH_CLIENT_ID=${cfg.dashboard.oauthClientId}";
 
             ExecStart = ''
               ${config.services.hermes-agent.package}/bin/hermes \
