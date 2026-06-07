@@ -1057,10 +1057,12 @@ in
             dashboard on port ${toString cfg.dashboard.port}.
           '';
           proxyPort = cfg.dashboard.port;
-          # Rewrite Host header to 127.0.0.1 so the dashboard's FastAPI
-          # host-header validation accepts requests forwarded by Caddy.
+          # Rewrite Host and Origin headers so the dashboard's FastAPI
+          # host-header validation and WebSocket origin check accept
+          # requests forwarded by Caddy from the external domain.
           extraConfig = ''
             header_up Host 127.0.0.1
+            header_up Origin http://127.0.0.1:${toString cfg.dashboard.port}
           '';
           extraPaths = {
             "${cfg.proxy.path}" = {
@@ -1074,6 +1076,7 @@ in
               handlePath = true;
               extraConfig = ''
                 header_up Host 127.0.0.1
+                header_up Origin http://127.0.0.1:${toString cfg.dashboard.port}
               '';
             };
           };
