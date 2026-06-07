@@ -554,6 +554,19 @@ in
         '';
       };
 
+      desktopPackage = mkOption {
+        type = types.nullOr types.package;
+        default = null;
+        example = lib.literalExpression "inputs.hermes-agent.packages.\${pkgs.system}.desktop";
+        description = ''
+          The Hermes desktop application package (Electron GUI). When set,
+          the desktop app binary is added to the system PATH.
+
+          Use the upstream flake's desktop package:
+          inputs.hermes-agent.packages.\${pkgs.system}.desktop
+        '';
+      };
+
       stateDir = mkOption {
         type = types.str;
         default = "/var/lib/hermes";
@@ -689,7 +702,10 @@ in
       # ── Container ──────────────────────────────
       container = {
         backend = mkOption {
-          type = types.enum ["docker" "podman"];
+          type = types.enum [
+            "docker"
+            "podman"
+          ];
           default = "docker";
           description = ''
             Container runtime backend. Docker is the default. Change to
@@ -730,7 +746,10 @@ in
         extraOptions = mkOption {
           type = types.listOf types.str;
           default = [];
-          example = ["--gpus" "all"];
+          example = [
+            "--gpus"
+            "all"
+          ];
           description = ''
             Extra arguments passed to docker/podman create. Useful for GPU
             passthrough (--gpus all), resource limits, or custom network
@@ -898,6 +917,9 @@ in
           inherit (cfg) environment;
         };
 
+        # Install the desktop Electron app if a package was provided
+        environment.systemPackages = lib.optional (cfg.desktopPackage != null) cfg.desktopPackage;
+
         # Ensure files inside .hermes are group-readable so users in the
         # hermes group can run the CLI (chat, TUI, setup --portal) without
         # permission errors on runtime files (auth.lock, .env, state.db,
@@ -929,9 +951,7 @@ in
           # socket so the CLI wrapper (and dashboard) can docker exec into
           # the container. The docker/podman group is created by the
           # virtualisation module above.
-          users.users.${
-            config.services.hermes-agent.user
-          }.extraGroups = [runtimeName];
+          users.users.${config.services.hermes-agent.user}.extraGroups = [runtimeName];
 
           # The dashboard service runs in a sandboxed systemd PATH that
           # doesn't include /run/current-system/sw/bin. Without the
