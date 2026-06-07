@@ -132,13 +132,11 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard — loopback only, no LAN exposure:
-      #   - Public:  https://ai.local.cryptic-coders.net (via Caddy)
-      #   - Tailnet:  http://<tailscale-ip>:9119 (via tailscale serve)
-      #   - Local:    http://127.0.0.1:9119
+      # Web dashboard — all interfaces with Portal OAuth login screen
       dashboard = {
         enable = true;
-        host = "127.0.0.1";
+        host = "0.0.0.0";
+        oauthClientId = "agent:cmq33vtz8002wjf0b2vykn6pi";
       };
 
       # Caddy proxy — routes ai.local.cryptic-coders.net to dashboard
