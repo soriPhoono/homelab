@@ -989,12 +989,17 @@ in
             # Inherit the same environment as the gateway
             EnvironmentFile = config.services.hermes-agent.environmentFiles;
 
-            # Fix group permissions on state files so host users (like
-            # sphoono in the hermes group) can run `hermes setup --portal`
-            # and other CLI commands that read ~/.hermes/.env.
-            # The `-` prefix tells systemd to ignore non-zero exits
-            # (files may not exist yet before first container run).
+            # Fix ownership and permissions on state files so host users
+            # (like sphoono in the hermes group) can run `hermes setup
+            # --portal` and other CLI commands via container routing.
+            # The container entrypoint creates files as `ubuntu` (UID 1000)
+            # which maps to the host sphoono user, not the hermes user.
+            #
+            # The `+` prefix runs the command as root (needed for chown).
+            # The `-` prefix ignores non-zero exits (files may not exist
+            # before first container run).
             ExecStartPre = [
+              "+${pkgs.coreutils}/bin/chown -R ${config.services.hermes-agent.user}:${config.services.hermes-agent.group} ${cfg.stateDir}/.hermes/.env ${cfg.stateDir}/.hermes/config.yaml"
               "-${pkgs.coreutils}/bin/chmod g+rwX ${cfg.stateDir}/.hermes ${cfg.stateDir}/.hermes/.env ${cfg.stateDir}/.hermes/config.yaml"
             ];
 
