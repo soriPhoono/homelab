@@ -585,6 +585,37 @@ in
         '';
       };
 
+      # ── Credential Seeding ───────────────────────
+      authFile = mkOption {
+        type = types.nullOr types.path;
+        default = null;
+        example = lib.literalExpression "config.sops.secrets.\"hermes/auth.json\".path";
+        description = ''
+          Path to an auth.json seed file containing OAuth credentials (Portal
+          refresh tokens, credential pool entries). This is used to pre-provision
+          authentication on first deploy.
+
+          By default, the file is only copied if auth.json doesn't exist in the
+          state directory. Set authFileForceOverwrite = true to overwrite on
+          every activation.
+
+          Typical usage with sops-nix:
+          {
+            sops.secrets."hermes/auth.json" = {};
+            hosting.hermes-agent.authFile = config.sops.secrets."hermes/auth.json".path;
+          }
+        '';
+      };
+
+      authFileForceOverwrite = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Always overwrite auth.json in the state directory from authFile on
+          activation. By default, the seed file is only copied on first deploy.
+        '';
+      };
+
       # ── Portal / Subscription ────────────────────
       portal = {
         enable = mkOption {
@@ -673,6 +704,21 @@ in
             Requires the --tui flag or HERMES_DASHBOARD_TUI=1 environment
             variable.  Set to false if you don't need the chat terminal in
             the dashboard.
+          '';
+        };
+
+        oauthClientId = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "agent:01HXYZ...";
+          description = ''
+            OAuth client ID for the dashboard auth gate. When set, the
+            dashboard binds to 0.0.0.0 and presents a login screen where
+            users authenticate via Nous Portal OAuth.
+
+            The Nous Portal provisions this ID (shape agent:{instance_id})
+            when it deploys a Hermes instance. For testing, you can use:
+              HERMES_DASHBOARD_OAUTH_CLIENT_ID=agent:test
           '';
         };
       };
@@ -825,6 +871,10 @@ in
 
           # Add CLI to PATH and set HERMES_HOME system-wide
           inherit (cfg) addToSystemPackages;
+
+          # OAuth credential seeding (Portal auth tokens, etc.)
+          inherit (cfg) authFile;
+          inherit (cfg) authFileForceOverwrite;
 
           # State directory
           inherit (cfg) stateDir;
@@ -1009,19 +1059,10 @@ in
             # Inherit the same environment as the gateway
             EnvironmentFile = config.services.hermes-agent.environmentFiles;
 
-            # Fix ownership and permissions on state files so host users
-            # (like sphoono in the hermes group) can run `hermes setup
-            # --portal` and other CLI commands via container routing.
-            # The container entrypoint creates files as `ubuntu` (UID 1000)
-            # which maps to the host sphoono user, not the hermes user.
-            #
-            # The `+` prefix runs the command as root (needed for chown).
-            # The `-` prefix ignores non-zero exits (files may not exist
-            # before first container run).
-            ExecStartPre = [
-              "+${pkgs.coreutils}/bin/chown -R ${config.services.hermes-agent.user}:${config.services.hermes-agent.group} ${cfg.stateDir}/.hermes/.env ${cfg.stateDir}/.hermes/config.yaml"
-              "-${pkgs.coreutils}/bin/chmod g+rwX ${cfg.stateDir}/.hermes ${cfg.stateDir}/.hermes/.env ${cfg.stateDir}/.hermes/config.yaml"
-            ];
+            # Set OAuth client ID for the dashboard auth gate (login screen)
+            Environment = lib.optionalAttrs (cfg.dashboard.oauthClientId != null) {
+              HERMES_DASHBOARD_OAUTH_CLIENT_ID = cfg.dashboard.oauthClientId;
+            };
 
             ExecStart = ''
               ${config.services.hermes-agent.package}/bin/hermes \
@@ -1036,14 +1077,9 @@ in
 
             # Hardening
             NoNewPrivileges = true;
-            ProtectSystem = "strict";
+            ProtectSystem = "full";
             ProtectHome = true;
             PrivateTmp = true;
-
-            # ProtectSystem=strict makes / read-only. The state directory
-            # needs to be writable so host users can access ~/.hermes files
-            # and so the ExecStartPre chmod can fix group permissions.
-            ReadWritePaths = [cfg.stateDir];
           };
         };
       })
