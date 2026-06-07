@@ -2,6 +2,7 @@
   lib,
   config,
   options,
+  pkgs,
   ...
 }: let
   cfg = config.hosting.hermes-agent;
@@ -987,6 +988,13 @@ in
 
             # Inherit the same environment as the gateway
             EnvironmentFile = config.services.hermes-agent.environmentFiles;
+
+            # Fix group permissions on state files so host users (like
+            # sphoono in the hermes group) can run `hermes setup --portal`
+            # and other CLI commands that read ~/.hermes/.env
+            ExecStartPre = ''
+              ${pkgs.coreutils}/bin/chmod -R g+rwX ${cfg.stateDir}/.hermes
+            '';
 
             ExecStart = ''
               ${config.services.hermes-agent.package}/bin/hermes \
