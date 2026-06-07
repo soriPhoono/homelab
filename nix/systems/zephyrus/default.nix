@@ -123,10 +123,11 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard with Portal OAuth auth gate
+      # Web dashboard — bound to loopback since Caddy (on localhost)
+      # handles TLS and external access via the proxy module
       dashboard = {
         enable = true;
-        host = "0.0.0.0";
+        host = "127.0.0.1";
       };
 
       # OpenAI-compatible API gateway
