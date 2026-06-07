@@ -124,17 +124,19 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard — accessible via Tailscale IP (tailnet only).
-      # Bind to 0.0.0.0 so the OAuth auth gate engages when a client
-      # ID is configured, but no public proxy — only the tailnet can
-      # reach the dashboard port.
+      # Web dashboard — loopback only, no LAN exposure:
+      #   - Public:  https://ai.local.cryptic-coders.net (via Caddy)
+      #   - Tailnet:  http://<tailscale-ip>:9119 (via tailscale serve)
+      #   - Local:    http://127.0.0.1:9119
       dashboard = {
         enable = true;
-        host = "0.0.0.0";
-        # oauthClientId = "agent:01HXYZ...";  # set your Portal client ID
+        host = "127.0.0.1";
       };
 
-      # OpenAI-compatible API gateway (also on Tailscale IP)
+      # Caddy proxy — routes ai.local.cryptic-coders.net to dashboard
+      enableProxy = true;
+
+      # OpenAI-compatible API gateway
       gateway.enableApi = true;
 
       # Desktop Electron app — run with `hermes-desktop`
