@@ -991,17 +991,17 @@ in
 
             # Fix group permissions on state files so host users (like
             # sphoono in the hermes group) can run `hermes setup --portal`
-            # and other CLI commands that read ~/.hermes/.env
+            # and other CLI commands that read ~/.hermes/.env.
             #
-            # Only target the directory and mutable files — not the entire
-            # tree, because some contents are symlinked from the read-only
-            # Nix store (bundled skills, templates, etc.).
-            ExecStartPre = ''
-              ${pkgs.coreutils}/bin/chmod g+rwX ${cfg.stateDir}/.hermes \
-                ${cfg.stateDir}/.hermes/.env \
-                ${cfg.stateDir}/.hermes/config.yaml \
-                2>/dev/null || true
-            '';
+            # The `-` prefix tells systemd to ignore non-zero exits
+            # (files may not exist yet before first container run).
+            ExecStartPre = [
+              "-${pkgs.coreutils}/bin/chmod"
+              "g+rwX"
+              "${cfg.stateDir}/.hermes"
+              "${cfg.stateDir}/.hermes/.env"
+              "${cfg.stateDir}/.hermes/config.yaml"
+            ];
 
             ExecStart = ''
               ${config.services.hermes-agent.package}/bin/hermes \
@@ -1019,6 +1019,11 @@ in
             ProtectSystem = "strict";
             ProtectHome = true;
             PrivateTmp = true;
+
+            # ProtectSystem=strict makes / read-only. The state directory
+            # needs to be writable so host users can access ~/.hermes files
+            # and so the ExecStartPre chmod can fix group permissions.
+            ReadWritePaths = [cfg.stateDir];
           };
         };
       })
