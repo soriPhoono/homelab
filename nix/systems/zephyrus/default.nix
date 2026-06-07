@@ -124,8 +124,9 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard — bound to loopback since Caddy (on localhost)
-      # handles TLS and external access via the proxy module
+      # Web dashboard — bound to loopback since Caddy handles
+      # external TLS and auth. Multiple on-device users share the
+      # same gateway service via the hostUsers option below.
       dashboard = {
         enable = true;
         host = "127.0.0.1";
