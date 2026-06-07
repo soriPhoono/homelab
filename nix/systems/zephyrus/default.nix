@@ -1,6 +1,7 @@
 {
   lib,
   pkgs,
+  inputs,
   ...
 }:
 with lib; {
@@ -135,6 +136,9 @@ with lib; {
 
       # Proxy integration (Caddy routes to dashboard)
       enableProxy = true;
+
+      # Desktop Electron app — run with `hermes-desktop`
+      desktopPackage = inputs.hermes-agent.packages.${pkgs.system}.desktop;
 
       # CLI + desktop app access for sphoono
       hostUsers = ["sphoono"];
