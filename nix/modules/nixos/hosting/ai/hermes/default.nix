@@ -1131,7 +1131,6 @@ in
               proxyPort = cfg.dashboard.port;
               handlePath = true;
               extraConfig = ''
-                header_up Host 127.0.0.1
                 header_up Origin http://127.0.0.1:${toString cfg.dashboard.port}
               '';
             };

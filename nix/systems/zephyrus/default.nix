@@ -124,19 +124,20 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard — bound to loopback since Caddy handles
-      # external TLS and auth. Multiple on-device users share the
-      # same gateway service via the hostUsers option below.
+      # Web dashboard — loopback only, no LAN exposure:
+      #   - Public:  https://ai.local.cryptic-coders.net (via Caddy)
+      #   - Tailnet:  http://<tailscale-ip>:9119 (via tailscale serve)
+      #   - Local:    http://127.0.0.1:9119
       dashboard = {
         enable = true;
         host = "127.0.0.1";
       };
 
+      # Caddy proxy — routes ai.local.cryptic-coders.net to dashboard
+      enableProxy = true;
+
       # OpenAI-compatible API gateway
       gateway.enableApi = true;
-
-      # Proxy integration (Caddy routes to dashboard)
-      enableProxy = true;
 
       # Desktop Electron app — run with `hermes-desktop`
       desktopPackage = inputs.hermes-agent.packages.${pkgs.system}.desktop;
