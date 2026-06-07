@@ -50,7 +50,15 @@ with lib; {
 
     networking = {
       network-manager.enable = true;
-      tailscale.enable = true;
+      tailscale = {
+        enable = true;
+        serve = {
+          enable = true;
+          services.hermes-dashboard.proxy = {
+            "tcp:9119" = "http://127.0.0.1:9119";
+          };
+        };
+      };
     };
 
     secrets = {
