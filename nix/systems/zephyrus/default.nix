@@ -132,7 +132,7 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard — all interfaces with Portal OAuth login screen
+      # Web dashboard with Portal OAuth login screen
       dashboard = {
         enable = true;
         host = "0.0.0.0";
