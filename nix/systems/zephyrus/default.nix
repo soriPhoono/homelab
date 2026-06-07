@@ -124,15 +124,12 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard with Nous Portal OAuth login screen
+      # Web dashboard — bound to loopback since Caddy handles
+      # external TLS and auth. Multiple on-device users share the
+      # same gateway service via the hostUsers option below.
       dashboard = {
         enable = true;
-        host = "0.0.0.0";
-
-        # Uncomment and set to your Portal-provisioned client ID for
-        # multi-user login. Shape: agent:{instance_id}
-        # For testing without Portal: oauthClientId = "agent:test";
-        # oauthClientId = "agent:01HXYZ...";
+        host = "127.0.0.1";
       };
 
       # OpenAI-compatible API gateway
