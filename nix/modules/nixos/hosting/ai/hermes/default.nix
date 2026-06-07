@@ -992,8 +992,15 @@ in
             # Fix group permissions on state files so host users (like
             # sphoono in the hermes group) can run `hermes setup --portal`
             # and other CLI commands that read ~/.hermes/.env
+            #
+            # Only target the directory and mutable files — not the entire
+            # tree, because some contents are symlinked from the read-only
+            # Nix store (bundled skills, templates, etc.).
             ExecStartPre = ''
-              ${pkgs.coreutils}/bin/chmod -R g+rwX ${cfg.stateDir}/.hermes
+              ${pkgs.coreutils}/bin/chmod g+rwX ${cfg.stateDir}/.hermes \
+                ${cfg.stateDir}/.hermes/.env \
+                ${cfg.stateDir}/.hermes/config.yaml \
+                2>/dev/null || true
             '';
 
             ExecStart = ''
