@@ -124,11 +124,15 @@ with lib; {
       # Skip LSP/MCP for now — testing phase
       lsp.enable = false;
 
-      # Web dashboard — bound to loopback since Caddy (on localhost)
-      # handles TLS and external access via the proxy module
+      # Web dashboard with Nous Portal OAuth login screen
       dashboard = {
         enable = true;
-        host = "127.0.0.1";
+        host = "0.0.0.0";
+
+        # Uncomment and set to your Portal-provisioned client ID for
+        # multi-user login. Shape: agent:{instance_id}
+        # For testing without Portal: oauthClientId = "agent:test";
+        # oauthClientId = "agent:01HXYZ...";
       };
 
       # OpenAI-compatible API gateway
