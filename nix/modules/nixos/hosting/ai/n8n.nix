@@ -39,6 +39,32 @@
         }
       ];
   });
+
+  # Common environment shared between main n8n and workers
+  commonEnv =
+    {
+      TZ = config.time.timeZone;
+      GENERIC_TIMEZONE = config.time.timeZone;
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS = "true";
+      NODE_ENV = "production";
+    }
+    // lib.optionalAttrs cfg.workers.enable {
+      EXECUTIONS_MODE = "queue";
+      QUEUE_BULL_REDIS_HOST = "n8n-redis";
+      QUEUE_BULL_REDIS_PORT = toString cfg.redis.port;
+      QUEUE_BULL_REDIS_DB = "0";
+    }
+    // cfg.environment;
+
+  # Common volumes shared between main n8n and workers
+  commonVolumes = [
+    "${cfg.configDir}/data:/home/node/.n8n"
+  ];
+
+  # Common environment files shared between main n8n and workers
+  commonEnvFiles = lib.optionals (cfg.runners.enable && cfg.runners.authTokenFile != null) [
+    cfg.runners.authTokenFile
+  ];
 in
   with lib; {
     options.hosting.ai.n8n = {
@@ -90,7 +116,7 @@ in
         type = types.listOf types.str;
         default = [];
         description = ''
-          Additional volume mounts for the main container.
+          Additional volume mounts for all n8n containers (main + workers).
           Each entry should be in Docker volume format: "/host/path:/container/path[:mode]"
         '';
       };
@@ -115,12 +141,42 @@ in
           N8N_USER_MANAGEMENT_JWT_SECRET = "your-jwt-secret";
         };
         description = ''
-          Additional environment variables passed to the n8n container.
-          Useful for setting secrets like N8N_ENCRYPTION_KEY and
+          Environment variables passed to the main n8n container and all
+          worker containers. Use for secrets that need to be shared across
+          instances, such as N8N_ENCRYPTION_KEY and
           N8N_USER_MANAGEMENT_JWT_SECRET.
         '';
       };
 
+      # ── Tier 1: Redis queue backend ───────────────────────────
+      redis = {
+        enable = mkEnableOption "Redis queue backend for n8n workers (required for queue mode)";
+
+        port = mkOption {
+          type = types.port;
+          default = 6379;
+          description = "Redis port";
+        };
+
+        image = mkOption {
+          type = types.str;
+          default = "redis:7-alpine";
+          description = "Docker image for Redis";
+        };
+      };
+
+      # ── Tier 2: Workers ───────────────────────────────────────
+      workers = {
+        enable = mkEnableOption "n8n worker instances for parallel workflow execution via Redis queue";
+
+        count = mkOption {
+          type = types.int;
+          default = 1;
+          description = "Number of n8n worker replicas to run";
+        };
+      };
+
+      # ── Tier 3: Code runners ──────────────────────────────────
       runners = {
         enable = mkEnableOption "n8n task runners for isolated code execution (JavaScript + Python)";
 
@@ -145,7 +201,7 @@ in
             Use with sops.templates for secure secret management.
 
             Example with sops:
-              sops.secrets."ai/n8n-runners-token" = { };
+              sops.secrets."ai/n8n-runners-token" = {};
               sops.templates."n8n-runners.env" = {
                 content = "N8N_RUNNERS_AUTH_TOKEN=my-secret-token";
               };
@@ -202,7 +258,9 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
-      # ── Base n8n container ──────────────────────────────────
+      # ═══════════════════════════════════════════════════════════
+      # Tier 1: Main n8n server (web UI + trigger orchestrator)
+      # ═══════════════════════════════════════════════════════════
       {
         users = {
           users.n8n = {
@@ -227,34 +285,24 @@ in
           autoStart = true;
           networks = ["proxy"];
 
-          volumes =
-            [
-              "${cfg.configDir}/data:/home/node/.n8n"
-            ]
-            ++ cfg.extraVolumes;
+          volumes = commonVolumes ++ cfg.extraVolumes;
 
           environment =
-            {
-              TZ = config.time.timeZone;
-              GENERIC_TIMEZONE = config.time.timeZone;
-              N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS = "true";
+            commonEnv
+            // {
               N8N_PORT = toString cfg.port;
               N8N_PROTOCOL = "https";
               N8N_HOST = cfg.domain;
               WEBHOOK_URL = "https://${cfg.domain}/";
-              NODE_ENV = "production";
             }
             // optionalAttrs cfg.runners.enable {
               N8N_RUNNERS_ENABLED = "true";
               N8N_RUNNERS_MODE = "external";
               N8N_RUNNERS_BROKER_LISTEN_ADDRESS = "0.0.0.0";
               N8N_NATIVE_PYTHON_RUNNER = boolToString cfg.runners.launcherConfig.python.enable;
-            }
-            // cfg.environment;
+            };
 
-          environmentFiles = optionals (cfg.runners.enable && cfg.runners.authTokenFile != null) [
-            cfg.runners.authTokenFile
-          ];
+          environmentFiles = commonEnvFiles;
 
           labels =
             {
@@ -271,7 +319,67 @@ in
         };
       }
 
-      # ── Task runners container ─────────────────────────────
+      # ═══════════════════════════════════════════════════════════
+      # Tier 2: Redis queue backend
+      # ═══════════════════════════════════════════════════════════
+      (mkIf cfg.redis.enable {
+        virtualisation.oci-containers.containers.n8n-redis = {
+          image = cfg.redis.image;
+          autoStart = true;
+          networks = ["proxy"];
+
+          cmd = [
+            "redis-server"
+            "--port"
+            toString
+            cfg.redis.port
+            "--save"
+            "60"
+            "1000"
+            "--appendonly"
+            "yes"
+          ];
+
+          volumes = [
+            "${cfg.configDir}/redis:/data"
+          ];
+        };
+      })
+
+      # ═══════════════════════════════════════════════════════════
+      # Tier 3: Worker containers
+      # ═══════════════════════════════════════════════════════════
+      (mkIf cfg.workers.enable {
+        assertions = [
+          {
+            assertion = cfg.redis.enable;
+            message = "hosting.ai.n8n.redis.enable must be true when workers are enabled.";
+          }
+        ];
+
+        virtualisation.oci-containers.containers = listToAttrs (
+          flip map (genList (i: i) cfg.workers.count) (i: {
+            name = "n8n-worker-${toString i}";
+            value = {
+              inherit (cfg) image;
+              autoStart = true;
+              networks = ["proxy"];
+
+              cmd = ["worker"];
+
+              volumes = commonVolumes ++ cfg.extraVolumes;
+
+              environment = commonEnv;
+
+              environmentFiles = commonEnvFiles;
+            };
+          })
+        );
+      })
+
+      # ═══════════════════════════════════════════════════════════
+      # Tier 4: Code execution runners
+      # ═══════════════════════════════════════════════════════════
       (mkIf cfg.runners.enable {
         assertions = [
           {
@@ -279,7 +387,6 @@ in
             message = ''
               hosting.ai.n8n.runners.authTokenFile must be set when runners are enabled.
               Use sops.templates to create an env file containing N8N_RUNNERS_AUTH_TOKEN.
-              See the option description for an example.
             '';
           }
         ];
