@@ -45,7 +45,7 @@ This is the actual error checking command, be sure to run this in a loop until
 no errors are reported.
 
 ```bash
-nix fmt && nix flake check --all-systems --show-trace
+nix fmt && nix flake check --all-systems --show-trace --option max-jobs 1 --option cores 4
 ```
 
 - **Does this report any errors**: Prompt the user if they would like this

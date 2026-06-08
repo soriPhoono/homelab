@@ -2,43 +2,46 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }: let
   uids = import ../uids.nix;
   cfg = config.hosting.ai.n8n;
 
   # Generate the task runners launcher configuration JSON
-  launcherConfig = pkgs.writeText "n8n-task-runners.json" (builtins.toJSON {
-    "task-runners" =
-      [
-        {
-          "runner-type" = "javascript";
-          "env-overrides" =
-            {}
-            // lib.optionalAttrs (cfg.runners.launcherConfig.javascript.allowBuiltin != []) {
-              NODE_FUNCTION_ALLOW_BUILTIN = lib.concatStringsSep "," cfg.runners.launcherConfig.javascript.allowBuiltin;
-            }
-            // lib.optionalAttrs (cfg.runners.launcherConfig.javascript.allowExternal != []) {
-              NODE_FUNCTION_ALLOW_EXTERNAL = lib.concatStringsSep "," cfg.runners.launcherConfig.javascript.allowExternal;
-            };
-        }
-      ]
-      ++ lib.optionals cfg.runners.launcherConfig.python.enable [
-        {
-          "runner-type" = "python";
-          "env-overrides" =
-            {
-              PYTHONPATH = "/opt/runners/task-runner-python";
-            }
-            // lib.optionalAttrs (cfg.runners.launcherConfig.python.stdlibAllow != []) {
-              N8N_RUNNERS_STDLIB_ALLOW = lib.concatStringsSep "," cfg.runners.launcherConfig.python.stdlibAllow;
-            }
-            // lib.optionalAttrs (cfg.runners.launcherConfig.python.externalAllow != []) {
-              N8N_RUNNERS_EXTERNAL_ALLOW = lib.concatStringsSep "," cfg.runners.launcherConfig.python.externalAllow;
-            };
-        }
-      ];
-  });
+  launcherConfig = pkgs.writeText "n8n-task-runners.json" (
+    builtins.toJSON {
+      "task-runners" =
+        [
+          {
+            "runner-type" = "javascript";
+            "env-overrides" =
+              {}
+              // lib.optionalAttrs (cfg.runners.launcherConfig.javascript.allowBuiltin != []) {
+                NODE_FUNCTION_ALLOW_BUILTIN = lib.concatStringsSep "," cfg.runners.launcherConfig.javascript.allowBuiltin;
+              }
+              // lib.optionalAttrs (cfg.runners.launcherConfig.javascript.allowExternal != []) {
+                NODE_FUNCTION_ALLOW_EXTERNAL = lib.concatStringsSep "," cfg.runners.launcherConfig.javascript.allowExternal;
+              };
+          }
+        ]
+        ++ lib.optionals cfg.runners.launcherConfig.python.enable [
+          {
+            "runner-type" = "python";
+            "env-overrides" =
+              {
+                PYTHONPATH = "/opt/runners/task-runner-python";
+              }
+              // lib.optionalAttrs (cfg.runners.launcherConfig.python.stdlibAllow != []) {
+                N8N_RUNNERS_STDLIB_ALLOW = lib.concatStringsSep "," cfg.runners.launcherConfig.python.stdlibAllow;
+              }
+              // lib.optionalAttrs (cfg.runners.launcherConfig.python.externalAllow != []) {
+                N8N_RUNNERS_EXTERNAL_ALLOW = lib.concatStringsSep "," cfg.runners.launcherConfig.python.externalAllow;
+              };
+          }
+        ];
+    }
+  );
 
   # Common environment shared between main n8n and workers
   commonEnv =
@@ -61,9 +64,11 @@
     "${cfg.configDir}/data:/home/node/.n8n"
   ];
 
+  authFile = config.sops.templates."n8n-auth.env".path;
+
   # Common environment files shared between main n8n and workers
-  commonEnvFiles = lib.optionals (cfg.runners.enable && cfg.runners.authTokenFile != null) [
-    cfg.runners.authTokenFile
+  commonEnvFiles = lib.optionals (cfg.runners.enable && options ? sops) [
+    authFile
   ];
 in
   with lib; {
@@ -192,23 +197,6 @@ in
           '';
         };
 
-        authTokenFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = ''
-            Path to a file containing N8N_RUNNERS_AUTH_TOKEN=... for runner authentication.
-            This shared secret is mounted into both the main n8n container and runners.
-            Use with sops.templates for secure secret management.
-
-            Example with sops:
-              sops.secrets."ai/n8n-runners-token" = {};
-              sops.templates."n8n-runners.env" = {
-                content = "N8N_RUNNERS_AUTH_TOKEN=my-secret-token";
-              };
-              hosting.ai.n8n.runners.authTokenFile = config.sops.templates."n8n-runners.env".path;
-          '';
-        };
-
         launcherConfig = {
           javascript = {
             allowBuiltin = mkOption {
@@ -223,7 +211,10 @@ in
             allowExternal = mkOption {
               type = types.listOf types.str;
               default = [];
-              example = ["moment" "uuid"];
+              example = [
+                "moment"
+                "uuid"
+              ];
               description = ''
                 Third-party npm packages to allowlist for JavaScript code execution.
                 These must be pre-installed in the runners image.
@@ -237,7 +228,11 @@ in
             stdlibAllow = mkOption {
               type = types.listOf types.str;
               default = [];
-              example = ["json" "math" "os"];
+              example = [
+                "json"
+                "math"
+                "os"
+              ];
               description = ''
                 Python standard library modules to allowlist for Python code execution.
                 Set to ["*"] to allow all stdlib modules.
@@ -246,7 +241,10 @@ in
             externalAllow = mkOption {
               type = types.listOf types.str;
               default = [];
-              example = ["numpy" "pandas"];
+              example = [
+                "numpy"
+                "pandas"
+              ];
               description = ''
                 Third-party Python packages to allowlist for Python code execution.
                 These must be pre-installed in the runners image.
@@ -283,7 +281,10 @@ in
         virtualisation.oci-containers.containers.n8n = {
           inherit (cfg) image;
           autoStart = true;
-          networks = ["proxy"];
+          networks = [
+            "proxy"
+            "n8n"
+          ];
 
           volumes = commonVolumes ++ cfg.extraVolumes;
 
@@ -326,13 +327,12 @@ in
         virtualisation.oci-containers.containers.n8n-redis = {
           image = cfg.redis.image;
           autoStart = true;
-          networks = ["proxy"];
+          networks = ["n8n"];
 
           cmd = [
             "redis-server"
             "--port"
-            toString
-            cfg.redis.port
+            (toString cfg.redis.port)
             "--save"
             "60"
             "1000"
@@ -363,7 +363,7 @@ in
             value = {
               inherit (cfg) image;
               autoStart = true;
-              networks = ["proxy"];
+              networks = ["n8n"];
 
               cmd = ["worker"];
 
@@ -383,10 +383,9 @@ in
       (mkIf cfg.runners.enable {
         assertions = [
           {
-            assertion = cfg.runners.authTokenFile != null;
+            assertion = options ? sops;
             message = ''
-              hosting.ai.n8n.runners.authTokenFile must be set when runners are enabled.
-              Use sops.templates to create an env file containing N8N_RUNNERS_AUTH_TOKEN.
+              hosting.ai.n8n.runners.enable requires the sops dependency to be enabled for this module
             '';
           }
         ];
@@ -394,20 +393,39 @@ in
         virtualisation.oci-containers.containers.n8n-runners = {
           image = cfg.runners.image;
           autoStart = true;
-          networks = ["proxy"];
+          networks = ["n8n"];
 
           environment = {
             N8N_RUNNERS_TASK_BROKER_URI = "http://n8n:5679";
             N8N_RUNNERS_LAUNCHER_LOG_LEVEL = "info";
           };
 
-          environmentFiles = optionals (cfg.runners.authTokenFile != null) [
-            cfg.runners.authTokenFile
-          ];
+          environmentFiles = commonEnvFiles;
 
           volumes = [
             "${launcherConfig}:/etc/n8n-task-runners.json:ro"
           ];
+        };
+      })
+
+      (mkIf (cfg.runners.enable && options ? sops) {
+        # n8n secrets declared via sops
+        sops = {
+          secrets = {
+            "hosting/ai/n8n_runners-token" = {};
+            "hosting/ai/n8n_encryption-key" = {};
+            "hosting/ai/n8n_jwt-secret" = {};
+          };
+
+          templates = {
+            "n8n-auth.env" = {
+              content = ''
+                N8N_RUNNERS_AUTH_TOKEN=${config.sops.placeholder."hosting/ai/n8n_runners-token"}
+                N8N_ENCRYPTION_KEY = ${config.sops.placeholder."hosting/ai/n8n_encryption-key"}
+                N8N_USER_MANAGEMENT_JWT_SECRET = ${config.sops.placeholder."hosting/ai/n8n_jwt-secret"}
+              '';
+            };
+          };
         };
       })
     ]);
