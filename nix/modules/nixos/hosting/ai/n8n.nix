@@ -15,8 +15,32 @@
         [
           {
             "runner-type" = "javascript";
+            "workdir" = "/home/runner";
+            "command" = "/usr/local/bin/node";
+            "args" = [
+              "--disallow-code-generation-from-strings"
+              "--disable-proto=delete"
+              "/opt/runners/task-runner-javascript/dist/start.js"
+            ];
+            "health-check-server-port" = "5681";
+            "allowed-env" = [
+              "PATH"
+              "GENERIC_TIMEZONE"
+              "NODE_OPTIONS"
+              "NODE_PATH"
+              "N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT"
+              "N8N_RUNNERS_TASK_TIMEOUT"
+              "N8N_RUNNERS_MAX_CONCURRENCY"
+              "N8N_SENTRY_DSN"
+              "N8N_VERSION"
+              "ENVIRONMENT"
+              "DEPLOYMENT_NAME"
+              "HOME"
+            ];
             "env-overrides" =
-              {}
+              {
+                N8N_RUNNERS_HEALTH_CHECK_SERVER_HOST = "0.0.0.0";
+              }
               // lib.optionalAttrs (cfg.runners.launcherConfig.javascript.allowBuiltin != []) {
                 NODE_FUNCTION_ALLOW_BUILTIN = lib.concatStringsSep "," cfg.runners.launcherConfig.javascript.allowBuiltin;
               }
@@ -28,6 +52,28 @@
         ++ lib.optionals cfg.runners.launcherConfig.python.enable [
           {
             "runner-type" = "python";
+            "workdir" = "/home/runner";
+            "command" = "/opt/runners/task-runner-python/.venv/bin/python";
+            "args" = [
+              "-I"
+              "-B"
+              "-X"
+              "disable_remote_debug"
+              "-m"
+              "src.main"
+            ];
+            "health-check-server-port" = "5682";
+            "allowed-env" = [
+              "PATH"
+              "N8N_RUNNERS_LAUNCHER_LOG_LEVEL"
+              "N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT"
+              "N8N_RUNNERS_TASK_TIMEOUT"
+              "N8N_RUNNERS_MAX_CONCURRENCY"
+              "N8N_SENTRY_DSN"
+              "N8N_VERSION"
+              "ENVIRONMENT"
+              "DEPLOYMENT_NAME"
+            ];
             "env-overrides" =
               {
                 PYTHONPATH = "/opt/runners/task-runner-python";
@@ -187,13 +233,12 @@ in
 
         image = mkOption {
           type = types.str;
-          default = lib.replaceStrings ["n8nio/n8n"] ["n8nio/runners"] cfg.image;
-          defaultText = literalExpression ''
-            lib.replaceStrings ["n8nio/n8n"] ["n8nio/runners"] config.hosting.ai.n8n.image
-          '';
+          default = "n8nio/runners";
+          defaultText = literalExpression ''"n8nio/runners"'';
           description = ''
             Docker image for n8n task runners. Must match the main n8n image tag.
-            Defaults to n8nio/runners with the same tag as the main image.
+            Defaults to n8nio/runners from Docker Hub. Note that this image is
+            NOT available on the docker.n8n.io registry (only on Docker Hub and GHCR).
           '';
         };
 
@@ -275,7 +320,10 @@ in
 
         systemd.tmpfiles.rules = [
           "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
-          "d ${cfg.configDir}/data 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
+          # The data dir is mounted to /home/node/.n8n inside the container, where
+          # the n8n process runs as the "node" user (UID 1000). Match that UID so
+          # the container process can write to the volume.
+          "d ${cfg.configDir}/data 0755 1000 1000 -"
         ];
 
         virtualisation.oci-containers.containers.n8n = {
@@ -421,8 +469,8 @@ in
             "n8n-auth.env" = {
               content = ''
                 N8N_RUNNERS_AUTH_TOKEN=${config.sops.placeholder."hosting/ai/n8n_runners-token"}
-                N8N_ENCRYPTION_KEY = ${config.sops.placeholder."hosting/ai/n8n_encryption-key"}
-                N8N_USER_MANAGEMENT_JWT_SECRET = ${config.sops.placeholder."hosting/ai/n8n_jwt-secret"}
+                N8N_ENCRYPTION_KEY=${config.sops.placeholder."hosting/ai/n8n_encryption-key"}
+                N8N_USER_MANAGEMENT_JWT_SECRET=${config.sops.placeholder."hosting/ai/n8n_jwt-secret"}
               '';
             };
           };
