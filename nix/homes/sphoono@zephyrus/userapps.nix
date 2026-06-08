@@ -35,8 +35,6 @@ _: {
       enable = true;
       terminal.ghostty.enable = true;
       agents.pi.enable = true;
-      agents.hermes.enable = true;
-      agents.hermes.desktop = true;
       editors.zed.enable = true;
       # appliances.bambu-studio.enable = true;
     };

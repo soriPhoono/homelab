@@ -1,5 +1,5 @@
 _: _final: prev: let
-  version = "0.78.1";
+  version = "0.79.0";
   system = prev.stdenv.hostPlatform.system;
 
   src =
@@ -7,7 +7,7 @@ _: _final: prev: let
     then
       prev.fetchurl {
         url = "https://github.com/earendil-works/pi/releases/download/v${version}/pi-linux-x64.tar.gz";
-        hash = "sha256-10GwzeoLRIS0Ic+PnndqNe7t0eOPg2EF7imUi0JA5Dc=";
+        hash = "sha256-DJLnOgzYwNQGDinb5ncHGRdGFwPt0sDoHqgMFMMqDao=";
       }
     else if system == "aarch64-linux"
     then
