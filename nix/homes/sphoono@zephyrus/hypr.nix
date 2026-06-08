@@ -30,21 +30,21 @@
           {
             _args = [
               "XF86Launch1"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia-shell ipc call settings toggle\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call settings toggle\")")
             ];
           }
           # Fan Mode
           {
             _args = [
               "XF86Launch4"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia-shell ipc call powerProfile cycle\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call powerProfile cycle\")")
             ];
           }
           # Airplane Mode
           {
             _args = [
               "XF86Launch5"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia-shell ipc call airplaneMode toggle\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call airplaneMode toggle\")")
             ];
           }
           # Keyboard Brightness

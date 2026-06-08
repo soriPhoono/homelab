@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }: let
@@ -19,28 +18,6 @@ in
           name = "Fort Worth, TX";
           useFahrenheit = true;
           use12HourFormat = true;
-        };
-
-        pluginSettings = {
-          usb-drive-manager = {
-            autoMount = true;
-            hideWhenEmpty = true;
-            fileBrowser = "xdg-open";
-            terminalCommand = "${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.TERMINAL} -e";
-          };
-          tailscale = {
-            showPeerCount = false;
-            terminalCommand = "${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.TERMINAL} -e";
-            taildropReceiveMode = "pkexec";
-          };
-          pomodoro = {
-            workDuration = 25;
-            shortBreakDuration = 15;
-            longBreakDuration = 15;
-            sessionsBeforeLongBreak = 6;
-            autoStartBreaks = true;
-            autoStartWork = true;
-          };
         };
       };
     };

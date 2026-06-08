@@ -123,6 +123,9 @@ in
           };
         };
 
+        # Auto-enable the Docker container hosting platform
+        hosting.platforms.docker.enable = mkDefault true;
+
         systemd.tmpfiles.rules = [
           "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
           "d ${cfg.cacheDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
