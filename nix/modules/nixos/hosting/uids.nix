@@ -8,6 +8,13 @@
 # UID range: 901-949 for media services
 #             980 for the shared media group
 {
+  ai = {
+    n8n = {
+      uid = 930;
+      gid = 930;
+    };
+  };
+
   media = {
     # Shared media group — members are the service users
     group = {gid = 980;};

@@ -49,15 +49,7 @@ with lib; {
 
     networking = {
       network-manager.enable = true;
-      tailscale = {
-        enable = true;
-        serve = {
-          enable = true;
-          services.hermes-dashboard.proxy = {
-            "tcp:9119" = "http://127.0.0.1:9119";
-          };
-        };
-      };
+      tailscale.enable = true;
     };
 
     secrets = {
@@ -123,6 +115,46 @@ with lib; {
       dns = {
         baseDomain = "cryptic-coders.net";
         email = "soriphoono@gmail.com";
+      };
+    };
+    ai = {
+      enable = true;
+      n8n = {
+        redis.enable = true;
+        workers = {
+          enable = true;
+          count = 2;
+        };
+        runners = {
+          enable = true;
+          launcherConfig = {
+            javascript = {
+              allowBuiltin = ["*/"];
+              allowExternal = [
+                "moment"
+                "uuid"
+                "lodash"
+              ];
+            };
+            python = {
+              enable = true;
+              stdlibAllow = [
+                "json"
+                "math"
+                "os"
+                "csv"
+                "re"
+                "datetime"
+                "random"
+              ];
+              externalAllow = [
+                "numpy"
+                "pandas"
+                "requests"
+              ];
+            };
+          };
+        };
       };
     };
   };

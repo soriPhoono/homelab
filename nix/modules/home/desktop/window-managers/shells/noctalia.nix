@@ -201,50 +201,50 @@ in
           {
             _args = [
               "SUPER + A"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call launcher toggle\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg panel-toggle launcher\")")
             ];
           }
           {
             _args = [
               "SUPER + Tab"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call controlCenter toggle\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg panel-toggle control-center\")")
             ];
           }
           {
             _args = [
               "SUPER + L"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call lockScreen lock\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg session lock\")")
             ];
           }
           {
             _args = [
               "SUPER + P"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call sessionMenu toggle\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg panel-toggle session\")")
             ];
           }
           {
             _args = [
               "SUPER + C"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call launcher emoji\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg panel-toggle launcher /emo\")")
             ];
           }
           {
             _args = [
               "SUPER + V"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call launcher clipboard\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg panel-toggle clipboard\")")
             ];
           }
           {
             _args = [
               "XF86AudioMicMute"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call volume muteInput\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg mic-mute\")")
             ];
           }
           # ── Hardware Keys ──────────────────────────────────────────
           {
             _args = [
               "XF86MonBrightnessDown"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call brightness decrease\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg brightness-down\")")
               {
                 locked = true;
                 repeating = true;
@@ -254,7 +254,7 @@ in
           {
             _args = [
               "XF86MonBrightnessUp"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call brightness increase\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg brightness-up\")")
               {
                 locked = true;
                 repeating = true;
@@ -264,14 +264,14 @@ in
           {
             _args = [
               "XF86AudioMute"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call volume muteOutput\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg volume-mute\")")
               {locked = true;}
             ];
           }
           {
             _args = [
               "XF86AudioLowerVolume"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call volume decrease\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg volume-down\")")
               {
                 locked = true;
                 repeating = true;
@@ -281,7 +281,7 @@ in
           {
             _args = [
               "XF86AudioRaiseVolume"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call volume increase\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg volume-up\")")
               {
                 locked = true;
                 repeating = true;
@@ -291,21 +291,21 @@ in
           {
             _args = [
               "XF86AudioPrev"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call media previous\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg media previous\")")
               {locked = true;}
             ];
           }
           {
             _args = [
               "XF86AudioPlay"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call media playPause\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg media toggle\")")
               {locked = true;}
             ];
           }
           {
             _args = [
               "XF86AudioNext"
-              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia ipc call media next\")")
+              (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg media next\")")
               {locked = true;}
             ];
           }
