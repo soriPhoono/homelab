@@ -187,13 +187,12 @@ in
 
         image = mkOption {
           type = types.str;
-          default = lib.replaceStrings ["n8nio/n8n"] ["n8nio/runners"] cfg.image;
-          defaultText = literalExpression ''
-            lib.replaceStrings ["n8nio/n8n"] ["n8nio/runners"] config.hosting.ai.n8n.image
-          '';
+          default = "n8nio/runners";
+          defaultText = literalExpression ''"n8nio/runners"'';
           description = ''
             Docker image for n8n task runners. Must match the main n8n image tag.
-            Defaults to n8nio/runners with the same tag as the main image.
+            Defaults to n8nio/runners from Docker Hub. Note that this image is
+            NOT available on the docker.n8n.io registry (only on Docker Hub and GHCR).
           '';
         };
 
@@ -421,8 +420,8 @@ in
             "n8n-auth.env" = {
               content = ''
                 N8N_RUNNERS_AUTH_TOKEN=${config.sops.placeholder."hosting/ai/n8n_runners-token"}
-                N8N_ENCRYPTION_KEY = ${config.sops.placeholder."hosting/ai/n8n_encryption-key"}
-                N8N_USER_MANAGEMENT_JWT_SECRET = ${config.sops.placeholder."hosting/ai/n8n_jwt-secret"}
+                N8N_ENCRYPTION_KEY=${config.sops.placeholder."hosting/ai/n8n_encryption-key"}
+                N8N_USER_MANAGEMENT_JWT_SECRET=${config.sops.placeholder."hosting/ai/n8n_jwt-secret"}
               '';
             };
           };
