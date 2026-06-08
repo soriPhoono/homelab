@@ -125,6 +125,9 @@ with lib; {
         email = "soriphoono@gmail.com";
       };
     };
+    ai = {
+      enable = true;
+    };
   };
 
   themes = {
