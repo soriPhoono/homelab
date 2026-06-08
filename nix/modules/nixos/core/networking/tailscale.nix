@@ -60,7 +60,7 @@ in
       {
         services.tailscale = {
           enable = true;
-          useRoutingFeatures = "client";
+          useRoutingFeatures = "both";
           openFirewall = true;
           disableUpstreamLogging = true;
         };

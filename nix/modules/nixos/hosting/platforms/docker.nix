@@ -74,11 +74,6 @@ in
     config = mkIf cfg.enable {
       systemd.services =
         {
-          # Ensure rules are re-applied when tailscaled starts/restarts
-          tailscaled.serviceConfig.ExecStartPost = mkIf cfg.tailscaleBypass.enable [
-            "-${pkgs.systemd}/bin/systemctl restart --no-block docker-tailscale-bypass.service"
-          ];
-
           docker-create-networks = let
             networks = unique (
               flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
@@ -88,6 +83,7 @@ in
             wantedBy = ["multi-user.target"];
             serviceConfig = {
               Type = "oneshot";
+              RemainAfterExit = true;
               ExecStart = "${
                 pkgs.writeShellApplication {
                   name = "docker-create-networks";
@@ -115,6 +111,7 @@ in
             wantedBy = ["multi-user.target"];
             serviceConfig = {
               Type = "oneshot";
+              RemainAfterExit = true;
               ExecStart = "${
                 pkgs.writeShellApplication {
                   name = "docker-install-plugins";
@@ -157,7 +154,7 @@ in
           };
 
           docker-tailscale-bypass = mkIf cfg.tailscaleBypass.enable {
-            description = "Bypass Tailscale routing for Docker traffic";
+            description = "Bypass Tailscale routing for Docker traffic (watchdog)";
             wants = [
               "network-online.target"
               "tailscaled.service"
@@ -173,20 +170,20 @@ in
               "tailscaled.service"
             ];
             serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = true;
+              Type = "simple";
+              Restart = "always";
+              RestartSec = 10;
               ExecStart = "${
                 pkgs.writeShellApplication {
-                  name = "docker-tailscale-bypass-start";
+                  name = "docker-tailscale-bypass-watchdog";
                   runtimeInputs = with pkgs; [
                     iproute2
                     gnugrep
                   ];
                   text = ''
-                    # Give tailscaled a moment to settle its own rules
-                    sleep 2
-
-                    ${lib.concatStringsSep "\n" (
+                    apply_rules() {
+                      ${lib.concatStringsSep "
+                      " (
                       flatten (
                         map (subnet: [
                           ''
@@ -205,9 +202,26 @@ in
                         cfg.tailscaleBypass.subnets
                       )
                     )}
+                    }
+
+                    # Initial application — retry until rules persist
+                    for _ in $(seq 1 10); do
+                      apply_rules
+                      if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "from"; then
+                        break
+                      fi
+                      sleep 3
+                    done
+
+                    # Watchdog loop: re-apply every 15s if tailscale wipes them
+                    while true; do
+                      sleep 15
+                      apply_rules
+                    done
                   '';
                 }
-              }/bin/docker-tailscale-bypass-start";
+              }/bin/docker-tailscale-bypass-watchdog";
+
               ExecStop = "${
                 pkgs.writeShellApplication {
                   name = "docker-tailscale-bypass-stop";

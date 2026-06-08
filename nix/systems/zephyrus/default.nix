@@ -1,7 +1,6 @@
 {
   lib,
   pkgs,
-  inputs,
   ...
 }:
 with lib; {
@@ -115,44 +114,16 @@ with lib; {
   };
 
   hosting = {
-    ai.enable = true;
-    homepage.enable = true;
     platforms.docker.enable = true;
+    homepage.enable = true;
     media.enable = true;
-    proxy.dns = {
-      baseDomain = "cryptic-coders.net";
-      email = "soriphoono@gmail.com";
-    };
-
-    hermes-agent = {
-      # Nous Portal — model + tool gateway + auth
-      portal.enable = true;
-      model = "deepseek/deepseek-v4-flash";
-
-      # Skip LSP/MCP for now — testing phase
-      lsp.enable = false;
-
-      # Web dashboard with Portal OAuth login screen
-      dashboard = {
-        enable = true;
-        host = "0.0.0.0";
-        oauthClientId = "agent:cmq33vtz8002wjf0b2vykn6pi";
+    proxy = {
+      enable = true;
+      type = "traefik";
+      dns = {
+        baseDomain = "cryptic-coders.net";
+        email = "soriphoono@gmail.com";
       };
-
-      # Caddy proxy — routes ai.local.cryptic-coders.net to dashboard
-      enableProxy = true;
-
-      # OpenAI-compatible API gateway
-      gateway.enableApi = true;
-
-      # Desktop Electron app — run with `hermes-desktop`
-      desktopPackage = inputs.hermes-agent.packages.${pkgs.system}.desktop;
-
-      # CLI + desktop app access for sphoono
-      hostUsers = ["sphoono"];
-
-      # Container backend (Docker already enabled above)
-      container.backend = "docker";
     };
   };
 
