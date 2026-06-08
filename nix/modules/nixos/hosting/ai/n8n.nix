@@ -33,8 +33,8 @@ in
 
       domain = mkOption {
         type = types.str;
-        default = "n8n.${config.hosting.proxy.dns.localSubdomain}.${config.hosting.proxy.dns.baseDomain}";
-        defaultText = literalExpression ''"n8n.&{localSubdomain}.&{baseDomain}"'';
+        default = "ai.${config.hosting.proxy.dns.localSubdomain}.${config.hosting.proxy.dns.baseDomain}";
+        defaultText = literalExpression ''"ai.&{localSubdomain}.&{baseDomain}"'';
         description = ''
           The external domain for the n8n web interface (used for Traefik routing).
         '';
