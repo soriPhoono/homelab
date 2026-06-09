@@ -13,10 +13,10 @@ These are the tasks that are intended for future development goals
   - [ ] Each home manager option from nixos configuration is apropriately set
   - [ ] Each home manager feature requiring prerequisite nixos configuration is apropriately guarded or errors
   - [ ] EVERY variable read is properly guarded or throws documented errors
-- [ ] Configure hermes agent in some form
-  - [ ] Research if hermes agent supports multi user configuration
-    - [x] if yes create server deployment as this is an always on service
-    - [ ] otherwise rig up podman based user services, work on backup plan
+- [x] Configure hermes agent in some form
+  - [x] Research if hermes agent supports multi user configuration
+    - [ ] if yes create server deployment as this is an always on service
+    - [x] otherwise rig up podman/docker based user services, work on backup plan
 - [ ] Configure pi coding agent
   - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
     - [x] Finish updating mcp server types in [lib](./nix/lib.nix)
