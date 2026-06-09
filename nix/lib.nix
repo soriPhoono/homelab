@@ -193,6 +193,7 @@ with prev; {
               };
             };
           }))
+          str
         ];
 
         httpMcpServer = submodule {
