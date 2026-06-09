@@ -13,6 +13,10 @@
       uid = 930;
       gid = 930;
     };
+    mongodb = {
+      uid = 931;
+      gid = 931;
+    };
   };
 
   media = {

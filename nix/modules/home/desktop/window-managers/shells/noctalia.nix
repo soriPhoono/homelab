@@ -7,7 +7,6 @@
 }: let
   cfg = config.desktop.window-managers.shells.noctalia;
   hyprCfg = config.desktop.window-managers.hyprland;
-  terminal = config.home.sessionVariables.TERMINAL;
 in
   with lib; {
     options.desktop.window-managers.shells.noctalia = {
@@ -100,79 +99,182 @@ in
 
         settings =
           {
-            appLauncher = {
-              enableClipboardHistory = true;
-              terminalCommand = "${terminal} -e";
-              customLaunchPrefixEnabled = true;
-              customLaunchPrefix = "${pkgs.runapp}/bin/runapp";
-              viewMode = "grid";
-            };
-            audio = {
-              spectrumFrameRate = 60;
-              visualizerType = "mirrored";
-            };
-            colorSchemes.schedulingMode = "dark";
-            general =
+            # ── Shell ────────────────────────────────────────────────
+            shell =
               {
-                enableLockScreenMediaControls = true;
-                showScreenCorners = true;
-                forceBlackScreenCorners = true;
-                lockScreenAnimations = true;
-                lockScreenBlur = 0.5;
-                lockScreenTint = 0.5;
-                passwordChars = true;
+                time_format =
+                  if cfg.location != null && cfg.location.use12HourFormat
+                  then "{:%I:%M %p}"
+                  else "{:%H:%M}";
+                date_format = "%A, %x";
+                show_location = true;
+                clipboard_enabled = true;
+                password_style = "default";
+                settings_show_advanced = false;
+
+                panel = {
+                  transparency_mode = "solid";
+                  borders = true;
+                  launcher_placement = "centered";
+                  clipboard_placement = "centered";
+                  control_center_placement = "attached";
+                  session_placement = "attached";
+                };
               }
               // optionalAttrs (cfg.avatarImage != null) {
-                inherit (cfg) avatarImage;
+                avatar_path = cfg.avatarImage;
               };
-            idle.enabled = true;
-            location = optionalAttrs (cfg.location != null) {
-              inherit (cfg.location) name useFahrenheit use12HourFormat;
-            };
-            network = {
-              bluetoothHideUnnamedDevices = true;
-              disableDiscoverability = true;
-            };
-            nightLight.enabled = true;
-            systemMonitor.externalMonitor = "${pkgs.runapp}/bin/runapp -- ${terminal} -e ${config.programs.btop.package}/bin/btop";
+
+            # ── Wallpaper ───────────────────────────────────────────
             wallpaper = {
-              overviewEnabled = true;
+              enabled = true;
               directory = cfg.wallpaperDir;
             };
-            bar = {
-              inherit (cfg) monitors;
-              barType = "simple";
-              widgets = {
-                left = [
-                  {id = "plugin:pomodoro";}
-                  {id = "Workspace";}
-                  {id = "plugin:special-workspaces";}
-                  {id = "SystemMonitor";}
-                  {id = "plugin:screen-recorder";}
-                ];
-                center = [{id = "MediaMini";}];
-                right = [
-                  {id = "Tray";}
-                  {id = "plugin:network-manager-vpn";}
-                  {id = "plugin:tailscale";}
-                  {id = "Brightness";}
-                  {id = "Battery";}
-                  {id = "Volume";}
-                  {id = "plugin:usb-drive-manager";}
-                  {id = "Clock";}
-                  {id = "NotificationHistory";}
-                  {id = "ControlCenter";}
-                ];
+
+            # ── Bar ──────────────────────────────────────────────────
+            bar.main = {
+              position = "top";
+              background_opacity = 1.0;
+              radius = 12;
+              margin_h = 180;
+              margin_v = 10;
+              padding = 14;
+              widget_spacing = 6;
+              scale = 1.0;
+              shadow = true;
+              auto_hide = false;
+              reserve_space = true;
+              capsule = false;
+              start = [
+                "launcher"
+                "workspaces"
+                "system-monitor"
+              ];
+              center = [
+                "media"
+              ];
+              end = [
+                "tray"
+                "network"
+                "bluetooth"
+                "brightness"
+                "battery"
+                "volume"
+                "clock"
+                "notifications"
+                "clipboard"
+                "control-center"
+                "session"
+              ];
+            };
+
+            # ── Dock ─────────────────────────────────────────────────
+            dock.enabled = false;
+
+            # ── Notifications ────────────────────────────────────────
+            notification = {
+              enable_daemon = true;
+              show_app_name = true;
+              show_actions = true;
+              layer = "top";
+              scale = 1.0;
+              background_opacity = 0.97;
+              offset_x = 20;
+              offset_y = 8;
+            };
+
+            # ── OSD ─────────────────────────────────────────────────
+            osd = {
+              position = "top_right";
+              orientation = "horizontal";
+              scale = 1.0;
+              background_opacity = 0.97;
+              offset_x = 20;
+              offset_y = 8;
+              kinds = {
+                volume = true;
+                volume_output = true;
+                volume_input = true;
+                brightness = true;
+                wifi = true;
+                bluetooth = true;
+                power_profile = true;
+                caffeine = true;
+                dnd = true;
+                lock_keys = true;
+                keyboard_layout = true;
               };
             };
-            dock.enabled = false;
-            notifications.monitors = cfg.monitors;
-            osd.monitors = cfg.monitors;
-            ui = {
-              panelBackgroundOpacity = 0.9;
-              boxBorderEnabled = true;
-              settingsPanelSideBarCardStyle = true;
-              translucentWidgets = true;
+
+            # ── Lock Screen ─────────────────────────────────────────
+            lockscreen = {
+              blurred_desktop = false;
+              blur_intensity = 0.5;
+              tint_intensity = 0.3;
+            };
+
+            # ── System Monitor ───────────────────────────────────────
+            system.monitor = {
+              enabled = true;
+              cpu_poll_seconds = 2.0;
+              gpu_poll_seconds = 5.0;
+              memory_poll_seconds = 2.0;
+              network_poll_seconds = 3.0;
+              disk_poll_seconds = 10.0;
+            };
+
+            # ── Audio ───────────────────────────────────────────────
+            audio = {
+              enable_overdrive = false;
+              enable_sounds = false;
+              sound_volume = 0.5;
+            };
+
+            # ── Night Light ─────────────────────────────────────────
+            nightlight = {
+              enabled = true;
+              force = false;
+              temperature_day = 6500;
+              temperature_night = 4000;
+            };
+
+            # ── Theme ───────────────────────────────────────────────
+            theme = {
+              mode = "dark";
+              source = "builtin";
+              builtin = "Catppuccin";
+              templates.enable_builtin_templates = true;
+            };
+
+            # ── Location ────────────────────────────────────────────
+            location = optionalAttrs (cfg.location != null) {
+              address = cfg.location.name;
+            };
+
+            # ── Weather ─────────────────────────────────────────────
+            weather = {
+              enabled = cfg.location != null;
+              unit =
+                if cfg.location != null && cfg.location.useFahrenheit
+                then "fahrenheit"
+                else "celsius";
+              refresh_minutes = 30;
+              effects = true;
+            };
+
+            # ── Idle ────────────────────────────────────────────────
+            idle = {
+              behavior.lock = {
+                timeout = 600;
+                command = "noctalia:session lock";
+                enabled = true;
+              };
+              behavior.screen-off = {
+                timeout = 660;
+                command = "noctalia:dpms-off";
+                resume_command = "noctalia:dpms-on";
+                enabled = true;
+              };
             };
           }
           // cfg.settings;
