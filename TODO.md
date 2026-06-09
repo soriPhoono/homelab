@@ -19,7 +19,7 @@ These are the tasks that are intended for future development goals
     - [ ] otherwise rig up podman based user services, work on backup plan
 - [ ] Configure pi coding agent
   - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
-    - [ ] Finish updating mcp server types in [lib](./nix/lib.nix)
+    - [x] Finish updating mcp server types in [lib](./nix/lib.nix)
   - [ ] Finish installing packages
   - [ ] Create extensions for pi coding agent
     - [ ] Remove bash tool
