@@ -2,7 +2,6 @@
   # ── Monitor Configuration ──────────────────────────────────────────
   desktop.window-managers = {
     shells.noctalia.monitors = ["HDMI-A-1"];
-
     hyprland = {
       monitors = [
         {
@@ -19,11 +18,6 @@
           };
           scale = 1.0;
         }
-      ];
-
-      autostart = [
-        "steam"
-        "vesktop"
       ];
     };
   };

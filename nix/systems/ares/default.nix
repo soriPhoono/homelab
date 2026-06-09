@@ -18,6 +18,7 @@ with lib; {
       enable = true;
       kernel.packages = pkgs.linuxPackages_zen;
       plymouth.enable = true;
+      zram.enable = true;
     };
 
     hardware = {
@@ -94,6 +95,7 @@ with lib; {
       gaming = {
         enable = true;
         vr.enable = true;
+        console.enable = true;
       };
     };
     tools = {
