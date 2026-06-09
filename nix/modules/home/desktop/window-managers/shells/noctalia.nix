@@ -1,3 +1,4 @@
+# Add support for external monitor brightness adjustment
 {
   lib,
   pkgs,
@@ -97,6 +98,74 @@ in
         inherit (cfg) package;
         systemd.enable = cfg.systemd.enable;
 
+        customPalettes = optionalAttrs (config.stylix.enable or false) {
+          stylix = let
+            inherit
+              (config.lib.stylix.colors.withHashtag)
+              base00
+              base01
+              base02
+              base03
+              base04
+              base05
+              base07
+              base08
+              base0A
+              base0B
+              base0C
+              base0D
+              base0E
+              ;
+          in {
+            dark = {
+              mPrimary = base0D;
+              mOnPrimary = base00;
+              mSecondary = base0E;
+              mOnSecondary = base00;
+              mTertiary = base0C;
+              mOnTertiary = base00;
+              mError = base08;
+              mOnError = base00;
+              mSurface = base00;
+              mOnSurface = base05;
+              mSurfaceVariant = base01;
+              mOnSurfaceVariant = base04;
+              mOutline = base03;
+              mShadow = base00;
+              mHover = base02;
+              mOnHover = base05;
+              terminal = {
+                background = base00;
+                foreground = base05;
+                cursor = base05;
+                cursorText = base00;
+                selectionBg = base05;
+                selectionFg = base00;
+                normal = {
+                  black = base00;
+                  red = base08;
+                  green = base0B;
+                  yellow = base0A;
+                  blue = base0D;
+                  magenta = base0E;
+                  cyan = base0C;
+                  white = base05;
+                };
+                bright = {
+                  black = base03;
+                  red = base08;
+                  green = base0B;
+                  yellow = base0A;
+                  blue = base0D;
+                  magenta = base0E;
+                  cyan = base0C;
+                  white = base07;
+                };
+              };
+            };
+          };
+        };
+
         settings =
           {
             # ── Shell ────────────────────────────────────────────────
@@ -134,7 +203,7 @@ in
             # ── Bar ──────────────────────────────────────────────────
             bar.main = {
               position = "top";
-              background_opacity = 1.0;
+              background_opacity = 0.9;
               radius = 12;
               margin_h = 180;
               margin_v = 10;
@@ -148,7 +217,9 @@ in
               start = [
                 "launcher"
                 "workspaces"
-                "system-monitor"
+                "cpu"
+                "temp"
+                "ram"
               ];
               center = [
                 "media"
@@ -157,13 +228,10 @@ in
                 "tray"
                 "network"
                 "bluetooth"
-                "brightness"
                 "battery"
                 "volume"
-                "clock"
                 "notifications"
-                "clipboard"
-                "control-center"
+                "clock"
                 "session"
               ];
             };
@@ -276,6 +344,23 @@ in
                 enabled = true;
               };
             };
+
+            calendar = {
+              enabled = true;
+              refresh_minutes = 15;
+            };
+          }
+          // optionalAttrs (config.stylix.enable or false) {
+            theme = {
+              mode = config.stylix.polarity;
+              source = "custom";
+              custom_palette = "stylix";
+            };
+            shell = {
+              font = config.stylix.fonts.sansSerif.name;
+            };
+            theme.templates.enable_builtin_templates = false;
+            theme.templates.enable_community_templates = false;
           }
           // cfg.settings;
       };
