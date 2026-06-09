@@ -8,6 +8,7 @@ in
   with lib; {
     imports = [
       ./n8n.nix
+      ./mongodb.nix
     ];
 
     options.hosting.ai = {
