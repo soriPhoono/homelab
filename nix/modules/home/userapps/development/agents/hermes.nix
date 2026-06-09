@@ -21,6 +21,11 @@
       "traefik.http.services.hermes-${username}.loadbalancer.server.port" = "8642";
     }
     // cfg.extraLabels;
+  env =
+    cfg.env
+    // (lib.optionalAttrs cfg.ollama.enable {
+      HERMES_OLLAMA_BASE_URL = "http://ollama-${username}:11434/v1";
+    });
 in
   with lib; {
     options.${modulePath} = {
@@ -55,6 +60,14 @@ in
         default = {};
         description = "Extra Traefik/Docker labels to attach to the container.";
       };
+
+      ollama = {
+        enable = mkOption {
+          type = types.bool;
+          default = false;
+          description = "Whether to link with the user's local Ollama container service.";
+        };
+      };
     };
 
     config = mkIf cfg.enable (mkMerge [
@@ -67,7 +80,8 @@ in
         systemd.user.services.hermes-gateway = {
           Unit = {
             Description = "NousResearch Hermes Agent Gateway";
-            After = ["default.target"];
+            After = ["default.target"] ++ optionals cfg.ollama.enable ["ollama-gateway.service"];
+            Wants = optionals cfg.ollama.enable ["ollama-gateway.service"];
           };
           Service = {
             Type = "simple";
@@ -80,7 +94,7 @@ in
                 "-v ${escapeShellArg "${cfg.dataDir}:/opt/data"}"
               ]
               ++ (mapAttrsToList (name: value: "--label ${escapeShellArg "${name}=${value}"}") labels)
-              ++ (mapAttrsToList (name: value: "-e ${escapeShellArg "${name}=${value}"}") cfg.env)
+              ++ (mapAttrsToList (name: value: "-e ${escapeShellArg "${name}=${value}"}") env)
               ++ (map escapeShellArg cfg.extraArgs)
               ++ [
                 (escapeShellArg cfg.image)
