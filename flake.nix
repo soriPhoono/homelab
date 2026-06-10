@@ -292,6 +292,41 @@
               ;
           };
         };
+
+        # --- Packages and applications --- #
+        apps = rec {
+          install = {
+            type = "app";
+            program = pkgs.writeShellApplication {
+              name = "install.sh";
+              runtimeInputs = with pkgs; [
+                disko
+              ];
+              text = ''
+                target=$1
+
+                nix run .#writeDisks -- $target
+
+                sudo nixos-install --flake .#$target --option max-jobs 1 --option cores 4
+              '';
+            };
+          };
+          writeDisks = {
+            type = "app";
+            program = pkgs.writeShellApplication {
+              name = "write-disk-config.sh";
+              runtimeInputs = with pkgs; [
+                disko
+              ];
+              text = ''
+                target=$1
+
+                sudo disko -m destroy,format,mount --flake .#$target
+              '';
+            };
+          };
+          default = install;
+        };
       };
 
       flake = {
