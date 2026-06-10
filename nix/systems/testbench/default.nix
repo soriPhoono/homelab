@@ -24,14 +24,6 @@ with lib; {
     hardware = {
       enable = true;
       reportPath = ./facter.json;
-
-      hid = {
-        xbox_controllers.enable = true;
-        logitech.enable = true;
-      };
-
-      adb.enable = true;
-      bluetooth.enable = true;
     };
 
     networking = {
