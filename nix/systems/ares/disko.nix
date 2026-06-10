@@ -57,7 +57,7 @@
         };
       };
 
-      projects-1 = {
+      docker-1 = {
         type = "disk";
         device = "/dev/disk/by-id/ata-Samsung_SSD_870_EVO_1TB_S6PTNM0T318657N";
         content = {
@@ -67,13 +67,13 @@
               size = "100%";
               content = {
                 type = "zfs";
-                pool = "zprojects";
+                pool = "zdocker";
               };
             };
           };
         };
       };
-      projects-2 = {
+      docker-2 = {
         type = "disk";
         device = "/dev/disk/by-id/ata-Samsung_SSD_870_EVO_1TB_S6PTNM0T904070F";
         content = {
@@ -83,7 +83,7 @@
               size = "100%";
               content = {
                 type = "zfs";
-                pool = "zprojects";
+                pool = "zdocker";
               };
             };
           };
@@ -125,15 +125,15 @@
     };
 
     zpool = {
-      zprojects = {
+      zdocker = {
         type = "zpool";
-        mode = "mirrored";
+        mode = "striped";
         options.cachefile = "none";
         rootFsOptions = {
           compression = "zstd";
           "com.sun:auto-snapshot" = "false";
         };
-        mountpoint = "/mnt/projects";
+        mountpoint = "/var/lib/docker/";
       };
       zstorage = {
         type = "zpool";
@@ -143,7 +143,7 @@
           compression = "zstd";
           "com.sun:auto-snapshot" = "false";
         };
-        mountpoint = "/mnt";
+        mountpoint = "/mnt/local/";
       };
     };
   };
