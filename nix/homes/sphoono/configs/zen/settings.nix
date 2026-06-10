@@ -3,10 +3,11 @@ _: {
     settings = {
       "browser.search.defaultenginename" = "DuckDuckGo";
       "browser.search.order.1" = "DuckDuckGo";
-      "browser.startup.page" = 1;
+      "browser.startup.page" = 3;
       "browser.startup.homepage" = "http://127.0.0.1:8082";
       "browser.newtabpage.enabled" = false;
 
+      "zen.workspaces.continue-where-left-off" = true;
       "zen.workspaces.natural-scroll" = true;
       "zen.view.compact.hide-tabbar" = true;
       "zen.view.compact.hide-toolbar" = true;
