@@ -1,0 +1,9 @@
+{
+  "nix.enableLSP": true,
+  "nix.serverPath": "nil",
+  "nix.formatterPath": "alejandra",
+  "[nix]": {
+    "editor.defaultFormatter": "kamadorueda.alejandra",
+    "editor.formatOnSave": true
+  }
+}
