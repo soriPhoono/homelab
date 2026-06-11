@@ -133,7 +133,7 @@
           compression = "zstd";
           "com.sun:auto-snapshot" = "false";
         };
-        mountpoint = "/var/lib/docker/";
+        mountpoint = "/var/lib/docker";
       };
       zstorage = {
         type = "zpool";
@@ -143,7 +143,7 @@
           compression = "zstd";
           "com.sun:auto-snapshot" = "false";
         };
-        mountpoint = "/mnt/local/";
+        mountpoint = "/mnt/local";
       };
     };
   };
