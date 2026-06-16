@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -32,7 +33,7 @@ in
               }
             )
           );
-        default = null;
+        default = {};
         description = ''
           Theme to use to style plymouth, accepts custom themes from overlays
         '';

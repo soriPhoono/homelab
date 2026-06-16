@@ -3,5 +3,6 @@ _: {
     ./greetd
 
     ./sddm.nix
+    ./cosmic-greeter.nix
   ];
 }

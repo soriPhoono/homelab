@@ -19,7 +19,6 @@ in
       };
 
       desktop.environments = {
-        selectedEnvironment = "hyprland-uwsm";
         managers.enable = true;
       };
 
@@ -74,8 +73,9 @@ in
           ];
 
           # Activate the desktop framework: core → WM base → Hyprland
-          desktop.window-managers.hyprland = {
+          desktop.window-managers = {
             enable = true;
+            hyprland.enable = true;
           };
 
           home.sessionVariables = {

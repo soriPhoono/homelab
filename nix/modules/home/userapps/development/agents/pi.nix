@@ -2,7 +2,6 @@
   lib,
   pkgs,
   config,
-  nixosConfig ? null,
   ...
 }: let
   cfg = config.userapps.development.agents.pi;
@@ -13,8 +12,6 @@
     This file provides machine-level and user-level context for the Pi coding agent.
     Project-level repository guidance stays in the repository root
     `AGENTS.md`.
-
-    ${nixosConfig.core.context or ""}
 
     ${ctx}
   '';

@@ -14,7 +14,7 @@ in
     config = mkIf cfg.enable {
       desktop = {
         enable = true;
-        environments.selectedEnvironment = "cosmic";
+        environments.variant = "cosmic";
       };
 
       environment = {
