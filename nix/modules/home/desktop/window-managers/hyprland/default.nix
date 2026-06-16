@@ -123,7 +123,6 @@ in
                   active_opacity = 0.9;
                   inactive_opacity = 0.9;
                   shadow.sharp = true;
-                  glow.enabled = true;
                 };
 
                 binds = {

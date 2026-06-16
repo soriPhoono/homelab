@@ -13,6 +13,13 @@
     then "${dnsCfg.localSubdomain}.${dnsCfg.baseDomain}"
     else dnsCfg.baseDomain;
 
+  providerCfg = {
+    cloudflare = [
+      "--certificatesresolvers.dnsresolver.acme.dnschallenge.provider=cloudflare"
+      "--certificatesresolvers.dnsresolver.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+    ];
+  };
+
   inherit
     (lib)
     mkIf
@@ -234,30 +241,29 @@ in {
             "--entrypoints.web.http.redirections.entrypoint.scheme=https"
             "--entrypoints.web.http.redirections.entrypoint.permanent=true"
             "--entrypoints.websecure.address=:443"
+            "--entryPoints.websecure.http.tls=true"
 
             # ── ACME / Let's Encrypt ─────────────────────────────
             "--entrypoints.websecure.http.tls.certresolver=le"
             "--certificatesresolvers.le.acme.email=${cfg.acme.email}"
             "--certificatesresolvers.le.acme.storage=${cfg.acme.storage}"
-          ]
-          ++ optionals cfg.acme.enable (
-            if cfg.acme.challenge == "dns"
-            then [
-              "--certificatesresolvers.le.acme.dnschallenge.provider=cloudflare"
-            ]
-            else [
-              "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
-            ]
-          )
-          ++ optional (
-            cfg.acme.caServer != null
-          ) "--certificatesresolvers.le.acme.caServer=${cfg.acme.caServer}"
-          ++ [
+
+            # ── Cert resolvers ───────────────────────────────────
+            "--certificatesresolvers.httpresolver.acme.httpchallenge=true"
+            "--certificatesresolvers.httpresolver.acme.httpchallenge.entrypoint=web"
+            "--certificatesresolvers.httpresolver.acme.email=${config.hosting.proxy.dns.email}"
+            "--certificatesresolvers.httpresolver.acme.storage=/letsecrypt/acme.json"
+
+            "--certificatesresolvers.dnsresolver.acme.dnschallenge=true"
+            "--certificatesresolvers.dnsresolver.acme.email=${config.hosting.proxy.dns.email}"
+            "--certificatesresolvers.dnsresolver.acme.storage=/letsecrypt/acme.json"
+
             # ── Docker Provider ──────────────────────────────────
             "--providers.docker=true"
             "--providers.docker.exposedbydefault=false"
             "--providers.docker.network=proxy"
           ]
+          ++ providerCfg.${dnsCfg.provider}
           ++ optional cfg.providers.file.enable "--providers.file.directory=${cfg.providers.file.directory}"
           ++ optional cfg.providers.file.enable "--providers.file.watch=true"
           ++ [

@@ -75,20 +75,6 @@ with lib; {
 
   desktop = {
     environments = {
-      display_managers.sddm = {
-        enable = true;
-        theme = {
-          package = pkgs.sddm-astronaut.override {
-            embeddedTheme = "jake_the_dog";
-          };
-          name = "sddm-astronaut-theme";
-        };
-        extraPackages = with pkgs.kdePackages; [
-          qtmultimedia
-          qtvirtualkeyboard
-          qtsvg
-        ];
-      };
       managers.hyprland.enable = true;
     };
     services = {

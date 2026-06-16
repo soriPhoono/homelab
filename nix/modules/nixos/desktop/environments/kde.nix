@@ -14,9 +14,7 @@ in
     config = mkIf cfg.enable {
       desktop = {
         enable = true;
-        environments.selectedEnvironment = "plasma";
-        environments.display_managers.sddm.enable = true;
-        services.flatpak.enable = true;
+        environments.variant = "kde";
       };
 
       environment = {

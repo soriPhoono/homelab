@@ -13,12 +13,6 @@ in
     options.desktop.window-managers.shells.noctalia = {
       enable = mkEnableOption "Noctalia shell for Hyprland (bar, OSD, lockscreen, notifications)";
 
-      monitors = mkOption {
-        type = with types; listOf str;
-        default = [];
-        description = "Monitor names for Noctalia shell surfaces (bar, notifications, OSD).";
-      };
-
       package = mkOption {
         type = types.package;
         default = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -26,12 +20,10 @@ in
         description = "Noctalia package to use.";
       };
 
-      systemd = {
-        enable =
-          mkEnableOption "Noctalia systemd user service"
-          // {
-            default = true;
-          };
+      monitors = mkOption {
+        type = with types; listOf str;
+        default = [];
+        description = "Monitor names for Noctalia shell surfaces (bar, notifications, OSD).";
       };
 
       wallpaperDir = mkOption {
@@ -78,13 +70,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      assertions = [
-        {
-          assertion = hyprCfg.enable;
-          message = "Noctalia shell requires the Hyprland desktop module to be enabled.";
-        }
-      ];
-
       # Noctalia package source
       nix.settings = {
         extra-substituters = ["https://noctalia.cachix.org"];
@@ -93,11 +78,13 @@ in
         ];
       };
 
+      desktop.window-managers.enable = true;
+
       programs.noctalia = {
         enable = true;
         inherit (cfg) package;
-        systemd.enable = cfg.systemd.enable;
 
+        # NOTE: Temporary solution until stylix updates it's backend implementation for noctalia
         customPalettes = optionalAttrs (config.stylix.enable or false) {
           stylix = let
             inherit

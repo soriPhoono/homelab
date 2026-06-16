@@ -21,11 +21,7 @@ in
     ];
 
     options.hosting.media = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Enable media hosting services";
-      };
+      enable = mkEnableOption "Enable media server stack on device";
     };
 
     config = mkIf cfg.enable {

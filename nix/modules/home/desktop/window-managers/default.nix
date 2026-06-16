@@ -15,6 +15,16 @@ in
     options.desktop.window-managers = {
       enable = mkEnableOption "Window manager support for desktop environments";
 
+      variants = mkOption {
+        type = with types;
+          listOf (enum [
+            "hyprland"
+            "niri"
+          ]);
+        default = [];
+        description = "The types of window managers to enable customization on for this user profile";
+      };
+
       common = {
         mod = mkOption {
           type = types.str;
@@ -29,9 +39,6 @@ in
 
       # Default session variables for WM users
       home.sessionVariables = {
-        XDG_CURRENT_DESKTOP = mkOverride 500 "wlroots";
-        XDG_SESSION_TYPE = mkOverride 500 "wayland";
-        XDG_SESSION_DESKTOP = mkOverride 500 "hyprland";
         NIXOS_OZONE_WL = mkOverride 500 "1";
         _JAVA_AWT_WM_NONREPARENTING = mkOverride 500 "1";
         GDK_BACKEND = mkOverride 500 "wayland";

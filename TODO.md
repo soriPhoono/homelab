@@ -17,26 +17,27 @@ These are the tasks that are intended for future development goals
   - [x] Research if hermes agent supports multi user configuration
     - [ ] if yes create server deployment as this is an always on service
     - [x] otherwise rig up podman/docker based user services, work on backup plan
+      - [ ] Use k0s cluster system to run hermes in docker containers on k8s
 - [ ] Configure pi coding agent
   - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
     - [x] Finish updating mcp server types in [lib](./nix/lib.nix)
   - [ ] Finish installing packages
   - [ ] Create extensions for pi coding agent
-    - [ ] Remove bash tool
-    - [ ] Agent orchestration
-    - [ ] stop-slop skill
+    - [x] Remove bash tool
+    - [x] Agent orchestration
+    - [x] stop-slop skill
     - [ ] office skills
       - [ ] pdf skills
       - [ ] docx skills
       - [ ] xlsx skills
       - [ ] pptx skills
     - [ ] reddit search skill
-- [ ] Bifrucate noctalia shell configuration from core to home
-  - [ ] Move shell configuration to home
-  - [ ] Create a nix module option for shell configuration
-  - [ ] Update noctalia configuration to use new shell configuration
-- [ ] Create unified API for editor snippets and shared configuration
+- [x] Bifrucate noctalia shell configuration from core to home
+  - [x] Move shell configuration to home
+  - [x] Create a nix module option for shell configuration
+  - [x] Update noctalia configuration to use new shell configuration
 - [ ] Add support for multiple bootloaders
 - [ ] Finish configuring greetd display manager
-- [ ] Organize desktop module and check integrations
 - [ ] Test vr support on desktop
+- [ ] Finish implementing better security hardening
+- [ ] Implement impermenance on all nixos devices
