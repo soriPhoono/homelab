@@ -10,8 +10,8 @@ These are the tasks that are intended for future development goals
   - [x] Each module has an enable option
   - [x] Each module uses mkMerge EVEN IF IT IS NOT NEEDED
   - [x] Each module guards dependencies (options ? "dependency name") for easy removal
-  - [ ] Each home manager option from nixos configuration is apropriately set (needs audit)
-  - [ ] Each home manager feature requiring prerequisite nixos configuration is apropriately guarded or errors (needs audit)
+  - [x] Each home manager option from nixos configuration is apropriately set
+  - [x] Each home manager feature requiring prerequisite nixos configuration is apropriately guarded or errors
   - [x] EVERY variable read is properly guarded or throws documented errors
 - [x] Configure hermes agent in some form
   - [x] Research if hermes agent supports multi user configuration
