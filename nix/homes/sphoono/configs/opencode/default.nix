@@ -1,16 +1,15 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
   modulePath = "userapps.development.agents.opencode";
   cfg = config.${modulePath};
+  # MCP servers are shared via userapps.development.agentics
+  # (defined in nix/homes/sphoono/configs/pi/mcp.nix).
 in
   with lib; {
-    imports = [
-      ./mcp.nix
-    ];
-
     options.${modulePath} = {
       enable = mkEnableOption "Enable this module";
     };
