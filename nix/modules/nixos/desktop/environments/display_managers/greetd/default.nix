@@ -7,13 +7,17 @@
   cfg = config.desktop.environments.display_managers.greetd;
 in
   with lib; {
+    imports = [
+      ./regreet.nix
+    ];
+
     options.desktop.environments.display_managers.greetd = {
       enable = mkEnableOption "Enable greetd display manager.";
 
       variant = mkOption {
-        type = with types; nullOr (enum ["tuigreet"]);
+        type = with types; nullOr (enum ["tuigreet" "regreet"]);
         default = null;
-        description = "The greetd greeter configuration to use.";
+        description = "The greetd greeter variant to use.";
         example = "tuigreet";
       };
     };
