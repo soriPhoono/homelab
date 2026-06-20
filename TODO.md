@@ -5,8 +5,8 @@ These are the tasks that are intended for future development goals
 - [x] For each module
   - [x] Update option descriptions (multiline strings, accurate descriptions, examples where applicable)
   - [x] Each module uses with lib;
-  - [ ] Each module has slim imports (already mostly clean)
-  - [ ] Each module declares as little as possible in the root let in binding (already minimal in most)
+  - [x] Each module has slim imports
+  - [x] Each module declares as little as possible in the root let in binding
   - [x] Each module has an enable option
   - [x] Each module uses mkMerge EVEN IF IT IS NOT NEEDED
   - [x] Each module guards dependencies (options ? "dependency name") for easy removal
