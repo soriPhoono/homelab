@@ -3,7 +3,7 @@
   config,
   ...
 }: {
-  userapps.development.agentics = {
+  userapps.development.agents.pi = {
     mcpServers = {
       stdio = {
         # Docker-based MCP servers (no host filesystem dependency)
