@@ -146,10 +146,14 @@ in
             # Mount init script for subpath routing (sets Jellyfin's BaseUrl)
             ++ cfg.extraVolumes;
 
-          environment = {
-            TZ = config.time.timeZone;
-            JELLYFIN_PublishedServerUrl = "https://${cfg.domain}";
-          };
+          environment = mkMerge [
+            {
+              JELLYFIN_PublishedServerUrl = "https://${cfg.domain}";
+            }
+            (mkIf (config.time.timeZone != null) {
+              TZ = config.time.timeZone;
+            })
+          ];
 
           # Traefik auto-discovery labels
           labels =

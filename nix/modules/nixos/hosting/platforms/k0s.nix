@@ -48,84 +48,86 @@ in
       };
     };
 
-    config = mkIf cfg.enable {
-      # Load required kernel modules for container runtimes & Kubernetes networking
-      boot.kernelModules = [
-        "br_netfilter"
-        "overlay"
-        "ip_vs"
-        "ip_vs_rr"
-        "ip_vs_wrr"
-        "ip_vs_sh"
-        "nf_conntrack"
-      ];
-
-      # Configure required sysctl parameters
-      boot.kernel.sysctl = {
-        "net.bridge.bridge-nf-call-iptables" = 1;
-        "net.bridge.bridge-nf-call-ip6tables" = 1;
-        "net.ipv4.ip_forward" = 1;
-      };
-
-      # Make the k0s CLI available globally for administration
-      environment.systemPackages = [
-        pkgs.k0s
-      ];
-
-      # Define systemd service for k0s
-      systemd.services.k0s = {
-        description = "k0s - Zero Friction Kubernetes";
-        after = ["network-online.target"];
-        wants = ["network-online.target"];
-        wantedBy = ["multi-user.target"];
-
-        # Ensure all helper utilities are available to k0s at runtime
-        path = with pkgs; [
-          kmod
-          iptables
-          iproute2
-          util-linux
-          ethtool
-          socat
-          conntrack-tools
-          mount
+    config = mkIf cfg.enable (mkMerge [
+      {
+        # Load required kernel modules for container runtimes & Kubernetes networking
+        boot.kernelModules = [
+          "br_netfilter"
+          "overlay"
+          "ip_vs"
+          "ip_vs_rr"
+          "ip_vs_wrr"
+          "ip_vs_sh"
+          "nf_conntrack"
         ];
 
-        serviceConfig = let
-          command =
-            if cfg.role == "worker"
-            then "worker"
-            else "controller";
-          args =
-            [
-              command
-            ]
-            ++ optionals (cfg.role == "single") [
-              "--enable-worker"
-            ]
-            ++ optionals (cfg.role == "single" && !cfg.taintControlPlane) [
-              "--no-taints"
-            ]
-            ++ optionals (cfg.role == "controller" || cfg.role == "single") [
-              "--config=${configFile}"
-            ]
-            ++ optionals (cfg.tokenFile != null) [
-              "--token-file=${cfg.tokenFile}"
-            ]
-            ++ cfg.extraArgs;
-        in {
-          Type = "simple";
-          ExecStart = "${pkgs.k0s}/bin/k0s ${escapeShellArgs args}";
-
-          Restart = "always";
-          RestartSec = "10s";
-          KillMode = "process";
-          LimitNOFILE = 1048576;
-          LimitNPROC = 1048576;
-          LimitCORE = "infinity";
-          TasksMax = "infinity";
-          Delegate = "yes";
+        # Configure required sysctl parameters
+        boot.kernel.sysctl = {
+          "net.bridge.bridge-nf-call-iptables" = 1;
+          "net.bridge.bridge-nf-call-ip6tables" = 1;
+          "net.ipv4.ip_forward" = 1;
         };
-      };
-    };
+
+        # Make the k0s CLI available globally for administration
+        environment.systemPackages = [
+          pkgs.k0s
+        ];
+
+        # Define systemd service for k0s
+        systemd.services.k0s = {
+          description = "k0s - Zero Friction Kubernetes";
+          after = ["network-online.target"];
+          wants = ["network-online.target"];
+          wantedBy = ["multi-user.target"];
+
+          # Ensure all helper utilities are available to k0s at runtime
+          path = with pkgs; [
+            kmod
+            iptables
+            iproute2
+            util-linux
+            ethtool
+            socat
+            conntrack-tools
+            mount
+          ];
+
+          serviceConfig = let
+            command =
+              if cfg.role == "worker"
+              then "worker"
+              else "controller";
+            args =
+              [
+                command
+              ]
+              ++ optionals (cfg.role == "single") [
+                "--enable-worker"
+              ]
+              ++ optionals (cfg.role == "single" && !cfg.taintControlPlane) [
+                "--no-taints"
+              ]
+              ++ optionals (cfg.role == "controller" || cfg.role == "single") [
+                "--config=${configFile}"
+              ]
+              ++ optionals (cfg.tokenFile != null) [
+                "--token-file=${cfg.tokenFile}"
+              ]
+              ++ cfg.extraArgs;
+          in {
+            Type = "simple";
+            ExecStart = "${pkgs.k0s}/bin/k0s ${escapeShellArgs args}";
+
+            Restart = "always";
+            RestartSec = "10s";
+            KillMode = "process";
+            LimitNOFILE = 1048576;
+            LimitNPROC = 1048576;
+            LimitCORE = "infinity";
+            TasksMax = "infinity";
+            Delegate = "yes";
+          };
+        };
+      }
+    ]);
   }

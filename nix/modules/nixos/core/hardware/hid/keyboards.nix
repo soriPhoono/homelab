@@ -16,7 +16,7 @@ in
       };
     };
 
-    config = lib.mkIf cfg.enable {
+    config = mkIf cfg.enable {
       hardware.keyboard.qmk = {
         enable = true;
         keychronSupport = elem "qmk" cfg.vendors;

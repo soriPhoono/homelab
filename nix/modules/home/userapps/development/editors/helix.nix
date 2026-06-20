@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
   cfg = config.userapps.development.editors.helix;
@@ -78,7 +79,7 @@ in
         };
       }
 
-      (mkIf config.stylix.enable {
+      (mkIf (options ? stylix && config.stylix.enable) {
         programs.helix.settings.theme = mkDefault "stylix";
 
         programs.helix.themes.stylix = let
