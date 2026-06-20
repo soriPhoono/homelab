@@ -76,6 +76,11 @@ with lib; {
   desktop = {
     environments = {
       managers.hyprland.enable = true;
+
+      display_managers.greetd = {
+        variant = "regreet";
+        regreet.enable = true;
+      };
     };
     services = {
       asusd.enable = true;
