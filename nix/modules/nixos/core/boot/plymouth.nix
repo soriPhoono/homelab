@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -7,7 +8,7 @@
 in
   with lib; {
     options.core.boot.plymouth = {
-      enable = lib.mkEnableOption ''
+      enable = mkEnableOption ''
         Enable nice boot splash screen like on Ubuntu Linux
       '';
       theme = mkOption {
@@ -32,7 +33,7 @@ in
               }
             )
           );
-        default = null;
+        default = {};
         description = ''
           Theme to use to style plymouth, accepts custom themes from overlays
         '';
@@ -48,8 +49,8 @@ in
         boot.plymouth = {
           inherit (cfg) enable;
 
-          theme = lib.mkIf (cfg.theme != null) (lib.mkForce cfg.theme.name);
-          themePackages = lib.mkIf (cfg.theme != null) (lib.mkForce [cfg.theme.package]);
+          theme = mkIf (cfg.theme != null) (mkForce cfg.theme.name);
+          themePackages = mkIf (cfg.theme != null) (mkForce [cfg.theme.package]);
         };
       }
     ]);

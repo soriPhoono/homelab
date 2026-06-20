@@ -80,63 +80,68 @@ in
       };
     };
 
-    config = mkIf cfg.enable {
-      users = {
-        users.sonarr = {
-          isSystemUser = true;
-          uid = mkDefault cfg.userUid;
-          group = config.users.groups.sonarr.name;
-        };
-        groups = {
-          sonarr = {
-            gid = mkDefault cfg.userGid;
+    config = mkIf cfg.enable (mkMerge [
+      {
+        users = {
+          users.sonarr = {
+            isSystemUser = true;
+            uid = mkDefault cfg.userUid;
+            group = config.users.groups.sonarr.name;
           };
-          media.members = [
-            config.users.users.sonarr.name
-          ];
-        };
-      };
-
-      # Auto-enable the Docker container hosting platform
-      hosting.platforms.docker.enable = mkDefault true;
-
-      # Ensure config directory exists
-      systemd.tmpfiles.rules = [
-        "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
-      ];
-
-      virtualisation.oci-containers.containers.sonarr = {
-        inherit (cfg) image;
-        autoStart = true;
-        networks = ["proxy"];
-
-        volumes =
-          [
-            "${cfg.configDir}:/config"
-            "/mnt/local/media/shows:/tv"
-            "/mnt/local/media/downloads:/downloads"
-          ]
-          ++ cfg.extraVolumes;
-
-        environment = {
-          TZ = config.time.timeZone;
-          PUID = toString cfg.userUid;
-          PGID = toString cfg.userGid;
+          groups = {
+            sonarr = {
+              gid = mkDefault cfg.userGid;
+            };
+            media.members = [
+              config.users.users.sonarr.name
+            ];
+          };
         };
 
-        # Traefik auto-discovery labels
-        labels =
-          {
-            "traefik.enable" = "true";
-            "traefik.http.routers.sonarr.rule" = "Host(`${cfg.domain}`)";
-            "traefik.http.routers.sonarr.entrypoints" = "websecure";
-            "traefik.http.routers.sonarr.tls" = "true";
-            "traefik.http.routers.sonarr.tls.certresolver" = "le";
-            "traefik.http.services.sonarr.loadbalancer.server.port" = toString cfg.port;
-          }
-          // cfg.extraLabels;
+        # Auto-enable the Docker container hosting platform
+        hosting.platforms.docker.enable = mkDefault true;
 
-        inherit (cfg) extraOptions;
-      };
-    };
+        # Ensure config directory exists
+        systemd.tmpfiles.rules = [
+          "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
+        ];
+
+        virtualisation.oci-containers.containers.sonarr = {
+          inherit (cfg) image;
+          autoStart = true;
+          networks = ["proxy"];
+
+          volumes =
+            [
+              "${cfg.configDir}:/config"
+              "/mnt/local/media/shows:/tv"
+              "/mnt/local/media/downloads:/downloads"
+            ]
+            ++ cfg.extraVolumes;
+
+          environment =
+            {
+              PUID = toString cfg.userUid;
+              PGID = toString cfg.userGid;
+            }
+            // optionalAttrs (config.time.timeZone != null) {
+              TZ = config.time.timeZone;
+            };
+
+          # Traefik auto-discovery labels
+          labels =
+            {
+              "traefik.enable" = "true";
+              "traefik.http.routers.sonarr.rule" = "Host(`${cfg.domain}`)";
+              "traefik.http.routers.sonarr.entrypoints" = "websecure";
+              "traefik.http.routers.sonarr.tls" = "true";
+              "traefik.http.routers.sonarr.tls.certresolver" = "le";
+              "traefik.http.services.sonarr.loadbalancer.server.port" = toString cfg.port;
+            }
+            // cfg.extraLabels;
+
+          inherit (cfg) extraOptions;
+        };
+      }
+    ]);
   }

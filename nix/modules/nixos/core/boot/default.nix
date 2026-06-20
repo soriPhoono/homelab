@@ -6,6 +6,11 @@
   ...
 }: let
   cfg = config.core.boot;
+
+  plymouthEnabled =
+    if options ? core.boot.plymouth
+    then cfg.plymouth.enable
+    else false;
 in
   with lib; {
     imports = [
@@ -51,7 +56,7 @@ in
           boot = {
             kernelPackages = cfg.kernel.packages;
             kernelParams =
-              (optionals cfg.plymouth.enable [
+              (optionals plymouthEnabled [
                 "quiet"
                 "systemd.show_status=false"
                 "udev.log_level=3"
@@ -59,7 +64,7 @@ in
               ++ cfg.kernel.params;
 
             initrd = {
-              verbose = !cfg.plymouth.enable;
+              verbose = !plymouthEnabled;
               systemd.enable = true;
             };
 
@@ -90,6 +95,11 @@ in
             inherit (cfg.secure-boot) enable;
             pkiBundle = "/var/lib/sbctl";
           };
+        })
+        (mkIf (cfg.secure-boot && !(options ? boot.lanzaboote)) {
+          warnings = [
+            "secure-boot is enabled but lanzaboote is not available (add lanzaboote to nixos modules)"
+          ];
         })
       ]
     );

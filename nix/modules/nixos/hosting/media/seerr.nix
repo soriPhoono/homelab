@@ -96,59 +96,64 @@ in
       };
     };
 
-    config = mkIf cfg.enable {
-      users = {
-        users.seerr = {
-          isSystemUser = true;
-          uid = mkDefault cfg.userUid;
-          group = config.users.groups.seerr.name;
-        };
-        groups = {
-          seerr = {
-            gid = mkDefault cfg.userGid;
+    config = mkIf cfg.enable (mkMerge [
+      {
+        users = {
+          users.seerr = {
+            isSystemUser = true;
+            uid = mkDefault cfg.userUid;
+            group = config.users.groups.seerr.name;
+          };
+          groups = {
+            seerr = {
+              gid = mkDefault cfg.userGid;
+            };
           };
         };
-      };
 
-      # Auto-enable the Docker container hosting platform
-      hosting.platforms.docker.enable = mkDefault true;
+        # Auto-enable the Docker container hosting platform
+        hosting.platforms.docker.enable = mkDefault true;
 
-      # Ensure config directory exists
-      systemd.tmpfiles.rules = [
-        "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
-      ];
+        # Ensure config directory exists
+        systemd.tmpfiles.rules = [
+          "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
+        ];
 
-      # Run Jellyseerr/Seerr as a Docker container via OCI module
-      virtualisation.oci-containers.containers.seerr = {
-        inherit (cfg) image;
-        autoStart = true;
-        networks = ["proxy"];
+        # Run Jellyseerr/Seerr as a Docker container via OCI module
+        virtualisation.oci-containers.containers.seerr = {
+          inherit (cfg) image;
+          autoStart = true;
+          networks = ["proxy"];
 
-        volumes =
-          [
-            "${cfg.configDir}:/app/config:rw"
-          ]
-          ++ cfg.extraVolumes;
+          volumes =
+            [
+              "${cfg.configDir}:/app/config:rw"
+            ]
+            ++ cfg.extraVolumes;
 
-        environment = {
-          TZ = config.time.timeZone;
-          LOG_LEVEL = cfg.logLevel;
-          PORT = toString cfg.port;
+          environment =
+            {
+              LOG_LEVEL = cfg.logLevel;
+              PORT = toString cfg.port;
+            }
+            // optionalAttrs (config.time.timeZone != null) {
+              TZ = config.time.timeZone;
+            };
+
+          # Traefik auto-discovery labels
+          labels =
+            {
+              "traefik.enable" = "true";
+              "traefik.http.routers.seerr.rule" = "Host(`${cfg.domain}`)";
+              "traefik.http.routers.seerr.entrypoints" = "websecure";
+              "traefik.http.routers.seerr.tls" = "true";
+              "traefik.http.routers.seerr.tls.certresolver" = "le";
+              "traefik.http.services.seerr.loadbalancer.server.port" = toString cfg.port;
+            }
+            // cfg.extraLabels;
+
+          inherit (cfg) extraOptions;
         };
-
-        # Traefik auto-discovery labels
-        labels =
-          {
-            "traefik.enable" = "true";
-            "traefik.http.routers.seerr.rule" = "Host(`${cfg.domain}`)";
-            "traefik.http.routers.seerr.entrypoints" = "websecure";
-            "traefik.http.routers.seerr.tls" = "true";
-            "traefik.http.routers.seerr.tls.certresolver" = "le";
-            "traefik.http.services.seerr.loadbalancer.server.port" = toString cfg.port;
-          }
-          // cfg.extraLabels;
-
-        inherit (cfg) extraOptions;
-      };
-    };
+      }
+    ]);
   }

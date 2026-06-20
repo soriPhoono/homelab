@@ -10,13 +10,15 @@ in
       enable = mkEnableOption "flaresolverr";
     };
 
-    config = mkIf cfg.enable {
-      services.flaresolverr.enable = true;
+    config = mkIf cfg.enable (mkMerge [
+      {
+        services.flaresolverr.enable = true;
 
-      systemd.services.flaresolverr.serviceConfig = {
-        ProtectSystem = lib.mkForce "strict";
-        ProtectHome = lib.mkForce true;
-        PrivateDevices = true;
-      };
-    };
+        systemd.services.flaresolverr.serviceConfig = {
+          ProtectSystem = lib.mkForce "strict";
+          ProtectHome = lib.mkForce true;
+          PrivateDevices = true;
+        };
+      }
+    ]);
   }

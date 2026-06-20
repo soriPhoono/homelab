@@ -22,7 +22,7 @@ in
       };
 
       nix = let
-        flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+        flakeInputs = filterAttrs (_: isType "flake") inputs;
       in {
         settings = {
           download-buffer-size = 1073741824;
@@ -32,8 +32,8 @@ in
           # Opinionated: disable global registry
           flake-registry = "";
 
-          trusted-users = lib.mapAttrsToList (name: _: name) (
-            lib.filterAttrs (_: user: user.admin) config.core.users
+          trusted-users = mapAttrsToList (name: _: name) (
+            filterAttrs (_: user: user.admin) config.core.users
           );
 
           # Limit the number of cores used per build job to prevent OOM
@@ -68,8 +68,8 @@ in
         channel.enable = false;
 
         # Opinionated: make flake registry and nix path match flake inputs
-        registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-        nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
+        registry = mapAttrs (_: flake: {inherit flake;}) flakeInputs;
+        nixPath = mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
       };
     };
   }

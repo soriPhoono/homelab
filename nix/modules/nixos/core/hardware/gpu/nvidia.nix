@@ -13,7 +13,12 @@ in
       mode = mkOption {
         type = types.enum ["desktop" "laptop"];
         default = "laptop";
-        description = "NVIDIA GPU mode";
+        description = ''
+          NVIDIA GPU configuration mode for power management and display
+          setup. Use "desktop" for dedicated NVIDIA-only systems (enables
+          sync/reverse-sync prime). Use "laptop" for hybrid Intel/NVIDIA
+          or AMD/NVIDIA systems (enables offload rendering).
+        '';
       };
 
       allowExternalGpu = mkEnableOption "Enable external GPU support";

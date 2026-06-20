@@ -25,5 +25,6 @@
     };
 
     apps.git.enable = true;
+    apps.zellij.enable = true;
   };
 }

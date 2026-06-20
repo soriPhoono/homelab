@@ -2,10 +2,23 @@
   lib,
   pkgs,
   config,
-  nixosConfig ? null,
   ...
 }: let
   cfg = config.userapps.development.agents.pi;
+  shared = config.userapps.development.agentics or {};
+
+  # Merge shared agentics MCP servers with per-agent overrides (per-agent wins)
+  mcpServers = {
+    stdio = (shared.mcpServers.stdio or {}) // cfg.mcpServers.stdio;
+    http = (shared.mcpServers.http or {}) // cfg.mcpServers.http;
+  };
+  skills = (shared.skills or {}) // cfg.skills;
+  agentContext =
+    if cfg.context != ""
+    then cfg.context
+    else shared.context or "";
+
+  hasMcpServers = mcpServers.stdio != {} || mcpServers.http != {};
 
   createContext = ctx: ''
     # Pi Runtime Context
@@ -14,12 +27,8 @@
     Project-level repository guidance stays in the repository root
     `AGENTS.md`.
 
-    ${nixosConfig.core.context or ""}
-
     ${ctx}
   '';
-
-  hasMcpServers = cfg.mcpServers.stdio != {} || cfg.mcpServers.http != {};
 
   # Placeholder for skill entries
 
@@ -79,7 +88,7 @@
           })
       );
   in {
-    mcpServers = builtins.mapAttrs renderServer (cfg.mcpServers.stdio // cfg.mcpServers.http);
+    mcpServers = builtins.mapAttrs renderServer (mcpServers.stdio // mcpServers.http);
   };
 in
   with lib; {
@@ -132,6 +141,11 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
+      # Provide a default empty context so `cfg.context` is always safe to read.
+      # Users override via `userapps.development.agents.pi.context` or
+      # `userapps.development.agentics.context`.
+      {userapps.development.agents.pi.context = mkDefault "";}
+
       {
         userapps.development.agents.pi = {
           secrets = flatten (
@@ -145,7 +159,7 @@ in
                     server.env
                   )
               )
-              cfg.mcpServers.stdio)
+              mcpServers.stdio)
             ++ (mapAttrsToList (
                 _name: server:
                   filter (val: val != null) (
@@ -156,10 +170,10 @@ in
                     server.headers
                   )
               )
-              cfg.mcpServers.http)
+              mcpServers.http)
           );
 
-          packages = mkIf (cfg.mcpServers.stdio != {} || cfg.mcpServers.http != {}) [
+          packages = mkIf hasMcpServers [
             "npm:pi-mcp-extension"
           ];
         };
@@ -187,15 +201,15 @@ in
               };
             }
             (mkMerge [
-              (mkIf (typeOf cfg.context == "path") {
-                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (readFile cfg.context);
+              (mkIf (builtins.typeOf agentContext == "path") {
+                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (builtins.readFile agentContext);
               })
-              (mkIf (typeOf cfg.context == "str") {
-                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext cfg.context;
+              (mkIf (builtins.typeOf agentContext == "str") {
+                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext agentContext;
               })
             ])
             # Link skills from the shared agentics skills registry.
-            (mkIf (cfg.skills != {}) (
+            (mkIf (skills != {}) (
               lib.mapAttrs' (name: skill: {
                 name = ".pi/agent/skills/${name}";
                 value = {
@@ -203,7 +217,7 @@ in
                   recursive = true;
                 };
               })
-              cfg.skills
+              skills
             ))
             # Wire MCP servers.
             (mkIf hasMcpServers {

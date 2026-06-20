@@ -86,64 +86,69 @@ in
       };
     };
 
-    config = mkIf cfg.enable {
-      users = {
-        users.qbittorrent = {
-          isSystemUser = true;
-          uid = mkDefault cfg.userUid;
-          group = config.users.groups.qbittorrent.name;
-        };
-        groups = {
-          qbittorrent = {
-            gid = mkDefault cfg.userGid;
+    config = mkIf cfg.enable (mkMerge [
+      {
+        users = {
+          users.qbittorrent = {
+            isSystemUser = true;
+            uid = mkDefault cfg.userUid;
+            group = config.users.groups.qbittorrent.name;
           };
-          media.members = [
-            config.users.users.qbittorrent.name
-          ];
-        };
-      };
-
-      # Auto-enable the Docker container hosting platform
-      hosting.platforms.docker.enable = mkDefault true;
-
-      # Ensure config directory exists
-      systemd.tmpfiles.rules = [
-        "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
-      ];
-
-      virtualisation.oci-containers.containers.qbittorrent = {
-        inherit (cfg) image;
-        autoStart = true;
-        networks = ["proxy"];
-
-        volumes =
-          [
-            "${cfg.configDir}:/config"
-            "/mnt/local/media/downloads:/downloads"
-          ]
-          ++ cfg.extraVolumes;
-
-        environment = {
-          TZ = config.time.timeZone;
-          PUID = toString cfg.userUid;
-          PGID = toString cfg.userGid;
-          WEBUI_PORT = toString cfg.port;
-          TORRENTING_PORT = toString cfg.torrentingPort;
+          groups = {
+            qbittorrent = {
+              gid = mkDefault cfg.userGid;
+            };
+            media.members = [
+              config.users.users.qbittorrent.name
+            ];
+          };
         };
 
-        # Traefik auto-discovery labels
-        labels =
-          {
-            "traefik.enable" = "true";
-            "traefik.http.routers.qbittorrent.rule" = "Host(`${cfg.domain}`)";
-            "traefik.http.routers.qbittorrent.entrypoints" = "websecure";
-            "traefik.http.routers.qbittorrent.tls" = "true";
-            "traefik.http.routers.qbittorrent.tls.certresolver" = "le";
-            "traefik.http.services.qbittorrent.loadbalancer.server.port" = toString cfg.port;
-          }
-          // cfg.extraLabels;
+        # Auto-enable the Docker container hosting platform
+        hosting.platforms.docker.enable = mkDefault true;
 
-        inherit (cfg) extraOptions;
-      };
-    };
+        # Ensure config directory exists
+        systemd.tmpfiles.rules = [
+          "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
+        ];
+
+        virtualisation.oci-containers.containers.qbittorrent = {
+          inherit (cfg) image;
+          autoStart = true;
+          networks = ["proxy"];
+
+          volumes =
+            [
+              "${cfg.configDir}:/config"
+              "/mnt/local/media/downloads:/downloads"
+            ]
+            ++ cfg.extraVolumes;
+
+          environment =
+            {
+              PUID = toString cfg.userUid;
+              PGID = toString cfg.userGid;
+              WEBUI_PORT = toString cfg.port;
+              TORRENTING_PORT = toString cfg.torrentingPort;
+            }
+            // optionalAttrs (config.time.timeZone != null) {
+              TZ = config.time.timeZone;
+            };
+
+          # Traefik auto-discovery labels
+          labels =
+            {
+              "traefik.enable" = "true";
+              "traefik.http.routers.qbittorrent.rule" = "Host(`${cfg.domain}`)";
+              "traefik.http.routers.qbittorrent.entrypoints" = "websecure";
+              "traefik.http.routers.qbittorrent.tls" = "true";
+              "traefik.http.routers.qbittorrent.tls.certresolver" = "le";
+              "traefik.http.services.qbittorrent.loadbalancer.server.port" = toString cfg.port;
+            }
+            // cfg.extraLabels;
+
+          inherit (cfg) extraOptions;
+        };
+      }
+    ]);
   }

@@ -1,6 +1,7 @@
 {
   imports = [
     ./pi
+    ./opencode
     ./helix
     ./fastfetch
     ./zed

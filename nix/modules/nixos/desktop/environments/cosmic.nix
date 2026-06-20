@@ -11,23 +11,25 @@ in
       enable = mkEnableOption "Enable cosmic desktop";
     };
 
-    config = mkIf cfg.enable {
-      desktop = {
-        enable = true;
-        environments.selectedEnvironment = "cosmic";
-      };
-
-      environment = {
-        sessionVariables = {
-          NIXOS_OZONE_WL = "1";
-          COSMIC_DATA_CONTROL_ENABLED = 1;
+    config = mkIf cfg.enable (mkMerge [
+      {
+        desktop = {
+          enable = true;
+          environments.variant = "cosmic";
         };
-      };
 
-      services = {
-        system76-scheduler.enable = true;
+        environment = {
+          sessionVariables = {
+            NIXOS_OZONE_WL = "1";
+            COSMIC_DATA_CONTROL_ENABLED = 1;
+          };
+        };
 
-        desktopManager.cosmic.enable = true;
-      };
-    };
+        services = {
+          system76-scheduler.enable = true;
+
+          desktopManager.cosmic.enable = true;
+        };
+      }
+    ]);
   }

@@ -23,21 +23,21 @@ in
       };
     };
 
-    config = lib.mkIf cfg.enable (mkMerge [
+    config = mkIf cfg.enable (mkMerge [
       {
-        systemd.tmpfiles.rules = lib.concatMap (username: [
+        systemd.tmpfiles.rules = concatMap (username: [
           "d /home/${username}/.config/ 0755 ${username} users -"
           "d /home/${username}/.config/sops/ 0700 ${username} users -"
           "d /home/${username}/.config/sops/age/ 0700 ${username} users -"
-        ]) (lib.attrNames config.core.users);
+        ]) (attrNames config.core.users);
       }
-      (lib.optionalAttrs (options ? sops) {
+      (optionalAttrs (options ? sops) {
         sops = {
-          defaultSopsFile = lib.mkIf (cfg.defaultSopsFile != null) cfg.defaultSopsFile;
+          defaultSopsFile = mkIf (cfg.defaultSopsFile != null) cfg.defaultSopsFile;
 
           age.sshKeyPaths = map (key: key.path) config.services.openssh.hostKeys;
 
-          secrets = lib.mapAttrs' (username: _: {
+          secrets = mapAttrs' (username: _: {
             name = "users/${username}/age_key";
             value = {
               path = "/home/${username}/.config/sops/age/keys.txt";
@@ -45,7 +45,7 @@ in
               owner = username;
               group = "users";
             };
-          }) (lib.filterAttrs (_name: user: user.secrets) config.core.users);
+          }) (filterAttrs (_name: user: user.secrets) config.core.users);
         };
       })
     ]);

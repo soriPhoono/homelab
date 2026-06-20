@@ -75,20 +75,6 @@ with lib; {
 
   desktop = {
     environments = {
-      display_managers.sddm = {
-        enable = true;
-        theme = {
-          package = pkgs.sddm-astronaut.override {
-            embeddedTheme = "jake_the_dog";
-          };
-          name = "sddm-astronaut-theme";
-        };
-        extraPackages = with pkgs.kdePackages; [
-          qtmultimedia
-          qtvirtualkeyboard
-          qtsvg
-        ];
-      };
       managers.hyprland.enable = true;
     };
     services = {
@@ -107,7 +93,6 @@ with lib; {
 
   hosting = {
     platforms.docker.enable = true;
-    homepage.enable = true;
     media.enable = true;
     proxy = {
       enable = true;
@@ -115,46 +100,6 @@ with lib; {
       dns = {
         baseDomain = "cryptic-coders.net";
         email = "soriphoono@gmail.com";
-      };
-    };
-    ai = {
-      enable = true;
-      n8n = {
-        redis.enable = true;
-        workers = {
-          enable = true;
-          count = 2;
-        };
-        runners = {
-          enable = true;
-          launcherConfig = {
-            javascript = {
-              allowBuiltin = ["*/"];
-              allowExternal = [
-                "moment"
-                "uuid"
-                "lodash"
-              ];
-            };
-            python = {
-              enable = true;
-              stdlibAllow = [
-                "json"
-                "math"
-                "os"
-                "csv"
-                "re"
-                "datetime"
-                "random"
-              ];
-              externalAllow = [
-                "numpy"
-                "pandas"
-                "requests"
-              ];
-            };
-          };
-        };
       };
     };
   };
