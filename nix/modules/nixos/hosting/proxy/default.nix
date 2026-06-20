@@ -18,7 +18,10 @@ in
           "traefik"
         ];
         default = "traefik";
-        description = "Type of proxy to use";
+        description = ''
+          The reverse proxy backend to use for service exposure.
+          Currently only "traefik" is supported.
+        '';
       };
 
       dns = {

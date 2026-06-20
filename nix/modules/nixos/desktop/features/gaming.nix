@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }: let
   cfg = config.desktop.features.gaming;
@@ -68,7 +69,7 @@ in {
       };
     };
 
-    jovian = lib.mkIf cfg.console.enable {
+    jovian = lib.mkIf (options ? jovian && cfg.console.enable) {
       steam =
         {
           inherit (cfg.console) autoStart environment;

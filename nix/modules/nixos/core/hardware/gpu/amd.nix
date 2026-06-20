@@ -21,7 +21,7 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        warnings = lib.mkIf (!cfg.integrated.enable && !cfg.dedicated.enable) [
+        warnings = mkIf (!cfg.integrated.enable && !cfg.dedicated.enable) [
           "A machine with the amd gpu configuration is advised to declare in what nature the support is requested, either integrated or dedicated"
         ];
 

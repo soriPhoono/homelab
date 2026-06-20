@@ -11,45 +11,47 @@ in
       enable = mkEnableOption "Enable kde desktop environment";
     };
 
-    config = mkIf cfg.enable {
-      desktop = {
-        enable = true;
-        environments.variant = "kde";
-      };
-
-      environment = {
-        sessionVariables = {
-          NIXOS_OZONE_WL = "1";
+    config = mkIf cfg.enable (mkMerge [
+      {
+        desktop = {
+          enable = true;
+          environments.variant = "kde";
         };
 
-        systemPackages = with pkgs;
-        with kdePackages; [
-          discover
-          ksystemlog
-
-          kcolorchooser
-          dragon
-          elisa
-
-          ktorrent
-          kmail
-
-          krita
-          kwave
-          kdenlive
-        ];
-      };
-
-      services.desktopManager.plasma6.enable = true;
-
-      home-manager.users =
-        lib.mapAttrs (_: _: {
-          home.sessionVariables = {
-            SSH_AUTH_SOCK = mkDefault "$XDG_RUNTIME_DIR/ssh-agent";
-            SSH_ASKPASS = mkDefault "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
-            GIT_ASKPASS = mkDefault "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
+        environment = {
+          sessionVariables = {
+            NIXOS_OZONE_WL = "1";
           };
-        })
-        config.core.users;
-    };
+
+          systemPackages = with pkgs;
+          with kdePackages; [
+            discover
+            ksystemlog
+
+            kcolorchooser
+            dragon
+            elisa
+
+            ktorrent
+            kmail
+
+            krita
+            kwave
+            kdenlive
+          ];
+        };
+
+        services.desktopManager.plasma6.enable = true;
+
+        home-manager.users =
+          lib.mapAttrs (_: _: {
+            home.sessionVariables = {
+              SSH_AUTH_SOCK = mkDefault "$XDG_RUNTIME_DIR/ssh-agent";
+              SSH_ASKPASS = mkDefault "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
+              GIT_ASKPASS = mkDefault "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
+            };
+          })
+          config.core.users;
+      }
+    ]);
   }

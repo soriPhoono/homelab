@@ -16,7 +16,11 @@ in
             "guest"
           ];
         default = "host";
-        description = "Mode of virtualisation";
+        description = ''
+          Mode of virtualisation for this machine.
+          - "host": Run VMs with virt-manager and libvirtd (desktop/workstation).
+          - "guest": Run as a QEMU guest with spice-vdagent (VM).
+        '';
       };
     };
 

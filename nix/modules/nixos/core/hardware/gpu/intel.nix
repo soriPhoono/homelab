@@ -34,7 +34,7 @@ in
         hardware.intel-gpu-tools.enable = true;
       }
       (mkIf cfg.integrated.enable {
-        boot.kernelParams = lib.mkIf (cfg.integrated.deviceID != null) [
+        boot.kernelParams = mkIf (cfg.integrated.deviceID != null) [
           "i915.force_probe=${cfg.integrated.deviceID}"
         ];
 

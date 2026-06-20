@@ -29,7 +29,12 @@ in
         mod = mkOption {
           type = types.str;
           default = "SUPER";
-          description = "Modifier key for window manager keybindings (e.g. SUPER, ALT).";
+          description = ''
+            The primary modifier key used across all window manager keybindings.
+            This is passed to the WM config as the mod key for action bindings
+            like window focus, workspace switching, and launcher shortcuts.
+            Common values: SUPER (also known as Windows/Meta key), ALT.
+          '';
         };
       };
     };

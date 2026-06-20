@@ -22,7 +22,11 @@ in
           type = with types; nullOr str;
           default = null;
           example = "https://{TS_HOSTNAME}.{TAILNET_MAGIC_DNS}.ts.net";
-          description = "The origin of the tailnet for Tailscale Serve";
+          description = ''
+            The Tailscale tailnet origin URL for Tailscale Serve.
+            Used to construct Funnel URLs for public-facing services.
+            Format: https://{TS_HOSTNAME}.{TAILNET_MAGIC_DNS}.ts.net
+          '';
         };
 
         services = mkOption {
@@ -38,7 +42,11 @@ in
                 proxy = mkOption {
                   type = with types; attrsOf str;
                   default = {};
-                  description = "List of endpoints to expose via tailscale serve";
+                  description = ''
+                    TCP/UDP endpoints to expose via Tailscale Serve or Funnel.
+                    Each key is a protocol and port (e.g., "tcp:443"), and each
+                    value is the local URL to forward traffic to.
+                  '';
                 };
               };
             });
@@ -56,7 +64,7 @@ in
       };
     };
 
-    config = lib.mkIf cfg.enable (mkMerge [
+    config = mkIf cfg.enable (mkMerge [
       {
         services.tailscale = {
           enable = true;

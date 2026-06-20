@@ -17,13 +17,20 @@ with lib; {
     shellAliases = lib.mkOption {
       type = with lib.types; attrsOf str;
       default = {};
-      description = "Shell command aliases";
+      description = ''
+        Shell command aliases available across all configured shells (bash, fish).
+        Aliases defined here are merged into each shell's alias configuration.
+      '';
     };
 
     sessionVariables = lib.mkOption {
       type = with lib.types; attrsOf str;
       default = {};
-      description = "Environment variables to set for the user";
+      description = ''
+        Environment variables applied across all configured shells and
+        desktop sessions. These are set via shell init scripts and
+        override any system-wide defaults.
+      '';
     };
   };
 

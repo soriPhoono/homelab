@@ -80,58 +80,63 @@ in
       };
     };
 
-    config = mkIf cfg.enable {
-      users = {
-        users.prowlarr = {
-          isSystemUser = true;
-          uid = mkDefault cfg.userUid;
-          group = config.users.groups.prowlarr.name;
-        };
-        groups = {
-          prowlarr = {
-            gid = mkDefault cfg.userGid;
+    config = mkIf cfg.enable (mkMerge [
+      {
+        users = {
+          users.prowlarr = {
+            isSystemUser = true;
+            uid = mkDefault cfg.userUid;
+            group = config.users.groups.prowlarr.name;
+          };
+          groups = {
+            prowlarr = {
+              gid = mkDefault cfg.userGid;
+            };
           };
         };
-      };
 
-      # Auto-enable the Docker container hosting platform
-      hosting.platforms.docker.enable = mkDefault true;
+        # Auto-enable the Docker container hosting platform
+        hosting.platforms.docker.enable = mkDefault true;
 
-      # Ensure config directory exists
-      systemd.tmpfiles.rules = [
-        "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
-      ];
+        # Ensure config directory exists
+        systemd.tmpfiles.rules = [
+          "d ${cfg.configDir} 0755 ${toString cfg.userUid} ${toString cfg.userGid} -"
+        ];
 
-      virtualisation.oci-containers.containers.prowlarr = {
-        inherit (cfg) image;
-        autoStart = true;
-        networks = ["proxy"];
+        virtualisation.oci-containers.containers.prowlarr = {
+          inherit (cfg) image;
+          autoStart = true;
+          networks = ["proxy"];
 
-        volumes =
-          [
-            "${cfg.configDir}:/config"
-          ]
-          ++ cfg.extraVolumes;
+          volumes =
+            [
+              "${cfg.configDir}:/config"
+            ]
+            ++ cfg.extraVolumes;
 
-        environment = {
-          TZ = config.time.timeZone;
-          PUID = toString cfg.userUid;
-          PGID = toString cfg.userGid;
+          environment =
+            {
+              PUID = toString cfg.userUid;
+              PGID = toString cfg.userGid;
+            }
+            // optionalAttrs (config.time.timeZone != null) {
+              TZ = config.time.timeZone;
+            };
+
+          # Traefik auto-discovery labels
+          labels =
+            {
+              "traefik.enable" = "true";
+              "traefik.http.routers.prowlarr.rule" = "Host(`${cfg.domain}`)";
+              "traefik.http.routers.prowlarr.entrypoints" = "websecure";
+              "traefik.http.routers.prowlarr.tls" = "true";
+              "traefik.http.routers.prowlarr.tls.certresolver" = "le";
+              "traefik.http.services.prowlarr.loadbalancer.server.port" = toString cfg.port;
+            }
+            // cfg.extraLabels;
+
+          inherit (cfg) extraOptions;
         };
-
-        # Traefik auto-discovery labels
-        labels =
-          {
-            "traefik.enable" = "true";
-            "traefik.http.routers.prowlarr.rule" = "Host(`${cfg.domain}`)";
-            "traefik.http.routers.prowlarr.entrypoints" = "websecure";
-            "traefik.http.routers.prowlarr.tls" = "true";
-            "traefik.http.routers.prowlarr.tls.certresolver" = "le";
-            "traefik.http.services.prowlarr.loadbalancer.server.port" = toString cfg.port;
-          }
-          // cfg.extraLabels;
-
-        inherit (cfg) extraOptions;
-      };
-    };
+      }
+    ]);
   }
