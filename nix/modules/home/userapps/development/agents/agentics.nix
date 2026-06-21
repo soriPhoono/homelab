@@ -2,7 +2,7 @@
   inherit (lib) types;
 in
   with lib; {
-    options.userapps.development.agentics = {
+    options.userapps.development.agents.agentics = {
       mcpServers = {
         stdio = mkOption {
           type = with types; attrsOf homelab.types.ai.stdioMcpServer;
