@@ -38,7 +38,7 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        desktop.environments.display_manager.greetd.variant = "regreet";
+        desktop.environments.display_managers.greetd.variant = "regreet";
 
         programs.regreet = {
           enable = true;
@@ -47,9 +47,7 @@ in
       }
 
       (mkIf (options ? stylix && config.stylix.enable) {
-        programs.regreet.settings = {
-          theme = config.stylix.base16Scheme-name;
-        };
+        programs.regreet.settings.theme = mkDefault "Adwaita";
       })
     ]);
   }
