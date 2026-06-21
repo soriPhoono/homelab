@@ -38,6 +38,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        desktop.environments.display_manager.greetd.variant = "regreet";
+
         programs.regreet = {
           enable = true;
           inherit (cfg) settings extraCss;

@@ -98,7 +98,10 @@ with lib; {
 
   hosting = {
     platforms.docker.enable = true;
-    media.enable = true;
+    media = {
+      enable = true;
+      jellyfin.acceleration.enable = true;
+    };
     proxy = {
       enable = true;
       type = "traefik";

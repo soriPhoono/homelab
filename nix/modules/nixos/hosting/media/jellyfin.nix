@@ -173,6 +173,8 @@ in
 
       # ── Hardware acceleration (VAAPI/QSV) ────────────────
       (mkIf cfg.acceleration.enable {
+        users.users.jellyfin.extraGroups = ["render" "video"];
+
         # Use mkBefore so this is prepended to (not override) any user-set extraOptions
         virtualisation.oci-containers.containers.jellyfin.extraOptions = mkBefore [
           # Pass the integrated GPU device for VAAPI (AMD/Intel) or QSV (Intel)
