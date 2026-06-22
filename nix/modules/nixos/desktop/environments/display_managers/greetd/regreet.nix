@@ -4,78 +4,111 @@
   options,
   ...
 }: let
+  inherit (lib) optionalString;
+
   cfg = config.desktop.environments.display_managers.greetd.regreet;
   stylixEnabled = options ? stylix && config.stylix.enable;
   colors = config.lib.stylix.colors or {};
+  c = colors.withHashtag or {};
 
-  baseCss = let
-    c = colors.withHashtag or {};
-  in ''
-    window.background > box {
-      background-color: ${c.base00 or "#181818"};
-    }
+  baseCss =
+    ''
+      window {
+        background-color: ${c.base00 or "#181818"};
+      }
 
-    box.horizontal > box.horizontal {
-      background-color: ${c.base01 or "#282828"};
-      border: 1px solid ${c.base02 or "#383838"};
-      border-radius: 12px;
-    }
+      frame.background {
+        background-color: ${c.base01 or "#282828"};
+        border: 1px solid ${c.base02 or "#383838"};
+        border-radius: 12px;
+      }
 
-    entry {
-      background-color: ${c.base02 or "#383838"};
-      color: ${c.base05 or "#d8d8d8"};
-      border: 1px solid ${c.base03 or "#585858"};
-      border-radius: 8px;
-      caret-color: ${c.base0D or "#7cafc2"};
-    }
+      entry {
+        background-color: ${c.base02 or "#383838"};
+        color: ${c.base05 or "#d8d8d8"};
+        border: 1px solid ${c.base03 or "#585858"};
+        border-radius: 8px;
+        caret-color: ${c.base0D or "#7cafc2"};
+      }
 
-    entry:focus {
-      border-color: ${c.base0D or "#7cafc2"};
-    }
+      entry:focus {
+        border-color: ${c.base0D or "#7cafc2"};
+      }
 
-    label {
-      color: ${c.base05 or "#d8d8d8"};
-    }
+      passwordentry {
+        background-color: ${c.base02 or "#383838"};
+        color: ${c.base05 or "#d8d8d8"};
+        border: 1px solid ${c.base03 or "#585858"};
+        border-radius: 8px;
+        caret-color: ${c.base0D or "#7cafc2"};
+      }
 
-    label:disabled {
-      color: ${c.base03 or "#585858"};
-    }
+      passwordentry:focus {
+        border-color: ${c.base0D or "#7cafc2"};
+      }
 
-    button {
-      background-color: ${c.base0D or "#7cafc2"};
-      color: ${c.base00 or "#181818"};
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-    }
+      label {
+        color: ${c.base05 or "#d8d8d8"};
+      }
 
-    button:hover {
-      background-color: ${c.base0C or "#86c1b9"};
-    }
+      label:disabled {
+        color: ${c.base03 or "#585858"};
+      }
 
-    combobox button {
-      background-color: ${c.base02 or "#383838"};
-      color: ${c.base05 or "#d8d8d8"};
-    }
+      button {
+        background-color: ${c.base0D or "#7cafc2"};
+        color: ${c.base00 or "#181818"};
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+      }
 
-    .clock-label {
-      color: ${c.base05 or "#d8d8d8"};
-    }
+      button:hover {
+        background-color: ${c.base0C or "#86c1b9"};
+      }
 
-    .date-label {
-      color: ${c.base04 or "#b8b8b8"};
-    }
+      button.suggested-action {
+        background-color: ${c.base0D or "#7cafc2"};
+        color: ${c.base00 or "#181818"};
+      }
 
-    button.destructive-action {
-      background-color: transparent;
-      color: ${c.base08 or "#ab4642"};
-    }
+      button.suggested-action:hover {
+        background-color: ${c.base0C or "#86c1b9"};
+      }
 
-    button.destructive-action:hover {
-      background-color: ${c.base08 or "#ab4642"};
-      color: ${c.base00 or "#181818"};
-    }
-  '';
+      button.destructive-action {
+        background-color: transparent;
+        color: ${c.base08 or "#ab4642"};
+      }
+
+      button.destructive-action:hover {
+        background-color: ${c.base08 or "#ab4642"};
+        color: ${c.base00 or "#181818"};
+      }
+
+      combobox button {
+        background-color: ${c.base02 or "#383838"};
+        color: ${c.base05 or "#d8d8d8"};
+      }
+
+      togglebutton {
+        background-color: ${c.base02 or "#383838"};
+        color: ${c.base05 or "#d8d8d8"};
+      }
+    ''
+    + optionalString (cfg.background.enable && cfg.background.path != null) ''
+      window {
+        background-image: url("${cfg.background.path}");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+      }
+    ''
+    + optionalString (!cfg.background.enable || cfg.background.path == null) ''
+      picture {
+        background-color: ${c.base00 or "#181818"};
+      }
+    '';
 in
   with lib; {
     options.desktop.environments.display_managers.greetd.regreet = {
@@ -167,7 +200,8 @@ in
 
           iconTheme.name = mkDefault "Adwaita";
 
-          extraCss = baseCss + "\n" + cfg.extraCss;
+          extraCss =
+            baseCss + cfg.extraCss;
 
           settings = {
             GTK = {
@@ -178,10 +212,6 @@ in
             };
           };
         };
-      })
-
-      (mkIf (!(stylixEnabled && cfg.stylix.enable)) {
-        programs.regreet.extraCss = cfg.extraCss;
       })
     ]);
   }
