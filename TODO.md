@@ -37,7 +37,7 @@ These are the tasks that are intended for future development goals
   - [x] Create a nix module option for shell configuration
   - [x] Update noctalia configuration to use new shell configuration
 - [ ] Add support for multiple bootloaders
-- [ ] Finish configuring greetd display manager
+- [x] Finish configuring greetd display manager
 - [ ] Test vr support on desktop
 - [ ] Finish implementing better security hardening
 - [ ] Implement impermenance on all nixos devices
