@@ -1,26 +1,12 @@
-{pkgs, ...}: {
-  imports = [
-    ./mcp.nix
-  ];
-
-  userapps.development.agentics = {
-    context = ./AGENTS.md;
-
-    skills = {
-      create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
-
-      stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
-
-      git-commit = pkgs.skills.github.awesome-copilot.git-commit;
-    };
-  };
-
+{
   userapps.development.agents.pi = {
     userSettings = {
       defaultProvider = "opencode-go";
       defaultModel = "deepseek-v4-flash";
       defaultThinkingLevel = "high";
     };
+
+    context = ./AGENTS.md;
 
     secrets = [
       "api/GITHUB_API_KEY"

@@ -6,7 +6,7 @@
   ...
 }: let
   cfg = config.userapps.development.agents.opencode;
-  shared = config.userapps.development.agentics or {};
+  shared = config.userapps.development.agents.agentics or {};
 
   # Merge shared agentics config with per-agent overrides (per-agent wins)
   mcpServers = {
@@ -24,19 +24,16 @@
     then cfg.context
     else shared.context or "";
 
-  # ---- Env / header renderers (agentics → OpenCode {env:VAR} syntax) ----
+  # ---- Env / header renderers (agentics → shell-friendly $VAR syntax) ----
 
   renderEnvValue = value:
     if value ? "secret"
-    then "{env:${value.name}}"
+    then "$" + value.name
     else value;
 
   renderHeaderValue = value:
     if value ? "secret"
-    then
-      (value.prefix or "")
-      + "{env:${value.name}}"
-      + (value.suffix or "")
+    then (value.prefix or "") + "$" + value.name
     else value;
 
   # ---- MCP server translation ----
@@ -117,32 +114,26 @@
         };
 
   # Predicates for secret detection
-  hasEnvSecrets = srv:
-    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.env or {}));
+  hasEnvSecrets = srv: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.env or {}));
 
-  hasHeaderSecrets = srv:
-    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.headers or {}));
+  hasHeaderSecrets = srv: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.headers or {}));
 
   # ---- Gather secrets from MCP servers ----
 
   mcpSecrets = let
     extractFromEnv = srv:
       lib.filter (v: v != null) (
-        lib.mapAttrsToList (
-          _: val:
-            if val ? "secret"
-            then val.secret
-            else null
-        ) (srv.env or {})
+        lib.mapAttrsToList (_: val:
+          if val ? "secret"
+          then val.secret
+          else null) (srv.env or {})
       );
     extractFromHeaders = srv:
       lib.filter (v: v != null) (
-        lib.mapAttrsToList (
-          _: val:
-            if val ? "secret"
-            then val.secret
-            else null
-        ) (srv.headers or {})
+        lib.mapAttrsToList (_: val:
+          if val ? "secret"
+          then val.secret
+          else null) (srv.headers or {})
       );
   in
     lib.flatten (
@@ -226,7 +217,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       # Provide a default empty context so `cfg.context` is always safe to read.
       # Users override via `userapps.development.agents.opencode.context` or
-      # `userapps.development.agentics.context`.
+      # `userapps.development.agents.agentics.context`.
       {userapps.development.agents.opencode.context = mkDefault "";}
 
       # ── Base config ──
@@ -234,7 +225,7 @@ in
         home = {
           packages = mkMerge [
             (mkIf (allSecrets == []) [cfg.package])
-            (mkIf cfg.enableDesktop [pkgs.opencode-desktop])
+            (mkIf (cfg.enableDesktop && allSecrets == []) [pkgs.opencode-desktop])
           ];
 
           file = mkMerge [

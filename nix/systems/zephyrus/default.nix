@@ -9,6 +9,7 @@ with lib; {
   ];
 
   core = {
+    enable = true;
     stateVersion = "26.11";
     timeZone = "America/Chicago";
 
@@ -69,12 +70,22 @@ with lib; {
     };
   };
 
+  # vpower default threshold (0.5%) is too low for ASUS battery transient read glitches
+  environment.etc."vpower.toml".text = ''
+    request_shutdown_battery_percent = 5.0
+    force_shutdown_timeout_secs = 10
+  '';
+
   # Required for MediaTek MT7921 Bluetooth (USB 13d3:3563) — HCI reset + USB core autosuspend break WMT function control
-  boot.extraModprobeConfig = "options btusb enable_autosuspend=0 reset=0";
-  boot.kernelParams = ["usbcore.quirks=13d3:3563:k"];
+  # boot.extraModprobeConfig = "options btusb enable_autosuspend=0 reset=0";
+  # boot.kernelParams = ["usbcore.quirks=13d3:3563:k"];
 
   desktop = {
     environments = {
+      display_managers.greetd.regreet = {
+        enable = true;
+        background.path = "/etc/greetd/background.jpg";
+      };
       managers.hyprland.enable = true;
     };
     services = {
@@ -93,7 +104,10 @@ with lib; {
 
   hosting = {
     platforms.docker.enable = true;
-    media.enable = true;
+    media = {
+      enable = true;
+      jellyfin.acceleration.enable = true;
+    };
     proxy = {
       enable = true;
       type = "traefik";

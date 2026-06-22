@@ -1,5 +1,6 @@
 {
   imports = [
+    ./agentics
     ./pi
     ./opencode
     ./helix

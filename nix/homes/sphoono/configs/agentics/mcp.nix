@@ -41,6 +41,16 @@
           ];
         };
 
+        nixos = {
+          command = "${pkgs.docker}/bin/docker";
+          args = [
+            "run"
+            "-i"
+            "--rm"
+            "ghcr.io/utensils/mcp-nixos"
+          ];
+        };
+
         # npx-based MCP servers (need host filesystem access)
         filesystem = {
           command = "${pkgs.nodejs}/bin/npx";

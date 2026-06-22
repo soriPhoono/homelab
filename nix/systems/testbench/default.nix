@@ -9,6 +9,7 @@ with lib; {
   ];
 
   core = {
+    enable = true;
     stateVersion = "26.11";
     timeZone = "America/Chicago";
 

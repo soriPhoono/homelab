@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.userapps.development.agents.pi;
-  shared = config.userapps.development.agentics or {};
+  shared = config.userapps.development.agents.agentics or {};
 
   # Merge shared agentics MCP servers with per-agent overrides (per-agent wins)
   mcpServers = {
@@ -143,7 +143,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       # Provide a default empty context so `cfg.context` is always safe to read.
       # Users override via `userapps.development.agents.pi.context` or
-      # `userapps.development.agentics.context`.
+      # `userapps.development.agents.agentics.context`.
       {userapps.development.agents.pi.context = mkDefault "";}
 
       {
