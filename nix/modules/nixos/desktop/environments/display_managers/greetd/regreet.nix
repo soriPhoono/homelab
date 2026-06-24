@@ -13,10 +13,6 @@
 
   baseCss =
     ''
-      window {
-        background-color: ${c.base00 or "#181818"};
-      }
-
       frame.background {
         background-color: ${c.base01 or "#282828"};
         border: 1px solid ${c.base02 or "#383838"};

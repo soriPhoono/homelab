@@ -1,8 +1,8 @@
 {
   lib,
+  pkgs,
   config,
   options,
-  pkgs,
   ...
 }: let
   cfg = config.core.gpg;
@@ -56,13 +56,15 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         warnings = let
-          placeholderWarnings = flatten (mapAttrsToList (
+          placeholderWarnings = flatten (
+            mapAttrsToList (
               name: identity:
                 optionals (identity.keyFingerprint == "0000000000000000000000000000000000000000") [
                   "core.gpg.identities.${name}.keyFingerprint is still set to the placeholder value."
                 ]
             )
-            cfg.identities);
+            cfg.identities
+          );
           noIdentitiesWarning = optionals (cfg.identities == {}) [
             "core.gpg.identities is empty — no GPG keys will be deployed."
           ];
@@ -103,7 +105,8 @@ in
         home.activation.importGpgKey = lib.hm.dag.entryAfter ["writeBoundary"] ''
           gpg_home="${gpgHome}"
 
-          ${concatStringsSep "\n" (mapAttrsToList (name: identity: ''
+          ${concatStringsSep "\n" (
+            mapAttrsToList (name: identity: ''
               key_file="$gpg_home/${name}.key"
               fingerprint="${identity.keyFingerprint}"
 
@@ -121,7 +124,8 @@ in
                 rm -f "$key_file"
               fi
             '')
-            cfg.identities)}
+            cfg.identities
+          )}
         '';
       })
     ]);
