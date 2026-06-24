@@ -3,5 +3,6 @@
     ./media
     ./platforms
     ./proxy
+    ./hermes
   ];
 }

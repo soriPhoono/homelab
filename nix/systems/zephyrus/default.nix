@@ -116,6 +116,14 @@ with lib; {
         email = "soriphoono@gmail.com";
       };
     };
+    hermes = {
+      enable = true;
+      users.sphoono = {
+        enable = true;
+        cpuLimit = "4.0";
+        memoryLimit = "8g";
+      };
+    };
   };
 
   themes = {

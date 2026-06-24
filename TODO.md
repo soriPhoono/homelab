@@ -41,3 +41,5 @@ These are the tasks that are intended for future development goals
 - [ ] Test vr support on desktop
 - [ ] Finish implementing better security hardening
 - [ ] Implement impermenance on all nixos devices
+- [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
+- [ ] Recreate nix on droid configuration system as second type of system

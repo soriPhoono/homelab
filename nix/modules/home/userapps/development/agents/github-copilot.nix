@@ -1,4 +1,3 @@
-# TODO: test this file
 {
   lib,
   pkgs,
@@ -17,21 +16,10 @@
   # Auto-discover MCP server secrets from the agentics/agent MCP config.
   # Merges harness secrets (e.g. GITHUB_API_KEY for Copilot auth) with
   # MCP server secrets so both flow into the binary wrapper.
-  mcpSecrets = let
-    extractSecretNames = attrs:
-      lib.filter (v: v != null) (
-        lib.mapAttrsToList (
-          _: val:
-            if builtins.isAttrs val && val ? "secret"
-            then val.secret
-            else null
-        )
-        attrs
-      );
-  in
-    lib.flatten (
-      lib.mapAttrsToList (_: srv: extractSecretNames (srv.env or {} // srv.headers or {})) agentsCfg.mcp
-    );
+  mcpSecrets = lib.homelab.agentics.mcp.extractSecrets {
+    stdio = agentsCfg.mcpServers.stdio or {};
+    http = agentsCfg.mcpServers.http or {};
+  };
 
   allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
 
@@ -41,102 +29,81 @@
   # exports them via makeWrapper).  The wrapper is then registered as a local
   # MCP server, identical to the opencode mcp-proxy approach.
   translateMcpServer = name: mcpServer: let
-    hasAnySecret = attrs: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues attrs);
+    mcpLib = lib.homelab.agentics.mcp;
+    inherit
+      (mcpLib)
+      renderEnvValue
+      renderHeaderValue
+      hasEnvSecrets
+      hasHeaderSecrets
+      ;
+    isHttp = mcpServer ? "url" && mcpServer ? "headers";
 
-    hasEnvSecrets = hasAnySecret (mcpServer.env or {});
-    hasHeaderSecrets = hasAnySecret (mcpServer.headers or {});
-
-    # Render env entries: literal strings pass through, secrets are
-    # resolved at runtime inside wrapper scripts (for stdio) or via
-    # mcp-proxy (for http/sse).
-    renderEnvValue = value:
-      if value ? "secret"
-      then ''\${
-          if value.prefix != null
-          then value.prefix
-          else ""
-        }${value.environmentVariable}${
-          if value.suffix != null
-          then value.suffix
-          else ""
-        }''
-      else "${lib.escapeShellArg value}";
-  in
-    if (mcpServer.transport == "stdio")
-    then
-      if hasEnvSecrets
-      then let
-        wrapperName = "copilot-mcp-stdio-${name}";
-        envExports = lib.concatStringsSep "\n" (
-          lib.mapAttrsToList (
-            envName: value:
-              if value ? "secret"
-              then "export ${envName}=${renderEnvValue value}"
-              else "export ${envName}=${lib.escapeShellArg value}"
-          ) (mcpServer.env or {})
-        );
-        argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (mcpServer.args or []));
-        wrapper = pkgs.writeShellScriptBin wrapperName ''
-          ${envExports}
-          exec ${lib.escapeShellArg mcpServer.command} ${argsStr}
-        '';
-      in {
-        type = "local";
-        command = "${wrapper}/bin/${wrapperName}";
-        args = [];
-        tools = ["*"];
-      }
-      else {
-        type = "local";
-        inherit (mcpServer) command;
-        args = mcpServer.args or [];
-        env = lib.mapAttrs (_: v:
+    mkStdioNoSecrets = {
+      type = "local";
+      inherit (mcpServer) command;
+      args = mcpServer.args or [];
+      env = lib.mapAttrs (
+        _: v:
           if builtins.isAttrs v
-          then v.environmentVariable
-          else v) (
-          mcpServer.env or {}
-        );
-        tools = ["*"];
-      }
-    else if (mcpServer.transport == "http" || mcpServer.transport == "sse")
+          then v.name
+          else v
+      ) (mcpServer.env or {});
+      tools = ["*"];
+    };
+
+    mkStdioSecrets = let
+      envExports = lib.concatStringsSep "\n" (
+        lib.mapAttrsToList (
+          envName: value: "export ${envName}=\"${renderEnvValue value}\""
+        ) (mcpServer.env or {})
+      );
+      argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (mcpServer.args or []));
+      wrapper = pkgs.writeShellScriptBin "copilot-mcp-stdio-${name}" ''
+        ${envExports}
+        exec ${lib.escapeShellArg mcpServer.command} ${argsStr}
+      '';
+    in {
+      type = "local";
+      command = "${wrapper}/bin/copilot-mcp-stdio-${name}";
+      args = [];
+      tools = ["*"];
+    };
+
+    mkHttpNoSecrets = {
+      type = "http";
+      inherit (mcpServer) url;
+      headers = mcpServer.headers or {};
+      tools = ["*"];
+    };
+
+    mkHttpSecrets = let
+      headerFlags = lib.concatStringsSep " \\\n                " (
+        lib.mapAttrsToList (
+          headerName: value: "--headers '${headerName}' \"${renderHeaderValue value}\""
+        ) (mcpServer.headers or {})
+      );
+      wrapper = pkgs.writeShellScriptBin "copilot-mcp-proxy-${name}" ''
+        exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
+          --transport streamablehttp \
+          ${headerFlags} \
+          '${mcpServer.url}'
+      '';
+    in {
+      type = "local";
+      command = "${wrapper}/bin/copilot-mcp-proxy-${name}";
+      args = [];
+      tools = ["*"];
+    };
+  in
+    if isHttp
     then
-      if hasHeaderSecrets
-      then let
-        wrapperName = "copilot-mcp-proxy-${name}";
-        headerFlags = lib.concatStringsSep " \\\n                " (
-          lib.mapAttrsToList (
-            headerName: value:
-              if value ? "secret"
-              then "--headers '${headerName}' \"${renderEnvValue value}\""
-              else "--headers '${headerName}' '${value}'"
-          ) (mcpServer.headers or {})
-        );
-        transportFlag =
-          if mcpServer.transport == "sse"
-          then ""
-          else "--transport streamablehttp";
-        wrapper = pkgs.writeShellScriptBin wrapperName ''
-          exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
-            ${transportFlag} \
-            ${headerFlags} \
-            '${mcpServer.url}'
-        '';
-      in {
-        type = "local";
-        command = "${wrapper}/bin/${wrapperName}";
-        args = [];
-        tools = ["*"];
-      }
-      else {
-        type =
-          if mcpServer.transport == "sse"
-          then "sse"
-          else "http";
-        inherit (mcpServer) url;
-        headers = mcpServer.headers or {};
-        tools = ["*"];
-      }
-    else throw "Unsupported transport protocol: ${mcpServer.transport}";
+      if hasHeaderSecrets mcpServer
+      then mkHttpSecrets
+      else mkHttpNoSecrets
+    else if hasEnvSecrets mcpServer
+    then mkStdioSecrets
+    else mkStdioNoSecrets;
 in
   with lib; {
     options.userapps.development.agents.github-copilot = {
@@ -182,7 +149,7 @@ in
         warnings =
           optionals (!(options ? sops) && cfg.secrets != [])
           "Failed to install github-copilot-cli as it was requested with secrets embedment, which requires sops, which is currently disabled"
-          ++ optionals (agentsCfg.commands.registry != {}) ''
+          ++ optionals (agentsCfg.commands or {} != {}) ''
             userapps.development.agents.github-copilot: commands are defined in
             `agentics.agents.commands.registry` but GitHub Copilot CLI does not
             support custom slash commands.  These commands will not be available
@@ -196,8 +163,7 @@ in
           enableMcpIntegration = false;
 
           context = let
-            # Collect any context entries that don't fit Copilot CLI's native options
-            baseContext = agentsCfg.context {};
+            baseContext = agentsCfg.context or "";
           in ''
             # GitHub Copilot CLI Runtime Context
 
@@ -208,9 +174,9 @@ in
             ${baseContext}
           '';
 
-          agents = mapAttrs cmdFromEntry agentsCfg.subagents.registry;
+          agents = mapAttrs cmdFromEntry agentsCfg.subagents;
 
-          mcpServers = mapAttrs translateMcpServer agentsCfg.mcp;
+          mcpServers = mapAttrs translateMcpServer (agentsCfg.mcpServers.stdio or {} // agentsCfg.mcpServers.http or {});
 
           # Skill derivations contain SKILL.md as their primary output.
           # Read the content so the github-copilot-cli HM module can write it

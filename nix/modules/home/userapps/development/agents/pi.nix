@@ -13,6 +13,11 @@
     http = (shared.mcpServers.http or {}) // cfg.mcpServers.http;
   };
   skills = (shared.skills or {}) // cfg.skills;
+  subagents =
+    if builtins.isAttrs cfg.subagents && cfg.subagents != {}
+    then cfg.subagents
+    else shared.subagents or {};
+  commands = (shared.commands or {}) // cfg.commands;
   agentContext =
     if cfg.context != ""
     then cfg.context
@@ -30,28 +35,17 @@
     ${ctx}
   '';
 
-  # Placeholder for skill entries
+  # Shared MCP utilities
+  mcpLib = lib.homelab.agentics.mcp;
+  inherit
+    (mcpLib)
+    renderEnvValue
+    renderHeaderValue
+    ;
 
   # Translate agentics MCP server config to standard MCP config format
   # (compatible with pi-mcp-extension and omp's built-in MCP).
   mcpServerConfig = let
-    renderEnvValue = value:
-      if value ? "secret"
-      then "$" + value.name
-      else value;
-
-    renderHeaderValue = value:
-      if value ? "secret"
-      then
-        (
-          if value.prefix or null != null
-          then value.prefix
-          else ""
-        )
-        + "$"
-        + value.name
-      else value;
-
     renderServer = name: srv:
       {
         transport = "stdio";
@@ -148,30 +142,9 @@ in
 
       {
         userapps.development.agents.pi = {
-          secrets = flatten (
-            (mapAttrsToList (
-                _name: server:
-                  filter (val: val != null) (
-                    mapAttrsToList (_name: env:
-                      if env ? "secret"
-                      then env.secret
-                      else null)
-                    server.env
-                  )
-              )
-              mcpServers.stdio)
-            ++ (mapAttrsToList (
-                _name: server:
-                  filter (val: val != null) (
-                    mapAttrsToList (_name: header:
-                      if header ? "secret"
-                      then header.secret
-                      else null)
-                    server.headers
-                  )
-              )
-              mcpServers.http)
-          );
+          secrets = mcpLib.extractSecrets {
+            inherit (mcpServers) stdio http;
+          };
 
           packages = mkIf hasMcpServers [
             "npm:pi-mcp-extension"
@@ -222,6 +195,25 @@ in
             # Wire MCP servers.
             (mkIf hasMcpServers {
               ".pi/agent/mcp.json".text = builtins.toJSON mcpServerConfig;
+            })
+
+            # Wire subagents as markdown files.
+            (mkIf (builtins.isAttrs subagents && subagents != {}) (
+              lib.mapAttrs' (name: value: {
+                name = ".pi/agent/subagents/${name}.md";
+                value = {
+                  text =
+                    if builtins.isPath value
+                    then builtins.readFile value
+                    else value;
+                };
+              })
+              subagents
+            ))
+
+            # Wire commands as a JSON file.
+            (mkIf (commands != {}) {
+              ".pi/agent/commands.json".text = builtins.toJSON commands;
             })
           ];
         };
