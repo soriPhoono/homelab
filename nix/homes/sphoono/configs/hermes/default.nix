@@ -2,13 +2,14 @@
   lib,
   config,
   ...
-}: let
-  cfg = config.userapps.development.agents.hermes;
-in
-  with lib; {
-    config = mkIf cfg.enable {
+}:
+with lib; {
+  config =
+    {
+      userapps.development.agents.hermes.enable = true;
+    }
+    // (mkIf config.userapps.development.agents.hermes.enable {
       userapps.development.agents.hermes = {
-        enable = true;
         defaultProfile = "dev";
         soul = ./SOUL.md;
         user = ./USER.md;
@@ -33,5 +34,5 @@ in
           };
         };
       };
-    };
-  }
+    });
+}
