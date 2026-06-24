@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }: let
   cfg = config.desktop.window-managers.hyprland;
@@ -96,6 +97,8 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         desktop.window-managers.enable = true;
+
+        core.gpg.pinentryPackage = mkIf (config.core.gpg.enable or false) pkgs.pinentry-gnome3;
 
         wayland.windowManager.hyprland = {
           enable = true;

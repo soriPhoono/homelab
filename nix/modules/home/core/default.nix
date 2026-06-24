@@ -11,6 +11,7 @@
     ./email.nix
     ./secrets.nix
     ./ssh.nix
+    ./gpg.nix
   ];
 
   home.packages = with pkgs; [

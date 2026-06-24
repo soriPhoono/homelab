@@ -41,7 +41,8 @@ in {
     environment.systemPackages = with pkgs;
       [
         moonlight-qt # Cloud streaming
-
+        gzdoom # DOOM source port
+        prismlauncher # Minecraft launcher
         mangohud # Overlay for monitoring
       ]
       ++ lib.optional cfg.vr.enable sidequest;
