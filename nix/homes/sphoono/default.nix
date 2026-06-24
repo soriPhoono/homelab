@@ -10,6 +10,11 @@
       defaultSopsFile = ./secrets.yml;
     };
 
+    gpg = {
+      enable = true;
+      keyFingerprint = "9FB33E455648D323D13BDD75765B1ECF9CACEEB6"; # gitleaks:allow
+    };
+
     email = {
       enable = true;
       accounts = {
@@ -23,6 +28,7 @@
     apps.git = {
       enable = true;
       userName = "soriphoono";
+      signingProvider = "gpg";
     };
   };
 }

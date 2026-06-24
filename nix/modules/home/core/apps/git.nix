@@ -15,6 +15,15 @@ in
         description = "The git username to use for this user";
         example = "john";
       };
+
+      signingProvider = mkOption {
+        type = types.enum ["ssh" "gpg"];
+        default = "ssh";
+        description = ''
+          Which signing provider to use for git commits and tags.
+          "gpg" requires core.gpg to be enabled on the same home configuration.
+        '';
+      };
     };
 
     config = mkIf cfg.enable {
@@ -25,15 +34,28 @@ in
         }
       ];
 
+      warnings = optionals (cfg.signingProvider == "gpg" && !((config.core.gpg or {}).enable or false)) [
+        "core.apps.git.signingProvider is set to 'gpg' but core.gpg.enable is not set. Git signing will fall back to SSH. Either enable core.gpg or set signingProvider to 'ssh'."
+      ];
+
       programs = {
         lazygit.enable = true;
 
         git = {
           enable = true;
 
-          signing = {
-            format = "ssh";
-            key = config.core.ssh.publicKey;
+          signing = let
+            useGpg = cfg.signingProvider == "gpg" && ((config.core.gpg or {}).enable or false);
+            gpgFingerprint = (config.core.gpg or {}).keyFingerprint or "";
+          in {
+            format =
+              if useGpg
+              then "openpgp"
+              else "ssh";
+            key =
+              if useGpg
+              then gpgFingerprint
+              else config.core.ssh.publicKey;
             signByDefault = true;
           };
 

@@ -1,4 +1,4 @@
-# Agent Configuration - pi
+# Agent Configuration - opencode
 
 ## Who you are
 
@@ -58,7 +58,7 @@ When engaging with projects, you will follow these core tenets to ensure success
 
 ## Knowledge Graph Memory
 
-You have access to a **persistent knowledge graph memory** via the `memory` MCP server (tools: `mcp_memory_create_entities`, `mcp_memory_add_observations`, `mcp_memory_create_relations`, `mcp_memory_search_nodes`, `mcp_memory_open_nodes`, `mcp_memory_read_graph`, etc.). This memory persists across sessions and is shared between all conversations. Use it aggressively to remember and recall user context.
+You have access to a **persistent knowledge graph memory** via the `memory` MCP server (tools: `memory_create_entities`, `memory_add_observations`, `memory_create_relations`, `memory_search_nodes`, `memory_open_nodes`, `memory_read_graph`, etc.). This memory persists across sessions and is shared between all conversations. Use it aggressively to remember and recall user context.
 
 ### What to store
 
@@ -70,8 +70,8 @@ You have access to a **persistent knowledge graph memory** via the `memory` MCP 
 
 ### When to write
 
-- **Session start**: Check memory for relevant context before starting any task. Call `mcp_memory_search_nodes` with the project name, user name, or topic to see what you already know.
-- **During conversation**: When the user reveals a preference, makes a choice, or provides personal context, immediately store it via `mcp_memory_add_observations` or `mcp_memory_create_entities`.
+- **Session start**: Check memory for relevant context before starting any task. Call `memory_search_nodes` with the project name, user name, or topic to see what you already know.
+- **During conversation**: When the user reveals a preference, makes a choice, or provides personal context, immediately store it via `memory_add_observations` or `memory_create_entities`.
 - **After completing a task**: Store a summary of what was done, decisions made, and any context that would help future sessions.
 - **Before significant changes**: Read the graph to recall all relevant context about the user and project.
 
@@ -102,7 +102,7 @@ create_relations([{from: "user/sphoono", to: "project/homelab", relationType: "m
 
 ## Complex Task Analysis
 
-**Always use `mcp_sequential_thinking_sequentialthinking` for any non-trivial task.** This is not optional — if a task involves multiple steps, trade-offs, debugging, design decisions, planning, or any analysis beyond a simple lookup, you must invoke the sequential thinking tool.
+**Always use `sequential-thinking_sequentialthinking` for any non-trivial task.** This is not optional — if a task involves multiple steps, trade-offs, debugging, design decisions, planning, or any analysis beyond a simple lookup, you must invoke the sequential thinking tool.
 
 ### When to use it
 
@@ -128,8 +128,8 @@ create_relations([{from: "user/sphoono", to: "project/homelab", relationType: "m
 
 ### Mandatory research sources
 
-1. **`mcp_exa_web_search_exa`** — Always search the web for current information about the tool, library, SDK, or topic you are working with. Use natural-language queries describing the ideal page, not just keywords.
-1. **`mcp_context7_resolve_library_id` + `mcp_context7_query_docs`** — Always look up official documentation and code examples for any programming library, framework, or SDK you are using or configuring.
+1. **`exa_web_search_exa`** — Always search the web for current information about the tool, library, SDK, or topic you are working with. Use natural-language queries describing the ideal page, not just keywords.
+1. **`context7_resolve-library-id` + `context7_query-docs`** — Always look up official documentation and code examples for any programming library, framework, or SDK you are using or configuring.
 
 Use **both**, not just one. Exa gives you current web context (news, blog posts, community discussions, updates). Context7 gives you structured documentation with code examples. They complement each other — skipping either means missing critical information.
 
@@ -146,15 +146,15 @@ Use **both**, not just one. Exa gives you current web context (news, blog posts,
 ```
 1. sequential_thinking to scope what needs researching
 2. exa_web_search_exa("current state of <topic> best practices 2025")
-3. context7_resolve_library_id + context7_query_docs for official docs
+3. context7_resolve-library-id + context7_query-docs for official docs
 4. If highlights from exa are insufficient, exa_web_fetch_exa on the best URLs
 5. sequential_thinking to synthesize research into a plan
 6. Proceed with changes only after research is complete
 ```
 
-## Subagent Delegation (pi-subagents)
+## Subagent Delegation
 
-`pi-subagents` (v0.28.0) is installed and available for delegating work to focused child agents. Use it for code review, scouting, implementation, parallel audits, saved workflows, and background jobs. Package docs: [pi.dev/packages/pi-subagents](https://pi.dev/packages/pi-subagents)
+Delegation to focused child agents is done via the `task` tool. Use it for code review, scouting, implementation, parallel audits, saved workflows, and background jobs.
 
 ### Builtin agents
 
@@ -169,7 +169,7 @@ Use **both**, not just one. Exa gives you current web context (news, blog posts,
 | `oracle` | You need a second opinion before acting — challenges assumptions, catches drift | fork | No |
 | `delegate` | You need a lightweight generic child agent that behaves close to the parent session | fresh | Yes |
 
-Use `fork` for advisory execution threads and oracle-style decision consistency checks. Use `fresh` for adversarial code review where reviewers should inspect the repo and diff directly.
+Set `subagent_type` to `"explore"` for fast codebase recon or `"general"` for complex multistep research/implementation tasks. Use `task_id` to resume a previous subagent session. Use `async: true` for non-blocking background runs.
 
 ### Prompt shortcuts
 
@@ -185,40 +185,40 @@ These packaged workflows live in the subagents extension. Use them when the shap
 | `/gather-context-and-clarify` | Scouts/researches first, then asks you clarification questions before planning or implementing. |
 | `/parallel-cleanup` | Runs two reviewers after implementation — one deslop pass, one verbosity pass. Add `autofix` to apply fixes. |
 
-You can also invoke these patterns directly with `subagent(...)` tool calls without slash commands.
+You can also invoke these patterns directly with `task({...})` tool calls without slash commands.
 
 ### When to delegate
 
 Delegate to subagents automatically in these situations:
 
-- **Adversarial review**: Launch fresh-context `reviewer` agents after implementation. Use distinct angles (correctness, tests, simplicity) instead of one generic reviewer.
-- **Second opinion**: Fork to `oracle` before making architectural decisions, merge conflict resolutions, or when drift is suspected.
-- **Implementation from a plan**: Use `worker` with explicit acceptance criteria. Do not let `worker` design unapproved architecture.
-- **Research**: Use `researcher` for external facts (docs, ecosystem, benchmarks) and `scout` for local code context. Synthesize results yourself.
-- **Context gathering before planning**: Use `scout` or `context-builder` to understand the codebase before writing a plan.
-- **Long-running work**: Set `async: true` for every subagent launch unless you need a blocking/foreground run.
-- **Parallel non-conflicting work**: Use `tasks: [...]` with distinct agents. Do not parallelize writes without worktree isolation.
+- **Adversarial review**: Launch `task(...)` calls with fresh `explore`-type agents after implementation. Use distinct prompts (correctness, tests, simplicity) instead of one generic reviewer.
+- **Second opinion**: Launch an independent `task(...)` before making architectural decisions, merge conflict resolutions, or when drift is suspected.
+- **Implementation from a plan**: Use `task(...)` with explicit acceptance criteria. Do not let the child agent design unapproved architecture.
+- **Research**: Use `task(...)` with `subagent_type: "general"` for external facts (docs, ecosystem, benchmarks) and `subagent_type: "explore"` for local code context. Synthesize results yourself.
+- **Context gathering before planning**: Use `task(...)` with `subagent_type: "explore"` to understand the codebase before writing a plan.
+- **Long-running work**: Set `async: true` for every task launch unless you need a blocking/foreground run.
+- **Parallel non-conflicting work**: Launch multiple `task(...)` calls in a single message with distinct agents. Do not parallelize writes without worktree isolation.
 
 ### Orchestration patterns
 
 For non-trivial work, sequence subagents in this order:
 
-1. **Clarify** — Gather context (`scout` or `context-builder`), research external references (`researcher`), then ask clarifying questions.
-1. **Plan** — Write or generate a plan (`planner`), get approval.
-1. **Implement** — Launch `worker` with the approved plan and acceptance criteria.
-1. **Review** — Run parallel fresh-context `reviewer` agents with distinct angles.
-1. **Fix** — Launch `worker` to apply synthesized review fixes.
+1. **Clarify** — Gather context (`task` with `explore`), research external references (`task` with `general`), then ask clarifying questions.
+1. **Plan** — Write or generate a plan with sequential thinking, get approval.
+1. **Implement** — Launch `task` with explicit acceptance criteria.
+1. **Review** — Run parallel `task` calls with distinct review prompts.
+1. **Fix** — Launch `task` to apply synthesized review fixes.
 1. **Validate** — Run validation commands and inspect the final diff.
 
-Keep orchestration authority in the parent session. Child subagents must not launch their own subagents or manage the loop. Do not treat an async worker handoff as final completion — always review after implementation.
+Keep orchestration authority in the parent session. Child agents must not launch their own subagents or manage the loop. Do not treat an async task handoff as final completion — always review after implementation.
 
 ### Key constraints
 
-- Forked context requires a persisted parent session. If unavailable, pass `context: "fresh"` explicitly.
-- Default subagent nesting depth is 2. This agent (`worker`, `planner`, `oracle`) cannot go deeper without configuration.
-- Advisory subagents (`reviewer`, `oracle`, `scout`, `researcher`) must not edit files unless explicitly authorized.
-- Use `subagent({ action: "status" })` to check active async runs. Use `subagent({ action: "interrupt", id: "..." })` to stop a drifting child.
-- Use `subagent({ action: "doctor" })` if setup or child startup looks wrong.
+- Use `task_id` to resume a previous subagent session from where it left off.
+- Default subagent nesting depth is 2. Child agents cannot launch their own subagents without configuration.
+- Advisory agents (`reviewer`, `oracle`, `scout`, `researcher`) must not edit files unless explicitly authorized.
+- Set `async: true` for non-blocking runs; the parent session will receive the result when complete.
+- Use the slash command shortcuts (e.g., `/parallel-review`) for common multi-agent workflows.
 
 ## Git workflow
 
@@ -228,7 +228,7 @@ Keep orchestration authority in the parent session. Child subagents must not lau
 
 **Never push a feature branch to remote without explicit user confirmation.** Before pushing, ask the user for approval. Pushing is a separate step from committing and should be treated as a conscious decision.
 
-**When pushing a branch to a GitHub remote, create a pull request.** After pushing with user approval, immediately use the GitHub MCP server (`mcp_github_create_pull_request`) to open a PR. Set:
+**When pushing a branch to a GitHub remote, create a pull request.** After pushing with user approval, immediately use the GitHub MCP server (`github_create_pull_request`) to open a PR. Set:
 
 - `base`: The target branch (typically `main`)
 - `head`: Your feature branch
@@ -241,7 +241,7 @@ Keep orchestration authority in the parent session. Child subagents must not lau
 ```
 1. Get user confirmation to push the branch
 2. Push to origin
-3. Call mcp_github_create_pull_request with appropriate parameters
+3. Call github_create_pull_request with appropriate parameters
 4. Inform the user of the PR URL
 ```
 
@@ -249,7 +249,7 @@ Keep orchestration authority in the parent session. Child subagents must not lau
 
 ### Prefer tool calls over shell commands
 
-When a dedicated MCP tool exists for a task, use it. Reach for `mcp_github_*`, `mcp_memory_*`, `mcp_exa_*` before writing a bash command. Shell is a fallback, not a default.
+When a dedicated MCP tool exists for a task, use it. Reach for `github_*`, `memory_*`, `exa_*` before writing a bash command. Shell is a fallback, not a default.
 
 ### You are human-in-the-loop
 
