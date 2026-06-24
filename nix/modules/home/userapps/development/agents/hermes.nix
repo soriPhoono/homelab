@@ -35,6 +35,11 @@
     then cfg.context
     else shared.context or "";
 
+  soulContent =
+    if cfg.soul != ""
+    then cfg.soul
+    else agentContext;
+
   yamlFormat = pkgs.formats.yaml {};
 
   # Gather secrets from MCP servers (same pattern as opencode.nix)
@@ -125,9 +130,11 @@
 
   mkProfileSoul = name: profile: let
     desc =
-      if profile.soul != ""
-      then profile.soul
-      else "You are the \"${name}\" profile of a hermes agent.";
+      if profile.soul == ""
+      then "You are the \"${name}\" profile of a hermes agent."
+      else if builtins.typeOf profile.soul == "path"
+      then builtins.readFile profile.soul
+      else profile.soul;
   in ''
     # Profile: ${name}
     ${profile.description}
@@ -159,7 +166,7 @@ in
                 description = "Default model for this profile.";
               };
               soul = mkOption {
-                type = types.str;
+                type = with types; oneOf [str path];
                 default = "";
                 description = "Profile-specific SOUL.md content.";
               };
@@ -208,12 +215,38 @@ in
           default = {};
           description = "Top-level config.yaml settings merged on top of auto-generated defaults.";
         };
+
+        soul = mkOption {
+          type = with types; oneOf [str path];
+          default = "";
+          description = "Hermes agent personality / SOUL.md content. Falls back to shared agentics.context if empty.";
+        };
+
+        user = mkOption {
+          type = with types; oneOf [str path];
+          default = "";
+          description = "User-level context for USER.md. Separate from SOUL.md — this is about you, not the agent.";
+        };
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
       # Default empty context
       {userapps.development.agents.hermes.context = mkDefault "";}
+
+      # Default secrets for hermes .env — user can override
+      {
+        userapps.development.agents.hermes.secrets = mkDefault [
+          "api/OPENROUTER_API_KEY"
+          "api/EXA_API_KEY"
+          "api/CONTEXT7_API_KEY"
+          "api/GITHUB_API_KEY"
+          "api/OPENCODE_API_KEY"
+          "hermes/api_server_key"
+          "hermes/dashboard_username"
+          "hermes/dashboard_password"
+        ];
+      }
 
       # ── Base config — write ~/.hermes/ files ──
       {
@@ -226,25 +259,26 @@ in
             }
 
             # SOUL.md
-            (mkIf (agentContext != "") (
-              if builtins.typeOf agentContext == "path"
+            (mkIf (soulContent != "") (
+              if builtins.typeOf soulContent == "path"
               then {
-                ".hermes/SOUL.md".text = createSoul (builtins.readFile agentContext);
+                ".hermes/SOUL.md".text = createSoul (builtins.readFile soulContent);
               }
               else {
-                ".hermes/SOUL.md".text = createSoul agentContext;
+                ".hermes/SOUL.md".text = createSoul soulContent;
               }
             ))
 
-            # USER.md placeholder
-            (mkIf (agentContext != "") {
-              ".hermes/USER.md".text = ''
-                # User Context
-
-                This file provides user-level context for the Hermes agent.
-                It supplements the agent personality defined in SOUL.md.
-              '';
-            })
+            # USER.md
+            (mkIf (cfg.user != "") (
+              if builtins.typeOf cfg.user == "path"
+              then {
+                ".hermes/USER.md".text = "# User Context\n\n${builtins.readFile cfg.user}";
+              }
+              else {
+                ".hermes/USER.md".text = "# User Context\n\n${cfg.user}";
+              }
+            ))
 
             # Global skills symlinks
             (mkIf (skills != {}) (
@@ -257,21 +291,6 @@ in
               })
               skills
             ))
-
-            # .env file (populated via sops template when secrets are present)
-            (mkIf (allSecrets != []) {
-              ".hermes/.env".text = ''
-                # Hermes Agent environment variables
-                # Managed by home-manager — do not edit manually
-                #
-                # API keys are injected via sops-nix at activation time.
-                # See nix/homes/sphoono/secrets.yml for the source of truth.
-
-                ${concatStringsSep "\n" (
-                  map (secret: ''${baseNameOf secret}="__REPLACE_WITH_SOPS_SECRET_${secret}__"'') allSecrets
-                )}
-              '';
-            })
           ]
           # ── Profile directories ──
           ++ mapAttrsToList (name: profile:
@@ -305,6 +324,18 @@ in
       # ── Secrets variant (sops) ──
       (mkIf (options ? sops && allSecrets != []) {
         sops.secrets = genAttrs allSecrets (_: {});
+
+        sops.templates."hermes/dotenv" = {
+          mode = "0600";
+          path = "${config.home.homeDirectory}/.hermes/.env";
+          content = ''
+            # Hermes Agent environment variables
+            # Managed by home-manager + sops-nix — do not edit manually
+            ${concatStringsSep "\n" (
+              map (secret: "${baseNameOf secret}=${config.sops.placeholder.${secret}}") allSecrets
+            )}
+          '';
+        };
       })
     ]);
   }

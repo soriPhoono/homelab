@@ -8,7 +8,10 @@ in
   with lib; {
     config = mkIf cfg.enable {
       userapps.development.agents.hermes = {
+        enable = true;
         defaultProfile = "dev";
+        soul = ./SOUL.md;
+        user = ./USER.md;
 
         profiles = {
           dev = {
