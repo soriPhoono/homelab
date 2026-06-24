@@ -80,12 +80,16 @@
 
   # ---- Main hermes config.yaml content ----
   hermesConfig = {
-    terminal = {backend = "local";};
+    terminal = {
+      backend = "local";
+    };
     agent = {
       max_turns = 60;
       reasoning_effort = "medium";
     };
-    display = {tool_progress = "all";};
+    display = {
+      tool_progress = "all";
+    };
     mcp_servers = builtins.mapAttrs translateMcpServer (mcpServers.stdio // mcpServers.http);
   };
 
@@ -136,58 +140,66 @@ in
       package = pkgs.emptyFile;
       extraOptions = {
         profiles = mkOption {
-          type = types.attrsOf (types.submodule {
-            options = {
-              enable = mkEnableOption "this hermes profile";
-              description = mkOption {
-                type = types.str;
-                default = "";
-                description = ''
-                  Description used by the kanban orchestrator to route tasks
-                  based on profile capability.
-                '';
+          type = types.attrsOf (
+            types.submodule {
+              options = {
+                enable = mkEnableOption "this hermes profile";
+                description = mkOption {
+                  type = types.str;
+                  default = "";
+                  description = ''
+                    Description used by the kanban orchestrator to route tasks
+                    based on profile capability.
+                  '';
+                };
+                model = mkOption {
+                  type = types.nullOr types.str;
+                  default = null;
+                  example = "anthropic/claude-sonnet-4";
+                  description = "Default model for this profile.";
+                };
+                soul = mkOption {
+                  type = with types;
+                    oneOf [
+                      str
+                      path
+                    ];
+                  default = "";
+                  description = "Profile-specific SOUL.md content.";
+                };
+                skills = mkOption {
+                  type = types.attrsOf types.package;
+                  default = {};
+                  description = "Profile-specific skills.";
+                };
+                mcpServers = mkOption {
+                  type = types.nullOr (
+                    types.submodule {
+                      options = {
+                        stdio = mkOption {
+                          type = types.attrsOf types.attrs;
+                          default = {};
+                          description = "Profile-level stdio MCP servers.";
+                        };
+                        http = mkOption {
+                          type = types.attrsOf types.attrs;
+                          default = {};
+                          description = "Profile-level HTTP MCP servers.";
+                        };
+                      };
+                    }
+                  );
+                  default = null;
+                  description = "Profile-level MCP servers (overrides global).";
+                };
+                settings = mkOption {
+                  type = types.attrs;
+                  default = {};
+                  description = "Additional profile-specific config.yaml settings.";
+                };
               };
-              model = mkOption {
-                type = types.nullOr types.str;
-                default = null;
-                example = "anthropic/claude-sonnet-4";
-                description = "Default model for this profile.";
-              };
-              soul = mkOption {
-                type = with types; oneOf [str path];
-                default = "";
-                description = "Profile-specific SOUL.md content.";
-              };
-              skills = mkOption {
-                type = types.attrsOf types.package;
-                default = {};
-                description = "Profile-specific skills.";
-              };
-              mcpServers = mkOption {
-                type = types.nullOr (types.submodule {
-                  options = {
-                    stdio = mkOption {
-                      type = types.attrsOf types.attrs;
-                      default = {};
-                      description = "Profile-level stdio MCP servers.";
-                    };
-                    http = mkOption {
-                      type = types.attrsOf types.attrs;
-                      default = {};
-                      description = "Profile-level HTTP MCP servers.";
-                    };
-                  };
-                });
-                default = null;
-                description = "Profile-level MCP servers (overrides global).";
-              };
-              settings = mkOption {
-                type = types.attrs;
-                default = {};
-                description = "Additional profile-specific config.yaml settings.";
-              };
-            };
-          });
+            }
+          );
           default = {};
           description = "Per-profile hermes agent configuration.";
         };
@@ -205,13 +217,21 @@ in
         };
 
         soul = mkOption {
-          type = with types; oneOf [str path];
+          type = with types;
+            oneOf [
+              str
+              path
+            ];
           default = "";
           description = "Hermes agent personality / SOUL.md content. Falls back to shared agentics.context if empty.";
         };
 
         user = mkOption {
-          type = with types; oneOf [str path];
+          type = with types;
+            oneOf [
+              str
+              path
+            ];
           default = "";
           description = "User-level context for USER.md. Separate from SOUL.md — this is about you, not the agent.";
         };
@@ -224,12 +244,7 @@ in
 
       # Default secrets for hermes .env — user can override
       {
-        userapps.development.agents.hermes.secrets = mkDefault [
-          "api/OPENROUTER_API_KEY"
-          "api/EXA_API_KEY"
-          "api/CONTEXT7_API_KEY"
-          "api/GITHUB_API_KEY"
-          "api/OPENCODE_API_KEY"
+        userapps.development.agents.hermes.secrets = [
           "hermes/api_server_key"
           "hermes/dashboard_username"
           "hermes/dashboard_password"
@@ -238,12 +253,11 @@ in
 
       # ── Base config — write ~/.hermes/ files ──
       {
-        home.file = mkMerge ([
+        home.file = mkMerge (
+          [
             # Main config.yaml
             {
-              ".hermes/config.yaml".source = yamlFormat.generate "hermes-config" (
-                hermesConfig // cfg.settings
-              );
+              ".hermes/config.yaml".source = yamlFormat.generate "hermes-config" (hermesConfig // cfg.settings);
             }
 
             # SOUL.md
@@ -281,52 +295,63 @@ in
             ))
           ]
           # ── Profile directories ──
-          ++ mapAttrsToList (name: profile:
-            mkIf profile.enable (mkMerge [
-              {
-                ".hermes/profiles/${name}/config.yaml".source = yamlFormat.generate "hermes-profile-${name}-config" (mkProfileConfig name profile);
-              }
-              {
-                ".hermes/profiles/${name}/profile.yaml".source = yamlFormat.generate "hermes-profile-${name}-meta" {
-                  inherit (profile) description;
-                  inherit name;
-                };
-              }
-              {
-                ".hermes/profiles/${name}/SOUL.md".text = mkProfileSoul name profile;
-              }
-              (mkIf (profile.skills != {}) (
-                mapAttrs' (skillName: skill: {
-                  name = ".hermes/profiles/${name}/skills/${skillName}";
-                  value = {
-                    source = skill;
-                    recursive = true;
+          ++ mapAttrsToList (
+            name: profile:
+              mkIf profile.enable (mkMerge [
+                {
+                  ".hermes/profiles/${name}/config.yaml".source =
+                    yamlFormat.generate "hermes-profile-${name}-config" (mkProfileConfig name profile);
+                }
+                {
+                  ".hermes/profiles/${name}/profile.yaml".source = yamlFormat.generate "hermes-profile-${name}-meta" {
+                    inherit (profile) description;
+                    inherit name;
                   };
-                })
-                profile.skills
-              ))
-            ]))
-          cfg.profiles);
+                }
+                {
+                  ".hermes/profiles/${name}/SOUL.md".text = mkProfileSoul name profile;
+                }
+                (mkIf (profile.skills != {}) (
+                  mapAttrs' (skillName: skill: {
+                    name = ".hermes/profiles/${name}/skills/${skillName}";
+                    value = {
+                      source = skill;
+                      recursive = true;
+                    };
+                  })
+                  profile.skills
+                ))
+              ])
+          )
+          cfg.profiles
+        );
       }
 
       # ── Secrets variant (sops) ──
       (mkIf (options ? sops) {
         sops.secrets = genAttrs hermesSecrets (_: {});
 
+        home.activation.ensureHermesDir = lib.hm.dag.entryBefore ["linkGeneration"] ''
+          $DRY_RUN_CMD mkdir -p "${config.home.homeDirectory}/.hermes" 2>/dev/null || true
+          $DRY_RUN_CMD chmod 700 "${config.home.homeDirectory}/.hermes" 2>/dev/null || true
+        '';
+
         home.activation.hermesDotEnv = lib.hm.dag.entryAfter ["sops"] ''
-          run mkdir -p "${config.home.homeDirectory}/.hermes"
-          run rm -f "${config.home.homeDirectory}/.hermes/.env"
+          $DRY_RUN_CMD mkdir -p "${config.home.homeDirectory}/.hermes"
+          $DRY_RUN_CMD rm -f "${config.home.homeDirectory}/.hermes/.env"
 
           ${concatStringsSep "\n" (
             map (secret: ''
               if [ -f "${config.sops.secrets.${secret}.path}" ]; then
-                echo "${baseNameOf secret}=$(cat ${config.sops.secrets.${secret}.path})" >> "${config.home.homeDirectory}/.hermes/.env"
+                echo "${baseNameOf secret}=$(cat ${
+                config.sops.secrets.${secret}.path
+              })" >> "${config.home.homeDirectory}/.hermes/.env"
               fi
             '')
             hermesSecrets
           )}
 
-          run chmod 600 "${config.home.homeDirectory}/.hermes/.env"
+          $DRY_RUN_CMD chmod 600 "${config.home.homeDirectory}/.hermes/.env"
         '';
       })
     ]);

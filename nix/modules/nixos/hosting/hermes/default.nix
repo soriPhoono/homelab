@@ -160,11 +160,12 @@ in {
       # Ensure Docker platform is enabled
       hosting.platforms.docker.enable = mkDefault true;
 
-      # Create base ~/.hermes per user via tmpfiles
+      # Create base ~/.hermes per user via tmpfiles.
+      # Use `z` mode to fix ownership/permissions on every boot (not just first creation).
       systemd.tmpfiles.rules = flatten (
         mapAttrsToList (
           username: uc:
-            optional uc.enable "d /home/${username}/.hermes 0700 ${username} users -"
+            optional uc.enable "z /home/${username}/.hermes 0700 ${username} users - -"
         )
         cfg.users
       );
