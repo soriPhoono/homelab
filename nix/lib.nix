@@ -131,11 +131,11 @@ with prev; {
 
         # Check if a server has secrets in its env
         hasEnvSecrets = srv:
-          prev.lib.any (v: builtins.isAttrs v && v ? "secret") (prev.lib.attrValues (srv.env or {}));
+          prev.any (v: builtins.isAttrs v && v ? "secret") (prev.attrValues (srv.env or {}));
 
         # Check if a server has secrets in its headers
         hasHeaderSecrets = srv:
-          prev.lib.any (v: builtins.isAttrs v && v ? "secret") (prev.lib.attrValues (srv.headers or {}));
+          prev.any (v: builtins.isAttrs v && v ? "secret") (prev.attrValues (srv.headers or {}));
 
         # Extract secret names from MCP server env/headers.
         # Returns a flat list of secret name strings.
@@ -144,23 +144,23 @@ with prev; {
           http ? {},
         }: let
           extractEnv = srv:
-            prev.lib.filter (v: v != null) (
-              prev.lib.mapAttrsToList (_: val:
+            prev.filter (v: v != null) (
+              prev.mapAttrsToList (_: val:
                 if val ? "secret"
                 then val.secret
                 else null) (srv.env or {})
             );
           extractHeaders = srv:
-            prev.lib.filter (v: v != null) (
-              prev.lib.mapAttrsToList (_: val:
+            prev.filter (v: v != null) (
+              prev.mapAttrsToList (_: val:
                 if val ? "secret"
                 then val.secret
                 else null) (srv.headers or {})
             );
         in
-          prev.lib.flatten (
-            (prev.lib.mapAttrsToList (_: extractEnv) stdio)
-            ++ (prev.lib.mapAttrsToList (_: extractHeaders) http)
+          prev.flatten (
+            (prev.mapAttrsToList (_: extractEnv) stdio)
+            ++ (prev.mapAttrsToList (_: extractHeaders) http)
           );
       };
     };
