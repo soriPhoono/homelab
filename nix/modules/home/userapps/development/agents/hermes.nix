@@ -16,7 +16,6 @@
     mkOption
     mkDefault
     types
-    flatten
     mapAttrs'
     mapAttrsToList
     genAttrs
@@ -42,29 +41,18 @@
 
   yamlFormat = pkgs.formats.yaml {};
 
-  # Gather secrets from MCP servers (same pattern as opencode.nix)
-  mcpSecrets = let
-    extractFromEnv = srv:
-      lib.filter (v: v != null) (
-        mapAttrsToList (_: val:
-          if val ? "secret"
-          then val.secret
-          else null) (srv.env or {})
-      );
-    extractFromHeaders = srv:
-      lib.filter (v: v != null) (
-        mapAttrsToList (_: val:
-          if val ? "secret"
-          then val.secret
-          else null) (srv.headers or {})
-      );
-  in
-    flatten (
-      (mapAttrsToList (_: extractFromEnv) mcpServers.stdio)
-      ++ (mapAttrsToList (_: extractFromHeaders) mcpServers.http)
-    );
-
-  allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
+  # Static list of secrets that hermes needs in its .env file.
+  # Used by sops.templates (cannot reference allSecrets — circular dep).
+  hermesSecrets = [
+    "api/OPENROUTER_API_KEY"
+    "api/EXA_API_KEY"
+    "api/CONTEXT7_API_KEY"
+    "api/GITHUB_API_KEY"
+    "api/OPENCODE_API_KEY"
+    "hermes/api_server_key"
+    "hermes/dashboard_username"
+    "hermes/dashboard_password"
+  ];
 
   # Translate agentics MCP server to hermes-native mcp_servers format.
   # Secrets become $ENV_VAR references that hermes resolves from .env at runtime.
@@ -322,8 +310,8 @@ in
       }
 
       # ── Secrets variant (sops) ──
-      (mkIf (options ? sops && allSecrets != []) {
-        sops.secrets = genAttrs allSecrets (_: {});
+      (mkIf (options ? sops) {
+        sops.secrets = genAttrs hermesSecrets (_: {});
 
         sops.templates."hermes/dotenv" = {
           mode = "0600";
@@ -332,7 +320,7 @@ in
             # Hermes Agent environment variables
             # Managed by home-manager + sops-nix — do not edit manually
             ${concatStringsSep "\n" (
-              map (secret: "${baseNameOf secret}=${config.sops.placeholder.${secret}}") allSecrets
+              map (secret: "${baseNameOf secret}=${config.sops.placeholder.${secret}}") hermesSecrets
             )}
           '';
         };
