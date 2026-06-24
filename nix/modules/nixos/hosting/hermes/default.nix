@@ -18,6 +18,7 @@
     mapAttrs'
     mapAttrsToList
     nameValuePair
+    filterAttrs
     ;
 
   baseDomain =
@@ -174,9 +175,9 @@ in {
       virtualisation.oci-containers.containers =
         mapAttrs' (
           username: uc:
-            mkIf uc.enable (nameValuePair "hermes-${username}" (mkHermesContainer username uc))
+            nameValuePair "hermes-${username}" (mkHermesContainer username uc)
         )
-        cfg.users;
+        (filterAttrs (_: uc: uc.enable) cfg.users);
     }
   ]);
 }
