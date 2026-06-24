@@ -98,6 +98,8 @@ in
       {
         desktop.window-managers.enable = true;
 
+        home.packages = [pkgs.wl-clipboard-rs];
+
         core.gpg.pinentryPackage = mkIf (config.core.gpg.enable or false) pkgs.pinentry-gnome3;
 
         wayland.windowManager.hyprland = {
