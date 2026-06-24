@@ -24,6 +24,15 @@ in
           "gpg" requires core.gpg to be enabled on the same home configuration.
         '';
       };
+
+      signingKey = mkOption {
+        type = types.str;
+        default = "primary";
+        description = ''
+          Name of the SSH key from core.ssh.publicKeys to use for commit signing.
+          Only used when signingProvider is "ssh".
+        '';
+      };
     };
 
     config = mkIf cfg.enable {
@@ -46,7 +55,8 @@ in
 
           signing = let
             useGpg = cfg.signingProvider == "gpg" && ((config.core.gpg or {}).enable or false);
-            gpgFingerprint = (config.core.gpg or {}).keyFingerprint or "";
+            gpgFingerprint = ((config.core.gpg or {}).identities or {}).${cfg.signingKey}.keyFingerprint or "";
+            sshSigningKey = config.core.ssh.publicKeys.${cfg.signingKey} or "";
           in {
             format =
               if useGpg
@@ -55,7 +65,7 @@ in
             key =
               if useGpg
               then gpgFingerprint
-              else config.core.ssh.publicKey;
+              else sshSigningKey;
             signByDefault = true;
           };
 

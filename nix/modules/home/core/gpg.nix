@@ -7,24 +7,39 @@
 }: let
   cfg = config.core.gpg;
   gpgHome = config.programs.gpg.homedir;
+
+  identitySubmodule = _: {
+    options = {
+      keyFingerprint = lib.mkOption {
+        type = lib.types.str;
+        description = ''
+          Full 40-hex-char fingerprint of the GPG key.
+          Used for trust-db initialization and git signing.
+        '';
+        example = "FF9F589746CBDCE989E5C2D75928BCCDC1E7C015";
+      };
+    };
+  };
 in
   with lib; {
     options.core.gpg = {
       enable = mkEnableOption ''
         GPG key management from sops-nix secrets.
-        Stores an armored GPG private key in the user secrets vault and deploys
-        it to ~/.gnupg on activation, preserving a single GPG identity across
+        Stores armored GPG private keys in the user secrets vault and deploys
+        them to ~/.gnupg on activation, preserving GPG identities across
         machines.
       '';
 
-      keyFingerprint = mkOption {
-        type = types.str;
-        default = "0000000000000000000000000000000000000000";
+      identities = mkOption {
+        type = with types; attrsOf (submodule identitySubmodule);
+        default = {};
         description = ''
-          Full fingerprint of the GPG key used for trust-db initialization and
-          git signing. Must be the 40-hex-char fingerprint without spaces.
+          Named GPG identities. Each identity's private key should be stored
+          in sops as gpg/<name>_key and will be imported on activation.
         '';
-        example = "FF9F589746CBDCE989E5C2D75928BCCDC1E7C015";
+        example = {
+          primary.keyFingerprint = "FF9F589746CBDCE989E5C2D75928BCCDC1E7C015";
+        };
       };
 
       pinentryPackage = mkOption {
@@ -40,9 +55,19 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        warnings = optionals (cfg.keyFingerprint == "0000000000000000000000000000000000000000") [
-          "core.gpg.keyFingerprint is still set to the placeholder value. Set it to your actual GPG key fingerprint."
-        ];
+        warnings = let
+          placeholderWarnings = flatten (mapAttrsToList (
+              name: identity:
+                optionals (identity.keyFingerprint == "0000000000000000000000000000000000000000") [
+                  "core.gpg.identities.${name}.keyFingerprint is still set to the placeholder value."
+                ]
+            )
+            cfg.identities);
+          noIdentitiesWarning = optionals (cfg.identities == {}) [
+            "core.gpg.identities is empty — no GPG keys will be deployed."
+          ];
+        in
+          placeholderWarnings ++ noIdentitiesWarning;
 
         programs.gpg = {
           enable = true;
@@ -64,30 +89,39 @@ in
         services.ssh-agent.enable = mkIf (options ? sops) (mkForce false);
       }
 
-      (mkIf (options ? sops && config.core.secrets.enable) {
-        sops.secrets."gpg/primary_key" = {
-          path = "${gpgHome}/private.key";
-          mode = "0600";
-        };
+      (mkIf (options ? sops && config.core.secrets.enable && cfg.identities != {}) {
+        sops.secrets =
+          mapAttrs' (
+            name: _identity:
+              nameValuePair "gpg/${name}_key" {
+                path = "${gpgHome}/${name}.key";
+                mode = "0600";
+              }
+          )
+          cfg.identities;
 
         home.activation.importGpgKey = lib.hm.dag.entryAfter ["writeBoundary"] ''
           gpg_home="${gpgHome}"
-          key_file="$gpg_home/private.key"
 
-          if [ -f "$key_file" ]; then
-            mkdir -p "$gpg_home"
-            chmod 700 "$gpg_home"
+          ${concatStringsSep "\n" (mapAttrsToList (name: identity: ''
+              key_file="$gpg_home/${name}.key"
+              fingerprint="${identity.keyFingerprint}"
 
-            fingerprint="${cfg.keyFingerprint}"
-            if ! ${pkgs.gnupg}/bin/gpg --homedir "$gpg_home" --batch --list-secret-keys "$fingerprint" >/dev/null 2>&1; then
-              echo "gpg: importing primary key into $gpg_home"
-              ${pkgs.gnupg}/bin/gpg --homedir "$gpg_home" --batch --import "$key_file" || true
-              { echo trust; echo 5; echo y; echo save; } \
-                | ${pkgs.gnupg}/bin/gpg --homedir "$gpg_home" --batch --command-fd 0 --edit-key "$fingerprint" || true
-            fi
+              if [ -f "$key_file" ] && [ "$fingerprint" != "0000000000000000000000000000000000000000" ]; then
+                mkdir -p "$gpg_home"
+                chmod 700 "$gpg_home"
 
-            rm -f "$key_file"
-          fi
+                if ! ${pkgs.gnupg}/bin/gpg --homedir "$gpg_home" --batch --list-secret-keys "$fingerprint" >/dev/null 2>&1; then
+                  echo "gpg: importing ${name} key into $gpg_home"
+                  ${pkgs.gnupg}/bin/gpg --homedir "$gpg_home" --batch --import "$key_file" || true
+                  { echo trust; echo 5; echo y; echo save; } \
+                    | ${pkgs.gnupg}/bin/gpg --homedir "$gpg_home" --batch --command-fd 0 --edit-key "$fingerprint" || true
+                fi
+
+                rm -f "$key_file"
+              fi
+            '')
+            cfg.identities)}
         '';
       })
     ]);

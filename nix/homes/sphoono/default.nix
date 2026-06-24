@@ -12,7 +12,7 @@
 
     gpg = {
       enable = true;
-      keyFingerprint = "9FB33E455648D323D13BDD75765B1ECF9CACEEB6"; # gitleaks:allow
+      identities.primary.keyFingerprint = "9FB33E455648D323D13BDD75765B1ECF9CACEEB6"; # gitleaks:allow
     };
 
     email = {

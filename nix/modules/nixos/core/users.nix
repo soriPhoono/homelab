@@ -34,11 +34,15 @@ in
               example = true;
             };
 
-            publicKey = mkOption {
-              type = nullOr str;
-              default = null;
-              description = "The public key for the user.";
-              example = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...";
+            publicKeys = mkOption {
+              type = with types; attrsOf str;
+              default = {};
+              description = ''
+                Named public SSH keys for this user. Each key is written to
+                ~/.ssh/id_<name> and added to the account's authorized_keys.
+                Admin users' keys are automatically added to every account.
+              '';
+              example = {primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...";};
             };
 
             hashedPassword = mkOption {
@@ -70,10 +74,14 @@ in
       };
     };
 
-    config = mkIf (cfg.users != {}) {
+    config = mkIf (cfg.users != {}) (let
+      adminPublicKeys =
+        unique (flatten (mapAttrsToList (_name: user: attrValues user.publicKeys)
+            (filterAttrs (_: user: user.admin) cfg.users)));
+    in {
       assertions =
         mapAttrsToList (name: user: {
-          assertion = user.hashedPassword != null || user.publicKey != null;
+          assertion = user.hashedPassword != null || user.publicKeys != {};
           message = "At least one authentication method must be present for user ${name}.";
         })
         cfg.users;
@@ -95,7 +103,7 @@ in
             group = name;
 
             description = mkIf (user.description != null) user.description;
-            openssh.authorizedKeys.keys = optional (user.publicKey != null) user.publicKey;
+            openssh.authorizedKeys.keys = unique (attrValues user.publicKeys ++ adminPublicKeys);
           })
           cfg.users;
 
@@ -116,10 +124,10 @@ in
           };
 
           core = {
-            ssh.publicKey = mkIf (user.publicKey != null) user.publicKey;
+            ssh.publicKeys = mkIf (user.publicKeys != {}) user.publicKeys;
             shells.fish.enable = user.shell == pkgs.fish;
           };
         })
         cfg.users;
-    };
+    });
   }
