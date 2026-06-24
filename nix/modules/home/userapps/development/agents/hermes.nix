@@ -20,7 +20,6 @@
     mapAttrsToList
     genAttrs
     concatStringsSep
-    baseNameOf
     ;
 
   # Merge shared agentics MCP servers with per-agent overrides (per-agent wins)
@@ -42,17 +41,43 @@
   yamlFormat = pkgs.formats.yaml {};
 
   # Static list of secrets that hermes needs in its .env file.
-  # Used by sops.templates (cannot reference allSecrets — circular dep).
+  # Each entry maps a sops secret path to the env var name hermes expects.
   hermesSecrets = [
-    "api/OPENROUTER_API_KEY"
-    "api/EXA_API_KEY"
-    "api/CONTEXT7_API_KEY"
-    "api/GITHUB_API_KEY"
-    "api/OPENCODE_API_KEY"
-    "hermes/api_server_key"
-    "hermes/dashboard_username"
-    "hermes/dashboard_password"
+    {
+      path = "api/OPENROUTER_API_KEY";
+      env = "OPENROUTER_API_KEY";
+    }
+    {
+      path = "api/EXA_API_KEY";
+      env = "EXA_API_KEY";
+    }
+    {
+      path = "api/CONTEXT7_API_KEY";
+      env = "CONTEXT7_API_KEY";
+    }
+    {
+      path = "api/GITHUB_API_KEY";
+      env = "GITHUB_API_KEY";
+    }
+    {
+      path = "api/OPENCODE_API_KEY";
+      env = "OPENCODE_API_KEY";
+    }
+    {
+      path = "hermes/api_server_key";
+      env = "API_SERVER_KEY";
+    }
+    {
+      path = "hermes/dashboard_username";
+      env = "HERMES_DASHBOARD_BASIC_AUTH_USERNAME";
+    }
+    {
+      path = "hermes/dashboard_password";
+      env = "HERMES_DASHBOARD_BASIC_AUTH_PASSWORD";
+    }
   ];
+
+  hermesSecretPaths = map (s: s.path) hermesSecrets;
 
   # Translate agentics MCP server to hermes-native mcp_servers format.
   # Secrets become $ENV_VAR references that hermes resolves from .env at runtime.
@@ -329,7 +354,7 @@ in
 
       # ── Secrets variant (sops) ──
       (mkIf (options ? sops) {
-        sops.secrets = genAttrs hermesSecrets (_: {});
+        sops.secrets = genAttrs hermesSecretPaths (_: {});
 
         home.activation.ensureHermesDir = lib.hm.dag.entryBefore ["linkGeneration"] ''
           $DRY_RUN_CMD mkdir -p "${config.home.homeDirectory}/.hermes" 2>/dev/null || true
@@ -340,12 +365,13 @@ in
           $DRY_RUN_CMD mkdir -p "${config.home.homeDirectory}/.hermes"
           $DRY_RUN_CMD rm -f "${config.home.homeDirectory}/.hermes/.env"
 
+          # Gateway allow-all (no per-platform auth — protected by Traefik)
+          echo "GATEWAY_ALLOW_ALL_USERS=true" >> "${config.home.homeDirectory}/.hermes/.env"
+
           ${concatStringsSep "\n" (
-            map (secret: ''
-              if [ -f "${config.sops.secrets.${secret}.path}" ]; then
-                echo "${baseNameOf secret}=$(cat ${
-                config.sops.secrets.${secret}.path
-              })" >> "${config.home.homeDirectory}/.hermes/.env"
+            map (s: ''
+              if [ -f "${config.sops.secrets.${s.path}.path}" ]; then
+                echo "${s.env}=$(cat ${config.sops.secrets.${s.path}.path})" >> "${config.home.homeDirectory}/.hermes/.env"
               fi
             '')
             hermesSecrets
