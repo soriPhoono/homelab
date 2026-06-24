@@ -313,17 +313,21 @@ in
       (mkIf (options ? sops) {
         sops.secrets = genAttrs hermesSecrets (_: {});
 
-        sops.templates."hermes/dotenv" = {
-          mode = "0600";
-          path = "${config.home.homeDirectory}/.hermes/.env";
-          content = ''
-            # Hermes Agent environment variables
-            # Managed by home-manager + sops-nix — do not edit manually
-            ${concatStringsSep "\n" (
-              map (secret: "${baseNameOf secret}=${config.sops.placeholder.${secret}}") hermesSecrets
-            )}
-          '';
-        };
+        home.activation.hermesDotEnv = lib.hm.dag.entryAfter ["sops"] ''
+          run mkdir -p "${config.home.homeDirectory}/.hermes"
+          run rm -f "${config.home.homeDirectory}/.hermes/.env"
+
+          ${concatStringsSep "\n" (
+            map (secret: ''
+              if [ -f "${config.sops.secrets.${secret}.path}" ]; then
+                echo "${baseNameOf secret}=$(cat ${config.sops.secrets.${secret}.path})" >> "${config.home.homeDirectory}/.hermes/.env"
+              fi
+            '')
+            hermesSecrets
+          )}
+
+          run chmod 600 "${config.home.homeDirectory}/.hermes/.env"
+        '';
       })
     ]);
   }
