@@ -34,7 +34,7 @@ _: {
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      agents.pi.enable = true;
+      agents.opencode.enable = true;
       editors.zed.enable = true;
       # appliances.bambu-studio.enable = true;
     };

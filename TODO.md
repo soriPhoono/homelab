@@ -43,3 +43,4 @@ These are the tasks that are intended for future development goals
 - [ ] Implement impermenance on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
+- [ ] Create editor system that can contain an "editor agent", allowing for easier configuration of newer editors

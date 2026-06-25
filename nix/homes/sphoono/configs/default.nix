@@ -1,8 +1,6 @@
 {
   imports = [
     ./agentics
-    ./hermes
-    ./pi
     ./opencode
     ./helix
     ./fastfetch
