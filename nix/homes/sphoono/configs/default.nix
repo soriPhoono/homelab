@@ -1,7 +1,6 @@
 {
   imports = [
     ./agentics
-    ./pi
     ./opencode
     ./helix
     ./fastfetch

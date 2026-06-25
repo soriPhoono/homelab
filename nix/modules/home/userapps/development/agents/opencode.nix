@@ -26,15 +26,14 @@
 
   # ---- Env / header renderers (agentics → shell-friendly $VAR syntax) ----
 
-  renderEnvValue = value:
-    if value ? "secret"
-    then "$" + value.name
-    else value;
-
-  renderHeaderValue = value:
-    if value ? "secret"
-    then (value.prefix or "") + "$" + value.name
-    else value;
+  mcpLib = lib.homelab.agentics.mcp;
+  inherit
+    (mcpLib)
+    renderEnvValue
+    renderHeaderValue
+    hasEnvSecrets
+    hasHeaderSecrets
+    ;
 
   # ---- MCP server translation ----
 
@@ -113,33 +112,11 @@
           enabled = true;
         };
 
-  # Predicates for secret detection
-  hasEnvSecrets = srv: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.env or {}));
-
-  hasHeaderSecrets = srv: lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.headers or {}));
-
   # ---- Gather secrets from MCP servers ----
 
-  mcpSecrets = let
-    extractFromEnv = srv:
-      lib.filter (v: v != null) (
-        lib.mapAttrsToList (_: val:
-          if val ? "secret"
-          then val.secret
-          else null) (srv.env or {})
-      );
-    extractFromHeaders = srv:
-      lib.filter (v: v != null) (
-        lib.mapAttrsToList (_: val:
-          if val ? "secret"
-          then val.secret
-          else null) (srv.headers or {})
-      );
-  in
-    lib.flatten (
-      (lib.mapAttrsToList (_: extractFromEnv) mcpServers.stdio)
-      ++ (lib.mapAttrsToList (_: extractFromHeaders) mcpServers.http)
-    );
+  mcpSecrets = mcpLib.extractSecrets {
+    inherit (mcpServers) stdio http;
+  };
 
   allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
 

@@ -15,8 +15,8 @@
 
   providerCfg = {
     cloudflare = [
-      "--certificatesresolvers.dnsresolver.acme.dnschallenge.provider=cloudflare"
-      "--certificatesresolvers.dnsresolver.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+      "--certificatesresolvers.le.acme.dnschallenge.provider=cloudflare"
+      "--certificatesresolvers.le.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
     ];
   };
 
@@ -243,20 +243,11 @@ in {
             "--entrypoints.websecure.address=:443"
             "--entryPoints.websecure.http.tls=true"
 
-            # ── ACME / Let's Encrypt ─────────────────────────────
+            # ── ACME / Let's Encrypt (DNS-01 via Cloudflare) ─────
             "--entrypoints.websecure.http.tls.certresolver=le"
             "--certificatesresolvers.le.acme.email=${cfg.acme.email}"
             "--certificatesresolvers.le.acme.storage=${cfg.acme.storage}"
-
-            # ── Cert resolvers ───────────────────────────────────
-            "--certificatesresolvers.httpresolver.acme.httpchallenge=true"
-            "--certificatesresolvers.httpresolver.acme.httpchallenge.entrypoint=web"
-            "--certificatesresolvers.httpresolver.acme.email=${config.hosting.proxy.dns.email}"
-            "--certificatesresolvers.httpresolver.acme.storage=/letsecrypt/acme.json"
-
-            "--certificatesresolvers.dnsresolver.acme.dnschallenge=true"
-            "--certificatesresolvers.dnsresolver.acme.email=${config.hosting.proxy.dns.email}"
-            "--certificatesresolvers.dnsresolver.acme.storage=/letsecrypt/acme.json"
+            "--certificatesresolvers.le.acme.dnschallenge=true"
 
             # ── Docker Provider ──────────────────────────────────
             "--providers.docker=true"

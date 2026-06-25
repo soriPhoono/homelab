@@ -1,5 +1,9 @@
 {lib, ...}:
 with lib; {
+  imports = [
+    ./mcp.nix
+  ];
+
   config = mkMerge [
     {
       userapps.development.agents.opencode = {

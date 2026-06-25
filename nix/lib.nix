@@ -115,6 +115,54 @@ with prev; {
           };
         }
         // extraOptions;
+
+      mcp = {
+        # Render an env value (secret → $VAR, literal → value)
+        renderEnvValue = value:
+          if value ? "secret"
+          then "$" + value.name
+          else value;
+
+        # Render a header value (secret → prefix + $VAR, literal → value)
+        renderHeaderValue = value:
+          if value ? "secret"
+          then (value.prefix or "") + "$" + value.name
+          else value;
+
+        # Check if a server has secrets in its env
+        hasEnvSecrets = srv:
+          prev.any (v: builtins.isAttrs v && v ? "secret") (prev.attrValues (srv.env or {}));
+
+        # Check if a server has secrets in its headers
+        hasHeaderSecrets = srv:
+          prev.any (v: builtins.isAttrs v && v ? "secret") (prev.attrValues (srv.headers or {}));
+
+        # Extract secret names from MCP server env/headers.
+        # Returns a flat list of secret name strings.
+        extractSecrets = {
+          stdio ? {},
+          http ? {},
+        }: let
+          extractEnv = srv:
+            prev.filter (v: v != null) (
+              prev.mapAttrsToList (_: val:
+                if val ? "secret"
+                then val.secret
+                else null) (srv.env or {})
+            );
+          extractHeaders = srv:
+            prev.filter (v: v != null) (
+              prev.mapAttrsToList (_: val:
+                if val ? "secret"
+                then val.secret
+                else null) (srv.headers or {})
+            );
+        in
+          prev.flatten (
+            (prev.mapAttrsToList (_: extractEnv) stdio)
+            ++ (prev.mapAttrsToList (_: extractHeaders) http)
+          );
+      };
     };
 
     types = with types; {
