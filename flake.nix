@@ -2,7 +2,6 @@
   description = "A system flake for my homelab and personal devices";
 
   inputs = {
-    systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     templates.url = "github:soriPhoono/templates";
@@ -106,7 +105,7 @@
     lib = nixpkgs.lib.extend (import ./nix/lib.nix);
 
     # --- System Support & Package Cache --- #
-    systems = import inputs.systems;
+    systems = ["x86_64-linux" "aarch64-linux"];
 
     pkgsBatch = lib.genAttrs systems (
       system: let
@@ -246,7 +245,7 @@
       ];
 
       # Supported systems for devShells/checks
-      inherit systems;
+      systems = ["x86_64-linux" "aarch64-linux"];
 
       agenix-shell = {
         identityPaths = [

@@ -1371,7 +1371,6 @@
         "nur": "nur",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
-        "systems": "systems_2",
         "templates": "templates",
         "treefmt-nix": "treefmt-nix_5",
         "zen-browser": "zen-browser"
@@ -1460,28 +1459,13 @@
         "type": "github"
       }
     },
-    "systems_3": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
     "templates": {
       "inputs": {
         "agenix-shell": "agenix-shell_2",
         "flake-parts": "flake-parts_9",
         "git-hooks-nix": "git-hooks-nix_5",
         "nixpkgs": "nixpkgs_4",
-        "systems": "systems_3",
+        "systems": "systems_2",
         "treefmt-nix": "treefmt-nix_4"
       },
       "locked": {
