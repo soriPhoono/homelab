@@ -130,8 +130,9 @@ create_relations([{from: "user/sphoono", to: "project/homelab", relationType: "m
 
 1. **`exa_web_search_exa`** — Always search the web for current information about the tool, library, SDK, or topic you are working with. Use natural-language queries describing the ideal page, not just keywords.
 1. **`context7_resolve-library-id` + `context7_query-docs`** — Always look up official documentation and code examples for any programming library, framework, or SDK you are using or configuring.
+1. **`nixos_nix` + `nixos_nix_versions`** — Always use the NixOS-specific query tools for Nix-related research: packages, options, version history, channels, flake inputs, store paths, etc. Do not guess at nixpkgs attribute paths or option names.
 
-Use **both**, not just one. Exa gives you current web context (news, blog posts, community discussions, updates). Context7 gives you structured documentation with code examples. They complement each other — skipping either means missing critical information.
+Use **all three** — Exa for web context, Context7 for structured docs, and nixos_nix for Nix-specific queries. Skipping any means missing critical information.
 
 ### When to research
 
@@ -146,10 +147,11 @@ Use **both**, not just one. Exa gives you current web context (news, blog posts,
 ```
 1. sequential_thinking to scope what needs researching
 2. exa_web_search_exa("current state of <topic> best practices 2025")
-3. context7_resolve-library-id + context7_query-docs for official docs
-4. If highlights from exa are insufficient, exa_web_fetch_exa on the best URLs
-5. sequential_thinking to synthesize research into a plan
-6. Proceed with changes only after research is complete
+3. nixos_nix to resolve any NixOS/Home Manager options, packages, or channels involved
+4. context7_resolve-library-id + context7_query-docs for official docs
+5. If highlights from exa are insufficient, exa_web_fetch_exa on the best URLs
+6. sequential_thinking to synthesize research into a plan
+7. Proceed with changes only after research is complete
 ```
 
 ## Subagent Delegation
@@ -203,12 +205,13 @@ Delegate to subagents automatically in these situations:
 
 For non-trivial work, sequence subagents in this order:
 
-1. **Clarify** — Gather context (`task` with `explore`), research external references (`task` with `general`), then ask clarifying questions.
-1. **Plan** — Write or generate a plan with sequential thinking, get approval.
+1. **Clarify** — Gather context (`task` with `explore`), research external references (`task` with `general`), then ask clarifying questions via `question` if needed.
+1. **Track** — Use `todowrite` to create a structured task list for the session. Keep it updated as you progress.
+1. **Plan** — Write or generate a plan with `sequential-thinking_sequentialthinking`, get approval.
 1. **Implement** — Launch `task` with explicit acceptance criteria.
-1. **Review** — Run parallel `task` calls with distinct review prompts.
+1. **Review** — Run parallel `task` calls with distinct review prompts (or use `/parallel-review`).
 1. **Fix** — Launch `task` to apply synthesized review fixes.
-1. **Validate** — Run validation commands and inspect the final diff.
+1. **Validate** — Run validation commands (`nix flake check`, `treefmt`, etc.) and inspect the final diff.
 
 Keep orchestration authority in the parent session. Child agents must not launch their own subagents or manage the loop. Do not treat an async task handoff as final completion — always review after implementation.
 
@@ -256,7 +259,24 @@ Keep orchestration authority in the parent session. Child agents must not launch
 
 ### Prefer tool calls over shell commands
 
-When a dedicated MCP tool exists for a task, use it. Reach for `github_*`, `memory_*`, `exa_*` before writing a bash command. Shell is a fallback, not a default.
+When a dedicated MCP tool exists for a task, use it over raw shell commands. Reach for these tool families before falling back to bash:
+
+| Tool family | Purpose |
+|---|---|
+| `filesystem_*`, `read`, `write`, `edit`, `glob`, `grep` | File operations (read, write, search, edit) |
+| `github_*` | GitHub API (PRs, issues, repos, code search) |
+| `git_*` | Git operations (status, diff, log, branches, remotes, stash, etc.) |
+| `memory_*` | Persistent knowledge graph (user/project context, session state) |
+| `exa_*` | Web search and page fetch |
+| `context7_*` | Official library/framework documentation and code examples |
+| `nixos_nix`, `nixos_nix_versions` | NixOS/Home Manager options, packages, channels, version history |
+| `obsidian_*` | Obsidian vault read/write/search |
+| `webfetch`, `fetch_fetch` | URL content fetching (fallback when exa is unavailable) |
+| `skill` | Load domain-specific skills into context |
+
+Shell (bash) is for `nix build`, `npm`, `docker`, `git`, and other CLI programs that lack MCP equivalents.
+
+MCP-only tools (no shell alternative): `task` (subagent delegation), `todowrite` (task tracking), `question` (user prompts), `sequential-thinking_sequentialthinking` (complex analysis).
 
 ### You are human-in-the-loop
 
