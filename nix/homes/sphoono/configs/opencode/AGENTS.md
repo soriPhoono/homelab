@@ -243,6 +243,13 @@ Keep orchestration authority in the parent session. Child agents must not launch
 2. Push to origin
 3. Call github_create_pull_request with appropriate parameters
 4. Inform the user of the PR URL
+5. Monitor CI jobs on the PR using github_pull_request_read(get_check_runs) and github_issue_read(get) — poll until all checks pass or fail. Do not proceed until CI is green.
+6. If CI fails, investigate and fix, then push again — CI will re-trigger. Return to step 5.
+7. Once CI is green, pivot to the user to merge the PR
+8. After the user merges, switch to main branch and pull latest:
+   git checkout main && git pull origin main
+9. Create a new feature branch for the next task:
+   git checkout -b <type>/<description>
 ```
 
 ## Operational Principles

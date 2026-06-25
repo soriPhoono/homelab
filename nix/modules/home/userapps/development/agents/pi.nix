@@ -141,6 +141,7 @@ in
       {userapps.development.agents.pi.context = mkDefault "";}
 
       {
+        userapps.development.enable = true;
         userapps.development.agents.pi = {
           secrets = mcpLib.extractSecrets {
             inherit (mcpServers) stdio http;
@@ -175,7 +176,9 @@ in
             }
             (mkMerge [
               (mkIf (builtins.typeOf agentContext == "path") {
-                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (builtins.readFile agentContext);
+                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (
+                  builtins.readFile agentContext
+                );
               })
               (mkIf (builtins.typeOf agentContext == "str") {
                 "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext agentContext;
