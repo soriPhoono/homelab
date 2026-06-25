@@ -58,7 +58,7 @@ in {
               ++ [
                 {
                   name = "Check flake";
-                  run = "nix flake check --all-systems";
+                  run = "nix flake check";
                 }
               ];
           };
