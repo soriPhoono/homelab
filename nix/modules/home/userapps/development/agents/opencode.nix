@@ -195,7 +195,10 @@ in
       # Provide a default empty context so `cfg.context` is always safe to read.
       # Users override via `userapps.development.agents.opencode.context` or
       # `userapps.development.agents.agentics.context`.
-      {userapps.development.agents.opencode.context = mkDefault "";}
+      {
+        userapps.development.agents.opencode.context = mkDefault "";
+        userapps.development.enable = true;
+      }
 
       # ── Base config ──
       {

@@ -43,20 +43,18 @@
       type = "local";
       inherit (mcpServer) command;
       args = mcpServer.args or [];
-      env = lib.mapAttrs (
-        _: v:
-          if builtins.isAttrs v
-          then v.name
-          else v
-      ) (mcpServer.env or {});
+      env = lib.mapAttrs (_: v:
+        if builtins.isAttrs v
+        then v.name
+        else v) (mcpServer.env or {});
       tools = ["*"];
     };
 
     mkStdioSecrets = let
       envExports = lib.concatStringsSep "\n" (
-        lib.mapAttrsToList (
-          envName: value: "export ${envName}=\"${renderEnvValue value}\""
-        ) (mcpServer.env or {})
+        lib.mapAttrsToList (envName: value: "export ${envName}=\"${renderEnvValue value}\"") (
+          mcpServer.env or {}
+        )
       );
       argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (mcpServer.args or []));
       wrapper = pkgs.writeShellScriptBin "copilot-mcp-stdio-${name}" ''
@@ -79,9 +77,9 @@
 
     mkHttpSecrets = let
       headerFlags = lib.concatStringsSep " \\\n                " (
-        lib.mapAttrsToList (
-          headerName: value: "--headers '${headerName}' \"${renderHeaderValue value}\""
-        ) (mcpServer.headers or {})
+        lib.mapAttrsToList (headerName: value: "--headers '${headerName}' \"${renderHeaderValue value}\"") (
+          mcpServer.headers or {}
+        )
       );
       wrapper = pkgs.writeShellScriptBin "copilot-mcp-proxy-${name}" ''
         exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
@@ -158,6 +156,8 @@ in
             them via `programs.github-copilot-cli.context` instead.
           '';
 
+        userapps.development.enable = true;
+
         programs.github-copilot-cli = {
           enable = true;
           enableMcpIntegration = false;
@@ -176,7 +176,9 @@ in
 
           agents = mapAttrs cmdFromEntry agentsCfg.subagents;
 
-          mcpServers = mapAttrs translateMcpServer (agentsCfg.mcpServers.stdio or {} // agentsCfg.mcpServers.http or {});
+          mcpServers = mapAttrs translateMcpServer (
+            agentsCfg.mcpServers.stdio or {} // agentsCfg.mcpServers.http or {}
+          );
 
           # Skill derivations contain SKILL.md as their primary output.
           # Read the content so the github-copilot-cli HM module can write it
