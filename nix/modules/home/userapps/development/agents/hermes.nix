@@ -54,17 +54,32 @@ in
           startupNotify = true;
         };
 
-        home.file."${hermesStateDir}/.hermes/SOUL.md" = mkIf (cfg.soulDoc != null) (
-          if builtins.typeOf cfg.soulDoc == "path"
-          then {source = cfg.soulDoc;}
-          else {text = cfg.soulDoc;}
-        );
+        home.file = mkMerge [
+          (mkIf (cfg.soulDoc != null) {
+            "${hermesStateDir}/.hermes/SOUL.md" =
+              if builtins.typeOf cfg.soulDoc == "path"
+              then {source = cfg.soulDoc;}
+              else {text = cfg.soulDoc;};
+          })
 
-        home.file."${hermesStateDir}/.hermes/USER.md" = mkIf (cfg.userDoc != null) (
-          if builtins.typeOf cfg.userDoc == "path"
-          then {source = cfg.userDoc;}
-          else {text = cfg.userDoc;}
-        );
+          (mkIf (cfg.userDoc != null) {
+            "${hermesStateDir}/.hermes/USER.md" =
+              if builtins.typeOf cfg.userDoc == "path"
+              then {source = cfg.userDoc;}
+              else {text = cfg.userDoc;};
+          })
+
+          (mkIf (cfg.skills != {}) (
+            mapAttrs' (name: skill: {
+              name = "${hermesStateDir}/.hermes/skills/${name}";
+              value = {
+                source = skill;
+                recursive = true;
+              };
+            })
+            cfg.skills
+          ))
+        ];
       }
       (mkIf (options ? sops) {})
     ]);
