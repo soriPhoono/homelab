@@ -23,6 +23,8 @@ in
           categories = ["Development" "Utility"];
           startupNotify = true;
         };
+
+        programs.hermes-agent.enable = true;
       }
       (mkIf (options ? sops) {
         })
