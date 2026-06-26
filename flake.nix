@@ -2,7 +2,6 @@
   description = "A system flake for my homelab and personal devices";
 
   inputs = {
-    systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     templates.url = "github:soriPhoono/templates";
@@ -80,7 +79,7 @@
     };
 
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:yzx9/hermes-agent/feat/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -106,7 +105,7 @@
     lib = nixpkgs.lib.extend (import ./nix/lib.nix);
 
     # --- System Support & Package Cache --- #
-    systems = import inputs.systems;
+    systems = ["x86_64-linux" "aarch64-linux"];
 
     pkgsBatch = lib.genAttrs systems (
       system: let
@@ -136,6 +135,7 @@
       sops-nix.homeManagerModules.sops
       stylix.homeModules.stylix
       noctalia.homeModules.default
+      hermes-agent.homeManagerModules.default
     ];
 
     nixosModules = with inputs; [
@@ -147,7 +147,6 @@
       stylix.nixosModules.stylix
       jovian.nixosModules.default
       nix-index-database.nixosModules.nix-index
-      hermes-agent.nixosModules.default
       home-manager.nixosModules.home-manager
     ];
 
@@ -246,7 +245,7 @@
       ];
 
       # Supported systems for devShells/checks
-      inherit systems;
+      systems = ["x86_64-linux"];
 
       agenix-shell = {
         identityPaths = [
