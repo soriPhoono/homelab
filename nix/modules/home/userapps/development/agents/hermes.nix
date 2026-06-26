@@ -117,15 +117,15 @@ in
               lib.mapAttrsToList (
                 name: val:
                   if builtins.isAttrs val
-                  then "echo \"${name}=$(cat \"${config.sops.secrets.${val.secret}.path}\")\""
-                  else "echo \"${name}=${val}\""
+                  then "echo \"${name}=$(cat \"${config.sops.secrets.${val.secret}.path}\")\" >> ${hermesHome}/.env"
+                  else "echo \"${name}=${val}\" >> ${hermesHome}/.env"
               )
               cfg.env;
           in ''
             ${pkgs.coreutils}/bin/touch ${hermesHome}/.env
             ${pkgs.gnugrep}/bin/grep -v -E "${managedKeys}" ${hermesHome}/.env > ${hermesHome}/.env.tmp || true
             ${pkgs.coreutils}/bin/mv ${hermesHome}/.env.tmp ${hermesHome}/.env
-            ${concatStringsSep "\n" envLines} >> ${hermesHome}/.env
+            ${concatStringsSep "\n" envLines}
           ''
         );
       }
