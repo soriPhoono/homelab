@@ -6,9 +6,12 @@
   ...
 }: let
   cfg = config.userapps.development.agents.hermes;
-  hermesStateDir = lib.removePrefix "~/" (
-    config.programs.hermes-agent.stateDir or "~/.local/share/hermes"
-  );
+  hermesStateDir = "${config.home.homeDirectory}/";
+  hermesHome = "${config.home.homeDirectory}/.hermes";
+
+  envEntries = lib.attrValues cfg.env;
+  envSecrets = lib.filter (v: builtins.isAttrs v && v ? "secret") envEntries;
+  envSecretNames = lib.catAttrs "secret" envSecrets;
 in
   with lib; {
     options.userapps.development.agents.hermes = builtins.removeAttrs (homelab.agentics.mkAgent {
@@ -33,6 +36,32 @@ in
             Content or path to USER.md for the Hermes agent.
             Provides user-specific context and preferences.
           '';
+        };
+
+        env = mkOption {
+          type = with types;
+            attrsOf (oneOf [
+              str
+              (submodule {
+                options = {
+                  secret = mkOption {
+                    type = str;
+                    description = "Sops secret name to read (e.g. api/OPENROUTER_API_KEY)";
+                  };
+                };
+              })
+            ]);
+          default = {};
+          description = ''
+            Environment variables written to ~/.hermes/.env.
+            Each key is the env var name. Value is either a literal string
+            or { secret = "api/SOMETHING"; } referencing a sops secret.
+          '';
+          example = {
+            OPENROUTER_API_KEY.secret = "api/OPENROUTER_API_KEY";
+            GH_TOKEN.secret = "api/GITHUB_API_KEY";
+            TERMINAL_ENV = "docker";
+          };
         };
       };
     }) ["context"];
@@ -80,7 +109,25 @@ in
             cfg.skills
           ))
         ];
+        home.activation.hermesEnv = config.lib.dag.entryAfter ["hermesAgentSetup"] (
+          concatStringsSep "\n" (
+            [''${pkgs.coreutils}/bin/rm -f ${hermesHome}/.env'']
+            ++ (lib.mapAttrsToList (
+                name: val:
+                  if builtins.isAttrs val
+                  then ''
+                    if [ -f "${config.sops.secrets.${val.secret}.path}" ]; then
+                      echo "${name}=$(cat ${config.sops.secrets.${val.secret}.path})" >> ${hermesHome}/.env
+                    fi
+                  ''
+                  else "echo '${name}=${val}' >> ${hermesHome}/.env"
+              )
+              cfg.env)
+          )
+        );
       }
-      (mkIf (options ? sops) {})
+      (mkIf (options ? sops && envSecretNames != []) {
+        sops.secrets = genAttrs envSecretNames (_: {});
+      })
     ]);
   }
