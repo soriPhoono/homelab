@@ -111,25 +111,22 @@ in
         ];
 
         home.activation.hermesEnv = config.lib.dag.entryAfter ["hermesAgentSetup"] (
-          concatStringsSep "\n" (
-            lib.mapAttrsToList (name: val:
-              if builtins.isAttrs val
-              then ''
-                ${pkgs.coreutils}/bin/touch ${hermesHome}/.env
-                ${pkgs.coreutils}/bin/cat ${hermesHome}/.env \
-                  | ${pkgs.coreutils}/bin/grep -v "^${name}=" > ${hermesHome}/.env.tmp || true
-                ${pkgs.coreutils}/bin/mv ${hermesHome}/.env.tmp ${hermesHome}/.env
-                echo "${name}=$(cat "${config.sops.secrets.${val.secret}.path}")" >> ${hermesHome}/.env
-              ''
-              else ''
-                ${pkgs.coreutils}/bin/touch ${hermesHome}/.env
-                ${pkgs.coreutils}/bin/cat ${hermesHome}/.env \
-                  | ${pkgs.coreutils}/bin/grep -v "^${name}=" > ${hermesHome}/.env.tmp || true
-                ${pkgs.coreutils}/bin/mv ${hermesHome}/.env.tmp ${hermesHome}/.env
-                echo "${name}=${val}" >> ${hermesHome}/.env
-              '')
-            cfg.env
-          )
+          let
+            managedKeys = lib.concatStringsSep "|" (lib.mapAttrsToList (name: _: "^${name}=") cfg.env);
+            envLines =
+              lib.mapAttrsToList (
+                name: val:
+                  if builtins.isAttrs val
+                  then "echo \"${name}=$(cat \"${config.sops.secrets.${val.secret}.path}\")\""
+                  else "echo \"${name}=${val}\""
+              )
+              cfg.env;
+          in ''
+            ${pkgs.coreutils}/bin/touch ${hermesHome}/.env
+            ${pkgs.gnugrep}/bin/grep -v -E "${managedKeys}" ${hermesHome}/.env > ${hermesHome}/.env.tmp || true
+            ${pkgs.coreutils}/bin/mv ${hermesHome}/.env.tmp ${hermesHome}/.env
+            ${concatStringsSep "\n" envLines} >> ${hermesHome}/.env
+          ''
         );
       }
       (mkIf (options ? sops && envSecretNames != []) {
