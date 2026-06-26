@@ -14,7 +14,7 @@
   envSecretNames = lib.catAttrs "secret" envSecrets;
 in
   with lib; {
-    options.userapps.development.agents.hermes = builtins.removeAttrs (homelab.agentics.mkAgent {
+    options.userapps.development.agents.hermes = removeAttrs (homelab.agentics.mkAgent {
       name = "hermes";
       package = pkgs.hermes-full;
       extraOptions = {
@@ -109,20 +109,26 @@ in
             cfg.skills
           ))
         ];
+
         home.activation.hermesEnv = config.lib.dag.entryAfter ["hermesAgentSetup"] (
           concatStringsSep "\n" (
-            [''${pkgs.coreutils}/bin/rm -f ${hermesHome}/.env'']
-            ++ (lib.mapAttrsToList (
-                name: val:
-                  if builtins.isAttrs val
-                  then ''
-                    if [ -f "${config.sops.secrets.${val.secret}.path}" ]; then
-                      echo "${name}=$(cat ${config.sops.secrets.${val.secret}.path})" >> ${hermesHome}/.env
-                    fi
-                  ''
-                  else "echo '${name}=${val}' >> ${hermesHome}/.env"
-              )
-              cfg.env)
+            lib.mapAttrsToList (name: val:
+              if builtins.isAttrs val
+              then ''
+                ${pkgs.coreutils}/bin/touch ${hermesHome}/.env
+                ${pkgs.coreutils}/bin/cat ${hermesHome}/.env \
+                  | ${pkgs.coreutils}/bin/grep -v "^${name}=" > ${hermesHome}/.env.tmp || true
+                ${pkgs.coreutils}/bin/mv ${hermesHome}/.env.tmp ${hermesHome}/.env
+                echo "${name}=$(cat "${config.sops.secrets.${val.secret}.path}")" >> ${hermesHome}/.env
+              ''
+              else ''
+                ${pkgs.coreutils}/bin/touch ${hermesHome}/.env
+                ${pkgs.coreutils}/bin/cat ${hermesHome}/.env \
+                  | ${pkgs.coreutils}/bin/grep -v "^${name}=" > ${hermesHome}/.env.tmp || true
+                ${pkgs.coreutils}/bin/mv ${hermesHome}/.env.tmp ${hermesHome}/.env
+                echo "${name}=${val}" >> ${hermesHome}/.env
+              '')
+            cfg.env
           )
         );
       }
