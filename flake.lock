@@ -807,15 +807,16 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1781392042,
-        "narHash": "sha256-LIksTWu8x9fN1WrNW7CWT9HU6nbvQPvctFw3TfqZJKs=",
-        "owner": "NousResearch",
+        "lastModified": 1781983352,
+        "narHash": "sha256-nMSUvzKWV1Kre4Be9iRORWMNIp+hQO/PCwLw/vOG+GQ=",
+        "owner": "yzx9",
         "repo": "hermes-agent",
-        "rev": "6b76284c7769e0ca80012a5a4b7e22b1cea05b6b",
+        "rev": "8163e41d776ec44f68bb73b79c4ff41cd46b2699",
         "type": "github"
       },
       "original": {
-        "owner": "NousResearch",
+        "owner": "yzx9",
+        "ref": "feat/home-manager",
         "repo": "hermes-agent",
         "type": "github"
       }

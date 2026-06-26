@@ -79,7 +79,7 @@
     };
 
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:yzx9/hermes-agent/feat/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -135,6 +135,7 @@
       sops-nix.homeManagerModules.sops
       stylix.homeModules.stylix
       noctalia.homeModules.default
+      hermes-agent.homeManagerModules.default
     ];
 
     nixosModules = with inputs; [
@@ -146,7 +147,6 @@
       stylix.nixosModules.stylix
       jovian.nixosModules.default
       nix-index-database.nixosModules.nix-index
-      hermes-agent.nixosModules.default
       home-manager.nixosModules.home-manager
     ];
 
