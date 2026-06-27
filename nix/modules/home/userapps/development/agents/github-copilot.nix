@@ -134,17 +134,7 @@
         env = srv.env or {};
         tools = ["*"];
       };
-
   # ---- Context wrapper ----
-  createContext = ctx: ''
-    # GitHub Copilot CLI Runtime Context
-
-    This file provides machine-level and user-level context for Copilot CLI.
-    Project-level repository guidance stays in the repository root
-    `AGENTS.md` and `.agents/AGENTS.md`.
-
-    ${ctx}
-  '';
 in
   with lib; {
     options.userapps.development.agents.github-copilot = homelab.agentics.mkAgent {
@@ -186,15 +176,14 @@ in
           }
 
           # copilot-instructions.md (context / AGENTS.md equivalent)
-          (mkIf (cfg.context != "") (
-            if builtins.typeOf cfg.context == "path"
-            then {
-              ".copilot/copilot-instructions.md".text = createContext (builtins.readFile cfg.context);
-            }
-            else {
-              ".copilot/copilot-instructions.md".text = createContext cfg.context;
-            }
-          ))
+          (
+            mapAttrs
+            (_filePath: contents: {
+              source = mkIf builtins.isPath contents contents;
+              text = mkIf builtins.isString contents contents;
+            })
+            cfg.documents
+          )
 
           # mcp-config.json (MCP server definitions)
           (mkIf (cfg.mcpServers != {}) {
