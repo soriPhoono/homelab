@@ -18,6 +18,134 @@ with prev; {
     };
 
     agentics = {
+      mkEditor = {
+        name,
+        package,
+        extraOptions ? {},
+      }:
+        {
+          enable = mkEnableOption "Enable the ${name} text editor";
+
+          package = mkOption {
+            type = types.package;
+            default = package;
+            description = ''
+              Package providing the ${name} editor.
+            '';
+          };
+
+          secrets = mkOption {
+            type = with types; listOf str;
+            default = [];
+            description = ''
+              List of secrets to be injected into the ${name} editor.
+            '';
+          };
+
+          defaultEditor = mkOption {
+            type = types.bool;
+            default = false;
+            description = ''
+              Whether ${name} should be configured as the default editor
+              via EDITOR and VISUAL environment variables.
+            '';
+          };
+
+          priority = mkOption {
+            type = types.int;
+            default = 20;
+            description = ''
+              Priority for ${name} when registering MIME type associations
+              and default application handlers. Higher values take precedence
+              over lower ones.
+            '';
+          };
+
+          userSettings = mkOption {
+            type = types.attrs;
+            default = {};
+            description = ''
+              Freeform user settings for the ${name} editor. The structure
+              depends on the specific editor's configuration format (e.g.
+              JSON for VS Code and Zed, TOML for Helix).
+            '';
+          };
+
+          extraPackages = mkOption {
+            type = types.listOf types.package;
+            default = [];
+            description = ''
+              Extra packages to make available alongside the ${name} editor,
+              such as LSP servers, formatters, or linters.
+            '';
+          };
+        }
+        // extraOptions;
+
+      # mkVscodeEditor: builds on mkEditor with VS Code-specific options.
+      # Returns the same option shape as mkEditor with extension profiles
+      # and profile selection layered in via extraOptions.
+      mkVscodeEditor = {
+        name ? "vscode",
+        package ? pkgs.vscode,
+        extraOptions ? {},
+      }:
+        homelab.agentics.mkEditor {
+          inherit name package;
+          extraOptions =
+            {
+              extensionProfiles = mkOption {
+                type = with types;
+                  attrsOf (submodule {
+                    options = {
+                      extensions = mkOption {
+                        type = listOf package;
+                        default = [];
+                        description = ''
+                          VS Code extensions for this profile. Packages from
+                          pkgs.vscode-extensions or pkgs.vscode-marketplace.
+                        '';
+                        example = literalExpression ''
+                          with pkgs.vscode-extensions; [
+                            bbenoist.nix
+                            golang.go
+                            catppuccin.catppuccin-vsc
+                          ]
+                        '';
+                      };
+                    };
+                  });
+                default = {};
+                description = ''
+                  Named VS Code extension profiles. Each profile defines an
+                  isolated set of extensions (and future per-profile settings).
+                  Use activeProfiles to select which profiles are applied.
+                '';
+                example = literalExpression ''
+                  {
+                    default.extensions = with pkgs.vscode-extensions; [
+                      bbenoist.nix
+                      golang.go
+                    ];
+                    minimal.extensions = [];
+                  }
+                '';
+              };
+
+              activeProfiles = mkOption {
+                type = with types; listOf str;
+                default = ["default"];
+                description = ''
+                  Ordered list of extension profiles to activate. Profiles are
+                  merged in sequence — later profiles can extend or override
+                  earlier ones. Only profiles defined in extensionProfiles
+                  are included.
+                '';
+              };
+            }
+            // extraOptions;
+        };
+
       mkAgent = {
         name,
         package,
