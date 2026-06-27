@@ -1,7 +1,7 @@
 {
   imports = [
-    ./pi
-    ./opencode
+    ./hermes
+    # ./opencode
     ./helix
     ./fastfetch
     ./zed

@@ -6,25 +6,37 @@
   ...
 }:
 with lib; {
-  options.core.ssh.publicKey = lib.mkOption {
-    type = with lib.types; nullOr str;
-    default = null;
-    description = "Public SSH key to use for authentication";
+  options.core.ssh.publicKeys = mkOption {
+    type = with types; attrsOf str;
+    default = {};
+    description = ''
+      Named public SSH keys. Each key is written to ~/.ssh/id_<name>.pub,
+      the corresponding private key is expected at ssh/<name>_key in sops.
+    '';
+    example = {primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...";};
   };
 
   config = let
-    primaryKey = lib.optionalAttrs (config.core.ssh.publicKey != null) {
-      ".ssh/id_ed25519.pub".text = config.core.ssh.publicKey;
-    };
-
-    primarySecret = lib.optionalAttrs (config.core.ssh.publicKey != null) {
-      "ssh/primary_key".path = "${config.home.homeDirectory}/.ssh/id_ed25519";
-    };
+    sshKeys = config.core.ssh.publicKeys;
+    homeDir = config.home.homeDirectory;
   in
-    mkIf (options ? sops) {
-      sops.secrets = lib.mkIf config.core.secrets.enable primarySecret;
+    mkIf (options ? sops && sshKeys != {}) {
+      sops.secrets = mkIf config.core.secrets.enable (mapAttrs' (
+          name: _:
+            nameValuePair "ssh/${name}_key" {
+              path = "${homeDir}/.ssh/id_${name}";
+            }
+        )
+        sshKeys);
 
-      home.file = primaryKey;
+      home.file =
+        mapAttrs' (
+          name: key:
+            nameValuePair ".ssh/id_${name}.pub" {
+              text = key;
+            }
+        )
+        sshKeys;
 
       programs.ssh = {
         enable = true;
@@ -32,9 +44,7 @@ with lib; {
 
         settings = {
           "*" = {
-            IdentityFile = [
-              "${config.home.homeDirectory}/.ssh/id_ed25519"
-            ];
+            IdentityFile = mapAttrsToList (name: _: "${homeDir}/.ssh/id_${name}") sshKeys;
 
             ForwardAgent = false;
             AddKeysToAgent = "yes";

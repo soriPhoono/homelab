@@ -6,38 +6,17 @@
   ...
 }: let
   cfg = config.userapps.development.agents.opencode;
-  shared = config.userapps.development.agentics or {};
 
-  # Merge shared agentics config with per-agent overrides (per-agent wins)
-  mcpServers = {
-    stdio = (shared.mcpServers.stdio or {}) // cfg.mcpServers.stdio;
-    http = (shared.mcpServers.http or {}) // cfg.mcpServers.http;
-  };
-  skills = (shared.skills or {}) // cfg.skills;
-  subagents =
-    if builtins.isAttrs cfg.subagents && cfg.subagents != {}
-    then cfg.subagents
-    else shared.subagents or {};
-  commands = (shared.commands or {}) // cfg.commands;
-  agentContext =
-    if cfg.context != ""
-    then cfg.context
-    else shared.context or "";
+  # ---- Env / header renderers (agentics → shell-friendly $VAR syntax) ----
 
-  # ---- Env / header renderers (agentics → OpenCode {env:VAR} syntax) ----
-
-  renderEnvValue = value:
-    if value ? "secret"
-    then "{env:${value.name}}"
-    else value;
-
-  renderHeaderValue = value:
-    if value ? "secret"
-    then
-      (value.prefix or "")
-      + "{env:${value.name}}"
-      + (value.suffix or "")
-    else value;
+  mcpLib = lib.homelab.agentics.mcp;
+  inherit
+    (mcpLib)
+    renderEnvValue
+    renderHeaderValue
+    hasEnvSecrets
+    hasHeaderSecrets
+    ;
 
   # ---- MCP server translation ----
 
@@ -116,39 +95,11 @@
           enabled = true;
         };
 
-  # Predicates for secret detection
-  hasEnvSecrets = srv:
-    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.env or {}));
-
-  hasHeaderSecrets = srv:
-    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.headers or {}));
-
   # ---- Gather secrets from MCP servers ----
 
-  mcpSecrets = let
-    extractFromEnv = srv:
-      lib.filter (v: v != null) (
-        lib.mapAttrsToList (
-          _: val:
-            if val ? "secret"
-            then val.secret
-            else null
-        ) (srv.env or {})
-      );
-    extractFromHeaders = srv:
-      lib.filter (v: v != null) (
-        lib.mapAttrsToList (
-          _: val:
-            if val ? "secret"
-            then val.secret
-            else null
-        ) (srv.headers or {})
-      );
-  in
-    lib.flatten (
-      (lib.mapAttrsToList (_: extractFromEnv) mcpServers.stdio)
-      ++ (lib.mapAttrsToList (_: extractFromHeaders) mcpServers.http)
-    );
+  mcpSecrets = mcpLib.extractSecrets {
+    inherit (cfg.mcpServers) stdio http;
+  };
 
   allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
 
@@ -156,17 +107,17 @@
 
   opencodeJson =
     {
-      mcp = builtins.mapAttrs translateMcpServer (mcpServers.stdio // mcpServers.http);
+      mcp = builtins.mapAttrs translateMcpServer (cfg.mcpServers.stdio // cfg.mcpServers.http);
     }
-    // lib.optionalAttrs (builtins.isAttrs subagents && subagents != {}) (
+    // lib.optionalAttrs (builtins.isAttrs cfg.subagents && cfg.subagents != {}) (
       let
         mkSubagentEntry = _name: value: value;
       in {
-        agent = builtins.mapAttrs mkSubagentEntry subagents;
+        agent = builtins.mapAttrs mkSubagentEntry cfg.subagents;
       }
     )
-    // lib.optionalAttrs (commands != {}) {
-      command = commands;
+    // lib.optionalAttrs (cfg.commands != {}) {
+      command = cfg.commands;
     }
     // lib.optionalAttrs (cfg.plugins or [] != []) {
       plugin = cfg.plugins;
@@ -224,17 +175,17 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
-      # Provide a default empty context so `cfg.context` is always safe to read.
-      # Users override via `userapps.development.agents.opencode.context` or
-      # `userapps.development.agentics.context`.
-      {userapps.development.agents.opencode.context = mkDefault "";}
+      {
+        userapps.development.agents.opencode.context = mkDefault "";
+        userapps.development.enable = true;
+      }
 
       # ── Base config ──
       {
         home = {
           packages = mkMerge [
             (mkIf (allSecrets == []) [cfg.package])
-            (mkIf cfg.enableDesktop [pkgs.opencode-desktop])
+            (mkIf (cfg.enableDesktop && allSecrets == []) [pkgs.opencode-desktop])
           ];
 
           file = mkMerge [
@@ -242,19 +193,17 @@ in
               ".config/opencode/opencode.json".text = builtins.toJSON opencodeJson;
             }
 
-            # Write context to ~/.config/opencode/AGENTS.md.
-            (mkIf (agentContext != "") (
-              if builtins.typeOf agentContext == "path"
+            (mkIf (cfg.context != "") (
+              if builtins.typeOf cfg.context == "path"
               then {
-                ".config/opencode/AGENTS.md".text = createContext (builtins.readFile agentContext);
+                ".config/opencode/AGENTS.md".text = createContext (builtins.readFile cfg.context);
               }
               else {
-                ".config/opencode/AGENTS.md".text = createContext agentContext;
+                ".config/opencode/AGENTS.md".text = createContext cfg.context;
               }
             ))
 
-            # Link skills.
-            (mkIf (skills != {}) (
+            (mkIf (cfg.skills != {}) (
               mapAttrs' (name: skill: {
                 name = ".config/opencode/skills/${name}";
                 value = {
@@ -262,11 +211,10 @@ in
                   recursive = true;
                 };
               })
-              skills
+              cfg.skills
             ))
 
-            # Write subagents as markdown files under agents/ dir.
-            (mkIf (builtins.isAttrs subagents && subagents != {}) (
+            (mkIf (builtins.isAttrs cfg.subagents && cfg.subagents != {}) (
               mapAttrs' (name: value: {
                 name = ".config/opencode/agents/${name}.md";
                 value = {
@@ -276,12 +224,11 @@ in
                     else value;
                 };
               })
-              subagents
+              cfg.subagents
             ))
 
-            # If subagents is a bare path (directory), symlink the whole tree.
-            (mkIf (!builtins.isAttrs subagents && subagents != null && subagents != {}) {
-              ".config/opencode/agents".source = subagents;
+            (mkIf (!builtins.isAttrs cfg.subagents && cfg.subagents != null && cfg.subagents != {}) {
+              ".config/opencode/agents".source = cfg.subagents;
             })
           ];
         };

@@ -5,20 +5,8 @@
   ...
 }: let
   cfg = config.userapps.development.agents.pi;
-  shared = config.userapps.development.agentics or {};
 
-  # Merge shared agentics MCP servers with per-agent overrides (per-agent wins)
-  mcpServers = {
-    stdio = (shared.mcpServers.stdio or {}) // cfg.mcpServers.stdio;
-    http = (shared.mcpServers.http or {}) // cfg.mcpServers.http;
-  };
-  skills = (shared.skills or {}) // cfg.skills;
-  agentContext =
-    if cfg.context != ""
-    then cfg.context
-    else shared.context or "";
-
-  hasMcpServers = mcpServers.stdio != {} || mcpServers.http != {};
+  hasMcpServers = cfg.mcpServers.stdio != {} || cfg.mcpServers.http != {};
 
   createContext = ctx: ''
     # Pi Runtime Context
@@ -30,28 +18,17 @@
     ${ctx}
   '';
 
-  # Placeholder for skill entries
+  # Shared MCP utilities
+  mcpLib = lib.homelab.agentics.mcp;
+  inherit
+    (mcpLib)
+    renderEnvValue
+    renderHeaderValue
+    ;
 
-  # Translate agentics MCP server config to standard MCP config format
+  # Translate MCP server config to pi MCP config format
   # (compatible with pi-mcp-extension and omp's built-in MCP).
   mcpServerConfig = let
-    renderEnvValue = value:
-      if value ? "secret"
-      then "$" + value.name
-      else value;
-
-    renderHeaderValue = value:
-      if value ? "secret"
-      then
-        (
-          if value.prefix or null != null
-          then value.prefix
-          else ""
-        )
-        + "$"
-        + value.name
-      else value;
-
     renderServer = name: srv:
       {
         transport = "stdio";
@@ -88,7 +65,7 @@
           })
       );
   in {
-    mcpServers = builtins.mapAttrs renderServer (mcpServers.stdio // mcpServers.http);
+    mcpServers = builtins.mapAttrs renderServer (cfg.mcpServers.stdio // cfg.mcpServers.http);
   };
 in
   with lib; {
@@ -141,37 +118,14 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
-      # Provide a default empty context so `cfg.context` is always safe to read.
-      # Users override via `userapps.development.agents.pi.context` or
-      # `userapps.development.agentics.context`.
       {userapps.development.agents.pi.context = mkDefault "";}
 
       {
+        userapps.development.enable = true;
         userapps.development.agents.pi = {
-          secrets = flatten (
-            (mapAttrsToList (
-                _name: server:
-                  filter (val: val != null) (
-                    mapAttrsToList (_name: env:
-                      if env ? "secret"
-                      then env.secret
-                      else null)
-                    server.env
-                  )
-              )
-              mcpServers.stdio)
-            ++ (mapAttrsToList (
-                _name: server:
-                  filter (val: val != null) (
-                    mapAttrsToList (_name: header:
-                      if header ? "secret"
-                      then header.secret
-                      else null)
-                    server.headers
-                  )
-              )
-              mcpServers.http)
-          );
+          secrets = mcpLib.extractSecrets {
+            inherit (cfg.mcpServers) stdio http;
+          };
 
           packages = mkIf hasMcpServers [
             "npm:pi-mcp-extension"
@@ -201,15 +155,16 @@ in
               };
             }
             (mkMerge [
-              (mkIf (builtins.typeOf agentContext == "path") {
-                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (builtins.readFile agentContext);
+              (mkIf (builtins.typeOf cfg.context == "path") {
+                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (
+                  builtins.readFile cfg.context
+                );
               })
-              (mkIf (builtins.typeOf agentContext == "str") {
-                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext agentContext;
+              (mkIf (builtins.typeOf cfg.context == "str") {
+                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext cfg.context;
               })
             ])
-            # Link skills from the shared agentics skills registry.
-            (mkIf (skills != {}) (
+            (mkIf (cfg.skills != {}) (
               lib.mapAttrs' (name: skill: {
                 name = ".pi/agent/skills/${name}";
                 value = {
@@ -217,11 +172,28 @@ in
                   recursive = true;
                 };
               })
-              skills
+              cfg.skills
             ))
             # Wire MCP servers.
             (mkIf hasMcpServers {
               ".pi/agent/mcp.json".text = builtins.toJSON mcpServerConfig;
+            })
+
+            (mkIf (builtins.isAttrs cfg.subagents && cfg.subagents != {}) (
+              lib.mapAttrs' (name: value: {
+                name = ".pi/agent/subagents/${name}.md";
+                value = {
+                  text =
+                    if builtins.isPath value
+                    then builtins.readFile value
+                    else value;
+                };
+              })
+              cfg.subagents
+            ))
+
+            (mkIf (cfg.commands != {}) {
+              ".pi/agent/commands.json".text = builtins.toJSON cfg.commands;
             })
           ];
         };

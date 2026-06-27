@@ -6,7 +6,7 @@
 with lib; {
   config = mkMerge [
     {
-      userapps.development.agents.agentics.skills = {
+      userapps.development.agents.hermes.skills = {
         create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
 
         stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;

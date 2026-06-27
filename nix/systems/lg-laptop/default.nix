@@ -9,6 +9,7 @@ with lib; {
   ];
 
   core = {
+    enable = true;
     stateVersion = "26.11";
     timeZone = "America/Chicago";
 
@@ -63,7 +64,7 @@ with lib; {
         admin = true;
         description = "Spooky Skelly";
         shell = pkgs.fish;
-        publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEe5elK6ZPxVfoUBM1Ytd9/15OjdTeIfyUU61qR3osP8";
+        publicKeys = {primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEe5elK6ZPxVfoUBM1Ytd9/15OjdTeIfyUU61qR3osP8";};
       };
     };
   };
