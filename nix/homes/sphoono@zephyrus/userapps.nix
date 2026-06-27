@@ -35,7 +35,7 @@ _: {
       enable = true;
       terminal.ghostty.enable = true;
       agents = {
-        github-copilot.enable = true;
+        opencode.enable = true;
         hermes = {
           enable = true;
           enableCli = true;

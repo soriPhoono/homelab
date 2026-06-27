@@ -13,7 +13,9 @@ with lib; {
           autoupdate = false;
         };
 
-        context = ./AGENTS.md;
+        documents = {
+          "AGENTS.md" = ./AGENTS.md;
+        };
 
         secrets = [
           "api/OPENCODE_API_KEY"
