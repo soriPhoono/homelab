@@ -19,7 +19,7 @@ with lib; {
           };
 
           nixos = {
-            command = "uvx";
+            command = "${pkgs.uv}/bin/uvx";
             args = [
               "mcp-nixos"
             ];
