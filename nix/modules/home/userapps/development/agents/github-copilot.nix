@@ -1,3 +1,16 @@
+# GitHub Copilot CLI home-manager module.
+#
+# Manages ~/.copilot/ config files and wraps the copilot binary
+# for sops secret injection.
+#
+# Config directory: ~/.copilot/ (default, overridable via $COPILOT_HOME)
+#
+# Generated files:
+#   settings.json           — user settings (model, renderMarkdown, etc.)
+#   copilot-instructions.md — global context/instructions
+#   mcp-config.json         — MCP server definitions (with wrapper scripts
+#                             for servers needing secret env/headers)
+#   skills/<name>/          — symlinked skill derivations
 {
   lib,
   pkgs,
@@ -5,222 +18,231 @@
   options,
   ...
 }: let
-  agentsCfg = config.userapps.development.agents.agentics or {};
   cfg = config.userapps.development.agents.github-copilot;
 
-  cmdFromEntry = _name: value:
-    if builtins.isPath value
-    then builtins.readFile value
-    else value;
-
-  # Auto-discover MCP server secrets from the agentics/agent MCP config.
-  # Merges harness secrets (e.g. GITHUB_API_KEY for Copilot auth) with
-  # MCP server secrets so both flow into the binary wrapper.
-  mcpSecrets = lib.homelab.agentics.mcp.extractSecrets {
-    stdio = agentsCfg.mcpServers.stdio or {};
-    http = agentsCfg.mcpServers.http or {};
-  };
+  # ---- Gather all secret names from MCP servers ----
+  mcpSecrets = let
+    extractSecretNames = attrs:
+      lib.filter (v: v != null) (
+        lib.mapAttrsToList (
+          _: val:
+            if builtins.isAttrs val && val ? "secret"
+            then val.secret
+            else null
+        )
+        attrs
+      );
+  in
+    lib.flatten (
+      lib.mapAttrsToList (
+        _name: srv:
+          extractSecretNames (srv.env or {})
+          ++ extractSecretNames (srv.headers or {})
+      )
+      cfg.mcpServers
+    );
 
   allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
 
-  # Translate an mcpServerSet value into Copilot CLI's native MCP format.
-  # For servers with secrets in env/headers, wrapper scripts are generated
-  # that expand environment variables at runtime (the wrapped copilot binary
-  # exports them via makeWrapper).  The wrapper is then registered as a local
-  # MCP server, identical to the opencode mcp-proxy approach.
-  translateMcpServer = name: mcpServer: let
-    mcpLib = lib.homelab.agentics.mcp;
-    inherit
-      (mcpLib)
-      renderEnvValue
-      renderHeaderValue
-      hasEnvSecrets
-      hasHeaderSecrets
-      ;
-    isHttp = mcpServer ? "url" && mcpServer ? "headers";
+  # ---- Predicates for secret detection ----
+  hasEnvSecret = srv:
+    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.env or {}));
 
-    mkStdioNoSecrets = {
-      type = "local";
-      inherit (mcpServer) command;
-      args = mcpServer.args or [];
-      env = lib.mapAttrs (_: v:
-        if builtins.isAttrs v
-        then v.name
-        else v) (mcpServer.env or {});
-      tools = ["*"];
-    };
+  hasHeaderSecret = srv:
+    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.headers or {}));
 
-    mkStdioSecrets = let
-      envExports = lib.concatStringsSep "\n" (
-        lib.mapAttrsToList (envName: value: "export ${envName}=\"${renderEnvValue value}\"") (
-          mcpServer.env or {}
-        )
-      );
-      argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (mcpServer.args or []));
-      wrapper = pkgs.writeShellScriptBin "copilot-mcp-stdio-${name}" ''
-        ${envExports}
-        exec ${lib.escapeShellArg mcpServer.command} ${argsStr}
-      '';
-    in {
-      type = "local";
-      command = "${wrapper}/bin/copilot-mcp-stdio-${name}";
-      args = [];
-      tools = ["*"];
-    };
-
-    mkHttpNoSecrets = {
-      type = "http";
-      inherit (mcpServer) url;
-      headers = mcpServer.headers or {};
-      tools = ["*"];
-    };
-
-    mkHttpSecrets = let
-      headerFlags = lib.concatStringsSep " \\\n                " (
-        lib.mapAttrsToList (headerName: value: "--headers '${headerName}' \"${renderHeaderValue value}\"") (
-          mcpServer.headers or {}
-        )
-      );
-      wrapper = pkgs.writeShellScriptBin "copilot-mcp-proxy-${name}" ''
-        exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
-          --transport streamablehttp \
-          ${headerFlags} \
-          '${mcpServer.url}'
-      '';
-    in {
-      type = "local";
-      command = "${wrapper}/bin/copilot-mcp-proxy-${name}";
-      args = [];
-      tools = ["*"];
-    };
-  in
-    if isHttp
+  # ---- MCP server translation ----
+  #
+  # Converts homelab's MCP server config format to Copilot CLI's
+  # mcp-config.json format.  Servers with secrets in env/headers
+  # get wrapper scripts (writeShellScriptBin) that resolve the
+  # secret at runtime from the environment (set by makeWrapper on
+  # the copilot binary).
+  translateMcpServer = name: srv:
+    if (srv ? "url" && srv ? "headers")
     then
-      if hasHeaderSecrets mcpServer
-      then mkHttpSecrets
-      else mkHttpNoSecrets
-    else if hasEnvSecrets mcpServer
-    then mkStdioSecrets
-    else mkStdioNoSecrets;
-in
-  with lib; {
-    options.userapps.development.agents.github-copilot = {
-      enable = mkEnableOption ''
-        Enable the GitHub Copilot CLI agent runtime and write shared system/user
-        context to the Copilot CLI configuration directory.
-      '';
-
-      secrets = mkOption {
-        type = with types; listOf str;
-        default = ["api/GITHUB_API_KEY"];
-        description = ''
-          List of secrets to be injected into the Copilot CLI runtime environment.
-          Each secret will be defined in `config.sops.secrets` and will be made
-          available as an environment variable with the same name as the secret's
-          `baseNameOf`.
-
-          Defaults to `["api/GITHUB_API_KEY"]` as GitHub Copilot requires a
-          GitHub token for authentication.
-        '';
+      # ── HTTP / SSE transport ──
+      if hasHeaderSecret srv
+      then
+        # Headers contain secrets → wrap via mcp-proxy with runtime expansion
+        let
+          wrapperName = "copilot-mcp-proxy-${name}";
+          mkHeaderFlag = hname: val:
+            if val ? "secret"
+            then "--headers '${hname}' \"\${${baseNameOf val.secret}}\""
+            else "--headers '${hname}' '${lib.escapeShellArg val}'";
+          headerFlags = lib.concatStringsSep " \\\n                " (
+            lib.mapAttrsToList mkHeaderFlag (srv.headers or {})
+          );
+          transportFlag =
+            if srv.transport or "http" == "sse"
+            then ""
+            else "--transport streamablehttp";
+          wrapper = pkgs.writeShellScriptBin wrapperName ''
+            exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
+              ${transportFlag} \
+              ${headerFlags} \
+              '${srv.url}'
+          '';
+        in {
+          type = "local";
+          command = "${wrapper}/bin/${wrapperName}";
+          args = [];
+          tools = ["*"];
+        }
+      else {
+        type =
+          if srv.transport or "http" == "sse"
+          then "sse"
+          else "http";
+        inherit (srv) url;
+        headers = srv.headers or {};
+        tools = ["*"];
+      }
+    else
+      # ── Stdio transport ──
+      if hasEnvSecret srv
+      then
+        # Env contains secrets → wrap via shell script that
+        # re-exports the env vars (set by makeWrapper on copilot binary)
+        # before exec-ing the actual MCP command.
+        let
+          wrapperName = "copilot-mcp-stdio-${name}";
+          envExports = lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (
+              envName: value:
+                if value ? "secret"
+                then "export ${baseNameOf value.secret}=\"\$${baseNameOf value.secret}\""
+                else "export ${envName}=${lib.escapeShellArg value}"
+            ) (srv.env or {})
+          );
+          argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (srv.args or []));
+          wrapper = pkgs.writeShellScriptBin wrapperName ''
+            ${envExports}
+            exec ${lib.escapeShellArg srv.command} ${argsStr}
+          '';
+        in {
+          type = "local";
+          command = "${wrapper}/bin/${wrapperName}";
+          args = [];
+          tools = ["*"];
+        }
+      else {
+        type = "local";
+        inherit (srv) command;
+        args = srv.args or [];
+        env = srv.env or {};
+        tools = ["*"];
       };
 
-      settings = mkOption {
-        type = with types; attrs;
-        default = {};
-        description = ''
-          Extra settings to pass through to `programs.github-copilot-cli.settings`.
-          Merged on top of any auto-configured values.
+  # ---- Context wrapper ----
+  createContext = ctx: ''
+    # GitHub Copilot CLI Runtime Context
 
-          See https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference
-          for available configuration keys.
-        '';
-        example = {
-          model = "claude-sonnet-4-5";
-          renderMarkdown = true;
-          autoUpdate = false;
+    This file provides machine-level and user-level context for Copilot CLI.
+    Project-level repository guidance stays in the repository root
+    `AGENTS.md` and `.agents/AGENTS.md`.
+
+    ${ctx}
+  '';
+in
+  with lib; {
+    options.userapps.development.agents.github-copilot = homelab.agentics.mkAgent {
+      name = "github-copilot";
+      package = pkgs.github-copilot-cli;
+      extraOptions = {
+        settings = mkOption {
+          type = with types; attrs;
+          default = {};
+          description = ''
+            Extra settings to merge into `settings.json` for Copilot CLI.
+            See https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference
+            for available configuration keys.
+          '';
+          example = {
+            model = "claude-sonnet-4-5";
+            renderMarkdown = true;
+            autoUpdate = false;
+          };
         };
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
+      # ── Base config (no secrets variant) ──
       {
-        warnings =
-          optionals (!(options ? sops) && cfg.secrets != [])
-          "Failed to install github-copilot-cli as it was requested with secrets embedment, which requires sops, which is currently disabled"
-          ++ optionals (agentsCfg.commands or {} != {}) ''
-            userapps.development.agents.github-copilot: commands are defined in
-            `agentics.agents.commands.registry` but GitHub Copilot CLI does not
-            support custom slash commands.  These commands will not be available
-            in Copilot CLI.  Move command-like instructions into
-            `agentics.agents.subagents.registry` (custom agents) or provide
-            them via `programs.github-copilot-cli.context` instead.
-          '';
+        home.file = mkMerge [
+          # settings.json
+          {
+            ".copilot/settings.json".text = builtins.toJSON (
+              {
+                model = mkDefault "claude-sonnet-4-5";
+                renderMarkdown = mkDefault true;
+                autoUpdate = mkDefault false;
+              }
+              // (cfg.userSettings or {})
+              // cfg.settings
+            );
+          }
 
-        userapps.development.enable = true;
+          # copilot-instructions.md (context / AGENTS.md equivalent)
+          (mkIf (cfg.context != "") (
+            if builtins.typeOf cfg.context == "path"
+            then {
+              ".copilot/copilot-instructions.md".text = createContext (builtins.readFile cfg.context);
+            }
+            else {
+              ".copilot/copilot-instructions.md".text = createContext cfg.context;
+            }
+          ))
 
-        programs.github-copilot-cli = {
-          enable = true;
-          enableMcpIntegration = false;
+          # mcp-config.json (MCP server definitions)
+          (mkIf (cfg.mcpServers != {}) {
+            ".copilot/mcp-config.json".text = builtins.toJSON {
+              mcpServers = builtins.mapAttrs translateMcpServer cfg.mcpServers;
+            };
+          })
 
-          context = let
-            baseContext = agentsCfg.context or "";
-          in ''
-            # GitHub Copilot CLI Runtime Context
-
-            This file provides machine-level and user-level context for Copilot CLI.
-            Project-level repository guidance stays in the repository root
-            `AGENTS.md` and `.agents/AGENTS.md`.
-
-            ${baseContext}
-          '';
-
-          agents = mapAttrs cmdFromEntry agentsCfg.subagents;
-
-          mcpServers = mapAttrs translateMcpServer (
-            agentsCfg.mcpServers.stdio or {} // agentsCfg.mcpServers.http or {}
-          );
-
-          # Skill derivations contain SKILL.md as their primary output.
-          # Read the content so the github-copilot-cli HM module can write it
-          # to ~/.copilot/skills/<name>/SKILL.md (its .text field expects a
-          # string, not a package).
-          skills = mapAttrs (_name: pkg: builtins.readFile "${pkg}/SKILL.md") agentsCfg.skills;
-
-          inherit (cfg) settings;
-        };
+          # skills/ (symlinked skill derivations)
+          (mkIf (cfg.skills != {}) (
+            mapAttrs' (name: skill: {
+              name = ".copilot/skills/${name}";
+              value = {
+                source = skill;
+                recursive = true;
+              };
+            })
+            cfg.skills
+          ))
+        ];
       }
+
+      # ── Secrets variant (sops + wrapped copilot binary) ──
       (mkIf (options ? sops && allSecrets != []) {
         sops.secrets = genAttrs allSecrets (_: {});
 
-        programs.github-copilot-cli.package = let
-          package = pkgs.github-copilot-cli;
-        in
-          with pkgs;
-            symlinkJoin {
-              inherit (package) pname;
-              name = "${package.name}-wrapped";
-              inherit (package) version;
-
-              paths = [package];
-              buildInputs = [makeWrapper];
-              postBuild = ''
-                for bin in $out/bin/*; do
-                  # Ensure it is actually a file and is executable before wrapping
-                  if [ -f "$bin" ] && [ -x "$bin" ]; then
-                    # Pass ALL --run commands into a SINGLE wrapProgram invocation
-                    wrapProgram "$bin" \
-                      ${concatStringsSep " \\\n                  " (
-                  map (
-                    secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
-                      config.sops.secrets.${secret}.path
-                    })\"'"
-                  )
-                  allSecrets
-                )}
-                  fi
-                done
-              '';
-            };
+        home.packages = with pkgs; [
+          (symlinkJoin {
+            name = "${cfg.package.name}-wrapped";
+            paths = [cfg.package];
+            buildInputs = [makeWrapper];
+            postBuild = ''
+              for bin in $out/bin/*; do
+                if [ -f "$bin" ] && [ -x "$bin" ]; then
+                  wrapProgram "$bin" \
+                    ${concatStringsSep " \\\n                  " (
+                map (
+                  secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
+                    config.sops.secrets.${secret}.path
+                  })\"'"
+                )
+                allSecrets
+              )}
+                fi
+              done
+            '';
+          })
+        ];
       })
     ]);
   }
