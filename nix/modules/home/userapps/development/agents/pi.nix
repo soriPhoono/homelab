@@ -5,25 +5,8 @@
   ...
 }: let
   cfg = config.userapps.development.agents.pi;
-  shared = config.userapps.development.agents.agentics or {};
 
-  # Merge shared agentics MCP servers with per-agent overrides (per-agent wins)
-  mcpServers = {
-    stdio = (shared.mcpServers.stdio or {}) // cfg.mcpServers.stdio;
-    http = (shared.mcpServers.http or {}) // cfg.mcpServers.http;
-  };
-  skills = (shared.skills or {}) // cfg.skills;
-  subagents =
-    if builtins.isAttrs cfg.subagents && cfg.subagents != {}
-    then cfg.subagents
-    else shared.subagents or {};
-  commands = (shared.commands or {}) // cfg.commands;
-  agentContext =
-    if cfg.context != ""
-    then cfg.context
-    else shared.context or "";
-
-  hasMcpServers = mcpServers.stdio != {} || mcpServers.http != {};
+  hasMcpServers = cfg.mcpServers.stdio != {} || cfg.mcpServers.http != {};
 
   createContext = ctx: ''
     # Pi Runtime Context
@@ -43,7 +26,7 @@
     renderHeaderValue
     ;
 
-  # Translate agentics MCP server config to standard MCP config format
+  # Translate MCP server config to pi MCP config format
   # (compatible with pi-mcp-extension and omp's built-in MCP).
   mcpServerConfig = let
     renderServer = name: srv:
@@ -82,7 +65,7 @@
           })
       );
   in {
-    mcpServers = builtins.mapAttrs renderServer (mcpServers.stdio // mcpServers.http);
+    mcpServers = builtins.mapAttrs renderServer (cfg.mcpServers.stdio // cfg.mcpServers.http);
   };
 in
   with lib; {
@@ -135,16 +118,13 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
-      # Provide a default empty context so `cfg.context` is always safe to read.
-      # Users override via `userapps.development.agents.pi.context` or
-      # `userapps.development.agents.agentics.context`.
       {userapps.development.agents.pi.context = mkDefault "";}
 
       {
         userapps.development.enable = true;
         userapps.development.agents.pi = {
           secrets = mcpLib.extractSecrets {
-            inherit (mcpServers) stdio http;
+            inherit (cfg.mcpServers) stdio http;
           };
 
           packages = mkIf hasMcpServers [
@@ -175,17 +155,16 @@ in
               };
             }
             (mkMerge [
-              (mkIf (builtins.typeOf agentContext == "path") {
+              (mkIf (builtins.typeOf cfg.context == "path") {
                 "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext (
-                  builtins.readFile agentContext
+                  builtins.readFile cfg.context
                 );
               })
-              (mkIf (builtins.typeOf agentContext == "str") {
-                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext agentContext;
+              (mkIf (builtins.typeOf cfg.context == "str") {
+                "${config.home.homeDirectory}/.pi/agent/AGENTS.md".text = createContext cfg.context;
               })
             ])
-            # Link skills from the shared agentics skills registry.
-            (mkIf (skills != {}) (
+            (mkIf (cfg.skills != {}) (
               lib.mapAttrs' (name: skill: {
                 name = ".pi/agent/skills/${name}";
                 value = {
@@ -193,15 +172,14 @@ in
                   recursive = true;
                 };
               })
-              skills
+              cfg.skills
             ))
             # Wire MCP servers.
             (mkIf hasMcpServers {
               ".pi/agent/mcp.json".text = builtins.toJSON mcpServerConfig;
             })
 
-            # Wire subagents as markdown files.
-            (mkIf (builtins.isAttrs subagents && subagents != {}) (
+            (mkIf (builtins.isAttrs cfg.subagents && cfg.subagents != {}) (
               lib.mapAttrs' (name: value: {
                 name = ".pi/agent/subagents/${name}.md";
                 value = {
@@ -211,12 +189,11 @@ in
                     else value;
                 };
               })
-              subagents
+              cfg.subagents
             ))
 
-            # Wire commands as a JSON file.
-            (mkIf (commands != {}) {
-              ".pi/agent/commands.json".text = builtins.toJSON commands;
+            (mkIf (cfg.commands != {}) {
+              ".pi/agent/commands.json".text = builtins.toJSON cfg.commands;
             })
           ];
         };

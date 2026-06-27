@@ -146,36 +146,7 @@ nix/
 
 This repo manages AI agent config for OpenCode, pi, Hermes Agent, and GitHub Copilot.
 
-### Agent configuration structure
-
-```
-userapps.development.agents.agentics.*
-├── context       # System, user, and shared context
-├── mcp           # MCP server definitions (stdio or HTTP/SSE)
-├── skills        # Skill derivations (from nix-skills or path specs)
-├── commands      # Custom commands
-├── subagents     # Sub-agent definitions
-```
-
-### Adding skills
-
-Skills are per-user, registered in each user's `skills.nix` config at:
-`nix/homes/<user>/configs/agentics/skills.nix`
-
-For a host-specific override, use:
-`nix/homes/<user>@<hostname>/configs/agentics/skills.nix`
-
-Each skill value can be either:
-
-- A **derivation** from `pkgs.skills.*` (nix-skills overlay): `obsidian = bitbonsai.mcpvault.obsidian;`
-- A **`{ src, subpath }` path spec** (auto-coerced by `types.coercedTo` in the module):
-
-```nix
-obsidian-session-logger = {
-  src = inputs.skills;  # or pkgs.fetchFromGitHub { ... }
-  subpath = "skills/obsidian/session-logger";
-};
-```
+Each agent has its own set of options defined via `homelab.agentics.mkAgent` in `lib.nix`, including MCP servers, skills, subagents, commands, and context. Per-agent configs live at `nix/homes/<user>/configs/<agent>/`. There is no shared agentics layer — each agent is fully self-contained.
 
 ## Secrets Management
 

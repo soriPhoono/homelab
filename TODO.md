@@ -15,9 +15,7 @@ These are the tasks that are intended for future development goals
   - [x] EVERY variable read is properly guarded or throws documented errors
 - [x] Configure hermes agent in some form
   - [x] Research if hermes agent supports multi user configuration
-    - [ ] if yes create server deployment as this is an always on service
-    - [x] otherwise rig up podman/docker based user services, work on backup plan
-      - [ ] Use k0s cluster system to run hermes in docker containers on k8s
+    - [x] if yes create server deployment as this is an always on service
 - [ ] Configure pi coding agent
   - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
     - [x] Finish updating mcp server types in [lib](./nix/lib.nix)
@@ -44,3 +42,4 @@ These are the tasks that are intended for future development goals
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
 - [ ] Create editor system that can contain an "editor agent", allowing for easier configuration of newer editors
+- [ ] Fix agent system

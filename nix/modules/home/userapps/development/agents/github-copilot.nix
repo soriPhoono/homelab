@@ -5,7 +5,7 @@
   options,
   ...
 }: let
-  agentsCfg = config.userapps.development.agents.agentics;
+  agentsCfg = config.userapps.development.agents.agentics or {};
   cfg = config.userapps.development.agents.github-copilot;
 
   cmdFromEntry = _name: value:

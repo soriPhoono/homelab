@@ -35,7 +35,12 @@ _: {
       enable = true;
       terminal.ghostty.enable = true;
       agents = {
-        opencode.enable = true;
+        # github-copilot.enable = true;
+        hermes = {
+          enable = true;
+          enableCli = true;
+          enableDesktop = true;
+        };
       };
       editors.zed.enable = true;
       # appliances.bambu-studio.enable = true;
