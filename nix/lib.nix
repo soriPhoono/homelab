@@ -50,22 +50,8 @@ with prev; {
             description = "";
           };
 
-          context = mkOption {
-            type = with types;
-              oneOf [
-                str
-                path
-              ];
-            description = ''
-              The general AGENTS.md content for the ${name} agent.
-              This provides the agent with user-specific context, such as preferences,
-              project details, or other relevant information that can help the agent
-              better understand and serve the user's needs.
-            '';
-          };
-
           documents = mkOption {
-            type = with types; attrsOf either str path;
+            type = with types; attrsOf (either str path);
             default = {};
             description = ''
               The documents to symlink to the agents configuration directory for per session loading
