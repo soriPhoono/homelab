@@ -3,5 +3,4 @@
 result
 .pre-commit-config.yaml
 
-.pi/
-.serena/
+.hermes/plans/*
