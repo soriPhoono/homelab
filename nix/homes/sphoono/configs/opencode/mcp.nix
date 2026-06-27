@@ -8,92 +8,88 @@ with lib; {
     {
       userapps.development.agents.opencode = {
         mcpServers = {
-          http = {
-            github = {
-              url = "https://api.githubcopilot.com/mcp";
-              headers = {
-                Authorization = {
-                  secret = "api/GITHUB_API_KEY";
-                  prefix = "Bearer ";
-                };
-              };
-            };
+          # github = {
+          #   url = "https://api.githubcopilot.com/mcp";
+          #   headers = {
+          #     Authorization = {
+          #       secret = "api/GITHUB_API_KEY";
+          #       prefix = "Bearer ";
+          #     };
+          #   };
+          # };
 
-            exa = {
-              url = "https://mcp.exa.ai";
-              headers = {
-                x-api-key = {
-                  secret = "api/EXA_API_KEY";
-                };
-              };
-            };
-
-            context7 = {
-              url = "https://mcp.context7.com/mcp";
-              headers = {
-                CONTEXT7_API_KEY = {
-                  secret = "api/CONTEXT7_API_KEY";
-                };
+          exa = {
+            url = "https://mcp.exa.ai";
+            headers = {
+              x-api-key = {
+                secret = "api/EXA_API_KEY";
               };
             };
           };
 
-          stdio = {
-            memory = {
-              command = "bash";
-              args = [
-                "-c"
-                "MEMORY_FILE_PATH=$HOME/.local/share/opencode/memory/memory.jsonl exec npx -y @modelcontextprotocol/server-memory"
-              ];
+          context7 = {
+            url = "https://mcp.context7.com/mcp";
+            headers = {
+              CONTEXT7_API_KEY = {
+                secret = "api/CONTEXT7_API_KEY";
+              };
             };
+          };
 
-            fetch = {
-              command = "uvx";
-              args = [
-                "mcp-server-fetch"
-              ];
-            };
+          memory = {
+            command = "bash";
+            args = [
+              "-c"
+              "MEMORY_FILE_PATH=$HOME/.local/share/opencode/memory/memory.jsonl exec npx -y @modelcontextprotocol/server-memory"
+            ];
+          };
 
-            sequential-thinking = {
-              command = "npx";
-              args = [
-                "-y"
-                "@modelcontextprotocol/server-sequential-thinking"
-              ];
-            };
+          fetch = {
+            command = "uvx";
+            args = [
+              "mcp-server-fetch"
+            ];
+          };
 
-            nixos = {
-              command = "uvx";
-              args = [
-                "mcp-nixos"
-              ];
-            };
+          sequential-thinking = {
+            command = "npx";
+            args = [
+              "-y"
+              "@modelcontextprotocol/server-sequential-thinking"
+            ];
+          };
 
-            filesystem = {
-              command = "npx";
-              args = [
-                "-y"
-                "@modelcontextprotocol/server-filesystem"
-                config.home.homeDirectory
-              ];
-            };
+          nixos = {
+            command = "uvx";
+            args = [
+              "mcp-nixos"
+            ];
+          };
 
-            git = {
-              command = "npx";
-              args = [
-                "-y"
-                "@selfagency/git-mcp"
-              ];
-            };
+          filesystem = {
+            command = "npx";
+            args = [
+              "-y"
+              "@modelcontextprotocol/server-filesystem"
+              config.home.homeDirectory
+            ];
+          };
 
-            obsidian = {
-              command = "npx";
-              args = [
-                "-y"
-                "@bitbonsai/mcpvault@latest"
-                "${config.home.homeDirectory}/Nextcloud/Vault"
-              ];
-            };
+          git = {
+            command = "npx";
+            args = [
+              "-y"
+              "@selfagency/git-mcp"
+            ];
+          };
+
+          obsidian = {
+            command = "npx";
+            args = [
+              "-y"
+              "@bitbonsai/mcpvault@latest"
+              "${config.home.homeDirectory}/Nextcloud/Vault"
+            ];
           };
         };
       };

@@ -62,7 +62,7 @@
   # at runtime from the environment (set by makeWrapper on the opencode
   # binary).
   translateMcpServer = name: srv:
-    if (srv ? "url" && srv ? "headers")
+    if (srv.url != null)
     then
       # ── HTTP / SSE transport ──
       if hasHeaderSecret srv
@@ -178,6 +178,9 @@ in
         programs.opencode = {
           enable = true;
           package = mkDefault cfg.package;
+
+          context =
+            cfg.documents."AGENTS.md" or "";
 
           settings = mkMerge [
             {

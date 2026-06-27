@@ -61,7 +61,7 @@
   # at runtime from the environment (set by makeWrapper on the copilot
   # binary).
   translateMcpServer = name: srv:
-    if (srv ? "url" && srv ? "headers")
+    if (srv.url != null)
     then
       # ── HTTP / SSE transport ──
       if hasHeaderSecret srv
@@ -176,6 +176,9 @@ in
           package = mkDefault cfg.package;
 
           settings = defaultSettings // (cfg.userSettings or {}) // cfg.settings;
+
+          context =
+            cfg.documents."copilot-instructions.md" or "";
 
           mcpServers = builtins.mapAttrs translateMcpServer cfg.mcpServers;
 
