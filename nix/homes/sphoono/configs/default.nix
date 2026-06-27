@@ -1,7 +1,7 @@
 {
   imports = [
     ./hermes
-    # ./opencode
+    ./opencode
     ./helix
     ./fastfetch
     ./zed
