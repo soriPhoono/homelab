@@ -8,6 +8,7 @@ Zed editor module
 */
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -52,53 +53,45 @@ Zed editor module
   ];
 in
   with lib; {
-    options.userapps.development.editors.zed = {
-      enable = mkEnableOption "Enable zed text editor";
-
-      priority = mkOption {
-        type = types.int;
-        description = "The priority of the zed editor";
-        default = 20; # Clean this up by referencing basic common priorities from a global import
-      };
-
-      secrets = mkOption {
-        type = with types; listOf str;
-        description = ''
-          List of secrets to inject into the Zed editor environment. These should be
-          paths to files containing the secrets, and the file names (without extensions)
-          will be used as environment variable names.
-        '';
-        default = [];
-      };
-
-      userSettings = mkOption {
-        type = with types; attrs;
-        default = {};
-        description = "User settings for Zed.";
-      };
-
-      extensions = mkOption {
-        type = with types; listOf str;
-        default = [];
-        description = "List of Zed extensions to install.";
+    options.userapps.development.editors.zed = homelab.agentics.mkEditor {
+      name = "zed";
+      package = pkgs.zed-editor;
+      extraOptions = {
+        extensions = mkOption {
+          type = with types; listOf str;
+          default = [];
+          description = "List of Zed extensions to install.";
+        };
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
+        # Default editor session variables
+        home.sessionVariables = mkIf cfg.defaultEditor {
+          EDITOR = "${lib.getExe cfg.package}";
+          VISUAL = "${lib.getExe cfg.package}";
+        };
+
+        # Extra packages (LSP servers, formatters, linters)
+        home.packages = cfg.extraPackages;
+
+        # MIME type associations
         xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (
           let
-            editor = ["${baseNameOf (lib.getExe config.programs.zed-editor.package)}.desktop"];
+            editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
           in
             mkOverride cfg.priority (
               builtins.listToAttrs (map (mime: lib.nameValuePair mime editor) codeMimeTypes)
             )
         );
 
+        # Zed editor upstream module
         programs.zed-editor = {
-          inherit (cfg) extensions userSettings;
-
           enable = true;
+          inherit (cfg) package;
+
+          inherit (cfg) extensions userSettings;
 
           mutableUserDebug = false;
           mutableUserKeymaps = false;

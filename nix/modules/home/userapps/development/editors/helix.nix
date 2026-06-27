@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   options,
   ...
@@ -7,75 +8,47 @@
   cfg = config.userapps.development.editors.helix;
 in
   with lib; {
-    options.userapps.development.editors.helix = {
-      enable = mkEnableOption "Enable helix text editor";
+    options.userapps.development.editors.helix = homelab.agentics.mkEditor {
+      name = "helix";
+      package = pkgs.helix;
+      extraOptions = {
+        languages = mkOption {
+          type = types.attrs;
+          default = {};
+          description = "Helix language configuration written to languages.toml.";
+        };
 
-      package = mkOption {
-        type = with types; nullOr package;
-        default = null;
-        description = "The helix package to use. If null, uses pkgs.helix.";
-        example = literalExpression "pkgs.evil-helix";
-      };
+        themes = mkOption {
+          type = types.attrsOf (
+            types.oneOf [
+              types.attrs
+              types.path
+              types.str
+            ]
+          );
+          default = {};
+          description = "Helix themes to install.";
+        };
 
-      extraPackages = mkOption {
-        type = with types; listOf package;
-        default = [];
-        description = "Extra packages available to hx (LSP servers, formatters, etc.).";
-      };
-
-      defaultEditor = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to configure hx as the default editor via EDITOR/VISUAL.";
-      };
-
-      settings = mkOption {
-        type = types.attrs;
-        default = {};
-        description = "Helix editor settings written to config.toml.";
-      };
-
-      languages = mkOption {
-        type = types.attrs;
-        default = {};
-        description = "Helix language configuration written to languages.toml.";
-      };
-
-      themes = mkOption {
-        type = types.attrsOf (
-          types.oneOf [
-            types.attrs
-            types.path
-            types.str
-          ]
-        );
-        default = {};
-        description = "Helix themes to install.";
-      };
-
-      ignores = mkOption {
-        type = with types; listOf str;
-        default = [];
-        description = "Glob patterns for file picker ignore rules.";
+        ignores = mkOption {
+          type = with types; listOf str;
+          default = [];
+          description = "Glob patterns for file picker ignore rules.";
+        };
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
+        # Helix upstream module
         programs.helix = {
           enable = true;
+          inherit (cfg) package;
+          inherit (cfg) defaultEditor;
+          inherit (cfg) extraPackages;
+          settings = cfg.userSettings;
 
-          package = mkIf (cfg.package != null) cfg.package;
-
-          inherit
-            (cfg)
-            extraPackages
-            defaultEditor
-            settings
-            languages
-            themes
-            ignores
-            ;
+          inherit (cfg) languages themes ignores;
         };
       }
 

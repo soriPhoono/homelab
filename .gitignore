@@ -3,4 +3,5 @@
 result
 .pre-commit-config.yaml
 
-.hermes/
+.hermes/*
+!.hermes/skills/

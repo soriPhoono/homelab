@@ -39,7 +39,7 @@
       stylelint
     ];
 
-    settings = {
+    userSettings = {
       editor = {
         line-number = "relative";
         cursor-shape = {
