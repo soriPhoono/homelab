@@ -2,22 +2,16 @@
   lib,
   pkgs,
   config,
-  options,
   ...
 }: let
   cfg = config.userapps.development.agents.hermes;
-  hermesStateDir = "${config.home.homeDirectory}/";
-  hermesHome = "${config.home.homeDirectory}/.hermes";
-
-  envEntries = lib.attrValues cfg.env;
-  envSecrets = lib.filter (v: builtins.isAttrs v && v ? "secret") envEntries;
-  envSecretNames = lib.catAttrs "secret" envSecrets;
 in
   with lib; {
-    options.userapps.development.agents.hermes = removeAttrs (homelab.agentics.mkAgent {
+    options.userapps.development.agents.hermes = homelab.agentics.mkAgent {
       name = "hermes";
       package = pkgs.hermes-full;
       extraOptions = {
+        enableCli = mkEnableOption "Enable the hermes headless agent";
         enableDesktop = mkEnableOption "Enable the hermes desktop application (hermes-desktop)";
 
         soulDoc = mkOption {
@@ -38,37 +32,85 @@ in
           '';
         };
 
-        env = mkOption {
-          type = with types;
-            attrsOf (oneOf [
-              str
-              (submodule {
-                options = {
-                  secret = mkOption {
-                    type = str;
-                    description = "Sops secret name to read (e.g. api/OPENROUTER_API_KEY)";
-                  };
-                };
-              })
-            ]);
-          default = {};
-          description = ''
-            Environment variables written to ~/.hermes/.env.
-            Each key is the env var name. Value is either a literal string
-            or { secret = "api/SOMETHING"; } referencing a sops secret.
-          '';
-          example = {
-            OPENROUTER_API_KEY.secret = "api/OPENROUTER_API_KEY";
-            GH_TOKEN.secret = "api/GITHUB_API_KEY";
-            TERMINAL_ENV = "docker";
+        providers = {
+          opencode = {
+            enable = mkEnableOption "Enable opencode zen/go providers in hermes";
+          };
+
+          search = {
+            variant = mkOption {
+              type = with types; enum ["exa"];
+              default = "exa";
+              description = ''
+                The type of search provider backend
+              '';
+            };
+          };
+        };
+
+        gateway = {
+          telegram = {
+            enable = mkEnableOption "Enable telegram messaging provider for hermes agent";
           };
         };
       };
-    }) ["context"];
+    };
 
     config = mkIf cfg.enable (mkMerge [
       {
-        programs.hermes-agent.enable = true;
+        sops = {
+          secrets =
+            {
+              "hermes/API_SERVER_KEY" = {};
+              "api/OPENCODE_API_KEY" = mkIf cfg.providers.opencode.enable {};
+              "api/EXA_API_KEY" = mkIf (cfg.providers.search.variant == "exa") {};
+              "hermes/TELEGRAM_BOT_TOKEN" = mkIf cfg.gateway.telegram.enable {};
+              "hermes/TELEGRAM_ALLOWED_USERS" = mkIf cfg.gateway.telegram.enable {};
+            }
+            // genAttrs (flatten (mapAttrsToList (_name: value: (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.env)) ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.headers))) cfg.mcpServers)) (_name: {});
+          templates."hermes/.env".content = builtins.concatStringsSep "\n" [
+            ''
+              API_SERVER_KEY=${config.sops.placeholder."hermes/API_SERVER_KEY"}
+            ''
+            (optionalString
+              cfg.providers.opencode.enable
+              ''
+                OPENCODE_ZEN_API_KEY=${config.sops.placeholder."api/OPENCODE_API_KEY"}
+                OPENCODE_GO_API_KEY=${config.sops.placeholder."api/OPENCODE_API_KEY"}
+              '')
+            (optionalString
+              (cfg.providers.search.variant
+                == "exa")
+              ''
+                EXA_API_KEY=${config.sops.placeholder."api/EXA_API_KEY"}
+              '')
+            (optionalString
+              cfg.gateway.telegram.enable
+              ''
+                TELEGRAM_BOT_TOKEN=${config.sops.placeholder."hermes/TELEGRAM_BOT_TOKEN"}
+                TELEGRAM_ALLOWED_USERS=${config.sops.placeholder."hermes/TELEGRAM_ALLOWED_USERS"}
+              '')
+            (concatStringsSep
+              "\n"
+              (map (name: ''
+                  ${toUpper (baseNameOf name)}=${config.sops.placeholder.${name}}
+                '')
+                (flatten
+                  (mapAttrsToList
+                    (_name: value:
+                      (mapAttrsToList
+                        (_name: value: value.secret)
+                        (filterAttrs
+                          (_name: value: value ? "secret")
+                          value.env))
+                      ++ (mapAttrsToList
+                        (_name: value: value.secret)
+                        (filterAttrs
+                          (_name: value: value ? "secret")
+                          value.headers)))
+                    cfg.mcpServers))))
+          ];
+        };
 
         home.packages = with pkgs; (optional cfg.enableDesktop hermes-desktop);
 
@@ -83,24 +125,97 @@ in
           startupNotify = true;
         };
 
+        programs.hermes-agent = {
+          enable = cfg.enableCli;
+          package = pkgs.hermes-full;
+          settings = mkMerge [
+            {
+              worktree = true;
+
+              streaming.enabled = true;
+              stt.enabled = true;
+
+              memory.provider = "holographic";
+              web.backend = cfg.providers.search.variant;
+
+              mcp_servers =
+                mapAttrs
+                (_name: desc: let
+                  processedEnv =
+                    mapAttrs
+                    (name: value:
+                      if (builtins.isAttrs value)
+                      then "$${${lib.strings.toUpper name}}"
+                      else value)
+                    desc.env;
+                  processedHeaders =
+                    mapAttrs
+                    (name: value:
+                      if (builtins.isAttrs value)
+                      then "$${${lib.strings.toUpper name}}"
+                      else value)
+                    desc.headers;
+                in
+                  removeAttrs
+                  {
+                    inherit (desc) command args url;
+                    env = processedEnv;
+                    headers = processedHeaders;
+                  }
+                  (
+                    (
+                      if desc.command == null
+                      then ["command"]
+                      else []
+                    )
+                    ++ (
+                      if desc.args == []
+                      then ["args"]
+                      else []
+                    )
+                    ++ (
+                      if processedEnv == {}
+                      then ["env"]
+                      else []
+                    )
+                    ++ (
+                      if desc.url == null
+                      then ["url"]
+                      else []
+                    )
+                    ++ (
+                      if processedHeaders == {}
+                      then ["headers"]
+                      else []
+                    )
+                  ))
+                cfg.mcpServers;
+            }
+            (mkIf cfg.providers.opencode.enable {
+              model = {
+                default = "deepseek-v4-flash";
+                provider = "opencode-go";
+              };
+            })
+            cfg.userSettings
+          ];
+          environmentFiles = [
+            config.sops.templates."hermes/.env".path
+          ];
+          environment = {
+            API_SERVER_ENABLED = "true";
+            HERMES_DESKTOP_REMOTE_URL = "http://localhost:8642";
+          };
+          documents = {
+            "SOUL.md" = cfg.soulDoc;
+            "USER.md" = cfg.userDoc;
+          };
+        };
+
         home.file = mkMerge [
-          (mkIf (cfg.soulDoc != null) {
-            "${hermesStateDir}/.hermes/SOUL.md" =
-              if builtins.typeOf cfg.soulDoc == "path"
-              then {source = cfg.soulDoc;}
-              else {text = cfg.soulDoc;};
-          })
-
-          (mkIf (cfg.userDoc != null) {
-            "${hermesStateDir}/.hermes/USER.md" =
-              if builtins.typeOf cfg.userDoc == "path"
-              then {source = cfg.userDoc;}
-              else {text = cfg.userDoc;};
-          })
-
           (mkIf (cfg.skills != {}) (
             mapAttrs' (name: skill: {
-              name = "${hermesStateDir}/.hermes/skills/${name}";
+              name = "${config.programs.hermes-agent.stateDir}/.hermes/skills/${name}";
               value = {
                 source = skill;
                 recursive = true;
@@ -109,28 +224,6 @@ in
             cfg.skills
           ))
         ];
-
-        home.activation.hermesEnv = config.lib.dag.entryAfter ["hermesAgentSetup"] (
-          let
-            managedKeys = lib.concatStringsSep "|" (lib.mapAttrsToList (name: _: "^${name}=") cfg.env);
-            envLines =
-              lib.mapAttrsToList (
-                name: val:
-                  if builtins.isAttrs val
-                  then "echo \"${name}=$(cat \"${config.sops.secrets.${val.secret}.path}\")\" >> ${hermesHome}/.env"
-                  else "echo \"${name}=${val}\" >> ${hermesHome}/.env"
-              )
-              cfg.env;
-          in ''
-            ${pkgs.coreutils}/bin/touch ${hermesHome}/.env
-            ${pkgs.gnugrep}/bin/grep -v -E "${managedKeys}" ${hermesHome}/.env > ${hermesHome}/.env.tmp || true
-            ${pkgs.coreutils}/bin/mv ${hermesHome}/.env.tmp ${hermesHome}/.env
-            ${concatStringsSep "\n" envLines}
-          ''
-        );
       }
-      (mkIf (options ? sops && envSecretNames != []) {
-        sops.secrets = genAttrs envSecretNames (_: {});
-      })
     ]);
   }

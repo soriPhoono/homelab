@@ -1,8 +1,4 @@
-{
-  lib,
-  config,
-  ...
-}:
+{lib, ...}:
 with lib; {
   programs.zed-editor.userSettings = {
     terminal = {
@@ -18,12 +14,12 @@ with lib; {
     load_direnv = "shell_hook";
     agent_servers = {
       gemini.type = "registry";
-      opencode = mkIf config.userapps.development.agents.opencode.enable {
-        type = "registry";
-      };
-      pi-acp = mkIf config.userapps.development.agents.pi.enable {
-        type = "registry";
-      };
+      # opencode = mkIf config.userapps.development.agents.opencode.enable {
+      #   type = "registry";
+      # };
+      # pi-acp = mkIf config.userapps.development.agents.pi.enable {
+      #   type = "registry";
+      # };
     };
     agent = {
       default_model = {
