@@ -3,5 +3,4 @@
 result
 .pre-commit-config.yaml
 
-.hermes/plans/*
-.hermes/desktop-attachments/*
+.hermes/
