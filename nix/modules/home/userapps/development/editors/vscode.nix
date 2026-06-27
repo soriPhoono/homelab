@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -41,7 +42,10 @@
     filtered;
 in
   with lib; {
-    options.userapps.development.editors.vscode = homelab.agentics.mkVscodeEditor {};
+    options.userapps.development.editors.vscode = homelab.agentics.mkVscodeEditor {
+      name = "vscode";
+      package = pkgs.vscode;
+    };
 
     config = mkIf cfg.enable {
       # Default editor — programs.vscode has no defaultEditor option
