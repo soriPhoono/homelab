@@ -66,6 +66,7 @@ in
               "api/EXA_API_KEY" = mkIf (cfg.providers.search.variant == "exa") {};
               "hermes/TELEGRAM_BOT_TOKEN" = mkIf cfg.gateway.telegram.enable {};
               "hermes/TELEGRAM_ALLOWED_USERS" = mkIf cfg.gateway.telegram.enable {};
+              "hermes/TELEGRAM_HOME_CHANNEL" = mkIf cfg.gateway.telegram.enable {};
             }
             // genAttrs (flatten (mapAttrsToList (_name: value: (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.env)) ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.headers))) cfg.mcpServers)) (_name: {});
           templates."hermes/.env".content = builtins.concatStringsSep "\n" [
@@ -89,6 +90,7 @@ in
               ''
                 TELEGRAM_BOT_TOKEN=${config.sops.placeholder."hermes/TELEGRAM_BOT_TOKEN"}
                 TELEGRAM_ALLOWED_USERS=${config.sops.placeholder."hermes/TELEGRAM_ALLOWED_USERS"}
+                TELEGRAM_HOME_CHANNEL=${config.sops.placeholder."hermes/TELEGRAM_HOME_CHANNEL"}
               '')
             (concatStringsSep
               "\n"
@@ -197,6 +199,13 @@ in
                 provider = "opencode-go";
               };
             })
+            (mkIf cfg.gateway.telegram.enable {
+              gateway.platforms.telegram.extra = {
+                status_indicator = true;
+                status_online = "🟢 Online";
+                status_offline = "🔴 Offline";
+              };
+            })
             cfg.userSettings
           ];
           environmentFiles = [
@@ -204,7 +213,6 @@ in
           ];
           environment = {
             API_SERVER_ENABLED = "true";
-            HERMES_DESKTOP_REMOTE_URL = "http://localhost:8642";
           };
           documents = {
             "SOUL.md" = cfg.soulDoc;

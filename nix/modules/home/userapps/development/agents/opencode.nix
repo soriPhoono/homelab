@@ -1,3 +1,18 @@
+# OpenCode home-manager module.
+#
+# Bridges our homelab agent config (homelab.agentics.mkAgent) to the
+# upstream programs.opencode home-manager module.
+#
+# What the upstream handles:
+#   settings (opencode.json), tui, context (AGENTS.md), commands,
+#   agents, skills, themes, tools, web service, extraPackages
+#
+# What we keep custom:
+#   translateMcpServer — generates writeShellScriptBin wrappers for
+#     MCP servers with sops secret env/headers, resolving at runtime
+#   enableDesktop — installs opencode-desktop alongside the CLI
+#   Secret injection — wraps the opencode binary via symlinkJoin +
+#     makeWrapper --run to export sops secrets into the environment
 {
   lib,
   pkgs,
@@ -7,35 +22,60 @@
 }: let
   cfg = config.userapps.development.agents.opencode;
 
-  # ---- Env / header renderers (agentics → shell-friendly $VAR syntax) ----
+  # ---- Gather all secret names from MCP servers ----
+  mcpSecrets = let
+    extractSecretNames = attrs:
+      lib.filter (v: v != null) (
+        lib.mapAttrsToList (
+          _: val:
+            if builtins.isAttrs val && val ? "secret"
+            then val.secret
+            else null
+        )
+        attrs
+      );
+  in
+    lib.flatten (
+      lib.mapAttrsToList (
+        _name: srv:
+          extractSecretNames (srv.env or {})
+          ++ extractSecretNames (srv.headers or {})
+      )
+      cfg.mcpServers
+    );
 
-  mcpLib = lib.homelab.agentics.mcp;
-  inherit
-    (mcpLib)
-    renderEnvValue
-    renderHeaderValue
-    hasEnvSecrets
-    hasHeaderSecrets
-    ;
+  allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
+
+  # ---- Predicates for secret detection ----
+  hasEnvSecret = srv:
+    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.env or {}));
+
+  hasHeaderSecret = srv:
+    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.headers or {}));
 
   # ---- MCP server translation ----
-
+  #
+  # Converts homelab's MCP server config format to the format expected
+  # by programs.opencode.settings.mcp.
+  #
+  # Servers with secrets in env/headers get wrapper scripts that resolve
+  # at runtime from the environment (set by makeWrapper on the opencode
+  # binary).
   translateMcpServer = name: srv:
     if (srv ? "url" && srv ? "headers")
     then
-      # HTTP / SSE → OpenCode remote MCP server
-      if hasHeaderSecrets srv
+      # ── HTTP / SSE transport ──
+      if hasHeaderSecret srv
       then
-        # Headers contain secrets → wrap via mcp-proxy with runtime env expansion
+        # Headers contain secrets → wrap via mcp-proxy with runtime expansion
         let
           wrapperName = "opencode-mcp-proxy-${name}";
-          headerFlags = lib.concatStringsSep " \\\n            " (
-            lib.mapAttrsToList (
-              hname: val:
-                if val ? "secret"
-                then "--headers '${hname}' \"${renderHeaderValue val}\""
-                else "--headers '${hname}' '${val}'"
-            ) (srv.headers or {})
+          mkHeaderFlag = hname: val:
+            if val ? "secret"
+            then "--headers '${hname}' \"\${${baseNameOf val.secret}}\""
+            else "--headers '${hname}' '${lib.escapeShellArg val}'";
+          headerFlags = lib.concatStringsSep " \\\n                " (
+            lib.mapAttrsToList mkHeaderFlag (srv.headers or {})
           );
           transportFlag =
             if srv.transport or "http" == "sse"
@@ -50,91 +90,47 @@
         in {
           type = "local";
           command = ["${wrapper}/bin/${wrapperName}"];
-          env = {};
           enabled = true;
         }
       else {
         type = "remote";
         inherit (srv) url;
-        headers = lib.mapAttrs (_: renderHeaderValue) (srv.headers or {});
+        headers = srv.headers or {};
         enabled = true;
       }
     else
-      # Stdio → OpenCode local MCP server
-      let
-        env = lib.mapAttrs (_: renderEnvValue) (srv.env or {});
-      in
-        if hasEnvSecrets srv
-        then
-          # Env contains secrets → wrap via shell script that exports at runtime
-          let
-            wrapperName = "opencode-mcp-stdio-${name}";
-            envExports = lib.concatStringsSep "\n" (
-              lib.mapAttrsToList (
-                envName: val:
-                  if val ? "secret"
-                  then "export ${val.name}=\"${renderEnvValue val}\""
-                  else "export ${envName}=${lib.escapeShellArg val}"
-              ) (srv.env or {})
-            );
-            argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (srv.args or []));
-            wrapper = pkgs.writeShellScriptBin wrapperName ''
-              ${envExports}
-              exec ${lib.escapeShellArg srv.command} ${argsStr}
-            '';
-          in {
-            type = "local";
-            command = ["${wrapper}/bin/${wrapperName}"];
-            env = {};
-            enabled = true;
-          }
-        else {
+      # ── Stdio transport ──
+      if hasEnvSecret srv
+      then
+        # Env contains secrets → wrap via shell script that re-exports
+        # the env vars (set by makeWrapper on opencode binary) before
+        # exec-ing the actual MCP command.
+        let
+          wrapperName = "opencode-mcp-stdio-${name}";
+          envExports = lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (
+              envName: value:
+                if value ? "secret"
+                then "export ${baseNameOf value.secret}=\"\$${baseNameOf value.secret}\""
+                else "export ${envName}=${lib.escapeShellArg value}"
+            ) (srv.env or {})
+          );
+          argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (srv.args or []));
+          wrapper = pkgs.writeShellScriptBin wrapperName ''
+            ${envExports}
+            exec ${lib.escapeShellArg srv.command} ${argsStr}
+          '';
+        in {
           type = "local";
-          command = [srv.command] ++ (srv.args or []);
-          inherit env;
+          command = ["${wrapper}/bin/${wrapperName}"];
           enabled = true;
-        };
-
-  # ---- Gather secrets from MCP servers ----
-
-  mcpSecrets = mcpLib.extractSecrets {
-    inherit (cfg.mcpServers) stdio http;
-  };
-
-  allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
-
-  # ---- Assemble the OpenCode JSON config ----
-
-  opencodeJson =
-    {
-      mcp = builtins.mapAttrs translateMcpServer (cfg.mcpServers.stdio // cfg.mcpServers.http);
-    }
-    // lib.optionalAttrs (builtins.isAttrs cfg.subagents && cfg.subagents != {}) (
-      let
-        mkSubagentEntry = _name: value: value;
-      in {
-        agent = builtins.mapAttrs mkSubagentEntry cfg.subagents;
-      }
-    )
-    // lib.optionalAttrs (cfg.commands != {}) {
-      command = cfg.commands;
-    }
-    // lib.optionalAttrs (cfg.plugins or [] != []) {
-      plugin = cfg.plugins;
-    }
-    // cfg.settings;
-
-  # ---- Context wrapper ----
-
-  createContext = ctx: ''
-    # OpenCode Runtime Context
-
-    This file provides machine-level and user-level context for OpenCode.
-    Project-level repository guidance stays in the repository root
-    `AGENTS.md` and `.agents/AGENTS.md`.
-
-    ${ctx}
-  '';
+        }
+      else {
+        type = "local";
+        command = [srv.command] ++ (srv.args or []);
+        env = srv.env or {};
+        enabled = true;
+      };
 in
   with lib; {
     options.userapps.development.agents.opencode = homelab.agentics.mkAgent {
@@ -160,9 +156,9 @@ in
           type = with types; attrs;
           default = {};
           description = ''
-            Extra settings to merge into the generated opencode.json.
-            These act as global defaults for OpenCode — providers, models,
-            permissions, autoupdate, etc.
+            Extra settings to merge into the OpenCode JSON config.
+            Merged on top of base defaults, userSettings, MCP servers,
+            and plugins. Keys here override everything.
 
             See https://opencode.ai/docs/config/ for the full schema.
           '';
@@ -175,91 +171,61 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
+      # ── Base config: delegate to upstream HM module ──
       {
-        userapps.development.agents.opencode.context = mkDefault "";
-        userapps.development.enable = true;
-      }
+        home.packages = mkIf cfg.enableDesktop [pkgs.opencode-desktop];
 
-      # ── Base config ──
-      {
-        home = {
-          packages = mkMerge [
-            (mkIf (allSecrets == []) [cfg.package])
-            (mkIf (cfg.enableDesktop && allSecrets == []) [pkgs.opencode-desktop])
-          ];
+        programs.opencode = {
+          enable = true;
+          package = mkDefault cfg.package;
 
-          file = mkMerge [
+          settings = mkMerge [
             {
-              ".config/opencode/opencode.json".text = builtins.toJSON opencodeJson;
+              model = mkDefault "opencode-go/deepseek-v4-flash";
+              autoupdate = mkDefault false;
             }
-
-            (mkIf (cfg.context != "") (
-              if builtins.typeOf cfg.context == "path"
-              then {
-                ".config/opencode/AGENTS.md".text = createContext (builtins.readFile cfg.context);
-              }
-              else {
-                ".config/opencode/AGENTS.md".text = createContext cfg.context;
-              }
-            ))
-
-            (mkIf (cfg.skills != {}) (
-              mapAttrs' (name: skill: {
-                name = ".config/opencode/skills/${name}";
-                value = {
-                  source = skill;
-                  recursive = true;
-                };
-              })
-              cfg.skills
-            ))
-
-            (mkIf (builtins.isAttrs cfg.subagents && cfg.subagents != {}) (
-              mapAttrs' (name: value: {
-                name = ".config/opencode/agents/${name}.md";
-                value = {
-                  text =
-                    if builtins.isPath value
-                    then builtins.readFile value
-                    else value;
-                };
-              })
-              cfg.subagents
-            ))
-
-            (mkIf (!builtins.isAttrs cfg.subagents && cfg.subagents != null && cfg.subagents != {}) {
-              ".config/opencode/agents".source = cfg.subagents;
+            (cfg.userSettings or {})
+            (optionalAttrs (cfg.mcpServers != {}) {
+              mcp = builtins.mapAttrs translateMcpServer cfg.mcpServers;
             })
+            (optionalAttrs (cfg.plugins != []) {
+              plugin = cfg.plugins;
+            })
+            cfg.settings
           ];
+
+          skills = mapAttrs (_name: pkg: pkg) cfg.skills;
         };
       }
 
-      # ── Secrets variant (sops + wrapped binaries) ──
+      # ── Secrets variant (sops + wrapped opencode binary) ──
       (mkIf (options ? sops && allSecrets != []) {
         sops.secrets = genAttrs allSecrets (_: {});
 
-        home.packages = with pkgs; [
-          (symlinkJoin {
-            name = "${cfg.package.name}-wrapped";
-            paths = [cfg.package] ++ optional cfg.enableDesktop pkgs.opencode-desktop;
-            buildInputs = [makeWrapper];
-            postBuild = ''
-              for bin in $out/bin/*; do
-                if [ -f "$bin" ] && [ -x "$bin" ]; then
-                  wrapProgram "$bin" \
-                    ${concatStringsSep " \\\n                  " (
-                map (
-                  secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
-                    config.sops.secrets.${secret}.path
-                  })\"'"
-                )
-                allSecrets
-              )}
+        programs.opencode.package = let
+          pkg = cfg.package;
+        in
+          with pkgs;
+            symlinkJoin {
+              name = "${pkg.name}-wrapped";
+              paths = [pkg] ++ optional cfg.enableDesktop pkgs.opencode-desktop;
+              buildInputs = [makeWrapper];
+              postBuild = ''
+                for bin in $out/bin/*; do
+                  if [ -f "$bin" ] && [ -x "$bin" ]; then
+                    wrapProgram "$bin" \
+                      ${concatStringsSep " \\\n                  " (
+                  map (
+                    secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
+                      config.sops.secrets.${secret}.path
+                    })\"'"
+                  )
+                  allSecrets
+                )}
                   fi
                 done
-            '';
-          })
-        ];
+              '';
+            };
       })
     ]);
   }
