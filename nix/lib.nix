@@ -88,8 +88,8 @@ with prev; {
       # come from mkAgent and sit alongside editor options at the top level.
       # Shared keys (enable, package, secrets, userSettings) are editor-focused.
       mkVscodeEditor = {
-        name ? "vscode",
-        package ? pkgs.vscode,
+        name,
+        package,
         extraOptions ? {},
       }: let
         editorOpts = _final.homelab.agentics.mkEditor {
