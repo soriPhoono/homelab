@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }: let
   cfg = config.userapps.development.agents.hermes;
@@ -206,6 +207,45 @@ in
                 status_offline = "🔴 Offline";
               };
             })
+
+            # Auto-generate a Hermes CLI skin from Stylix base16 colors
+            (mkIf (options ? stylix && config.stylix.enable) {
+              home.file."${config.programs.hermes-agent.stateDir}/.hermes/skins/stylix.yaml" = let
+                c = config.lib.stylix.colors;
+              in {
+                text = ''
+                  name: stylix
+                  description: Auto-generated skin from Stylix base16 scheme
+
+                  colors:
+                    banner_border: "#${c.base0D}"
+                    banner_title: "#${c.base0D}"
+                    banner_accent: "#${c.base0A}"
+                    banner_dim: "#${c.base03}"
+                    banner_text: "#${c.base05}"
+                    ui_accent: "#${c.base0D}"
+                    ui_label: "#${c.base0C}"
+                    ui_ok: "#${c.base0B}"
+                    ui_error: "#${c.base08}"
+                    ui_warn: "#${c.base09}"
+                    prompt: "#${c.base05}"
+                    input_rule: "#${c.base03}"
+                    response_border: "#${c.base0D}"
+                    session_label: "#${c.base0A}"
+                    session_border: "#${c.base03}"
+                    status_bar_bg: "#${c.base01}"
+                    voice_status_bg: "#${c.base01}"
+                    selection_bg: "#${c.base02}"
+                    completion_menu_bg: "#${c.base00}"
+                    completion_menu_current_bg: "#${c.base02}"
+                    completion_menu_meta_bg: "#${c.base00}"
+                    completion_menu_meta_current_bg: "#${c.base02}"
+                '';
+              };
+
+              programs.hermes-agent.settings.display.skin = mkDefault "stylix";
+            })
+
             cfg.userSettings
           ];
           environmentFiles = [
