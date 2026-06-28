@@ -42,7 +42,10 @@ _: {
           enableDesktop = true;
         };
       };
-      editors.zed.enable = true;
+      editors = {
+        zed.enable = true;
+        vscode.enable = true;
+      };
       # appliances.bambu-studio.enable = true;
     };
     data-fortress = {
