@@ -100,7 +100,7 @@ with prev; {
                 submodule {
                   options = {
                     extensions = mkOption {
-                      type = listOf package;
+                      type = types.listOf types.package;
                       default = [];
                       description = "Extensions added to every profile.";
                     };
@@ -135,7 +135,7 @@ with prev; {
                 attrsOf (submodule {
                   options = {
                     extensions = mkOption {
-                      type = listOf package;
+                      type = types.listOf types.package;
                       default = [];
                       description = "Extensions for this profile.";
                     };
