@@ -51,6 +51,10 @@ with lib; {
         "editor.tabSize" = 2;
         "editor.formatOnSave" = true;
       };
+
+      # Disable extension updates
+      "extensions.autoCheckUpdates" = false;
+      "extensions.autoUpdate" = false;
     };
   };
 }

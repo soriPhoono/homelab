@@ -48,15 +48,25 @@
   vscodeProfiles = let
     filtered = lib.filterAttrs (name: _: builtins.elem name cfg.activeProfiles) cfg.extensionProfiles;
   in
-    lib.mapAttrs (_: profile: {
-      extensions = cfg.common.extensions ++ profile.extensions;
-      userSettings = cfg.userSettings // profile.userSettings;
-      userTasks = cfg.common.userTasks // profile.userTasks;
-      keybindings = cfg.common.keybindings ++ profile.keybindings;
-      languageSnippets = cfg.common.languageSnippets // profile.languageSnippets;
-      globalSnippets = cfg.common.globalSnippets // profile.globalSnippets;
-    })
-    filtered;
+    (lib.mapAttrs (_: profile: {
+        extensions = cfg.common.extensions ++ profile.extensions;
+        userSettings = cfg.userSettings // profile.userSettings;
+        userTasks = cfg.common.userTasks // profile.userTasks;
+        keybindings = cfg.common.keybindings ++ profile.keybindings;
+        languageSnippets = cfg.common.languageSnippets // profile.languageSnippets;
+        globalSnippets = cfg.common.globalSnippets // profile.globalSnippets;
+      })
+      filtered)
+    // {
+      default = {
+        extensions = cfg.common.extensions;
+        inherit (cfg) userSettings;
+        userTasks = cfg.common.userTasks;
+        keybindings = cfg.common.keybindings;
+        languageSnippets = cfg.common.languageSnippets;
+        globalSnippets = cfg.common.globalSnippets;
+      };
+    };
 in
   with lib; {
     options.userapps.development.editors.code-oss = homelab.agentics.mkVscodeEditor {

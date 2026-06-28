@@ -28,10 +28,10 @@ in
         programs.gh.enable = true;
       }
       (mkIf (options ? sops) {
-        sops.secrets."api/GITHUB_API_KEY" = {};
+        sops.secrets."api/GITHUB_TOKEN" = {};
 
         home.activation.ghAuth = hm.dag.entryAfter ["writeBoundary"] ''
-          token_path="${config.sops.secrets."api/GITHUB_API_KEY".path}"
+          token_path="${config.sops.secrets."api/GITHUB_TOKEN".path}"
           if [ ! -r "$token_path" ]; then
             exit 0
           fi
