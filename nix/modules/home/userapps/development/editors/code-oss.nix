@@ -31,8 +31,8 @@ in
       # Extra packages (LSP servers, formatters, linters)
       home.packages = cfg.extraPackages;
 
-      # Delegate to upstream programs.vscode module (works with vscodium)
-      programs.vscode = {
+      # Delegate to upstream programs.vscodium module
+      programs.vscodium = {
         enable = true;
         inherit (cfg) package;
         profiles = vscodeProfiles;
