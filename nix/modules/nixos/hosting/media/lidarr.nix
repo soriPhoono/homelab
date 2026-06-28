@@ -33,8 +33,8 @@ in
 
       domain = mkOption {
         type = types.str;
-        default = "lidarr.${config.hosting.proxy.dns.localSubdomain}.${config.hosting.proxy.dns.baseDomain}";
-        defaultText = literalExpression ''"lidarr.&{localSubdomain}.&{baseDomain}"'';
+        default = "music.${config.hosting.proxy.dns.localSubdomain}.${config.hosting.proxy.dns.baseDomain}";
+        defaultText = literalExpression ''"music.&{localSubdomain}.&{baseDomain}"'';
         description = ''
           The external domain for the Lidarr web interface (used for Traefik routing).
         '';

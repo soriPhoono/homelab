@@ -39,8 +39,8 @@ in
 
       domain = mkOption {
         type = types.str;
-        default = "music.${config.hosting.proxy.dns.localSubdomain}.${config.hosting.proxy.dns.baseDomain}";
-        defaultText = literalExpression ''"music.&{localSubdomain}.&{baseDomain}"'';
+        default = "jukebox.${config.hosting.proxy.dns.localSubdomain}.${config.hosting.proxy.dns.baseDomain}";
+        defaultText = literalExpression ''"jukebox.&{localSubdomain}.&{baseDomain}"'';
         description = ''
           The external domain for the Navidrome web interface (used for Traefik routing
           and ND_BASEURL).
