@@ -9,12 +9,10 @@
     };
   };
 in {
-  userapps.development.editors.vscode = {
+  userapps.development.editors.code-oss = {
     # Common extensions added to every profile
     common.extensions = with pkgs.vscode-extensions; [
       catppuccin.catppuccin-vsc
-      github.copilot
-      github.copilot-chat
 
       # ACP Client — AI agent protocol integration
       acpClient
@@ -24,30 +22,26 @@ in {
     extensionProfiles = {
       # Default profile — general-purpose extensions
       default.extensions = with pkgs.vscode-extensions; [
-        bbenoist.nix
-        jnoortheen.nix-ide
         mkhl.direnv
-        golang.go
-        rust-lang.rust-analyzer
-        tamasfe.even-better-toml
-        ms-python.python
-        ms-python.vscode-pylance
-        esbenp.prettier-vscode
+        jnoortheen.nix-ide
+
         foxundermoon.shell-format
         timonwong.shellcheck
-        redhat.vscode-yaml
-        yzhang.markdown-all-in-one
-        streetsidesoftware.code-spell-checker
-        eamodio.gitlens
-        mhutchie.git-graph
-        vscodevim.vim
-      ];
 
-      # Nix-specific profile — focused on Nix development
-      nix.extensions = with pkgs.vscode-extensions; [
-        bbenoist.nix
-        jnoortheen.nix-ide
-        mkhl.direnv
+        golang.go
+
+        tamasfe.even-better-toml
+        rust-lang.rust-analyzer
+
+        ms-python.python
+        ms-python.vscode-pylance
+
+        esbenp.prettier-vscode
+
+        streetsidesoftware.code-spell-checker
+        yzhang.markdown-all-in-one
+
+        redhat.vscode-yaml
       ];
     };
   };

@@ -1,6 +1,6 @@
 {lib, ...}:
 with lib; {
-  userapps.development.editors.vscode = {
+  userapps.development.editors.code-oss = {
     userSettings = {
       # Editor appearance — font and theme managed by Stylix
 
@@ -51,15 +51,6 @@ with lib; {
         "editor.tabSize" = 2;
         "editor.formatOnSave" = true;
       };
-
-      # Copilot
-      "github.copilot.enable" = {
-        "*" = true;
-        "plaintext" = false;
-        "markdown" = true;
-      };
-      "github.copilot.inlineSuggest.enable" = true;
-      "github.copilot.chat.copilotDebug" = true;
     };
   };
 }

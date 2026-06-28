@@ -44,7 +44,7 @@ _: {
       };
       editors = {
         zed.enable = true;
-        vscode.enable = true;
+        code-oss.enable = true;
       };
       # appliances.bambu-studio.enable = true;
     };

@@ -1,6 +1,5 @@
 {
   "recommendations": [
-    "jnoortheen.nix-ide",
-    "kamadorueda.alejandra"
+    "jnoortheen.nix-ide"
   ]
 }
