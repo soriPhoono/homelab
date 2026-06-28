@@ -7,5 +7,6 @@
     ./zed
     ./zen
     ./hypr
+    ./vscode
   ];
 }
