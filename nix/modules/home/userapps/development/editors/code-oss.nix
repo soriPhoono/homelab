@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }: let
   cfg = config.userapps.development.editors.code-oss;
@@ -74,31 +75,37 @@ in
       package = pkgs.vscodium;
     };
 
-    config = mkIf cfg.enable {
-      # Default editor — programs.vscode has no defaultEditor option
-      home.sessionVariables = mkIf cfg.defaultEditor {
-        EDITOR = "${lib.getExe cfg.package}";
-        VISUAL = "${lib.getExe cfg.package}";
-      };
+    config = mkIf cfg.enable (mkMerge [
+      {
+        # Default editor — programs.vscode has no defaultEditor option
+        home.sessionVariables = mkIf cfg.defaultEditor {
+          EDITOR = "${lib.getExe cfg.package}";
+          VISUAL = "${lib.getExe cfg.package}";
+        };
 
-      # MIME type associations
-      xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (
-        let
-          editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
-        in
-          mkOverride cfg.priority (
-            builtins.listToAttrs (map (mime: lib.nameValuePair mime editor) codeMimeTypes)
-          )
-      );
+        # MIME type associations
+        xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (
+          let
+            editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
+          in
+            mkOverride cfg.priority (
+              builtins.listToAttrs (map (mime: lib.nameValuePair mime editor) codeMimeTypes)
+            )
+        );
 
-      # Extra packages (LSP servers, formatters, linters)
-      home.packages = cfg.extraPackages;
+        # Extra packages (LSP servers, formatters, linters)
+        home.packages = cfg.extraPackages;
 
-      # Delegate to upstream programs.vscodium module
-      programs.vscodium = {
-        enable = true;
-        inherit (cfg) package;
-        profiles = vscodeProfiles;
-      };
-    };
+        # Delegate to upstream programs.vscodium module
+        programs.vscodium = {
+          enable = true;
+          inherit (cfg) package;
+          profiles = vscodeProfiles;
+        };
+      }
+
+      (mkIf (options ? stylix) {
+        stylix.targets.vscodium.profileNames = builtins.attrNames vscodeProfiles;
+      })
+    ]);
   }
