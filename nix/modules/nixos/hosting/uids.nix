@@ -8,17 +8,6 @@
 # UID range: 901-949 for media services
 #             980 for the shared media group
 {
-  ai = {
-    n8n = {
-      uid = 930;
-      gid = 930;
-    };
-    mongodb = {
-      uid = 931;
-      gid = 931;
-    };
-  };
-
   media = {
     # Shared media group — members are the service users
     group = {gid = 980;};
@@ -46,6 +35,16 @@
     jellyfin = {
       uid = 906;
       gid = 906;
+    };
+
+    navidrome = {
+      uid = 907;
+      gid = 907;
+    };
+
+    lidarr = {
+      uid = 908;
+      gid = 908;
     };
   };
 }

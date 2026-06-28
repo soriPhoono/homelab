@@ -18,6 +18,10 @@ in
       ./seerr.nix
 
       ./jellyfin.nix
+
+      ./navidrome.nix
+
+      ./lidarr.nix
     ];
 
     options.hosting.media = {
@@ -36,6 +40,12 @@ in
           jellyfin = {
             enable = true;
           };
+          navidrome = {
+            enable = true;
+          };
+          lidarr = {
+            enable = true;
+          };
         };
       };
 
@@ -51,6 +61,7 @@ in
         "d /mnt/local/media/movies 0775 ${toString config.hosting.media.radarr.userUid} ${toString config.users.groups.media.gid} -"
         "d /mnt/local/media/shows 0775 ${toString config.hosting.media.sonarr.userUid} ${toString config.users.groups.media.gid} -"
         "d /mnt/local/media/downloads 0775 ${toString config.hosting.media.qbittorrent.userUid} ${toString config.users.groups.media.gid} -"
+        "d /mnt/local/media/music 0775 ${toString config.hosting.media.lidarr.userUid} ${toString config.users.groups.media.gid} -"
       ];
     };
   }

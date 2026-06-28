@@ -12,7 +12,7 @@ with lib; {
           #   url = "https://api.githubcopilot.com/mcp";
           #   headers = {
           #     Authorization = {
-          #       secret = "api/GITHUB_API_KEY";
+          #       secret = "api/GITHUB_TOKEN";
           #       prefix = "Bearer ";
           #     };
           #   };
