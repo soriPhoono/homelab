@@ -46,5 +46,15 @@
       uid = 908;
       gid = 908;
     };
+
+    bookshelf = {
+      uid = 909;
+      gid = 909;
+    };
+
+    booklore = {
+      uid = 910;
+      gid = 910;
+    };
   };
 }

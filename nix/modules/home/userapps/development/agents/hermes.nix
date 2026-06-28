@@ -6,6 +6,17 @@
   ...
 }: let
   cfg = config.userapps.development.agents.hermes;
+
+  # Chromium without desktop entries — just the binary on PATH.
+  # Hermes needs chromium for browser automation (agent-browser/Playwright),
+  # but the full chromium package installs its .desktop file which registers
+  # MIME types (x-scheme-handler/http, text/html, etc.) and can override the
+  # user's chosen default browser (Zen/Firefox). We strip share/ so no
+  # desktop entries or MIME associations leak into the user's session.
+  chromiumNoDesktop = pkgs.runCommand "chromium-no-desktop" {} ''
+    mkdir -p $out/bin
+    ln -s ${pkgs.chromium}/bin/* $out/bin/
+  '';
 in
   with lib; {
     options.userapps.development.agents.hermes = homelab.agentics.mkAgent {
@@ -147,9 +158,25 @@ in
           startupNotify = true;
         };
 
+        # Chromium's desktop entry was intentionally omitted (chromiumNoDesktop
+        # above has no share/ directory), but if any chromium desktop entry is
+        # found via other paths (e.g. system packages), explicitly remove its
+        # MIME associations so it can never compete for default browser.
+        xdg.mimeApps.associations.removed = {
+          "x-scheme-handler/http" = ["chromium-browser.desktop"];
+          "x-scheme-handler/https" = ["chromium-browser.desktop"];
+          "x-scheme-handler/chromium" = ["chromium-browser.desktop"];
+          "text/html" = ["chromium-browser.desktop"];
+          "application/xhtml+xml" = ["chromium-browser.desktop"];
+        };
+
         programs.hermes-agent = {
           enable = cfg.enableCli;
           package = pkgs.hermes-full;
+          extraPackages = [
+            pkgs.agent-browser
+            chromiumNoDesktop
+          ];
           settings = mkMerge [
             {
               worktree = true;

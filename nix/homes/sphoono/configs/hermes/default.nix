@@ -3,7 +3,6 @@ with lib; {
   imports = [
     ./skills.nix
     ./mcp.nix
-    ./tools.nix
   ];
 
   config = mkMerge [
@@ -13,8 +12,6 @@ with lib; {
         userDoc = ./USER.md;
 
         providers.opencode.enable = true;
-
-        gateway.telegram.enable = true;
       };
     }
   ];
