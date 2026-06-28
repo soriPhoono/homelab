@@ -11,7 +11,12 @@
     filtered = lib.filterAttrs (name: _: builtins.elem name cfg.activeProfiles) cfg.extensionProfiles;
   in
     lib.mapAttrs (_: profile: {
-      inherit (profile) extensions;
+      extensions = cfg.common.extensions ++ profile.extensions;
+      userSettings = cfg.userSettings // profile.userSettings;
+      userTasks = cfg.common.userTasks // profile.userTasks;
+      keybindings = cfg.common.keybindings ++ profile.keybindings;
+      languageSnippets = cfg.common.languageSnippets // profile.languageSnippets;
+      globalSnippets = cfg.common.globalSnippets // profile.globalSnippets;
     })
     filtered;
 in
