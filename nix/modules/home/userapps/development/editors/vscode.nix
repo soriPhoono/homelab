@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }: let
   cfg = config.userapps.development.editors.vscode;
@@ -85,54 +86,59 @@ in
       package = pkgs.vscode;
     };
 
-    config = mkIf cfg.enable {
-      # Default editor — programs.vscode has no defaultEditor option
-      home.sessionVariables = mkIf cfg.defaultEditor {
-        EDITOR = "${lib.getExe cfg.package}";
-        VISUAL = "${lib.getExe cfg.package}";
-      };
+    config = mkIf cfg.enable (mkMerge [
+      {
+        # Default editor — programs.vscode has no defaultEditor option
+        home.sessionVariables = mkIf cfg.defaultEditor {
+          EDITOR = "${lib.getExe cfg.package}";
+          VISUAL = "${lib.getExe cfg.package}";
+        };
 
-      # MIME type associations
-      xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (
-        let
-          editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
-        in
-          mkOverride cfg.priority (
-            builtins.listToAttrs (map (mime: lib.nameValuePair mime editor) codeMimeTypes)
-          )
-      );
-
-      # Extra packages (LSP servers, formatters, linters)
-      home.packages = cfg.extraPackages;
-
-      # Delegate editor config to upstream programs.vscode module
-      programs.vscode = {
-        enable = true;
-        inherit (cfg) package;
-        profiles = vscodeProfiles;
-      };
-
-      # Wire agent context documents into Copilot's instructions directory.
-      # These are consumed by the agent built into VS Code (e.g. GitHub Copilot).
-      home.file =
-        # Agent context documents
-        lib.mapAttrs' (
-          name: value:
-            lib.nameValuePair ".copilot/instructions/${name}" (
-              if builtins.isPath value
-              then {source = value;}
-              else {text = value;}
+        # MIME type associations
+        xdg.mimeApps.defaultApplications = lib.mkIf config.userapps.defaultApplications.enable (
+          let
+            editor = ["${baseNameOf (lib.getExe cfg.package)}.desktop"];
+          in
+            mkOverride cfg.priority (
+              builtins.listToAttrs (map (mime: lib.nameValuePair mime editor) codeMimeTypes)
             )
-        )
-        cfg.agent.documents
-        # Agent skills — each is a package symlinked into Copilot's skills dir
-        // lib.mapAttrs' (
-          name: pkg:
-            lib.nameValuePair ".copilot/skills/${name}" {
-              source = pkg;
-              recursive = true;
-            }
-        )
-        cfg.agent.skills;
-    };
+        );
+
+        # Extra packages (LSP servers, formatters, linters)
+        home.packages = cfg.extraPackages;
+
+        # Delegate editor config to upstream programs.vscode module
+        programs.vscode = {
+          enable = true;
+          inherit (cfg) package;
+          profiles = vscodeProfiles;
+        };
+
+        # Wire agent context documents into Copilot's instructions directory.
+        # These are consumed by the agent built into VS Code (e.g. GitHub Copilot).
+        home.file =
+          # Agent context documents
+          lib.mapAttrs' (
+            name: value:
+              lib.nameValuePair ".copilot/instructions/${name}" (
+                if builtins.isPath value
+                then {source = value;}
+                else {text = value;}
+              )
+          )
+          cfg.agent.documents
+          # Agent skills — each is a package symlinked into Copilot's skills dir
+          // lib.mapAttrs' (
+            name: pkg:
+              lib.nameValuePair ".copilot/skills/${name}" {
+                source = pkg;
+                recursive = true;
+              }
+          )
+          cfg.agent.skills;
+      }
+      (mkIf (options ? stylix) {
+        stylix.targets.vscode.profileNames = builtins.attrNames vscodeProfiles;
+      })
+    ]);
   }
