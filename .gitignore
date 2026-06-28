@@ -5,3 +5,4 @@ result
 
 .hermes/*
 !.hermes/skills/
+.worktrees/
