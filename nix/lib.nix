@@ -90,7 +90,7 @@ with prev; {
         package ? pkgs.vscode,
         extraOptions ? {},
       }:
-        homelab.agentics.mkEditor {
+        _final.homelab.agentics.mkEditor {
           inherit name package;
           extraOptions =
             {
