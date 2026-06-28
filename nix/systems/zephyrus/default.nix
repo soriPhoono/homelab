@@ -79,8 +79,8 @@ with lib; {
   '';
 
   # Required for MediaTek MT7921 Bluetooth (USB 13d3:3563) — HCI reset + USB core autosuspend break WMT function control
-  # boot.extraModprobeConfig = "options btusb enable_autosuspend=0 reset=0";
-  # boot.kernelParams = ["usbcore.quirks=13d3:3563:k"];
+  boot.extraModprobeConfig = "options btusb enable_autosuspend=0 reset=0";
+  boot.kernelParams = ["usbcore.quirks=13d3:3563:k"];
 
   desktop = {
     environments = {

@@ -1,7 +1,6 @@
----
-name: nix-evaluator
-description: This skill is used to evaluate the current state of this repository's flake, and any actionable errors contained within. This should be run until each step reports 0 errors before concluding any task to ensure the repository functions correctly and matches convention. It should always be used before reporting to the user that any nix code modification has been completed, as a "final checker" so to speak
----
+______________________________________________________________________
+
+## name: nix-evaluator description: This skill is used to evaluate the current state of this repository's flake, and any actionable errors contained within. This should be run until each step reports 0 errors before concluding any task to ensure the repository functions correctly and matches convention. It should always be used before reporting to the user that any nix code modification has been completed, as a "final checker" so to speak version: 1.0.0 author: Sori Phoono license: MIT platforms: [linux] metadata: hermes: tags: [nix, nixos, home-manager] related_skills: [plan, github-pr-workflow]
 
 # Nix Evaluator
 
