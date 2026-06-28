@@ -82,69 +82,110 @@ with prev; {
         }
         // extraOptions;
 
-      # mkVscodeEditor: builds on mkEditor with VS Code-specific options.
-      # Returns the same option shape as mkEditor with extension profiles
-      # and profile selection layered in via extraOptions.
+      # mkVscodeEditor: merges mkEditor + mkAgent into one option namespace.
+      # Editor options (common profiles, extensionProfiles, activeProfiles)
+      # come from mkEditor. Agent options (documents, skills, mcpServers)
+      # come from mkAgent and sit alongside editor options at the top level.
+      # Shared keys (enable, package, secrets, userSettings) are editor-focused.
       mkVscodeEditor = {
-        name ? "vscode",
-        package ? pkgs.vscode,
+        name,
+        package,
         extraOptions ? {},
-      }:
-        homelab.agentics.mkEditor {
+      }: let
+        editorOpts = _final.homelab.agentics.mkEditor {
           inherit name package;
-          extraOptions =
-            {
-              extensionProfiles = mkOption {
-                type = with types;
-                  attrsOf (submodule {
-                    options = {
-                      extensions = mkOption {
-                        type = listOf package;
-                        default = [];
-                        description = ''
-                          VS Code extensions for this profile. Packages from
-                          pkgs.vscode-extensions or pkgs.vscode-marketplace.
-                        '';
-                        example = literalExpression ''
-                          with pkgs.vscode-extensions; [
-                            bbenoist.nix
-                            golang.go
-                            catppuccin.catppuccin-vsc
-                          ]
-                        '';
-                      };
+          extraOptions = {
+            common = mkOption {
+              type = with types;
+                submodule {
+                  options = {
+                    extensions = mkOption {
+                      type = listOf package;
+                      default = [];
+                      description = "Extensions added to every profile.";
                     };
-                  });
-                default = {};
-                description = ''
-                  Named VS Code extension profiles. Each profile defines an
-                  isolated set of extensions (and future per-profile settings).
-                  Use activeProfiles to select which profiles are applied.
-                '';
-                example = literalExpression ''
-                  {
-                    default.extensions = with pkgs.vscode-extensions; [
-                      bbenoist.nix
-                      golang.go
-                    ];
-                    minimal.extensions = [];
-                  }
-                '';
-              };
+                    userTasks = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Tasks merged into every profile.";
+                    };
+                    keybindings = mkOption {
+                      type = listOf attrs;
+                      default = [];
+                      description = "Keybindings added to every profile.";
+                    };
+                    languageSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Language snippets added to every profile.";
+                    };
+                    globalSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Global snippets added to every profile.";
+                    };
+                  };
+                };
+              default = {};
+              description = "Common VS Code config merged into every active profile.";
+            };
 
-              activeProfiles = mkOption {
-                type = with types; listOf str;
-                default = ["default"];
-                description = ''
-                  Ordered list of extension profiles to activate. Profiles are
-                  merged in sequence — later profiles can extend or override
-                  earlier ones. Only profiles defined in extensionProfiles
-                  are included.
-                '';
-              };
-            }
-            // extraOptions;
+            extensionProfiles = mkOption {
+              type = with types;
+                attrsOf (submodule {
+                  options = {
+                    extensions = mkOption {
+                      type = listOf package;
+                      default = [];
+                      description = "Extensions for this profile.";
+                    };
+                    userSettings = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific settings on top of common.";
+                    };
+                    userTasks = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific tasks on top of common.";
+                    };
+                    keybindings = mkOption {
+                      type = listOf attrs;
+                      default = [];
+                      description = "Profile-specific keybindings.";
+                    };
+                    languageSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific language snippets.";
+                    };
+                    globalSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific global snippets.";
+                    };
+                  };
+                });
+              default = {};
+              description = "Named VS Code profiles.";
+            };
+
+            activeProfiles = mkOption {
+              type = with types; listOf str;
+              default = ["default"];
+              description = "Profiles to activate.";
+            };
+
+            agent = removeAttrs (_final.homelab.agentics.mkAgent {
+              name = "${name} agent";
+              package = null;
+            }) ["package" "secrets" "userSettings"];
+          };
         };
+      in
+        # Merge editor base + agent extras.
+        # For shared keys (enable, package, secrets, userSettings), editor wins.
+        editorOpts // extraOptions;
 
       mkAgent = {
         name,
