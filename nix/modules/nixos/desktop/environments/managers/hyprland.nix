@@ -85,5 +85,13 @@ in
           })
           config.core.users;
       }
+
+      # PAM integration for automatic keyring unlock at login
+      (mkIf config.services.displayManager.sddm.enable {
+        security.pam.services.sddm.enableGnomeKeyring = true;
+      })
+      (mkIf config.services.greetd.enable {
+        security.pam.services.greetd.enableGnomeKeyring = true;
+      })
     ]);
   }

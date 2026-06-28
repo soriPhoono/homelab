@@ -3,7 +3,7 @@
   "nix.serverPath": "nil",
   "nix.formatterPath": "alejandra",
   "[nix]": {
-    "editor.defaultFormatter": "kamadorueda.alejandra",
+    "editor.defaultFormatter": "jnoortheen.nix-ide",
     "editor.formatOnSave": true
   }
 }
