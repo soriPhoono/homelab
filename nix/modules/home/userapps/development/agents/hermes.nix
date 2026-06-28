@@ -53,6 +53,10 @@ in
           telegram = {
             enable = mkEnableOption "Enable telegram messaging provider for hermes agent";
           };
+
+          matrix = {
+            enable = mkEnableOption "Enable matrix messaging provider for hermes agent";
+          };
         };
       };
     };
@@ -68,6 +72,11 @@ in
               "hermes/TELEGRAM_BOT_TOKEN" = mkIf cfg.gateway.telegram.enable {};
               "hermes/TELEGRAM_ALLOWED_USERS" = mkIf cfg.gateway.telegram.enable {};
               "hermes/TELEGRAM_HOME_CHANNEL" = mkIf cfg.gateway.telegram.enable {};
+              "hermes/MATRIX_HOMESERVER" = mkIf cfg.gateway.matrix.enable {};
+              "hermes/MATRIX_ACCESS_TOKEN" = mkIf cfg.gateway.matrix.enable {};
+              "hermes/MATRIX_ALLOWED_USERS" = mkIf cfg.gateway.matrix.enable {};
+              "hermes/MATRIX_ALLOWED_ROOMS" = mkIf cfg.gateway.matrix.enable {};
+              "hermes/MATRIX_HOME_ROOM" = mkIf cfg.gateway.matrix.enable {};
             }
             // genAttrs (flatten (mapAttrsToList (_name: value: (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.env)) ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.headers))) cfg.mcpServers)) (_name: {});
           templates."hermes/.env".content = builtins.concatStringsSep "\n" [
@@ -92,6 +101,16 @@ in
                 TELEGRAM_BOT_TOKEN=${config.sops.placeholder."hermes/TELEGRAM_BOT_TOKEN"}
                 TELEGRAM_ALLOWED_USERS=${config.sops.placeholder."hermes/TELEGRAM_ALLOWED_USERS"}
                 TELEGRAM_HOME_CHANNEL=${config.sops.placeholder."hermes/TELEGRAM_HOME_CHANNEL"}
+              '')
+            (optionalString
+              cfg.gateway.matrix.enable
+              ''
+                MATRIX_HOMESERVER=${config.sops.placeholder."hermes/MATRIX_HOMESERVER"}
+                MATRIX_ACCESS_TOKEN=${config.sops.placeholder."hermes/MATRIX_ACCESS_TOKEN"}
+                MATRIX_ALLOWED_USERS=${config.sops.placeholder."hermes/MATRIX_ALLOWED_USERS"}
+                MATRIX_ALLOWED_ROOMS=${config.sops.placeholder."hermes/MATRIX_ALLOWED_ROOMS"}
+                MATRIX_HOME_ROOM=${config.sops.placeholder."hermes/MATRIX_HOME_ROOM"}
+                MATRIX_E2EE_MODE=required
               '')
             (concatStringsSep
               "\n"
@@ -194,12 +213,14 @@ in
                   ))
                 cfg.mcpServers;
             }
+
             (mkIf cfg.providers.opencode.enable {
               model = {
                 default = "deepseek-v4-flash";
                 provider = "opencode-go";
               };
             })
+
             (mkIf cfg.gateway.telegram.enable {
               gateway.platforms.telegram.extra = {
                 status_indicator = true;
@@ -208,51 +229,12 @@ in
               };
             })
 
-            # Auto-generate a Hermes CLI skin from Stylix base16 colors
-            (mkIf (options ? stylix && config.stylix.enable) {
-              home.file."${config.programs.hermes-agent.stateDir}/.hermes/skins/stylix.yaml" = let
-                c = config.lib.stylix.colors;
-              in {
-                text = ''
-                  name: stylix
-                  description: Auto-generated skin from Stylix base16 scheme
-
-                  colors:
-                    banner_border: "#${c.base0D}"
-                    banner_title: "#${c.base0D}"
-                    banner_accent: "#${c.base0A}"
-                    banner_dim: "#${c.base03}"
-                    banner_text: "#${c.base05}"
-                    ui_accent: "#${c.base0D}"
-                    ui_label: "#${c.base0C}"
-                    ui_ok: "#${c.base0B}"
-                    ui_error: "#${c.base08}"
-                    ui_warn: "#${c.base09}"
-                    prompt: "#${c.base05}"
-                    input_rule: "#${c.base03}"
-                    response_border: "#${c.base0D}"
-                    session_label: "#${c.base0A}"
-                    session_border: "#${c.base03}"
-                    status_bar_bg: "#${c.base01}"
-                    voice_status_bg: "#${c.base01}"
-                    selection_bg: "#${c.base02}"
-                    completion_menu_bg: "#${c.base00}"
-                    completion_menu_current_bg: "#${c.base02}"
-                    completion_menu_meta_bg: "#${c.base00}"
-                    completion_menu_meta_current_bg: "#${c.base02}"
-                '';
-              };
-
-              programs.hermes-agent.settings.display.skin = mkDefault "stylix";
-            })
-
             cfg.userSettings
           ];
           environmentFiles = [
             config.sops.templates."hermes/.env".path
           ];
           environment = {
-            API_SERVER_ENABLED = "true";
           };
           documents = {
             "SOUL.md" = cfg.soulDoc;
@@ -273,5 +255,42 @@ in
           ))
         ];
       }
+      # Auto-generate a Hermes CLI skin from Stylix base16 colors
+      (mkIf (options ? stylix && config.stylix.enable) {
+        home.file."${config.programs.hermes-agent.stateDir}/.hermes/skins/stylix.yaml" = let
+          c = config.lib.stylix.colors;
+        in {
+          text = ''
+            name: stylix
+            description: Auto-generated skin from Stylix base16 scheme
+
+            colors:
+              banner_border: "#${c.base0D}"
+              banner_title: "#${c.base0D}"
+              banner_accent: "#${c.base0A}"
+              banner_dim: "#${c.base03}"
+              banner_text: "#${c.base05}"
+              ui_accent: "#${c.base0D}"
+              ui_label: "#${c.base0C}"
+              ui_ok: "#${c.base0B}"
+              ui_error: "#${c.base08}"
+              ui_warn: "#${c.base09}"
+              prompt: "#${c.base05}"
+              input_rule: "#${c.base03}"
+              response_border: "#${c.base0D}"
+              session_label: "#${c.base0A}"
+              session_border: "#${c.base03}"
+              status_bar_bg: "#${c.base01}"
+              voice_status_bg: "#${c.base01}"
+              selection_bg: "#${c.base02}"
+              completion_menu_bg: "#${c.base00}"
+              completion_menu_current_bg: "#${c.base02}"
+              completion_menu_meta_bg: "#${c.base00}"
+              completion_menu_meta_current_bg: "#${c.base02}"
+          '';
+        };
+
+        programs.hermes-agent.settings.display.skin = mkDefault "stylix";
+      })
     ]);
   }
