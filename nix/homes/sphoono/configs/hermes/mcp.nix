@@ -84,6 +84,13 @@ with lib; {
             ];
           };
 
+          "office/pdf" = {
+            command = "${pkgs.uv}/bin/uvx";
+            args = [
+              "pdf-edit-mcp"
+            ];
+          };
+
           # ── DevOps ──────────────────────────────────────────────────────────
           "devops/docker" = {
             command = "${pkgs.nodejs}/bin/npx";
