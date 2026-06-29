@@ -596,6 +596,17 @@ in
                 ]) (filterAttrs (_: p: p.enable) cfg.profiles)
             );
           }
+
+          # home.activation: create required runtime directories for each profile
+          {
+            home.activation.hermesProfileDirs = lib.hm.dag.entryAfter ["writeBoundary"] (
+              lib.concatStringsSep "\n" (
+                mapAttrsToList (profileName: _profileCfg: ''
+                  mkdir -p ${profilesDir}/${profileName}/{cron,sessions,logs,memories}
+                '') (filterAttrs (_: p: p.enable) cfg.profiles)
+              )
+            );
+          }
         ]))
     ]);
   }
