@@ -56,6 +56,34 @@ with lib; {
             ];
           };
 
+          # ── Office ──────────────────────────────────────────────────────────
+          "office/pptx" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@neuraforge/office-mcp"
+              "--pptx"
+            ];
+          };
+
+          "office/docx" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@neuraforge/office-mcp"
+              "--docx"
+            ];
+          };
+
+          "office/xlsx" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@neuraforge/office-mcp"
+              "--xlsx"
+            ];
+          };
+
           # ── DevOps ──────────────────────────────────────────────────────────
           "devops/docker" = {
             command = "${pkgs.nodejs}/bin/npx";
