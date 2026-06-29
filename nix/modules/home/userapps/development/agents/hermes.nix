@@ -17,6 +17,146 @@
     mkdir -p $out/bin
     ln -s ${pkgs.chromium}/bin/* $out/bin/
   '';
+
+  # Profile submodule: reuses mkAgent options minus `package`
+  profileOptions = removeAttrs (lib.homelab.agentics.mkAgent {
+    name = "hermes agent profile";
+    package = null;
+  }) ["package"];
+
+  # Derivation that generates a config.yaml for a profile, merging:
+  #   1. Common MCP servers (personal/sequential-thinking, personal/obsidian)
+  #   2. Profile-specific MCP servers
+  #   3. Profile-specific settings
+  mkProfileConfig = profileCfg:
+    pkgs.writeText "config.yaml" (builtins.toJSON (
+      lib.recursiveUpdate
+      {
+        mcp_servers =
+          lib.mapAttrs
+          (_name: desc: let
+            processedEnv =
+              lib.mapAttrs
+              (name: value:
+                if builtins.isAttrs value
+                then "$${${lib.strings.toUpper name}}"
+                else value)
+              desc.env;
+            processedHeaders =
+              lib.mapAttrs
+              (name: value:
+                if builtins.isAttrs value
+                then "$${${lib.strings.toUpper name}}"
+                else value)
+              desc.headers;
+          in
+            removeAttrs
+            {
+              inherit (desc) command args url;
+              env = processedEnv;
+              headers = processedHeaders;
+            }
+            (
+              (
+                if desc.command == null
+                then ["command"]
+                else []
+              )
+              ++ (
+                if desc.args == []
+                then ["args"]
+                else []
+              )
+              ++ (
+                if processedEnv == {}
+                then ["env"]
+                else []
+              )
+              ++ (
+                if desc.url == null
+                then ["url"]
+                else []
+              )
+              ++ (
+                if processedHeaders == {}
+                then ["headers"]
+                else []
+              )
+            ))
+          cfg.mcpServers;
+      }
+      {
+        mcp_servers =
+          lib.mapAttrs
+          (_name: desc: let
+            processedEnv =
+              lib.mapAttrs
+              (name: value:
+                if builtins.isAttrs value
+                then "$${${lib.strings.toUpper name}}"
+                else value)
+              desc.env;
+            processedHeaders =
+              lib.mapAttrs
+              (name: value:
+                if builtins.isAttrs value
+                then "$${${lib.strings.toUpper name}}"
+                else value)
+              desc.headers;
+          in
+            removeAttrs
+            {
+              inherit (desc) command args url;
+              env = processedEnv;
+              headers = processedHeaders;
+            }
+            (
+              (
+                if desc.command == null
+                then ["command"]
+                else []
+              )
+              ++ (
+                if desc.args == []
+                then ["args"]
+                else []
+              )
+              ++ (
+                if processedEnv == {}
+                then ["env"]
+                else []
+              )
+              ++ (
+                if desc.url == null
+                then ["url"]
+                else []
+              )
+              ++ (
+                if processedHeaders == {}
+                then ["headers"]
+                else []
+              )
+            ))
+          profileCfg.mcpServers;
+      }
+      // profileCfg.userSettings
+    ));
+
+  # Derivation for profile documents (SOUL.md, USER.md)
+  mkProfileDocuments = profileCfg:
+    pkgs.runCommand "hermes-profile-documents" {} (
+      ''
+        mkdir -p $out
+      ''
+      + lib.concatStringsSep "\n" (
+        lib.mapAttrsToList
+        (name: value:
+          if builtins.isPath value || lib.isStorePath value
+          then "cp ${value} $out/${name}"
+          else "cat > $out/${name} <<'HERMES_DOC_EOF'\n${value}\nHERMES_DOC_EOF")
+        (lib.filterAttrs (_: v: v != null) profileCfg.documents)
+      )
+    );
 in
   with lib; {
     options.userapps.development.agents.hermes = homelab.agentics.mkAgent {
@@ -68,6 +208,20 @@ in
           matrix = {
             enable = mkEnableOption "Enable matrix messaging provider for hermes agent";
           };
+        };
+
+        profiles = mkOption {
+          type = types.attrsOf (types.submodule (_: {
+            options = profileOptions;
+          }));
+          default = {};
+          description = ''
+            Additional Hermes agent profiles for domain-specific subagents.
+            Each profile gets its own state directory under $HERMES_HOME/profiles/<name>/
+            with config.yaml, .env, SOUL.md, memory, sessions, and skills.
+            Common MCP servers (personal/sequential-thinking, personal/obsidian)
+            are merged into every profile's config.yaml automatically.
+          '';
         };
       };
     };
@@ -317,5 +471,76 @@ in
 
         programs.hermes-agent.settings.display.skin = mkDefault "stylix";
       })
+
+      # ── Profile generation ────────────────────────────────────────────
+      (mkIf (cfg.profiles != {}) (let
+        profilesDir = "${config.programs.hermes-agent.stateDir}/.hermes/profiles";
+      in
+        mkMerge [
+          # sops secrets: collect all MCP server secrets across profiles
+          {
+            sops.secrets = listToAttrs (flatten (
+              mapAttrsToList (_profileName: profileCfg: (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") profileCfg.mcpServers.env or {})))
+              (filterAttrs (_: p: p.enable) cfg.profiles)
+            )) (_: {});
+          }
+
+          # sops templates: one .env per profile, with all MCP secrets
+          {
+            sops.templates = listToAttrs (
+              mapAttrsToList (profileName: profileCfg:
+                nameValuePair "hermes/profiles/${profileName}.env" {
+                  content = builtins.concatStringsSep "\n" (
+                    flatten (
+                      mapAttrsToList (_serverName: desc:
+                        mapAttrsToList (envName: envValue:
+                          if builtins.isAttrs envValue && envValue ? "secret"
+                          then "${toUpper envName}=${config.sops.placeholder.${envValue.secret}}"
+                          else "")
+                        desc.env or {})
+                      profileCfg.mcpServers
+                    )
+                  );
+                })
+              (filterAttrs (_: p: p.enable) cfg.profiles)
+            );
+          }
+
+          # home.file: profile directories — config.yaml, .env, SOUL.md, skills
+          {
+            home.file = mkMerge (
+              mapAttrsToList (profileName: profileCfg:
+                mkMerge [
+                  # config.yaml
+                  {"${profilesDir}/${profileName}/config.yaml".source = mkProfileConfig profileCfg;}
+                  # .env from sops template
+                  (mkIf (profileCfg.mcpServers != {}) {
+                    "${profilesDir}/${profileName}/.env".source = config.sops.templates."hermes/profiles/${profileName}.env".path;
+                  })
+                  # SOUL.md / USER.md
+                  (mkIf (profileCfg.documents != {}) (
+                    mapAttrs' (docName: _docValue: {
+                      name = "${profilesDir}/${profileName}/${docName}";
+                      value = {
+                        source = "${mkProfileDocuments profileCfg}/${docName}";
+                      };
+                    })
+                    profileCfg.documents
+                  ))
+                  # Skills
+                  (mkIf (profileCfg.skills != {}) (
+                    mapAttrs' (skillName: skill: {
+                      name = "${profilesDir}/${profileName}/skills/${skillName}";
+                      value = {
+                        source = skill;
+                        recursive = true;
+                      };
+                    })
+                    profileCfg.skills
+                  ))
+                ]) (filterAttrs (_: p: p.enable) cfg.profiles)
+            );
+          }
+        ]))
     ]);
   }
