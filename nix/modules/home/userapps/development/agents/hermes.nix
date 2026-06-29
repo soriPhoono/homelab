@@ -19,10 +19,31 @@
   '';
 
   # Profile submodule: reuses mkAgent options minus `package`
-  profileOptions = removeAttrs (lib.homelab.agentics.mkAgent {
-    name = "hermes agent profile";
-    package = null;
-  }) ["package"];
+  # with soulDoc/userDoc extras (same as the main agent)
+  profileOptions =
+    removeAttrs (lib.homelab.agentics.mkAgent {
+      name = "hermes agent profile";
+      package = null;
+    }) ["package"]
+    // {
+      soulDoc = lib.mkOption {
+        type = lib.types.nullOr (lib.types.either lib.types.str lib.types.path);
+        default = null;
+        description = ''
+          Content or path to SOUL.md for this profile.
+          Defines the agent's domain-specific persona and behavior.
+        '';
+      };
+
+      userDoc = lib.mkOption {
+        type = lib.types.nullOr (lib.types.either lib.types.str lib.types.path);
+        default = null;
+        description = ''
+          Content or path to USER.md for this profile.
+          Provides profile-specific user context and preferences.
+        '';
+      };
+    };
 
   # Derivation that generates a config.yaml for a profile, merging:
   #   1. Common MCP servers (personal/sequential-thinking, personal/obsidian)
@@ -85,64 +106,76 @@
             ))
           cfg.mcpServers;
       }
-      {
-        mcp_servers =
-          lib.mapAttrs
-          (_name: desc: let
-            processedEnv =
-              lib.mapAttrs
-              (name: value:
-                if builtins.isAttrs value
-                then "$${${lib.strings.toUpper name}}"
-                else value)
-              desc.env;
-            processedHeaders =
-              lib.mapAttrs
-              (name: value:
-                if builtins.isAttrs value
-                then "$${${lib.strings.toUpper name}}"
-                else value)
-              desc.headers;
-          in
-            removeAttrs
-            {
-              inherit (desc) command args url;
-              env = processedEnv;
-              headers = processedHeaders;
-            }
-            (
+      (
+        {
+          mcp_servers =
+            lib.mapAttrs
+            (_name: desc: let
+              processedEnv =
+                lib.mapAttrs
+                (name: value:
+                  if builtins.isAttrs value
+                  then "$${${lib.strings.toUpper name}}"
+                  else value)
+                desc.env;
+              processedHeaders =
+                lib.mapAttrs
+                (name: value:
+                  if builtins.isAttrs value
+                  then "$${${lib.strings.toUpper name}}"
+                  else value)
+                desc.headers;
+            in
+              removeAttrs
+              {
+                inherit (desc) command args url;
+                env = processedEnv;
+                headers = processedHeaders;
+              }
               (
-                if desc.command == null
-                then ["command"]
-                else []
-              )
-              ++ (
-                if desc.args == []
-                then ["args"]
-                else []
-              )
-              ++ (
-                if processedEnv == {}
-                then ["env"]
-                else []
-              )
-              ++ (
-                if desc.url == null
-                then ["url"]
-                else []
-              )
-              ++ (
-                if processedHeaders == {}
-                then ["headers"]
-                else []
-              )
-            ))
-          profileCfg.mcpServers;
-      }
+                (
+                  if desc.command == null
+                  then ["command"]
+                  else []
+                )
+                ++ (
+                  if desc.args == []
+                  then ["args"]
+                  else []
+                )
+                ++ (
+                  if processedEnv == {}
+                  then ["env"]
+                  else []
+                )
+                ++ (
+                  if desc.url == null
+                  then ["url"]
+                  else []
+                )
+                ++ (
+                  if processedHeaders == {}
+                  then ["headers"]
+                  else []
+                )
+              ))
+            profileCfg.mcpServers;
+        }
+        # Provider settings inherited from the main agent config
+        // lib.optionalAttrs cfg.providers.opencode.enable {
+          model = {
+            default = "deepseek-v4-flash";
+            provider = "opencode-go";
+          };
+        }
+        // lib.optionalAttrs (cfg.providers.search.variant == "exa") {
+          web.backend = "exa";
+        }
+      )
       // profileCfg.userSettings
     ));
 
-  # Derivation for profile documents (SOUL.md, USER.md)
+  # Derivation for profile documents (SOUL.md, USER.md + any extra documents)
   mkProfileDocuments = profileCfg:
     pkgs.runCommand "hermes-profile-documents" {} (
       ''
@@ -154,7 +187,11 @@
           if builtins.isPath value || lib.isStorePath value
           then "cp ${value} $out/${name}"
           else "cat > $out/${name} <<'HERMES_DOC_EOF'\n${value}\nHERMES_DOC_EOF")
-        (lib.filterAttrs (_: v: v != null) profileCfg.documents)
+        (lib.filterAttrs (_: v: v != null) (
+          profileCfg.documents
+          // (lib.optionalAttrs (profileCfg.soulDoc or null != null) {"SOUL.md" = profileCfg.soulDoc;})
+          // (lib.optionalAttrs (profileCfg.userDoc or null != null) {"USER.md" = profileCfg.userDoc;})
+        ))
       )
     );
 in
@@ -479,19 +516,33 @@ in
         mkMerge [
           # sops secrets: collect all MCP server secrets across profiles
           {
-            sops.secrets = listToAttrs (flatten (
-              mapAttrsToList (_profileName: profileCfg: (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") profileCfg.mcpServers.env or {})))
+            sops.secrets = genAttrs (flatten (
+              mapAttrsToList (_profileName: profileCfg:
+                mapAttrsToList (_serverName: server:
+                  (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") server.env))
+                  ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") server.headers)))
+                profileCfg.mcpServers)
               (filterAttrs (_: p: p.enable) cfg.profiles)
             )) (_: {});
           }
 
-          # sops templates: one .env per profile, with all MCP secrets
+          # sops templates: one .env per profile, with global + MCP secrets
           {
             sops.templates = listToAttrs (
               mapAttrsToList (profileName: profileCfg:
                 nameValuePair "hermes/profiles/${profileName}.env" {
                   content = builtins.concatStringsSep "\n" (
-                    flatten (
+                    [
+                      # Global provider keys inherited by all profiles
+                      (optionalString cfg.providers.opencode.enable ''
+                        OPENCODE_ZEN_API_KEY=${config.sops.placeholder."api/OPENCODE_API_KEY"}
+                        OPENCODE_GO_API_KEY=${config.sops.placeholder."api/OPENCODE_API_KEY"}
+                      '')
+                      (optionalString (cfg.providers.search.variant == "exa") ''
+                        EXA_API_KEY=${config.sops.placeholder."api/EXA_API_KEY"}
+                      '')
+                    ]
+                    ++ flatten (
                       mapAttrsToList (_serverName: desc:
                         mapAttrsToList (envName: envValue:
                           if builtins.isAttrs envValue && envValue ? "secret"
@@ -506,27 +557,29 @@ in
             );
           }
 
-          # home.file: profile directories — config.yaml, .env, SOUL.md, skills
+          # home.file: profile config.yaml, SOUL.md, skills (not .env)
           {
             home.file = mkMerge (
               mapAttrsToList (profileName: profileCfg:
                 mkMerge [
                   # config.yaml
                   {"${profilesDir}/${profileName}/config.yaml".source = mkProfileConfig profileCfg;}
-                  # .env from sops template
-                  (mkIf (profileCfg.mcpServers != {}) {
-                    "${profilesDir}/${profileName}/.env".source = config.sops.templates."hermes/profiles/${profileName}.env".path;
-                  })
-                  # SOUL.md / USER.md
-                  (mkIf (profileCfg.documents != {}) (
-                    mapAttrs' (docName: _docValue: {
-                      name = "${profilesDir}/${profileName}/${docName}";
-                      value = {
-                        source = "${mkProfileDocuments profileCfg}/${docName}";
-                      };
-                    })
-                    profileCfg.documents
-                  ))
+                  # SOUL.md / USER.md + any documents
+                  (let
+                    allDocs =
+                      (optionalAttrs (profileCfg.soulDoc or null != null) {"SOUL.md" = profileCfg.soulDoc;})
+                      // (optionalAttrs (profileCfg.userDoc or null != null) {"USER.md" = profileCfg.userDoc;})
+                      // profileCfg.documents;
+                  in
+                    mkIf (allDocs != {}) (
+                      mapAttrs' (docName: _docValue: {
+                        name = "${profilesDir}/${profileName}/${docName}";
+                        value = {
+                          source = "${mkProfileDocuments profileCfg}/${docName}";
+                        };
+                      })
+                      allDocs
+                    ))
                   # Skills
                   (mkIf (profileCfg.skills != {}) (
                     mapAttrs' (skillName: skill: {
@@ -539,6 +592,20 @@ in
                     profileCfg.skills
                   ))
                 ]) (filterAttrs (_: p: p.enable) cfg.profiles)
+            );
+          }
+
+          # home.activation: copy .env from sops templates to each profile dir
+          {
+            home.activation.hermesProfileEnv = lib.hm.dag.entryAfter ["writeBoundary"] (
+              lib.concatStringsSep "\n" (
+                mapAttrsToList (profileName: _profileCfg: ''
+                  if [ -f ${config.sops.templates."hermes/profiles/${profileName}.env".path} ]; then
+                    cp ${config.sops.templates."hermes/profiles/${profileName}.env".path} ${profilesDir}/${profileName}/.env
+                    chmod 0640 ${profilesDir}/${profileName}/.env
+                  fi
+                '') (filterAttrs (_: p: p.enable) cfg.profiles)
+              )
             );
           }
         ]))

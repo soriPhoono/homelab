@@ -3,6 +3,7 @@ with lib; {
   imports = [
     ./skills.nix
     ./mcp.nix
+    ./profiles.nix
   ];
 
   config = mkMerge [
