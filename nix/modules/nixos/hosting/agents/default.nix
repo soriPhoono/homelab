@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./open-webui.nix
+  ];
+}
