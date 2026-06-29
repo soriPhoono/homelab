@@ -526,7 +526,7 @@ in
             )) (_: {});
           }
 
-          # sops templates: one .env per profile, with global + MCP secrets
+          # sops templates: one .env per profile, deployed directly to profile dir
           {
             sops.templates = listToAttrs (
               mapAttrsToList (profileName: profileCfg:
@@ -552,6 +552,8 @@ in
                       profileCfg.mcpServers
                     )
                   );
+                  path = "${profilesDir}/${profileName}/.env";
+                  mode = "0640";
                 })
               (filterAttrs (_: p: p.enable) cfg.profiles)
             );
@@ -592,20 +594,6 @@ in
                     profileCfg.skills
                   ))
                 ]) (filterAttrs (_: p: p.enable) cfg.profiles)
-            );
-          }
-
-          # home.activation: copy .env from sops templates to each profile dir
-          {
-            home.activation.hermesProfileEnv = lib.hm.dag.entryAfter ["writeBoundary"] (
-              lib.concatStringsSep "\n" (
-                mapAttrsToList (profileName: _profileCfg: ''
-                  if [ -f ${config.sops.templates."hermes/profiles/${profileName}.env".path} ]; then
-                    cp ${config.sops.templates."hermes/profiles/${profileName}.env".path} ${profilesDir}/${profileName}/.env
-                    chmod 0640 ${profilesDir}/${profileName}/.env
-                  fi
-                '') (filterAttrs (_: p: p.enable) cfg.profiles)
-              )
             );
           }
         ]))
