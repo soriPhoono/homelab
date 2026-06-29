@@ -47,12 +47,18 @@ in
       services.xserver.videoDrivers = mkForce ["modesetting"];
 
       # --- Disable homelab hardware that doesn't apply to VMs ---
+      core.boot.enable = mkForce false;
       core.hardware.gpu.enable = mkForce false;
-      core.hardware.gpu.amd.integrated.enable = mkForce false;
-      core.hardware.gpu.amd.dedicated.enable = mkForce false;
-      core.hardware.gpu.intel.integrated.enable = mkForce false;
-      core.hardware.gpu.intel.dedicated.enable = mkForce false;
+      core.hardware.gpu.amd.enable = mkForce false;
+      core.hardware.gpu.intel.enable = mkForce false;
+      core.hardware.gpu.nvidia.enable = mkForce false;
+      core.hardware.hid.keyboards.enable = mkForce false;
+      core.hardware.hid.logitech.enable = mkForce false;
+      core.hardware.hid.tablet.enable = mkForce false;
+      core.hardware.hid.xbox_controllers.enable = mkForce false;
+      core.hardware.adb.enable = mkForce false;
       core.hardware.bluetooth.enable = mkForce false;
+      core.hardware.cpu.enable = mkForce false;
 
       # --- Sane VM disk size ---
       virtualisation.diskSize = 20 * 1024; # 20GB

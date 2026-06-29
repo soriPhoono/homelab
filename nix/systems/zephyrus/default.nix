@@ -93,6 +93,7 @@ with lib; {
     services = {
       asusd.enable = true;
       printing.enable = true;
+      pipewire.enable = true;
     };
     features.gaming = {
       enable = true;

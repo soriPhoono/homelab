@@ -22,14 +22,6 @@ in
     options.core = {
       enable = mkEnableOption "Enable core system configuration";
 
-      stateVersion = mkOption {
-        type = with types; nullOr str;
-        description = ''
-          The NixOS release version to use for system state management.
-        '';
-        default = null;
-        example = "23.05";
-      };
       timeZone = mkOption {
         type = with types; nullOr str;
         description = ''
@@ -40,6 +32,15 @@ in
         default = null;
         example = "America/Chicago";
       };
+
+      stateVersion = mkOption {
+        type = with types; nullOr str;
+        description = ''
+          The NixOS release version to use for system state management.
+        '';
+        default = null;
+        example = "23.05";
+      };
     };
 
     config = mkIf cfg.enable (mkMerge [
@@ -49,9 +50,9 @@ in
 
           pciutils
           usbutils
-        ];
 
-        hardware.enableAllFirmware = true;
+          netstat
+        ];
 
         console = {
           keyMap = "us";
