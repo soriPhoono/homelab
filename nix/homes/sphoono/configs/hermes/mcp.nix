@@ -18,13 +18,6 @@ with lib; {
           ];
         };
 
-        "personal/nixos" = {
-          command = "${pkgs.uv}/bin/uvx";
-          args = [
-            "mcp-nixos"
-          ];
-        };
-
         "personal/sequential-thinking" = {
           command = "${pkgs.nodejs}/bin/npx";
           args = [

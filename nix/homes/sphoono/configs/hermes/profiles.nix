@@ -52,6 +52,9 @@ with lib; {
             ];
           };
         };
+        skills = {
+          stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
+        };
       };
 
       # ── Coder ───────────────────────────────────────────────────────────
@@ -81,6 +84,12 @@ with lib; {
               };
             };
           };
+          "software-dev/nixos" = {
+            command = "${pkgs.uv}/bin/uvx";
+            args = [
+              "mcp-nixos"
+            ];
+          };
           "software-dev/database" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [
@@ -88,6 +97,11 @@ with lib; {
               "anydb-mcp"
             ];
           };
+        };
+        skills = {
+          create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
+
+          git-commit = pkgs.skills.github.awesome-copilot.git-commit;
         };
       };
 
@@ -117,6 +131,12 @@ with lib; {
               };
             };
           };
+          "software-dev/nixos" = {
+            command = "${pkgs.uv}/bin/uvx";
+            args = [
+              "mcp-nixos"
+            ];
+          };
           "devops/docker" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [
@@ -132,6 +152,11 @@ with lib; {
               "--read-only"
             ];
           };
+        };
+        skills = {
+          create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
+
+          git-commit = pkgs.skills.github.awesome-copilot.git-commit;
         };
       };
     };
