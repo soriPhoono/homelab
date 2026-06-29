@@ -23,7 +23,7 @@ These are the tasks that are intended for future development goals
     - [ ] xlsx skills
     - [ ] pptx skills
   - [ ] reddit search skill
-  - [ ] openwebui frontend instead of desktop app, force all hermes agent communication thru gateway
+  - [ ] configure local matrix server for bot accounts
 - [x] Bifrucate noctalia shell configuration from core to home
   - [x] Move shell configuration to home
   - [x] Create a nix module option for shell configuration
