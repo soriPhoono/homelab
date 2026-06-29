@@ -15,45 +15,64 @@
   # (traefik) that form the cluster's control plane.
   # ────────────────────────────────────────────────────────────────────────────
 
+  reposYaml = yamlFormat.generate "repos.yaml" {
+    "${cfg.cluster.swarmCd.repoName}" = {
+      url = cfg.cluster.swarmCd.repoUrl;
+    };
+  };
+
+  stacksYaml = yamlFormat.generate "stacks.yaml" (
+    lib.listToAttrs (map (stack: {
+        inherit (stack) name;
+        value = {
+          repo = cfg.cluster.swarmCd.repoName;
+          branch = cfg.cluster.swarmCd.branch;
+          compose_file = stack.composeFile;
+          sops_files = stack.sopsFiles;
+        };
+      })
+      cfg.cluster.swarmCd.stacks)
+  );
+
+  swarmCdAgeKeyPath =
+    lib.optionalString (cfg.cluster.swarmCd.ageKeySopsPath != null)
+    "/run/secrets/swarm/${cfg.cluster.name}/${cfg.cluster.swarmCd.ageKeySopsPath}";
+
   bootstrapServices =
     {}
     // {
       swarm-cd = {
-        image = "docker:28-cli";
+        image = cfg.cluster.swarmCd.image;
         hostname = "swarm-cd";
         environment =
           {
-            CLUSTER_NAME = cfg.cluster.name;
             TZ = config.core.timeZone or "UTC";
           }
-          // lib.optionalAttrs (cfg.cluster.baseDomain != "") {
-            BASE_DOMAIN = cfg.cluster.baseDomain;
+          // lib.optionalAttrs (swarmCdAgeKeyPath != "") {
+            SOPS_AGE_KEY_FILE = "/secrets/age.key";
           }
           // cfg.cluster.extraEnv;
-        volumes = [
-          "/var/run/docker.sock:/var/run/docker.sock:rw"
-          "/run/secrets:/run/secrets:ro"
+        volumes =
+          [
+            "/var/run/docker.sock:/var/run/docker.sock:ro"
+          ]
+          ++ lib.optional (swarmCdAgeKeyPath != "")
+          "${swarmCdAgeKeyPath}:/secrets/age.key:ro";
+        configs = [
+          {
+            source = "repos";
+            target = "/app/repos.yaml";
+          }
+          {
+            source = "stacks";
+            target = "/app/stacks.yaml";
+          }
         ];
-        configs = lib.optionalAttrs (cfg.cluster.swarmCdEntrypoint != null) {
-          swarm-cd-entrypoint = {
-            source = "swarm-cd-entrypoint";
-            target = "/entrypoint.sh";
-            mode = "0755";
-          };
-        };
-        command =
-          if cfg.cluster.swarmCdEntrypoint != null
-          then ["/entrypoint.sh"]
-          else ["sh" "-c" ''while true; do sleep 3600; done''];
         deploy = {
           mode = "replicated";
           replicas = 1;
           placement = {
             constraints = ["node.role == manager"];
-          };
-          labels = {
-            "swarm-cd.cluster" = cfg.cluster.name;
-            "swarm-cd.node" = "{{.Node.Hostname}}";
           };
         };
         networks =
@@ -125,9 +144,12 @@
         };
       };
     volumes = {};
-    configs = lib.optionalAttrs (cfg.cluster.swarmCdEntrypoint != null) {
-      swarm-cd-entrypoint = {
-        file = "${cfg.cluster.swarmCdEntrypoint}";
+    configs = {
+      repos = {
+        file = "${reposYaml}";
+      };
+      stacks = {
+        file = "${stacksYaml}";
       };
     };
   };
@@ -253,14 +275,65 @@ in
           };
         };
 
-        swarmCdEntrypoint = mkOption {
-          type = types.nullOr types.package;
-          default = null;
-          description = ''
-            Custom entrypoint script for the swarm-cd container.
-            When null, swarm-cd starts with a simple sleep loop and
-            waits for interactive use.
-          '';
+        swarmCd = {
+          image = mkOption {
+            type = types.str;
+            default = "ghcr.io/m-adawi/swarm-cd:latest";
+            description = "swarm-cd container image (m-adawi/swarm-cd GitOps operator).";
+          };
+
+          repoUrl = mkOption {
+            type = types.str;
+            default = "https://github.com/soriPhoono/homelab.git";
+            description = ''Git repository URL that swarm-cd watches for stack definitions.'';
+          };
+
+          repoName = mkOption {
+            type = types.str;
+            default = "homelab";
+            description = ''Short name for the repo (used in repos.yaml).'';
+          };
+
+          branch = mkOption {
+            type = types.str;
+            default = "main";
+            description = ''Git branch for swarm-cd to track.'';
+          };
+
+          stacks = mkOption {
+            type = types.listOf (types.submodule {
+              options = {
+                name = mkOption {
+                  type = types.str;
+                  description = "Stack name (must match the service name in compose.yaml).";
+                };
+                composeFile = mkOption {
+                  type = types.str;
+                  example = "docker/infra/traefik/compose.yaml";
+                  description = ''Path to the compose file within the repo.'';
+                };
+                sopsFiles = mkOption {
+                  type = types.listOf types.str;
+                  default = [];
+                  example = ["docker/infra/tailscale/secrets/tailscale_auth_key.enc"];
+                  description = ''SOPS-encrypted files to decrypt before deploying the stack.'';
+                };
+              };
+            });
+            default = [];
+            description = ''List of stacks for swarm-cd to manage.'';
+          };
+
+          ageKeySopsPath = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            example = "age.key";
+            description = ''
+              Name of the sops secret that contains the age decryption key,
+              relative to the cluster's secret prefix.
+              Add the corresponding name to cluster.secrets to wire it up.
+            '';
+          };
         };
 
         extraEnv = mkOption {
@@ -505,7 +578,7 @@ in
         # Define secrets in your system config as:
         #   sops.secrets."swarm/<cluster-name>/<name>" = { ... };
         # Then reference them inside swarm-cd or infra compose files.
-        sops.secrets = listToAttrs (map (
+        sops.secrets = lib.listToAttrs (map (
             name:
               nameValuePair "swarm/${cfg.cluster.name}/${name}" {}
           )

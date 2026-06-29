@@ -16,20 +16,13 @@ These are the tasks that are intended for future development goals
 - [x] Configure hermes agent in some form
   - [x] Research if hermes agent supports multi user configuration
     - [x] if yes create server deployment as this is an always on service
-- [ ] Configure pi coding agent
-  - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
-    - [x] Finish updating mcp server types in [lib](./nix/lib.nix)
-  - [ ] Finish installing packages
-  - [ ] Create extensions for pi coding agent
-    - [x] Remove bash tool
-    - [x] Agent orchestration
-    - [x] stop-slop skill
-    - [ ] office skills
-      - [ ] pdf skills
-      - [ ] docx skills
-      - [ ] xlsx skills
-      - [ ] pptx skills
-    - [ ] reddit search skill
+- [ ] Configure hermes agent
+  - [ ] office skills
+    - [ ] pdf skills
+    - [ ] docx skills
+    - [ ] xlsx skills
+    - [ ] pptx skills
+  - [ ] reddit search skill
 - [x] Bifrucate noctalia shell configuration from core to home
   - [x] Move shell configuration to home
   - [x] Create a nix module option for shell configuration
@@ -41,5 +34,5 @@ These are the tasks that are intended for future development goals
 - [ ] Implement impermenance on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
-- [ ] Create editor system that can contain an "editor agent", allowing for easier configuration of newer editors
-- [ ] Fix agent system
+- [x] Create editor system that can contain an "editor agent", allowing for easier configuration of newer editors
+- [x] Fix agent system
