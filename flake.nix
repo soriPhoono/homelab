@@ -326,6 +326,26 @@
           };
           default = install;
         };
+
+        # --- QCOW2 VM images (auto-generated per system) ---
+        packages = builtins.listToAttrs (
+          map (hostName: {
+            name = "${hostName}-qcow";
+            value =
+              (self.nixosConfigurations.${hostName}.extendModules {
+                modules = [
+                  {
+                    core.vm-image.enable = true;
+                  }
+                  (import ./nix/modules/nixos/core/vm-image.nix)
+                ];
+              })
+              .config
+              .system
+              .build
+              .image;
+          }) (builtins.attrNames self.nixosConfigurations)
+        );
       };
 
       flake = {
