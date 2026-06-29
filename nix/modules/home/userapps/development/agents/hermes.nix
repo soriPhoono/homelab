@@ -179,8 +179,6 @@ in
           ];
           settings = mkMerge [
             {
-              worktree = true;
-
               streaming.enabled = true;
               stt.enabled = true;
 
