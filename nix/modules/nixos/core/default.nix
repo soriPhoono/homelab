@@ -50,8 +50,6 @@ in
 
           pciutils
           usbutils
-
-          netstat
         ];
 
         console = {
