@@ -61,7 +61,7 @@ in
       core.hardware.cpu.enable = mkForce false;
 
       # --- Sane VM disk size ---
-      virtualisation.diskSize = 20 * 1024; # 20GB
+      virtualisation.diskSize = 100 * 1024; # 20GB
 
       # --- Build the qcow2 image ---
       system.build.image = import (pkgs.path + "/nixos/lib/make-disk-image.nix") {
