@@ -268,23 +268,11 @@ in
         sops = {
           secrets =
             {
-              "hermes/API_SERVER_KEY" = {};
               "api/OPENCODE_API_KEY" = mkIf cfg.providers.opencode.enable {};
               "api/EXA_API_KEY" = mkIf (cfg.providers.search.variant == "exa") {};
-              "hermes/TELEGRAM_BOT_TOKEN" = mkIf cfg.gateway.telegram.enable {};
-              "hermes/TELEGRAM_ALLOWED_USERS" = mkIf cfg.gateway.telegram.enable {};
-              "hermes/TELEGRAM_HOME_CHANNEL" = mkIf cfg.gateway.telegram.enable {};
-              "hermes/MATRIX_HOMESERVER" = mkIf cfg.gateway.matrix.enable {};
-              "hermes/MATRIX_ACCESS_TOKEN" = mkIf cfg.gateway.matrix.enable {};
-              "hermes/MATRIX_ALLOWED_USERS" = mkIf cfg.gateway.matrix.enable {};
-              "hermes/MATRIX_ALLOWED_ROOMS" = mkIf cfg.gateway.matrix.enable {};
-              "hermes/MATRIX_HOME_ROOM" = mkIf cfg.gateway.matrix.enable {};
             }
             // genAttrs (flatten (mapAttrsToList (_name: value: (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.env)) ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.headers))) cfg.mcpServers)) (_name: {});
           templates."hermes/.env".content = builtins.concatStringsSep "\n" [
-            ''
-              API_SERVER_KEY=${config.sops.placeholder."hermes/API_SERVER_KEY"}
-            ''
             (optionalString
               cfg.providers.opencode.enable
               ''
@@ -296,23 +284,6 @@ in
                 == "exa")
               ''
                 EXA_API_KEY=${config.sops.placeholder."api/EXA_API_KEY"}
-              '')
-            (optionalString
-              cfg.gateway.telegram.enable
-              ''
-                TELEGRAM_BOT_TOKEN=${config.sops.placeholder."hermes/TELEGRAM_BOT_TOKEN"}
-                TELEGRAM_ALLOWED_USERS=${config.sops.placeholder."hermes/TELEGRAM_ALLOWED_USERS"}
-                TELEGRAM_HOME_CHANNEL=${config.sops.placeholder."hermes/TELEGRAM_HOME_CHANNEL"}
-              '')
-            (optionalString
-              cfg.gateway.matrix.enable
-              ''
-                MATRIX_HOMESERVER=${config.sops.placeholder."hermes/MATRIX_HOMESERVER"}
-                MATRIX_ACCESS_TOKEN=${config.sops.placeholder."hermes/MATRIX_ACCESS_TOKEN"}
-                MATRIX_ALLOWED_USERS=${config.sops.placeholder."hermes/MATRIX_ALLOWED_USERS"}
-                MATRIX_ALLOWED_ROOMS=${config.sops.placeholder."hermes/MATRIX_ALLOWED_ROOMS"}
-                MATRIX_HOME_ROOM=${config.sops.placeholder."hermes/MATRIX_HOME_ROOM"}
-                MATRIX_E2EE_MODE=required
               '')
             (concatStringsSep
               "\n"
@@ -434,14 +405,6 @@ in
               model = {
                 default = "deepseek-v4-flash";
                 provider = "opencode-go";
-              };
-            })
-
-            (mkIf cfg.gateway.telegram.enable {
-              gateway.platforms.telegram.extra = {
-                status_indicator = true;
-                status_online = "🟢 Online";
-                status_offline = "🔴 Offline";
               };
             })
 
