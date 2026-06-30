@@ -19,12 +19,25 @@ These are the tasks that are intended for future development goals
     - [x] docx skills
     - [x] xlsx skills
     - [x] pptx skills
-  - [ ] reddit search skill
+  - [ ] Rewrite into service module with cli/desktop app installation
+    - [ ] Service API gets organized into profiles with the default being selectable via isDefault
+    - [ ] API creates profile folder structure, files
+      - [ ] Creates folder structure
+        - [ ] Cron
+        - [ ] Sessions
+        - [ ] Logs
+        - [ ] Memories
+      - [ ] Creates config.yaml
+        - [ ] Providers
+          - [ ] Inference (Model provider)
+          - [ ] Service (Feature provider, i.e.: exa)
+        - [ ] Gateway config (messaging providers)
+      - [ ] Creates .env
+        - [ ] Master secrets registry per profile, should have it's own api/ section to control agent permissions
+      - [ ] Creates SOUL.md and USER.md
+      - [ ] Creates skill files
+    - [ ] Each profile gets independent providers, treat each profile as independent agent
   - [ ] configure local matrix server for bot accounts
-- [x] Bifrucate noctalia shell configuration from core to home
-  - [x] Move shell configuration to home
-  - [x] Create a nix module option for shell configuration
-  - [x] Update noctalia configuration to use new shell configuration
 - [ ] Add support for multiple bootloaders
 - [x] Finish configuring greetd display manager
 - [ ] Test vr support on desktop
@@ -32,5 +45,3 @@ These are the tasks that are intended for future development goals
 - [ ] Implement impermenance on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
-- [x] Create editor system that can contain an "editor agent", allowing for easier configuration of newer editors
-- [x] Fix agent system
