@@ -67,7 +67,7 @@
               size = "100%";
               content = {
                 type = "zfs";
-                pool = "zdocker";
+                pool = "zgames";
               };
             };
           };
@@ -83,7 +83,7 @@
               size = "100%";
               content = {
                 type = "zfs";
-                pool = "zdocker";
+                pool = "zgames";
               };
             };
           };
@@ -125,7 +125,7 @@
     };
 
     zpool = {
-      zdocker = {
+      zgames = {
         type = "zpool";
         mode = "striped";
         options.cachefile = "none";
@@ -133,7 +133,7 @@
           compression = "zstd";
           "com.sun:auto-snapshot" = "false";
         };
-        mountpoint = "/var/lib/docker";
+        mountpoint = "/etc/wolf/profile-data/";
       };
       zstorage = {
         type = "zpool";

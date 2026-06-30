@@ -27,8 +27,8 @@ _: {
         slack.enable = true;
       };
       virtualization = {
-        # distrobox.enable = true;
-        # bottles.enable = true;
+        distrobox.enable = true;
+        bottles.enable = true;
       };
     };
     development = {
@@ -54,7 +54,7 @@ _: {
     content-creation = {
       asset-creation = {
         gimp.enable = true;
-        # blender.enable = true;
+        blender.enable = true;
       };
       streaming.obs-studio.enable = true;
       editors = {
