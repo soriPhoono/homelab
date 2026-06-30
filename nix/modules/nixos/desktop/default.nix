@@ -23,15 +23,7 @@ in
         dbus.implementation = "broker";
       };
 
-      core = {
-        hardware.bluetooth.enable = true;
-        networking.network-manager.enable = true;
-      };
-
       desktop = {
-        services = {
-          pipewire.enable = true;
-        };
         tools.appimage.enable = true;
       };
     };

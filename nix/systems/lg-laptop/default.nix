@@ -72,7 +72,10 @@ with lib; {
   desktop = {
     environments.kde.enable = true;
     features.gaming.enable = true;
-    services.printing.enable = true;
+    services = {
+      printing.enable = true;
+      pipewire.enable = true;
+    };
   };
 
   hosting = {

@@ -6,11 +6,6 @@
   ...
 }: let
   cfg = config.core.boot;
-
-  plymouthEnabled =
-    if options ? core.boot.plymouth
-    then cfg.plymouth.enable
-    else false;
 in
   with lib; {
     imports = [
@@ -56,7 +51,7 @@ in
           boot = {
             kernelPackages = cfg.kernel.packages;
             kernelParams =
-              (optionals plymouthEnabled [
+              (optionals config.core.boot.plymouth.enable [
                 "quiet"
                 "systemd.show_status=false"
                 "udev.log_level=3"
@@ -64,7 +59,7 @@ in
               ++ cfg.kernel.params;
 
             initrd = {
-              verbose = !plymouthEnabled;
+              verbose = !config.core.boot.plymouth.enable;
               systemd.enable = true;
             };
 

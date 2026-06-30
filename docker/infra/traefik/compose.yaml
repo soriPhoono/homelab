@@ -1,0 +1,69 @@
+# Traefik — Docker Swarm reverse proxy
+#
+# Acts as the ingress gateway for all swarm services.
+# Auto-discovers services via Docker labels (swarm mode).
+# TLS termination via Let's Encrypt (HTTP-01 challenge).
+#
+# Expected secrets (via docker secret):
+#   traefik_acme_email    — email for Let's Encrypt registration
+#
+# Usage:
+#   docker stack deploy -c compose.yaml traefik
+services:
+  traefik:
+    image: traefik:v3.3
+    command:
+      # Docker provider — auto-discover swarm services with traefik labels
+      - --providers.docker=true
+      - --providers.docker.swarmMode=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=traefik_public
+      # Entrypoints
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # HTTP → HTTPS redirect
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # Let's Encrypt (staging cert for testing; switch server to prod when ready)
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      # Enable dashboard on a dedicated entrypoint (secured behind middleware)
+      - --api.dashboard=true
+      - --api.debug=false
+      # Logging
+      - --log.level=INFO
+      - --accesslog=true
+    ports:
+      - mode: host
+        target: 80
+        published: 80
+        protocol: tcp
+      - mode: host
+        target: 443
+        published: 443
+        protocol: tcp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-letsencrypt:/letsencrypt
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.dashboard.rule=Host(`traefik.${BASE_DOMAIN:-example.com}`)
+        - traefik.http.routers.dashboard.service=api@internal
+        - traefik.http.routers.dashboard.middlewares=dashboard-auth
+        - traefik.http.middlewares.dashboard-auth.basicauth.users=${DASHBOARD_USERS:-admin:$$2y$$05$$example}
+    networks:
+      - traefik_public
+networks:
+  traefik_public:
+    driver: overlay
+    attachable: true
+volumes:
+  traefik-letsencrypt:
