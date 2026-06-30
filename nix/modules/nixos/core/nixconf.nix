@@ -71,5 +71,18 @@ in
         registry = mapAttrs (_: flake: {inherit flake;}) flakeInputs;
         nixPath = mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
       };
+
+      programs = {
+        nix-ld.enable = true;
+        nh = {
+          enable = true;
+
+          clean = {
+            enable = true;
+            dates = "daily";
+            extraArgs = "--keep-since 3d --keep 3";
+          };
+        };
+      };
     };
   }

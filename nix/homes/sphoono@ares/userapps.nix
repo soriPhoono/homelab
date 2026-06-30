@@ -34,8 +34,15 @@ _: {
     development = {
       enable = true;
       terminal.ghostty.enable = true;
-      # agents.opencode.enable = true;
-      editors.zed.enable = true;
+      agents = {
+        opencode.enable = true;
+        hermes = {
+          enable = true;
+          enableCli = true;
+          enableDesktop = true;
+        };
+      };
+      editors.code-oss.enable = true;
       # appliances.bambu-studio.enable = true;
     };
     data-fortress = {

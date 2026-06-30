@@ -16,16 +16,18 @@ in
       };
     };
 
-    config = mkIf cfg.enable {
-      hardware.keyboard.qmk = {
-        enable = true;
-        keychronSupport = elem "qmk" cfg.vendors;
-      };
+    config = mkIf cfg.enable (mkMerge [
+      (mkIf (elem "qmk" cfg.vendors) {
+        hardware.keyboard.qmk = {
+          enable = true;
+          keychronSupport = true;
+        };
 
-      environment.systemPackages = with pkgs; [
-        via
-      ];
+        environment.systemPackages = with pkgs; [
+          via
+        ];
 
-      services.udev.packages = [pkgs.via];
-    };
+        services.udev.packages = [pkgs.via];
+      })
+    ]);
   }

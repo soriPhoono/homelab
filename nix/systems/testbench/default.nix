@@ -67,9 +67,12 @@ with lib; {
       };
       managers.hyprland.enable = true;
     };
-    services.virtualisation = {
-      enable = true;
-      mode = "guest";
+    services = {
+      virtualisation = {
+        enable = true;
+        mode = "guest";
+      };
+      pipewire.enable = true;
     };
   };
 

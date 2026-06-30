@@ -91,7 +91,10 @@ with lib; {
       };
       managers.hyprland.enable = true;
     };
-    services.printing.enable = true;
+    services = {
+      printing.enable = true;
+      pipewire.enable = true;
+    };
     features = {
       gaming = {
         enable = true;

@@ -42,10 +42,7 @@ _: {
           enableDesktop = true;
         };
       };
-      editors = {
-        zed.enable = true;
-        code-oss.enable = true;
-      };
+      editors.code-oss.enable = true;
       # appliances.bambu-studio.enable = true;
     };
     data-fortress = {

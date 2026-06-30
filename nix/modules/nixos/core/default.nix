@@ -22,14 +22,6 @@ in
     options.core = {
       enable = mkEnableOption "Enable core system configuration";
 
-      stateVersion = mkOption {
-        type = with types; nullOr str;
-        description = ''
-          The NixOS release version to use for system state management.
-        '';
-        default = null;
-        example = "23.05";
-      };
       timeZone = mkOption {
         type = with types; nullOr str;
         description = ''
@@ -39,6 +31,15 @@ in
         '';
         default = null;
         example = "America/Chicago";
+      };
+
+      stateVersion = mkOption {
+        type = with types; nullOr str;
+        description = ''
+          The NixOS release version to use for system state management.
+        '';
+        default = null;
+        example = "23.05";
       };
     };
 
@@ -51,8 +52,6 @@ in
           usbutils
         ];
 
-        hardware.enableAllFirmware = true;
-
         console = {
           keyMap = "us";
           packages = with pkgs; [
@@ -64,19 +63,6 @@ in
         i18n.defaultLocale = "en_US.UTF-8";
 
         time.timeZone = mkIf (cfg.timeZone != null) cfg.timeZone;
-
-        programs = {
-          nix-ld.enable = true;
-          nh = {
-            enable = true;
-
-            clean = {
-              enable = true;
-              dates = "daily";
-              extraArgs = "--keep-since 3d --keep 3";
-            };
-          };
-        };
 
         system.stateVersion =
           if cfg.stateVersion != null
