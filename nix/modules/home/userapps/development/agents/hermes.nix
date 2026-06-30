@@ -237,16 +237,6 @@ in
           };
         };
 
-        gateway = {
-          telegram = {
-            enable = mkEnableOption "Enable telegram messaging provider for hermes agent";
-          };
-
-          matrix = {
-            enable = mkEnableOption "Enable matrix messaging provider for hermes agent";
-          };
-        };
-
         profiles = mkOption {
           type = types.attrsOf (types.submodule (_: {
             options = profileOptions;
