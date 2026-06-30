@@ -17,11 +17,11 @@ These are the tasks that are intended for future development goals
   - [x] Research if hermes agent supports multi user configuration
     - [x] if yes create server deployment as this is an always on service
 - [ ] Configure hermes agent
-  - [ ] office skills
-    - [ ] pdf skills
-    - [ ] docx skills
-    - [ ] xlsx skills
-    - [ ] pptx skills
+  - [x] office skills
+    - [x] pdf skills
+    - [x] docx skills
+    - [x] xlsx skills
+    - [x] pptx skills
   - [ ] reddit search skill
   - [ ] configure local matrix server for bot accounts
 - [x] Bifrucate noctalia shell configuration from core to home

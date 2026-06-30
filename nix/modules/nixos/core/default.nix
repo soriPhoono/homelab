@@ -64,19 +64,6 @@ in
 
         time.timeZone = mkIf (cfg.timeZone != null) cfg.timeZone;
 
-        programs = {
-          nix-ld.enable = true;
-          nh = {
-            enable = true;
-
-            clean = {
-              enable = true;
-              dates = "daily";
-              extraArgs = "--keep-since 3d --keep 3";
-            };
-          };
-        };
-
         system.stateVersion =
           if cfg.stateVersion != null
           then cfg.stateVersion
