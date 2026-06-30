@@ -7,7 +7,7 @@ with lib; {
 
   config = mkMerge [
     {
-      userapps.development.agents.opencode = {
+      apps.development.agents.opencode = {
         userSettings = {
           model = "opencode-go/deepseek-v4-flash";
           autoupdate = false;

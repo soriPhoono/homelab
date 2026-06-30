@@ -1,5 +1,5 @@
 _: {
-  userapps = {
+  apps = {
     defaultApplications.enable = true;
     desktop = {
       file-browser = {

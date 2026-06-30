@@ -6,7 +6,7 @@
     ./settings.nix
   ];
 
-  userapps.desktop.browsers.zen = {
+  apps.desktop.browsers.zen = {
     extraConfig = {
       setAsDefaultBrowser = true;
       enablePrivateDesktopEntry = false;

@@ -14,10 +14,10 @@ with lib; {
     load_direnv = "shell_hook";
     agent_servers = {
       gemini.type = "registry";
-      # opencode = mkIf config.userapps.development.agents.opencode.enable {
+      # opencode = mkIf config.apps.development.agents.opencode.enable {
       #   type = "registry";
       # };
-      # pi-acp = mkIf config.userapps.development.agents.pi.enable {
+      # pi-acp = mkIf config.apps.development.agents.pi.enable {
       #   type = "registry";
       # };
     };

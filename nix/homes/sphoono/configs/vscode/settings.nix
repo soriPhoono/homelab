@@ -1,6 +1,6 @@
 {lib, ...}:
 with lib; {
-  userapps.development.editors.code-oss = {
+  apps.development.editors.code-oss = {
     userSettings = {
       # Editor appearance — font and theme managed by Stylix
 

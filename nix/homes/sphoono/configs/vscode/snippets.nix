@@ -1,5 +1,5 @@
 _: {
-  userapps.development.editors.code-oss = {
+  apps.development.editors.code-oss = {
     # Common snippets applied to every active profile.
     #
     # globalSnippets are keyed by snippet name and available in all languages.

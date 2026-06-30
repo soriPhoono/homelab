@@ -17,7 +17,7 @@ These are the tasks that are intended for future development goals
   - [x] Research if hermes agent supports multi user configuration
     - [x] if yes create server deployment as this is an always on service
 - [ ] Configure pi coding agent
-  - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/userapps/development/agents/pi.nix)
+  - [x] Finish configuring mcp server support in [pi.nix](./nix/modules/home/apps/development/agents/pi.nix)
     - [x] Finish updating mcp server types in [lib](./nix/lib.nix)
   - [ ] Finish installing packages
   - [ ] Create extensions for pi coding agent

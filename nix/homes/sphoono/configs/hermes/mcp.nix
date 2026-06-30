@@ -7,7 +7,7 @@
 with lib; {
   config = mkMerge [
     {
-      userapps.development.agents.hermes = {
+      apps.development.agents.hermes = {
         mcpServers = {
           # ── Personal ───────────────────────────────────────────────────────
           "personal/obsidian" = {
