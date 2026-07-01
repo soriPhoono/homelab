@@ -60,7 +60,7 @@ in
             "10.0.0.0/8"
             "192.168.0.0/16"
           ];
-          description = "List of subnets to bypass Tailscale routing for (both to and from).";
+          description = "List of subnets to bypass Tailscale routing for (to only). 'from' rules are intentionally omitted so outbound traffic from private IPs (Docker containers, host) routes through the Tailscale exit node.";
         };
 
         priority = mkOption {
@@ -188,12 +188,6 @@ in
                           flatten (
                             map (subnet: [
                               ''
-                                if ! ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "from ${subnet} lookup main"; then
-                                  echo "Adding bypass rule from ${subnet}..."
-                                  ip rule add from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
-                                fi
-                              ''
-                              ''
                                 if ! ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "to ${subnet} lookup main"; then
                                   echo "Adding bypass rule to ${subnet}..."
                                   ip rule add to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
@@ -208,7 +202,7 @@ in
                       # Initial application — retry until rules persist
                       for _ in $(seq 1 10); do
                         apply_rules
-                        if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "from"; then
+                        if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "to"; then
                           break
                         fi
                         sleep 3
@@ -234,12 +228,6 @@ in
                       ${concatStringsSep "\n" (
                         flatten (
                           map (subnet: [
-                            ''
-                              if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "from ${subnet} lookup main"; then
-                                echo "Removing bypass rule from ${subnet}..."
-                                ip rule del from ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
-                              fi
-                            ''
                             ''
                               if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "to ${subnet} lookup main"; then
                                 echo "Removing bypass rule to ${subnet}..."

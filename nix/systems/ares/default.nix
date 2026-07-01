@@ -106,6 +106,22 @@ with lib; {
       enable = true;
       jellyfin.acceleration.enable = true;
     };
+    gaming.wolf = {
+      enable = true;
+      gpu = "dedicated";
+    };
+    inference.ollama = {
+      enable = true;
+      gpu = "dedicated";
+      loadModels = ["llama3.2:3b" "nomic-embed-text:latest"];
+      webui = {
+        enable = true;
+        environmentVariables = {
+          RAG_EMBEDDING_ENGINE = "ollama";
+          RAG_EMBEDDING_MODEL = "nomic-embed-text:latest";
+        };
+      };
+    };
     proxy = {
       enable = true;
       type = "traefik";

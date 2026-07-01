@@ -83,6 +83,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    antigravity-nix = {
+      url = "github:jacopone/antigravity-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-skills = {
       url = "github:sudosubin/nix-skills";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -95,6 +100,7 @@
     flake-parts,
     nur,
     nix-skills,
+    antigravity-nix,
     ...
   }: let
     readMeta = dir:
@@ -122,6 +128,7 @@
             // {
               nur = nur.overlays.default;
               nix-skills = nix-skills.overlays.default;
+              antigravity = antigravity-nix.overlays.default;
             }
           );
         };

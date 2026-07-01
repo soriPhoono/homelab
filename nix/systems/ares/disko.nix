@@ -15,7 +15,7 @@
                 "compress=zstd"
                 "noatime"
               ];
-              mountpoint = "/etc/wolf/";
+              mountpoint = "/etc/wolf";
             };
           };
         };
@@ -35,7 +35,7 @@
                 "compress=zstd"
                 "noatime"
               ];
-              mountpoint = "/mnt/local/";
+              mountpoint = "/mnt/local";
             };
           };
         };
@@ -109,7 +109,7 @@
               size = "100%";
               content = {
                 type = "mdraid";
-                pool = "games";
+                name = "games";
               };
             };
           };
@@ -125,7 +125,7 @@
               size = "100%";
               content = {
                 type = "mdraid";
-                pool = "games";
+                name = "games";
               };
             };
           };
@@ -142,7 +142,7 @@
               size = "100%";
               content = {
                 type = "mdraid";
-                pool = "storage";
+                name = "storage";
               };
             };
           };
@@ -158,7 +158,7 @@
               size = "100%";
               content = {
                 type = "mdraid";
-                pool = "storage";
+                name = "storage";
               };
             };
           };

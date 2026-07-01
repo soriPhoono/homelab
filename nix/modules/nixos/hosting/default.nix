@@ -3,5 +3,7 @@
     ./media
     ./platforms
     ./proxy
+    ./gaming
+    ./inference
   ];
 }
