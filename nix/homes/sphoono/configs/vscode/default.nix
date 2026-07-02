@@ -6,7 +6,7 @@
     ./snippets.nix
   ];
 
-  userapps.development.editors.code-oss = {
+  userapps.development.editors.vscode = {
     # Active profiles — switch via VS Code profile picker
     activeProfiles = ["devops" "fullstack" "webdev"];
 

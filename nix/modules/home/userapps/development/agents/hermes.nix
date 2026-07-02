@@ -198,7 +198,7 @@ in
   with lib; {
     options.userapps.development.agents.hermes = homelab.agentics.mkAgent {
       name = "hermes";
-      package = pkgs.hermes-full;
+      package = pkgs.hermes;
       extraOptions = {
         enableCli = mkEnableOption "Enable the hermes headless agent";
         enableDesktop = mkEnableOption "Enable the hermes desktop application (hermes-desktop)";
@@ -324,7 +324,6 @@ in
 
         programs.hermes-agent = {
           enable = cfg.enableCli;
-          package = pkgs.hermes-full;
           extraPackages = [
             pkgs.agent-browser
             chromiumNoDesktop

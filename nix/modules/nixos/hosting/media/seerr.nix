@@ -122,6 +122,11 @@ in
         # Run Jellyseerr/Seerr as a Docker container via OCI module
         virtualisation.oci-containers.containers.seerr = {
           inherit (cfg) image;
+          # Run as the configured UID/GID so the container's node process
+          # can write to the mounted config directory (/var/lib/seerr).
+          # The official seerr image runs as "node" (UID 1000 by default),
+          # but our host directory is owned by the seerr user (UID 905).
+          user = "${toString cfg.userUid}:${toString cfg.userGid}";
           autoStart = true;
           networks = ["proxy"];
 

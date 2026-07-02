@@ -27,7 +27,7 @@ in {
         macAddress = "random";
       };
 
-      ethernet.macAddress = "random";
+      ethernet.macAddress = "stable";
     };
 
     users.extraUsers =
