@@ -8,6 +8,8 @@ with lib; {
     ./disko.nix
   ];
 
+  networking.hostId = "f0470582";
+
   core = {
     enable = true;
     stateVersion = "26.11";
@@ -75,19 +77,9 @@ with lib; {
 
   desktop = {
     environments = {
-      display_managers.sddm = {
+      display_managers.greetd.regreet = {
         enable = true;
-        theme = {
-          package = pkgs.sddm-astronaut.override {
-            embeddedTheme = "jake_the_dog";
-          };
-          name = "sddm-astronaut-theme";
-        };
-        extraPackages = with pkgs.kdePackages; [
-          qtmultimedia
-          qtvirtualkeyboard
-          qtsvg
-        ];
+        background.path = ./assets/login-background.jpg;
       };
       managers.hyprland.enable = true;
     };
@@ -108,7 +100,33 @@ with lib; {
     };
   };
 
-  networking.hostId = "f0470582";
+  hosting = {
+    platforms.docker.enable = true;
+    media = {
+      enable = true;
+      jellyfin.acceleration.enable = true;
+    };
+    gaming.wolf = {
+      enable = true;
+      gpu = "dedicated";
+    };
+    inference.ollama = {
+      enable = true;
+      gpu = "dedicated";
+      loadModels = ["gemma4:31b" "qwen3.6:27b" "gpt-oss:20b"];
+    };
+    proxy = {
+      enable = true;
+      type = "traefik";
+      dns = {
+        baseDomain = "cryptic-coders.net";
+        email = "soriphoono@gmail.com";
+      };
+      traefik.dashboard = {
+        enable = true;
+      };
+    };
+  };
 
   themes = {
     enable = true;

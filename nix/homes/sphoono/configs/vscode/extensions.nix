@@ -1,11 +1,11 @@
 {pkgs, ...}: let
-  # ACP Client extension — not in nixpkgs, fetched from marketplace
-  acpClient = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+  # Ollama VS Code extension — not in nixpkgs, fetched from marketplace
+  ollama = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
     mktplcRef = {
-      publisher = "formulahendry";
-      name = "acp-client";
-      version = "0.2.0";
-      sha256 = "sha256-rvjqvp0xHgfIo06qqMKpZd240GoA8J1lH6tUVX3lUTk=";
+      publisher = "ollama";
+      name = "ollama";
+      version = "0.0.2";
+      sha256 = "sha256-s0umMpHqjJvDNaqloCN0zUr1XCXlRHxUzhCgNwlBhXo=";
     };
   };
 
@@ -29,15 +29,15 @@
     };
   };
 in {
-  userapps.development.editors.code-oss = {
+  userapps.development.editors.vscode = {
     # Common extensions added to EVERY profile — keep this minimal.
     # Language-specific tools belong in profile extensions instead.
     common = {
       extensions = with pkgs.vscode-extensions; [
         catppuccin.catppuccin-vsc
 
-        # ACP Client — AI agent protocol integration
-        acpClient
+        # AI / LLM
+        ollama
 
         # Nix Code
         mkhl.direnv

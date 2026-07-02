@@ -86,7 +86,8 @@ with lib; {
     environments = {
       display_managers.greetd.regreet = {
         enable = true;
-        background.path = "/etc/greetd/background.jpg";
+        background.path =
+          ./assets/login-background.jpg;
       };
       managers.hyprland.enable = true;
     };

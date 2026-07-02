@@ -67,18 +67,29 @@
   vscodeProfiles = let
     filtered = lib.filterAttrs (name: _: builtins.elem name cfg.activeProfiles) cfg.extensionProfiles;
   in
-    lib.mapAttrs (_: profile: {
-      extensions = cfg.common.extensions ++ profile.extensions;
-      userSettings = cfg.userSettings // profile.userSettings;
-      userTasks = cfg.common.userTasks // profile.userTasks;
-      keybindings = cfg.common.keybindings ++ profile.keybindings;
-      languageSnippets = cfg.common.languageSnippets // profile.languageSnippets;
-      globalSnippets = cfg.common.globalSnippets // profile.globalSnippets;
+    (lib.mapAttrs (_: profile: {
+        extensions = cfg.common.extensions ++ profile.extensions;
+        userSettings = cfg.userSettings // profile.userSettings;
+        userTasks = cfg.common.userTasks // profile.userTasks;
+        keybindings = cfg.common.keybindings ++ profile.keybindings;
+        languageSnippets = cfg.common.languageSnippets // profile.languageSnippets;
+        globalSnippets = cfg.common.globalSnippets // profile.globalSnippets;
 
-      # Agent MCP servers wired into each profile
-      userMcp = mcpUserMcp;
-    })
-    filtered;
+        # Agent MCP servers wired into each profile
+        userMcp = mcpUserMcp;
+      })
+      filtered)
+    // {
+      default = {
+        extensions = cfg.common.extensions;
+        inherit (cfg) userSettings;
+        userTasks = cfg.common.userTasks;
+        keybindings = cfg.common.keybindings;
+        languageSnippets = cfg.common.languageSnippets;
+        globalSnippets = cfg.common.globalSnippets;
+        userMcp = mcpUserMcp;
+      };
+    };
 in
   with lib; {
     options.userapps.development.editors.vscode = homelab.agentics.mkVscodeEditor {
@@ -103,9 +114,6 @@ in
               builtins.listToAttrs (map (mime: lib.nameValuePair mime editor) codeMimeTypes)
             )
         );
-
-        # Extra packages (LSP servers, formatters, linters)
-        home.packages = cfg.extraPackages;
 
         # Delegate editor config to upstream programs.vscode module
         programs.vscode = {
