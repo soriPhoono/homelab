@@ -1,6 +1,6 @@
 {lib, ...}:
 with lib; {
-  apps.development.editors.code-oss = {
+  apps.development.editors.vscode = {
     userSettings = {
       # Editor appearance — font and theme managed by Stylix
 

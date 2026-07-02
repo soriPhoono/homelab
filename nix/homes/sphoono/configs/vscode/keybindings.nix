@@ -1,5 +1,5 @@
 _: {
-  apps.development.editors.code-oss = {
+  apps.development.editors.vscode = {
     # Common keybindings applied to every active profile.
     # Per-profile keybindings are added in the extensionProfiles.
     common.keybindings = [

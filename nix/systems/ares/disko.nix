@@ -1,5 +1,47 @@
 {
   disko.devices = {
+    mdadm = {
+      games = {
+        type = "mdadm";
+        level = 0;
+        metadata = "1.2";
+
+        content = {
+          type = "btrfs";
+          extraArgs = ["-f"];
+          subvolumes = {
+            "/wolf-fs" = {
+              mountOptions = [
+                "compress=zstd"
+                "noatime"
+              ];
+              mountpoint = "/etc/wolf";
+            };
+          };
+        };
+      };
+
+      storage = {
+        type = "mdadm";
+        level = 0;
+        metadata = "1.2";
+
+        content = {
+          type = "btrfs";
+          extraArgs = ["-f"];
+          subvolumes = {
+            "/media" = {
+              mountOptions = [
+                "compress=zstd"
+                "noatime"
+              ];
+              mountpoint = "/mnt/local";
+            };
+          };
+        };
+      };
+    };
+
     disk = {
       main = {
         type = "disk";
@@ -57,33 +99,33 @@
         };
       };
 
-      docker-1 = {
+      games-1 = {
         type = "disk";
         device = "/dev/disk/by-id/ata-Samsung_SSD_870_EVO_1TB_S6PTNM0T318657N";
         content = {
           type = "gpt";
           partitions = {
-            zfs = {
+            primary = {
               size = "100%";
               content = {
-                type = "zfs";
-                pool = "zdocker";
+                type = "mdraid";
+                name = "games";
               };
             };
           };
         };
       };
-      docker-2 = {
+      games-2 = {
         type = "disk";
         device = "/dev/disk/by-id/ata-Samsung_SSD_870_EVO_1TB_S6PTNM0T904070F";
         content = {
           type = "gpt";
           partitions = {
-            zfs = {
+            primary = {
               size = "100%";
               content = {
-                type = "zfs";
-                pool = "zdocker";
+                type = "mdraid";
+                name = "games";
               };
             };
           };
@@ -96,11 +138,11 @@
         content = {
           type = "gpt";
           partitions = {
-            zfs = {
+            primary = {
               size = "100%";
               content = {
-                type = "zfs";
-                pool = "zstorage";
+                type = "mdraid";
+                name = "storage";
               };
             };
           };
@@ -112,38 +154,15 @@
         content = {
           type = "gpt";
           partitions = {
-            zfs = {
+            primary = {
               size = "100%";
               content = {
-                type = "zfs";
-                pool = "zstorage";
+                type = "mdraid";
+                name = "storage";
               };
             };
           };
         };
-      };
-    };
-
-    zpool = {
-      zdocker = {
-        type = "zpool";
-        mode = "striped";
-        options.cachefile = "none";
-        rootFsOptions = {
-          compression = "zstd";
-          "com.sun:auto-snapshot" = "false";
-        };
-        mountpoint = "/var/lib/docker";
-      };
-      zstorage = {
-        type = "zpool";
-        mode = "striped";
-        options.cachefile = "none";
-        rootFsOptions = {
-          compression = "zstd";
-          "com.sun:auto-snapshot" = "false";
-        };
-        mountpoint = "/mnt/local";
       };
     };
   };

@@ -148,7 +148,7 @@ in
         };
 
         path = mkOption {
-          type = with types; nullOr str;
+          type = with types; nullOr (either path str);
           default = null;
           description = "Path to the background image. Defaults to stylix wallpaper when stylix is enabled.";
         };
