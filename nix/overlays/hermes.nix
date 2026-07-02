@@ -1,6 +1,6 @@
 {inputs, ...}: _final: prev: let
   inherit (prev.stdenv.hostPlatform) system;
-  origHermes = inputs.hermes-agent.packages.${system}.full;
+  origHermes = inputs.hermes-agent.packages.${system}.default;
   origVenv = origHermes.passthru.hermesVenv;
 
   # The root cause: `hermes gateway` (bare, no subcommand) triggers
@@ -64,5 +64,5 @@ in {
         cp -r "${inputs.hermes-agent.packages.${system}.desktop}/share"/* "$out/share/" 2>/dev/null || true
       fi
     '';
-  hermes-full = patchedHermes;
+  hermes = patchedHermes;
 }

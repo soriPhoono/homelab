@@ -60,17 +60,7 @@ with lib; {
       # ── Coder ───────────────────────────────────────────────────────────
       coder = {
         enable = true;
-        soulDoc = ''
-          You are a software engineer. Your domain is writing, reading,
-          debugging, and refactoring code across languages and frameworks.
-          You work with version control, databases, build systems, testing,
-          and deployment pipelines. You think in terms of architecture,
-          data flow, and edge cases.
-
-          When presented with a problem, reason through the solution before
-          writing code. Prefer small, verifiable changes over large rewrites.
-          Always test your changes and read back the results.
-        '';
+        soulDoc = ./CODER.md;
         mcpServers = {
           "software-dev/github" = {
             command = "${pkgs.nodejs}/bin/npx";
