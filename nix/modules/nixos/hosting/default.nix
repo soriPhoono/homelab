@@ -1,9 +1,9 @@
 {
   imports = [
-    ./media
     ./platforms
-    ./proxy
     ./gaming
+    ./proxy
+    ./media
     ./inference
   ];
 }

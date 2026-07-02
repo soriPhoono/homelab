@@ -99,35 +99,6 @@ in
         '';
       };
 
-      # ── Open WebUI ─────────────────────────────
-      webui = {
-        enable = mkEnableOption "Open WebUI (web chat interface for Ollama)";
-
-        port = mkOption {
-          type = types.port;
-          default = 8080;
-          description = "Port for the Open WebUI interface";
-        };
-
-        host = mkOption {
-          type = types.str;
-          default = "0.0.0.0";
-          description = "Host address to bind the Open WebUI server";
-        };
-
-        openFirewall = mkOption {
-          type = types.bool;
-          default = true;
-          description = "Open the firewall for the Open WebUI port.";
-        };
-
-        environmentVariables = mkOption {
-          type = types.attrsOf types.str;
-          default = {};
-          description = "Additional environment variables passed to the Open WebUI service";
-        };
-      };
-
       # ── Extra ─────────────────────────────────
       environmentVariables = mkOption {
         type = types.attrsOf types.str;
@@ -164,15 +135,6 @@ in
           // optionalAttrs (selectedRocmGfx != null) {
             rocmOverrideGfx = selectedRocmGfx;
           };
-
-        # ── Open WebUI ──────────────────────────
-        services.open-webui = mkIf cfg.webui.enable {
-          enable = true;
-          port = cfg.webui.port;
-          host = cfg.webui.host;
-          openFirewall = cfg.webui.openFirewall;
-          environment = cfg.webui.environmentVariables;
-        };
       }
     ]);
   }

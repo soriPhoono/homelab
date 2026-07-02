@@ -19,6 +19,17 @@
           scale = 1.0;
         }
       ];
+
+      settings = {
+        env = [
+          {
+            _args = [
+              "AQ_DRM_DEVICES"
+              "/dev/dri/card1:/dev/dri/card2"
+            ];
+          }
+        ];
+      };
     };
   };
 }

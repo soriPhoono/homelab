@@ -29,7 +29,7 @@
     };
   };
 in {
-  userapps.development.editors.code-oss = {
+  userapps.development.editors.vscode = {
     # Common extensions added to EVERY profile — keep this minimal.
     # Language-specific tools belong in profile extensions instead.
     common = {

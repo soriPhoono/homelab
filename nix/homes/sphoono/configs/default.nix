@@ -8,6 +8,5 @@
     ./zen
     ./hypr
     ./vscode
-    ./antigravity
   ];
 }
