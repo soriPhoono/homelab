@@ -70,10 +70,10 @@
     };
 in
   with lib; {
-    options.userapps.development.editors.code-oss = homelab.agentics.mkVscodeEditor {
+    options.userapps.development.editors.code-oss = removeAttrs (homelab.agentics.mkVscodeEditor {
       name = "code-oss";
       package = pkgs.vscodium;
-    };
+    }) ["agent"];
 
     config = mkIf cfg.enable (mkMerge [
       {

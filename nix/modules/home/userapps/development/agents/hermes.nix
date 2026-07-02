@@ -108,6 +108,8 @@
       }
       (
         {
+          memory.provider = "holographic";
+
           mcp_servers =
             lib.mapAttrs
             (_name: desc: let
