@@ -170,6 +170,13 @@
             provider = "opencode-go";
           };
         }
+        // lib.optionalAttrs cfg.providers.ollama.enable {
+          model = {
+            default = cfg.providers.ollama.model;
+            provider = "custom";
+            base_url = "http://localhost:11434/v1";
+          };
+        }
         // lib.optionalAttrs (cfg.providers.search.variant == "exa") {
           web.backend = "exa";
         }
@@ -228,16 +235,6 @@ in
             enable = mkEnableOption "Enable opencode zen/go providers in hermes";
           };
 
-          search = {
-            variant = mkOption {
-              type = with types; enum ["exa"];
-              default = "exa";
-              description = ''
-                The type of search provider backend
-              '';
-            };
-          };
-
           ollama = {
             enable = mkEnableOption "Use local Ollama instance as an LLM provider in Hermes";
 
@@ -248,6 +245,16 @@ in
                 Ollama model tag to use as the default model when the ollama
                 provider is active. Set to any model you have pulled locally,
                 e.g. "llama3.2:3b" or "codellama:13b-instruct".
+              '';
+            };
+          };
+
+          search = {
+            variant = mkOption {
+              type = with types; enum ["exa"];
+              default = "exa";
+              description = ''
+                The type of search provider backend
               '';
             };
           };
@@ -416,7 +423,8 @@ in
             (mkIf cfg.providers.ollama.enable {
               model = {
                 default = cfg.providers.ollama.model;
-                provider = "ollama";
+                provider = "custom";
+                base_url = "http://localhost:11434/v1";
               };
             })
 

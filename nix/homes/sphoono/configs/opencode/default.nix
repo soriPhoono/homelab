@@ -9,7 +9,6 @@ with lib; {
     {
       userapps.development.agents.opencode = {
         userSettings = {
-          model = "opencode-go/deepseek-v4-flash";
           autoupdate = false;
         };
 
@@ -25,6 +24,8 @@ with lib; {
           "api/EXA_API_KEY"
           "api/CONTEXT7_API_KEY"
         ];
+
+        ollama.model = "qwen3.6:27b";
       };
     }
   ];

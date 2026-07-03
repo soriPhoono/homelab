@@ -1,7 +1,7 @@
 {
   lib,
-  config,
   pkgs,
+  config,
   ...
 }: let
   inherit (builtins) mapAttrs;
@@ -148,8 +148,19 @@ in
             home.sessionVariables.OLLAMA_HOST = mkDefault "http://0.0.0.0:${toString cfg.port}";
 
             # Auto-enable ollama providers for AI agents
-            apps.development.agents.hermes.providers.ollama.enable = mkDefault true;
-            apps.development.agents.opencode.ollama.enable = mkDefault true;
+            userapps.development.agents.hermes.providers.ollama.enable = mkDefault true;
+            userapps.development.agents.opencode.ollama.enable = mkDefault true;
+            userapps.development.editors.vscode.common.extensions = [
+              # Ollama VS Code extension — not in nixpkgs, fetched from marketplace
+              (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+                mktplcRef = {
+                  publisher = "ollama";
+                  name = "ollama";
+                  version = "0.0.2";
+                  sha256 = "sha256-s0umMpHqjJvDNaqloCN0zUr1XCXlRHxUzhCgNwlBhXo=";
+                };
+              })
+            ];
           })
           config.core.users;
       }

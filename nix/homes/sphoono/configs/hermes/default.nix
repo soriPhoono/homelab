@@ -11,7 +11,7 @@ with lib; {
         soulDoc = ./SOUL.md;
         userDoc = ./USER.md;
 
-        providers.opencode.enable = true;
+        providers.ollama.model = "qwen3.6:27b";
       };
     }
   ];

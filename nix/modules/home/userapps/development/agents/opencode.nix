@@ -198,7 +198,6 @@ in
 
           settings = mkMerge [
             {
-              model = mkDefault "opencode-go/deepseek-v4-flash";
               autoupdate = mkDefault false;
             }
             (cfg.userSettings or {})
@@ -209,7 +208,20 @@ in
               plugin = cfg.plugins;
             })
             (mkIf cfg.ollama.enable {
-              model = "ollama/${cfg.ollama.model}";
+              provider = {
+                ollama = {
+                  npm = "@ai-sdk/openai-compatible";
+                  name = "Ollama (local)";
+                  options = {
+                    baseURL = "http://localhost:11434/v1";
+                  };
+                  models = {
+                    "qwen3.6:27b" = {
+                      name = "Qwen 3.6 27B";
+                    };
+                  };
+                };
+              };
             })
             cfg.settings
           ];
