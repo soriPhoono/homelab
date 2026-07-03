@@ -25,7 +25,7 @@ with lib; {
           "api/CONTEXT7_API_KEY"
         ];
 
-        ollama.model = "qwen3.6:27b";
+        providers.ollama.models = ["gemma4:12b"];
       };
     }
   ];

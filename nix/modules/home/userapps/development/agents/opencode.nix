@@ -139,17 +139,19 @@ in
       extraOptions = {
         enableDesktop = mkEnableOption "Enable the OpenCode desktop application (opencode-desktop)";
 
-        ollama = {
-          enable = mkEnableOption "Use local Ollama instance as an LLM provider in OpenCode";
+        providers = {
+          ollama = {
+            enable = mkEnableOption "Use local Ollama instance as an LLM provider in OpenCode";
 
-          model = mkOption {
-            type = types.str;
-            default = "qwen2.5:7b";
-            description = ''
-              Ollama model tag to use as the default model. Set to any model
-              you have pulled locally, e.g. "llama3.2:3b" or "codellama:13b-instruct".
-              OpenCode formats this as "ollama/<model>" in its config.
-            '';
+            models = mkOption {
+              type = types.listOf types.str;
+              default = ["gemma4:12b"];
+              description = ''
+                Ollama model tag to use as the default model. Set to any model
+                you have pulled locally, e.g. "llama3.2:3b" or "codellama:13b-instruct".
+                OpenCode formats this as "ollama/<model>" in its config.
+              '';
+            };
           };
         };
 
@@ -207,7 +209,7 @@ in
             (optionalAttrs (cfg.plugins != []) {
               plugin = cfg.plugins;
             })
-            (mkIf cfg.ollama.enable {
+            (mkIf cfg.providers.ollama.enable {
               provider = {
                 ollama = {
                   npm = "@ai-sdk/openai-compatible";
@@ -215,11 +217,9 @@ in
                   options = {
                     baseURL = "http://localhost:11434/v1";
                   };
-                  models = {
-                    "qwen3.6:27b" = {
-                      name = "Qwen 3.6 27B";
-                    };
-                  };
+                  models = genAttrs cfg.providers.ollama.models (_: {
+                    name = "Ollama model";
+                  });
                 };
               };
             })

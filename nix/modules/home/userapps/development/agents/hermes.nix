@@ -172,7 +172,7 @@
         }
         // lib.optionalAttrs cfg.providers.ollama.enable {
           model = {
-            default = cfg.providers.ollama.model;
+            default = cfg.providers.ollama.models;
             provider = "custom";
             base_url = "http://localhost:11434/v1";
           };
@@ -238,9 +238,9 @@ in
           ollama = {
             enable = mkEnableOption "Use local Ollama instance as an LLM provider in Hermes";
 
-            model = mkOption {
-              type = types.str;
-              default = "qwen2.5:7b";
+            models = mkOption {
+              type = types.listOf types.str;
+              default = ["gemma4:12b"];
               description = ''
                 Ollama model tag to use as the default model when the ollama
                 provider is active. Set to any model you have pulled locally,
@@ -422,7 +422,7 @@ in
 
             (mkIf cfg.providers.ollama.enable {
               model = {
-                default = cfg.providers.ollama.model;
+                default = cfg.providers.ollama.models;
                 provider = "custom";
                 base_url = "http://localhost:11434/v1";
               };

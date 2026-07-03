@@ -5,7 +5,7 @@
   ...
 }: let
   inherit (builtins) mapAttrs;
-  inherit (lib) mkIf mkEnableOption mkOption mkDefault mkMerge types optionalAttrs toString;
+  inherit (lib) mkIf mkEnableOption mkOption mkDefault mkMerge types optionalAttrs toString unique flatten mapAttrsToList;
 
   cfg = config.hosting.inference.ollama;
 
@@ -29,6 +29,11 @@
     if cfg.gpu == null
     then null
     else gpuRocmGfx.${cfg.gpu};
+
+  defaultModels = unique (flatten (
+    (mapAttrsToList (_user: config: config.userapps.development.agents.opencode.providers.ollama.models or []) config.home-manager.users)
+    ++ (mapAttrsToList (_user: config: config.userapps.development.agents.hermes.providers.ollama.models or []) config.home-manager.users)
+  ));
 in
   with lib; {
     options.hosting.inference.ollama = {
@@ -74,7 +79,7 @@ in
 
       loadModels = mkOption {
         type = types.listOf types.str;
-        default = [];
+        default = defaultModels;
         example = ["llama3.2:3b" "codellama:13b-instruct"];
         description = ''
           Model tags to pre-download at startup.
@@ -149,7 +154,7 @@ in
 
             # Auto-enable ollama providers for AI agents
             userapps.development.agents.hermes.providers.ollama.enable = mkDefault true;
-            userapps.development.agents.opencode.ollama.enable = mkDefault true;
+            userapps.development.agents.opencode.providers.ollama.enable = mkDefault true;
             userapps.development.editors.vscode.common.extensions = [
               # Ollama VS Code extension — not in nixpkgs, fetched from marketplace
               (pkgs.vscode-utils.buildVscodeMarketplaceExtension {

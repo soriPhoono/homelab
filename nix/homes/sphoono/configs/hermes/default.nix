@@ -11,7 +11,7 @@ with lib; {
         soulDoc = ./SOUL.md;
         userDoc = ./USER.md;
 
-        providers.ollama.model = "qwen3.6:27b";
+        providers.ollama.models = ["gemma4:12b"];
       };
     }
   ];

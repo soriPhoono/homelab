@@ -113,7 +113,6 @@ with lib; {
     inference.ollama = {
       enable = true;
       gpu = "dedicated";
-      loadModels = ["gemma4:31b" "qwen3.6:27b" "gpt-oss:20b"];
     };
     proxy = {
       enable = true;
