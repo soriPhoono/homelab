@@ -139,6 +139,20 @@ in
       extraOptions = {
         enableDesktop = mkEnableOption "Enable the OpenCode desktop application (opencode-desktop)";
 
+        ollama = {
+          enable = mkEnableOption "Use local Ollama instance as an LLM provider in OpenCode";
+
+          model = mkOption {
+            type = types.str;
+            default = "qwen2.5:7b";
+            description = ''
+              Ollama model tag to use as the default model. Set to any model
+              you have pulled locally, e.g. "llama3.2:3b" or "codellama:13b-instruct".
+              OpenCode formats this as "ollama/<model>" in its config.
+            '';
+          };
+        };
+
         plugins = mkOption {
           type = with types; listOf str;
           default = [];
@@ -193,6 +207,9 @@ in
             })
             (optionalAttrs (cfg.plugins != []) {
               plugin = cfg.plugins;
+            })
+            (mkIf cfg.ollama.enable {
+              model = "ollama/${cfg.ollama.model}";
             })
             cfg.settings
           ];

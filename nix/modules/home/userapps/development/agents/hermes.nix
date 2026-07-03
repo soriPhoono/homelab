@@ -237,6 +237,20 @@ in
               '';
             };
           };
+
+          ollama = {
+            enable = mkEnableOption "Use local Ollama instance as an LLM provider in Hermes";
+
+            model = mkOption {
+              type = types.str;
+              default = "qwen2.5:7b";
+              description = ''
+                Ollama model tag to use as the default model when the ollama
+                provider is active. Set to any model you have pulled locally,
+                e.g. "llama3.2:3b" or "codellama:13b-instruct".
+              '';
+            };
+          };
         };
 
         profiles = mkOption {
@@ -396,6 +410,13 @@ in
               model = {
                 default = "deepseek-v4-flash";
                 provider = "opencode-go";
+              };
+            })
+
+            (mkIf cfg.providers.ollama.enable {
+              model = {
+                default = cfg.providers.ollama.model;
+                provider = "ollama";
               };
             })
 

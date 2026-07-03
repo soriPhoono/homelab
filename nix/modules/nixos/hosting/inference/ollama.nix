@@ -4,6 +4,9 @@
   pkgs,
   ...
 }: let
+  inherit (builtins) mapAttrs;
+  inherit (lib) mkIf mkEnableOption mkOption mkDefault mkMerge types optionalAttrs toString;
+
   cfg = config.hosting.inference.ollama;
 
   # GPU acceleration mapping
@@ -135,6 +138,20 @@ in
           // optionalAttrs (selectedRocmGfx != null) {
             rocmOverrideGfx = selectedRocmGfx;
           };
+
+        # ── Home environment ──────────────────────
+        # Expose OLLAMA_HOST to all users so `ollama run ...` works, and
+        # auto-enable ollama as an LLM provider for AI agents (Hermes,
+        # OpenCode) so they point at this local instance by default.
+        home-manager.users =
+          mapAttrs (_: _: {
+            home.sessionVariables.OLLAMA_HOST = mkDefault "http://0.0.0.0:${toString cfg.port}";
+
+            # Auto-enable ollama providers for AI agents
+            apps.development.agents.hermes.providers.ollama.enable = mkDefault true;
+            apps.development.agents.opencode.ollama.enable = mkDefault true;
+          })
+          config.core.users;
       }
     ]);
   }
