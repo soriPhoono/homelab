@@ -113,7 +113,10 @@ with lib; {
     inference.ollama = {
       enable = true;
       gpu = "dedicated";
-      numCtx = 65536;
+      numCtx = 262144;
+      environmentVariables = {
+        OLLAMA_KV_CACHE_TYPE = "q4_0";
+      };
     };
     proxy = {
       enable = true;
