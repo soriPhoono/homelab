@@ -5,6 +5,7 @@
   options,
   ...
 }: let
+  inherit (lib) elemAt;
   cfg = config.userapps.development.agents.hermes;
 
   # Chromium without desktop entries — just the binary on PATH.
@@ -171,11 +172,15 @@
           };
         }
         // lib.optionalAttrs cfg.providers.ollama.enable {
-          model = {
-            default = cfg.providers.ollama.models;
-            provider = "custom";
-            base_url = "http://localhost:11434/v1";
-          };
+          model =
+            {
+              default = elemAt cfg.providers.ollama.models 0;
+              provider = "custom";
+              base_url = "http://localhost:11434/v1";
+            }
+            // lib.optionalAttrs (cfg.providers.ollama.maxTokens != null) {
+              max_tokens = cfg.providers.ollama.maxTokens;
+            };
         }
         // lib.optionalAttrs (cfg.providers.search.variant == "exa") {
           web.backend = "exa";
@@ -240,11 +245,22 @@ in
 
             models = mkOption {
               type = types.listOf types.str;
-              default = ["gemma4:12b"];
+              default = ["ornith:9b"];
               description = ''
                 Ollama model tag to use as the default model when the ollama
                 provider is active. Set to any model you have pulled locally,
                 e.g. "llama3.2:3b" or "codellama:13b-instruct".
+              '';
+            };
+
+            maxTokens = mkOption {
+              type = types.nullOr types.int;
+              default = null;
+              description = ''
+                Maximum output tokens for Ollama responses.
+                When null (default), the server's default applies.
+                Set to e.g. 8192 to ensure long responses are not
+                truncated by the token limit.
               '';
             };
           };
@@ -421,11 +437,15 @@ in
             })
 
             (mkIf cfg.providers.ollama.enable {
-              model = {
-                default = cfg.providers.ollama.models;
-                provider = "custom";
-                base_url = "http://localhost:11434/v1";
-              };
+              model =
+                {
+                  default = lib.elemAt cfg.providers.ollama.models 0;
+                  provider = "custom";
+                  base_url = "http://localhost:11434/v1";
+                }
+                // lib.optionalAttrs (cfg.providers.ollama.maxTokens != null) {
+                  max_tokens = cfg.providers.ollama.maxTokens;
+                };
             })
 
             cfg.userSettings

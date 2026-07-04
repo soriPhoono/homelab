@@ -113,6 +113,7 @@ with lib; {
     inference.ollama = {
       enable = true;
       gpu = "dedicated";
+      numCtx = 65536;
     };
     proxy = {
       enable = true;

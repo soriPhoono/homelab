@@ -145,7 +145,7 @@ in
 
             models = mkOption {
               type = types.listOf types.str;
-              default = ["gemma4:12b"];
+              default = ["ornith:9b"];
               description = ''
                 Ollama model tag to use as the default model. Set to any model
                 you have pulled locally, e.g. "llama3.2:3b" or "codellama:13b-instruct".
@@ -217,8 +217,8 @@ in
                   options = {
                     baseURL = "http://localhost:11434/v1";
                   };
-                  models = genAttrs cfg.providers.ollama.models (_: {
-                    name = "Ollama model";
+                  models = genAttrs cfg.providers.ollama.models (model: {
+                    name = model;
                   });
                 };
               };

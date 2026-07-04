@@ -24,8 +24,6 @@ with lib; {
           "api/EXA_API_KEY"
           "api/CONTEXT7_API_KEY"
         ];
-
-        providers.ollama.models = ["gemma4:12b"];
       };
     }
   ];
