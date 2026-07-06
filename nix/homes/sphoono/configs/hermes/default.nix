@@ -11,7 +11,10 @@ with lib; {
         soulDoc = ./SOUL.md;
         userDoc = ./USER.md;
 
-        providers.opencode.enable = true;
+        providers = {
+          opencode.enable = true;
+          ollama.models = ["gemma4:12b"];
+        };
       };
     }
   ];

@@ -1,5 +1,4 @@
-{lib, ...}:
-with lib; {
+_: {
   apps.development.editors.vscode = {
     userSettings = {
       # Editor appearance — font and theme managed by Stylix
@@ -55,6 +54,9 @@ with lib; {
       # Disable extension updates
       "extensions.autoCheckUpdates" = false;
       "extensions.autoUpdate" = false;
+      "accessibility.signals.terminalBell" = {
+        "sound" = "off";
+      };
     };
   };
 }

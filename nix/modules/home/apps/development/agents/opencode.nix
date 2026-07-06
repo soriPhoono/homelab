@@ -139,6 +139,22 @@ in
       extraOptions = {
         enableDesktop = mkEnableOption "Enable the OpenCode desktop application (opencode-desktop)";
 
+        providers = {
+          ollama = {
+            enable = mkEnableOption "Use local Ollama instance as an LLM provider in OpenCode";
+
+            models = mkOption {
+              type = types.listOf types.str;
+              default = ["ornith:9b"];
+              description = ''
+                Ollama model tag to use as the default model. Set to any model
+                you have pulled locally, e.g. "llama3.2:3b" or "codellama:13b-instruct".
+                OpenCode formats this as "ollama/<model>" in its config.
+              '';
+            };
+          };
+        };
+
         plugins = mkOption {
           type = with types; listOf str;
           default = [];
@@ -184,7 +200,6 @@ in
 
           settings = mkMerge [
             {
-              model = mkDefault "opencode-go/deepseek-v4-flash";
               autoupdate = mkDefault false;
             }
             (cfg.userSettings or {})
@@ -193,6 +208,20 @@ in
             })
             (optionalAttrs (cfg.plugins != []) {
               plugin = cfg.plugins;
+            })
+            (mkIf cfg.providers.ollama.enable {
+              provider = {
+                ollama = {
+                  npm = "@ai-sdk/openai-compatible";
+                  name = "Ollama (local)";
+                  options = {
+                    baseURL = "http://localhost:11434/v1";
+                  };
+                  models = genAttrs cfg.providers.ollama.models (model: {
+                    name = model;
+                  });
+                };
+              };
             })
             cfg.settings
           ];

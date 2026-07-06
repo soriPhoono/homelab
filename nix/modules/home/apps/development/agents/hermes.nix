@@ -60,14 +60,14 @@
               lib.mapAttrs
               (name: value:
                 if builtins.isAttrs value
-                then "$${${lib.strings.toUpper name}}"
+                then "$" + "{${lib.strings.toUpper name}}"
                 else value)
               desc.env;
             processedHeaders =
               lib.mapAttrs
               (name: value:
                 if builtins.isAttrs value
-                then "$${${lib.strings.toUpper name}}"
+                then "$" + "{${lib.strings.toUpper name}}"
                 else value)
               desc.headers;
           in
@@ -117,14 +117,14 @@
                 lib.mapAttrs
                 (name: value:
                   if builtins.isAttrs value
-                  then "$${${lib.strings.toUpper name}}"
+                  then "$" + "{${lib.strings.toUpper name}}"
                   else value)
                 desc.env;
               processedHeaders =
                 lib.mapAttrs
                 (name: value:
                   if builtins.isAttrs value
-                  then "$${${lib.strings.toUpper name}}"
+                  then "$" + "{${lib.strings.toUpper name}}"
                   else value)
                 desc.headers;
             in
@@ -163,12 +163,16 @@
               ))
             profileCfg.mcpServers;
         }
-        # Provider settings inherited from the main agent config
-        // lib.optionalAttrs cfg.providers.opencode.enable {
-          model = {
-            default = "deepseek-v4-flash";
-            provider = "opencode-go";
-          };
+        // lib.optionalAttrs cfg.providers.ollama.enable {
+          model =
+            {
+              default = lib.elemAt cfg.providers.ollama.models 0;
+              provider = "custom";
+              base_url = "http://localhost:11434/v1";
+            }
+            // lib.optionalAttrs (cfg.providers.ollama.maxTokens != null) {
+              max_tokens = cfg.providers.ollama.maxTokens;
+            };
         }
         // lib.optionalAttrs (cfg.providers.search.variant == "exa") {
           web.backend = "exa";
@@ -226,6 +230,31 @@ in
         providers = {
           opencode = {
             enable = mkEnableOption "Enable opencode zen/go providers in hermes";
+          };
+
+          ollama = {
+            enable = mkEnableOption "Use local Ollama instance as an LLM provider in Hermes";
+
+            models = mkOption {
+              type = types.listOf types.str;
+              default = ["ornith:9b"];
+              description = ''
+                Ollama model tag to use as the default model when the ollama
+                provider is active. Set to any model you have pulled locally,
+                e.g. "llama3.2:3b" or "codellama:13b-instruct".
+              '';
+            };
+
+            maxTokens = mkOption {
+              type = types.nullOr types.int;
+              default = null;
+              description = ''
+                Maximum output tokens for Ollama responses.
+                When null (default), the server's default applies.
+                Set to e.g. 8192 to ensure long responses are not
+                truncated by the token limit.
+              '';
+            };
           };
 
           search = {
@@ -345,14 +374,14 @@ in
                     mapAttrs
                     (name: value:
                       if (builtins.isAttrs value)
-                      then "$${${lib.strings.toUpper name}}"
+                      then "$" + "{${lib.strings.toUpper name}}"
                       else value)
                     desc.env;
                   processedHeaders =
                     mapAttrs
                     (name: value:
                       if (builtins.isAttrs value)
-                      then "$${${lib.strings.toUpper name}}"
+                      then "$" + "{${lib.strings.toUpper name}}"
                       else value)
                     desc.headers;
                 in
@@ -392,11 +421,16 @@ in
                 cfg.mcpServers;
             }
 
-            (mkIf cfg.providers.opencode.enable {
-              model = {
-                default = "deepseek-v4-flash";
-                provider = "opencode-go";
-              };
+            (mkIf cfg.providers.ollama.enable {
+              model =
+                {
+                  default = lib.elemAt cfg.providers.ollama.models 0;
+                  provider = "custom";
+                  base_url = "http://localhost:11434/v1";
+                }
+                // lib.optionalAttrs (cfg.providers.ollama.maxTokens != null) {
+                  max_tokens = cfg.providers.ollama.maxTokens;
+                };
             })
 
             cfg.userSettings
@@ -468,19 +502,24 @@ in
         profilesDir = "${config.programs.hermes-agent.stateDir}/.hermes/profiles";
       in
         mkMerge [
-          # sops secrets: collect all MCP server secrets across profiles
+          # sops secrets: collect all MCP server secrets across profiles.
+          # Both common (cfg.mcpServers) and profile-specific (profileCfg.mcpServers)
+          # servers are merged into each profile's config.yaml, so secrets from both
+          # must be collected. Profile servers override common ones of the same name.
           {
             sops.secrets = genAttrs (flatten (
               mapAttrsToList (_profileName: profileCfg:
                 mapAttrsToList (_serverName: server:
                   (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") server.env))
                   ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") server.headers)))
-                profileCfg.mcpServers)
+                (cfg.mcpServers // profileCfg.mcpServers))
               (filterAttrs (_: p: p.enable) cfg.profiles)
             )) (_: {});
           }
 
-          # sops templates: one .env per profile, deployed directly to profile dir
+          # sops templates: one .env per profile, deployed directly to profile dir.
+          # Includes env vars from both common and profile-specific MCP servers,
+          # matching the merged mcp_servers section in the profile's config.yaml.
           {
             sops.templates = listToAttrs (
               mapAttrsToList (profileName: profileCfg:
@@ -503,7 +542,7 @@ in
                           then "${toUpper envName}=${config.sops.placeholder.${envValue.secret}}"
                           else "")
                         desc.env or {})
-                      profileCfg.mcpServers
+                      (cfg.mcpServers // profileCfg.mcpServers)
                     )
                   );
                   path = "${profilesDir}/${profileName}/.env";

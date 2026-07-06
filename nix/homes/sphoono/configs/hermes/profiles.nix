@@ -22,28 +22,16 @@ with lib; {
         '';
         mcpServers = {
           "office/pptx" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@neuraforge/office-mcp"
-              "--pptx"
-            ];
+            command = "${pkgs.office-mcp}/bin/office-mcp-pptx";
+            args = [];
           };
           "office/docx" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@neuraforge/office-mcp"
-              "--docx"
-            ];
+            command = "${pkgs.office-mcp}/bin/office-mcp-docx";
+            args = [];
           };
           "office/xlsx" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@neuraforge/office-mcp"
-              "--xlsx"
-            ];
+            command = "${pkgs.office-mcp}/bin/office-mcp-xlsx";
+            args = [];
           };
           "office/pdf" = {
             command = "${pkgs.uv}/bin/uvx";
