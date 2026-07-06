@@ -25,6 +25,35 @@ with lib; {
             "@modelcontextprotocol/server-sequential-thinking"
           ];
         };
+
+        "personal/arxiv" = {
+          command = "${pkgs.nodejs}/bin/npx";
+          args = [
+            "-y"
+            "arxiv-query-mcp"
+          ];
+        };
+
+        "personal/wikipedia" = {
+          command = "${pkgs.nodejs}/bin/npx";
+          args = [
+            "-y"
+            "wikipedia-mcp-server"
+          ];
+        };
+
+        "personal/brave-search" = {
+          command = "${pkgs.nodejs}/bin/npx";
+          args = [
+            "-y"
+            "@brave/brave-search-mcp-server"
+          ];
+          env = {
+            BRAVE_API_KEY = {
+              secret = "api/BRAVE_API_KEY";
+            };
+          };
+        };
       };
     };
   };

@@ -9,7 +9,6 @@ with lib; {
     {
       userapps.development.agents.opencode = {
         userSettings = {
-          model = "opencode-go/deepseek-v4-flash";
           autoupdate = false;
         };
 

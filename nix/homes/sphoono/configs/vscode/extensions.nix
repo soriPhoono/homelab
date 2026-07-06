@@ -1,14 +1,4 @@
 {pkgs, ...}: let
-  # Ollama VS Code extension — not in nixpkgs, fetched from marketplace
-  ollama = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "ollama";
-      name = "ollama";
-      version = "0.0.2";
-      sha256 = "sha256-s0umMpHqjJvDNaqloCN0zUr1XCXlRHxUzhCgNwlBhXo=";
-    };
-  };
-
   # Grafana VS Code extension — not in nixpkgs, fetched from marketplace
   grafana = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
     mktplcRef = {
@@ -35,9 +25,6 @@ in {
     common = {
       extensions = with pkgs.vscode-extensions; [
         catppuccin.catppuccin-vsc
-
-        # AI / LLM
-        ollama
 
         # Nix Code
         mkhl.direnv

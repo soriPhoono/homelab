@@ -5,7 +5,7 @@
     hyprland = {
       monitors = [
         {
-          name = "DP-5";
+          name = "HDMI-A-1";
           primary = true;
           modeline = {
             width = 1920;
