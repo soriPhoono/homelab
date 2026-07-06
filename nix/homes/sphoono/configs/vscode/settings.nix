@@ -55,6 +55,9 @@ with lib; {
       # Disable extension updates
       "extensions.autoCheckUpdates" = false;
       "extensions.autoUpdate" = false;
+      "accessibility.signals.terminalBell" = {
+        "sound" = "off";
+      };
     };
   };
 }

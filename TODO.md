@@ -2,38 +2,32 @@
 
 These are the tasks that are intended for future development goals
 
-- [x] For each module
-  - [x] Update option descriptions (multiline strings, accurate descriptions, examples where applicable)
-  - [x] Each module uses with lib;
-  - [x] Each module has slim imports
-  - [x] Each module declares as little as possible in the root let in binding
-  - [x] Each module has an enable option
-  - [x] Each module uses mkMerge EVEN IF IT IS NOT NEEDED
-  - [x] Each module guards dependencies (options ? "dependency name") for easy removal
-  - [x] Each home manager option from nixos configuration is apropriately set
-  - [x] Each home manager feature requiring prerequisite nixos configuration is apropriately guarded or errors
-  - [x] EVERY variable read is properly guarded or throws documented errors
-- [x] Configure hermes agent in some form
-  - [x] Research if hermes agent supports multi user configuration
-    - [x] if yes create server deployment as this is an always on service
 - [ ] Configure hermes agent
-  - [x] office skills
-    - [x] pdf skills
-    - [x] docx skills
-    - [x] xlsx skills
-    - [x] pptx skills
-  - [ ] reddit search skill
   - [ ] configure local matrix server for bot accounts
-- [x] Bifrucate noctalia shell configuration from core to home
-  - [x] Move shell configuration to home
-  - [x] Create a nix module option for shell configuration
-  - [x] Update noctalia configuration to use new shell configuration
-- [ ] Add support for multiple bootloaders
-- [x] Finish configuring greetd display manager
 - [ ] Test vr support on desktop
 - [ ] Finish implementing better security hardening
 - [ ] Implement impermenance on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
-- [x] Create editor system that can contain an "editor agent", allowing for easier configuration of newer editors
-- [x] Fix agent system
+
+## MCP Infrastructure — Server Issues & Fixes
+
+### office/pdf — Server crash on write operations [UPSTREAM BUG]
+
+- `pdf_edit_metadata` causes an internal `ValueError` that crashes the
+  `office/pdf` MCP server entirely, putting it into a ~60s backoff for all
+  subsequent calls.
+- `pdf_add_bookmark` and other write-heavy ops fail during the recovery window.
+- **Root cause:** The `pdf-edit-mcp` v0.2.0 server uses FastMCP with an
+  `engine_guard()` context manager that catches all exceptions and converts
+  them to `ToolError`. However, `pikepdf.open_metadata()` /
+  `meta[xmp_key] = value` in `pdf_edit_engine.wrapper.edit_metadata()` can
+  raise `ValueError` from pikepdf's XMP metadata writer in edge cases (e.g.
+  non-string metadata values, namespace violations). These should be caught
+  by the `except Exception` in `engine_guard()`, so if the server is crashing
+  rather than returning a ToolError, it may be a FastMCP-level serialization
+  issue or a version mismatch in the installed `pdf-edit-engine`.
+- **Status:** Investigate whether upgrading `pdf-edit-mcp` / `pdf-edit-engine`
+  resolves the crash, or file issue at: https://github.com/AryanBV/pdf-edit-mcp
+- **Fix:** Either pin a known-good version, or report the crash with a
+  reproducer to the upstream project.

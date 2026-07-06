@@ -61,14 +61,14 @@
               lib.mapAttrs
               (name: value:
                 if builtins.isAttrs value
-                then "$${${lib.strings.toUpper name}}"
+                then "$" + "{${lib.strings.toUpper name}}"
                 else value)
               desc.env;
             processedHeaders =
               lib.mapAttrs
               (name: value:
                 if builtins.isAttrs value
-                then "$${${lib.strings.toUpper name}}"
+                then "$" + "{${lib.strings.toUpper name}}"
                 else value)
               desc.headers;
           in
@@ -118,14 +118,14 @@
                 lib.mapAttrs
                 (name: value:
                   if builtins.isAttrs value
-                  then "$${${lib.strings.toUpper name}}"
+                  then "$" + "{${lib.strings.toUpper name}}"
                   else value)
                 desc.env;
               processedHeaders =
                 lib.mapAttrs
                 (name: value:
                   if builtins.isAttrs value
-                  then "$${${lib.strings.toUpper name}}"
+                  then "$" + "{${lib.strings.toUpper name}}"
                   else value)
                 desc.headers;
             in
@@ -163,13 +163,6 @@
                 )
               ))
             profileCfg.mcpServers;
-        }
-        # Provider settings inherited from the main agent config
-        // lib.optionalAttrs cfg.providers.opencode.enable {
-          model = {
-            default = "deepseek-v4-flash";
-            provider = "opencode-go";
-          };
         }
         // lib.optionalAttrs cfg.providers.ollama.enable {
           model =
@@ -382,14 +375,14 @@ in
                     mapAttrs
                     (name: value:
                       if (builtins.isAttrs value)
-                      then "$${${lib.strings.toUpper name}}"
+                      then "$" + "{${lib.strings.toUpper name}}"
                       else value)
                     desc.env;
                   processedHeaders =
                     mapAttrs
                     (name: value:
                       if (builtins.isAttrs value)
-                      then "$${${lib.strings.toUpper name}}"
+                      then "$" + "{${lib.strings.toUpper name}}"
                       else value)
                     desc.headers;
                 in
@@ -428,13 +421,6 @@ in
                   ))
                 cfg.mcpServers;
             }
-
-            (mkIf cfg.providers.opencode.enable {
-              model = {
-                default = "deepseek-v4-flash";
-                provider = "opencode-go";
-              };
-            })
 
             (mkIf cfg.providers.ollama.enable {
               model =
@@ -517,19 +503,24 @@ in
         profilesDir = "${config.programs.hermes-agent.stateDir}/.hermes/profiles";
       in
         mkMerge [
-          # sops secrets: collect all MCP server secrets across profiles
+          # sops secrets: collect all MCP server secrets across profiles.
+          # Both common (cfg.mcpServers) and profile-specific (profileCfg.mcpServers)
+          # servers are merged into each profile's config.yaml, so secrets from both
+          # must be collected. Profile servers override common ones of the same name.
           {
             sops.secrets = genAttrs (flatten (
               mapAttrsToList (_profileName: profileCfg:
                 mapAttrsToList (_serverName: server:
                   (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") server.env))
                   ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") server.headers)))
-                profileCfg.mcpServers)
+                (cfg.mcpServers // profileCfg.mcpServers))
               (filterAttrs (_: p: p.enable) cfg.profiles)
             )) (_: {});
           }
 
-          # sops templates: one .env per profile, deployed directly to profile dir
+          # sops templates: one .env per profile, deployed directly to profile dir.
+          # Includes env vars from both common and profile-specific MCP servers,
+          # matching the merged mcp_servers section in the profile's config.yaml.
           {
             sops.templates = listToAttrs (
               mapAttrsToList (profileName: profileCfg:
@@ -552,7 +543,7 @@ in
                           then "${toUpper envName}=${config.sops.placeholder.${envValue.secret}}"
                           else "")
                         desc.env or {})
-                      profileCfg.mcpServers
+                      (cfg.mcpServers // profileCfg.mcpServers)
                     )
                   );
                   path = "${profilesDir}/${profileName}/.env";
