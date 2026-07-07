@@ -83,6 +83,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions/fd5c5549692ff4d2dbee1ab7eea19adc2f97baeb";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     hermes-agent = {
       url = "github:yzx9/hermes-agent/feat/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -99,6 +104,7 @@
     nixpkgs,
     flake-parts,
     nur,
+    nix-vscode-extensions,
     nix-skills,
     ...
   }: let
@@ -128,7 +134,7 @@
             // {
               nur = nur.overlays.default;
               nix-skills = nix-skills.overlays.default;
-              # antigravity = antigravity-nix.overlays.default;
+              nix-vscode-extensions = nix-vscode-extensions.overlays.default;
             }
           );
         };
@@ -273,11 +279,6 @@
           inherit system;
           config = {
             allowUnfree = true;
-            # mcp-nixos transitively depends on arrow-cpp which is marked broken on
-            # x86_64-darwin.  Since we only deploy NixOS systems (Linux), this is
-            # safe to allow — the package simply won't build on unsupported platforms
-            # but won't crash evaluation either.
-            allowBroken = true;
           };
         };
 
@@ -316,6 +317,7 @@
                 sudo nixos-install --flake .#$target --option max-jobs 1 --option cores 4
               '';
             };
+            meta.description = "Install NixOS to a target machine (disko + nixos-install)";
           };
           writeDisks = {
             type = "app";
@@ -330,6 +332,7 @@
                 sudo disko -m destroy,format,mount --flake .#$target
               '';
             };
+            meta.description = "Partition and format disks for a target machine using disko";
           };
           default = install;
         };

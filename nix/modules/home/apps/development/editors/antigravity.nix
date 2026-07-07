@@ -260,17 +260,27 @@
           cp "$themeJsonPath" "$out/themes/stylix.json"
           cp "$packageJsonPath" "$out/package.json"
         '';
-    in
-      pkgs.vscode-utils.buildVscodeExtension {
-        pname = "stylix-antigravity";
+
+      # Build a VS Code extension from source files.
+      # Uses stdenv.mkDerivation directly (not buildVscodeExtension) because
+      # buildVscodeExtension's unpack-vsix hook breaks directory-shaped src.
+      passthru = {
+        vscodeExtUniqueId = "stylix.antigravity";
         vscodeExtPublisher = "stylix";
         vscodeExtName = "antigravity";
-        vscodeExtUniqueId = "stylix.antigravity";
+      };
+    in
+      pkgs.stdenv.mkDerivation {
+        name = "vscode-extension-stylix-antigravity-0.0.0";
         version = "0.0.0";
-
+        inherit passthru;
         src = extensionSrc;
-        sourceRoot = ".";
-
+        dontConfigure = true;
+        dontBuild = true;
+        installPhase = ''
+          mkdir -p "$out/share/vscode/extensions/stylix.antigravity"
+          cp -r . "$out/share/vscode/extensions/stylix.antigravity/"
+        '';
         meta.license = lib.licenses.mit;
       }
     else null;
