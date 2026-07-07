@@ -18,6 +18,18 @@
       sha256 = "sha256-fKJbaJgsLgypprylbUKUjyeU1B9x0RlaD1dUnFd1w7Y=";
     };
   };
+
+  # Nix IDE v0.5.5 — pinned to a version compatible with Antigravity IDE's
+  # bundled VS Code engine (v1.107.0).  The nixpkgs version (v0.5.9) requires
+  # VS Code >= 1.112.0, which postdates the engine shipped inside Antigravity.
+  nix-ide = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+    mktplcRef = {
+      publisher = "jnoortheen";
+      name = "nix-ide";
+      version = "0.5.5";
+      sha256 = "sha256-epdEMPAkSo0IXsd+ozicI8bjPPquDKIzB3ONRUYWwn8=";
+    };
+  };
 in {
   apps.development.editors.antigravity = {
     # Common extensions added to EVERY profile — keep this minimal.
@@ -28,7 +40,9 @@ in {
 
         # Nix Code
         mkhl.direnv
-        jnoortheen.nix-ide
+        # Pinned to v0.5.5 — newer versions require VS Code >= 1.112 which
+        # Antigravity IDE's bundled engine (v1.107.0) doesn't meet.
+        nix-ide
 
         # Shell script
         foxundermoon.shell-format
