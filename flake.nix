@@ -78,6 +78,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    antigravity-nix = {
+      url = "github:jacopone/antigravity-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     hermes-agent = {
       url = "github:yzx9/hermes-agent/feat/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";

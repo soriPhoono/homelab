@@ -50,10 +50,10 @@
     servers =
       builtins.mapAttrs (
         _name: srv:
-          {
+          (lib.optionalAttrs (srv.url != null) {
             inherit (srv) url;
             headers = srv.headers or {};
-          }
+          })
           // (lib.optionalAttrs (srv.command != null) {
             inherit (srv) command;
             args = srv.args or [];

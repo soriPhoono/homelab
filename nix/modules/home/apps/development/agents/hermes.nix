@@ -259,8 +259,8 @@ in
 
           search = {
             variant = mkOption {
-              type = with types; enum ["exa"];
-              default = "exa";
+              type = with types; listOf (enum ["exa" "brave"]);
+              default = ["exa" "brave"];
               description = ''
                 The type of search provider backend
               '';
@@ -290,7 +290,8 @@ in
           secrets =
             {
               "api/OPENCODE_API_KEY" = mkIf cfg.providers.opencode.enable {};
-              "api/EXA_API_KEY" = mkIf (cfg.providers.search.variant == "exa") {};
+              "api/EXA_API_KEY" = mkIf (lib.elem "exa" cfg.providers.search.variant) {};
+              "api/BRAVE_API_KEY" = mkIf (lib.elem "brave" cfg.providers.search.variant) {};
             }
             // genAttrs (flatten (mapAttrsToList (_name: value: (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.env)) ++ (mapAttrsToList (_name: value: value.secret) (filterAttrs (_name: value: value ? "secret") value.headers))) cfg.mcpServers)) (_name: {});
           templates."hermes/.env".content = builtins.concatStringsSep "\n" [
@@ -301,10 +302,14 @@ in
                 OPENCODE_GO_API_KEY=${config.sops.placeholder."api/OPENCODE_API_KEY"}
               '')
             (optionalString
-              (cfg.providers.search.variant
-                == "exa")
+              (lib.elem "exa" cfg.providers.search.variant)
               ''
                 EXA_API_KEY=${config.sops.placeholder."api/EXA_API_KEY"}
+              '')
+            (optionalString
+              (lib.elem "brave" cfg.providers.search.variant)
+              ''
+                BRAVE_SEARCH_API_KEY=${config.sops.placeholder."api/BRAVE_API_KEY"}
               '')
             (concatStringsSep
               "\n"
@@ -531,7 +536,7 @@ in
                         OPENCODE_ZEN_API_KEY=${config.sops.placeholder."api/OPENCODE_API_KEY"}
                         OPENCODE_GO_API_KEY=${config.sops.placeholder."api/OPENCODE_API_KEY"}
                       '')
-                      (optionalString (cfg.providers.search.variant == "exa") ''
+                      (optionalString (lib.elem "exa" cfg.providers.search.variant) ''
                         EXA_API_KEY=${config.sops.placeholder."api/EXA_API_KEY"}
                       '')
                     ]

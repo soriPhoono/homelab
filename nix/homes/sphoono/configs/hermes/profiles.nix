@@ -5,7 +5,7 @@
 }:
 with lib; {
   config = {
-    userapps.development.agents.hermes.profiles = {
+    apps.development.agents.hermes.profiles = {
       # ── Office ──────────────────────────────────────────────────────────
       office = {
         enable = true;

@@ -6,7 +6,7 @@
 }:
 with lib; {
   config = {
-    userapps.development.agents.hermes = {
+    apps.development.agents.hermes = {
       # ── Common MCP servers (applied to default agent + all profiles) ───
       mcpServers = {
         "personal/obsidian" = {
@@ -40,19 +40,6 @@ with lib; {
             "-y"
             "wikipedia-mcp-server"
           ];
-        };
-
-        "personal/brave-search" = {
-          command = "${pkgs.nodejs}/bin/npx";
-          args = [
-            "-y"
-            "@brave/brave-search-mcp-server"
-          ];
-          env = {
-            BRAVE_API_KEY = {
-              secret = "api/BRAVE_API_KEY";
-            };
-          };
         };
       };
     };

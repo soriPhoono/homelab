@@ -28,8 +28,8 @@
 
   # Auto-discover models from agent configs
   defaultModels = unique (flatten (
-    (mapAttrsToList (_user: config: config.userapps.development.agents.opencode.providers.ollama.models or []) config.home-manager.users)
-    ++ (mapAttrsToList (_user: config: config.userapps.development.agents.hermes.providers.ollama.models or []) config.home-manager.users)
+    (mapAttrsToList (_user: config: config.apps.development.agents.opencode.providers.ollama.models or []) config.home-manager.users)
+    ++ (mapAttrsToList (_user: config: config.apps.development.agents.hermes.providers.ollama.models or []) config.home-manager.users)
   ));
 
   portString = toString cfg.port;
@@ -209,9 +209,9 @@ in
       # point at the local instance (localhost:11434 via Docker port mapping).
       home-manager.users =
         mapAttrs (_: _: {
-          userapps.development.agents.hermes.providers.ollama.enable = mkDefault true;
-          userapps.development.agents.opencode.providers.ollama.enable = mkDefault true;
-          userapps.development.editors.vscode.common.extensions = [
+          apps.development.agents.hermes.providers.ollama.enable = mkDefault true;
+          apps.development.agents.opencode.providers.ollama.enable = mkDefault true;
+          apps.development.editors.vscode.common.extensions = [
             (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
               mktplcRef = {
                 publisher = "ollama";
