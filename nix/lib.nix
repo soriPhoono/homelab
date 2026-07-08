@@ -1,4 +1,4 @@
-_final: prev:
+final: prev:
 with prev; {
   homelab = {
     core = {
@@ -92,7 +92,7 @@ with prev; {
         package,
         extraOptions ? {},
       }: let
-        editorOpts = _final.homelab.agentics.mkEditor {
+        editorOpts = final.homelab.agentics.mkEditor {
           inherit name package;
           extraOptions = {
             common = mkOption {
@@ -176,7 +176,7 @@ with prev; {
               description = "Profiles to activate.";
             };
 
-            agent = removeAttrs (_final.homelab.agentics.mkAgent {
+            agent = removeAttrs (final.homelab.agentics.mkAgent {
               name = "${name} agent";
               package = null;
             }) ["package" "secrets" "userSettings"];
@@ -299,6 +299,24 @@ with prev; {
               );
           };
         }
+        // extraOptions;
+
+      # mkAgentProfile: builds a profile submodule with all mkAgent options
+      # plus soulDoc and userDoc. Each profile is an independent agent config
+      # — the 'default' profile drives the upstream HM module, non-default
+      # profiles get per-profile state directories. enableCli/enableDesktop
+      # are NOT included here — every profile is accessible via CLI/desktop;
+      # agent routing is handled separately via message gateways.
+      mkAgentProfile = {
+        name,
+        extraOptions ? {},
+      }: let
+        baseOptions = final.homelab.agentics.mkAgent {
+          inherit name;
+          package = null;
+        };
+      in
+        (removeAttrs baseOptions ["package"])
         // extraOptions;
     };
   };

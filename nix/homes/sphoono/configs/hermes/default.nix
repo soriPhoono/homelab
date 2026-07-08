@@ -1,21 +1,21 @@
-{lib, ...}:
-with lib; {
+{
   imports = [
     ./mcp.nix
     ./profiles.nix
   ];
 
-  config = mkMerge [
-    {
-      apps.development.agents.hermes = {
-        soulDoc = ./SOUL.md;
-        userDoc = ./USER.md;
+  apps.development.agents.hermes = {
+    providers = {
+      opencode.enable = true;
+      ollama.models = ["gemma4:12b"];
+    };
 
-        providers = {
-          opencode.enable = true;
-          ollama.models = ["gemma4:12b"];
-        };
-      };
-    }
-  ];
+    gateways.telegram.enable = true;
+
+    profiles.default = {
+      enable = true;
+      soulDoc = ./SOUL.md;
+      userDoc = ./USER.md;
+    };
+  };
 }

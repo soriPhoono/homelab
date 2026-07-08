@@ -45,6 +45,7 @@ with lib; {
         admin = true;
         shell = pkgs.fish;
         publicKeys = {primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT Personal Key";};
+        linger = true;
       };
     };
   };

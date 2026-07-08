@@ -30,6 +30,19 @@
       sha256 = "sha256-epdEMPAkSo0IXsd+ozicI8bjPPquDKIzB3ONRUYWwn8=";
     };
   };
+
+  # Kubernetes Tools v1.3.0 — pinned to a version compatible with Antigravity
+  # IDE's bundled VS Code engine (v1.107.0).  The nixpkgs version (v1.4.0)
+  # requires VS Code >= 1.110.0, which postdates the engine shipped inside
+  # Antigravity.
+  k8s-tools = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+    mktplcRef = {
+      publisher = "ms-kubernetes-tools";
+      name = "vscode-kubernetes-tools";
+      version = "1.3.0";
+      sha256 = "sha256-mXM9mA6oJ/qQgS/NgctpkvUNfouMBD30ayLs25H3sH0=";
+    };
+  };
 in {
   apps.development.editors.antigravity = {
     # Common extensions added to EVERY profile — keep this minimal.
@@ -99,7 +112,9 @@ in {
 
             # Container ops
             ms-azuretools.vscode-containers
-            ms-kubernetes-tools.vscode-kubernetes-tools
+            # Pinned to v1.3.0 — newer versions require VS Code >= 1.110 which
+            # Antigravity IDE's bundled engine (v1.107.0) doesn't meet.
+            k8s-tools
 
             # Terraform / OpenTofu
             hashicorp.hcl

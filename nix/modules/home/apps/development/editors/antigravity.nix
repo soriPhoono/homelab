@@ -293,6 +293,41 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        # Fix user-data-dir mismatch: the Antigravity IDE's launcher.sh passes
+        # --user-data-dir="$HOME/.antigravity-ide", so the IDE reads its user
+        # config from ~/.antigravity-ide/User/. However, the home-manager vscode
+        # module (used by programs.antigravity) writes config files to
+        # ~/.config/Antigravity/User/ based on nameShort = "Antigravity".
+        # Symlink the runtime dir to the managed dir so snippets, settings,
+        # keybindings, and MCP config all reach the IDE correctly.
+        home.activation.fixAntigravityUserDir = lib.hm.dag.entryAfter ["writeBoundary"] ''
+          runtimeDir="$HOME/.antigravity-ide/User"
+          # XDG_CONFIG_HOME may be unset in systemd service context (the
+          # home-manager-sphoono.service runs as a system-level one-shot with
+          # a minimal environment). Fall back to the default ~/.config.
+          managedDir="$HOME/.config/Antigravity/User"
+
+          if [[ -v DRY_RUN ]]; then
+            if [ -e "$runtimeDir" ] && [ ! -L "$runtimeDir" ]; then
+              echo "Would remove real directory: $runtimeDir"
+            fi
+            if [ ! -L "$runtimeDir" ] && [ -d "$managedDir" ]; then
+              echo "Would symlink: $runtimeDir -> $managedDir"
+            fi
+          else
+            # Only act if the runtime dir exists as a real directory (not already a symlink)
+            if [ -e "$runtimeDir" ] && [ ! -L "$runtimeDir" ]; then
+              rm -rf "$runtimeDir"
+            fi
+
+            # Create the symlink if it doesn't exist yet
+            if [ ! -L "$runtimeDir" ] && [ -d "$managedDir" ]; then
+              mkdir -p "$(dirname "$runtimeDir")"
+              ln -sf "$managedDir" "$runtimeDir"
+            fi
+          fi
+        '';
+
         home.sessionVariables = mkIf cfg.defaultEditor {
           EDITOR = "${getExe cfg.package}";
           VISUAL = "${getExe cfg.package}";
@@ -341,9 +376,13 @@ in
           cfg.agent.skills;
       }
 
-      # Stylix theme: inject the base16 theme extension into every active profile
+      # Stylix theme: inject the base16 theme extension into every active profile.
+      # Use mkForce to prevent mkMerge from deep-merging this with the base
+      # profiles definition above, which would cause list-valued options like
+      # globalSnippets.*.body and globalSnippets.*.prefix to be concatenated
+      # (doubling every snippet).
       (mkIf (options ? stylix && config.stylix.enable && stylixThemeExt != null) {
-        programs.antigravity.profiles =
+        programs.antigravity.profiles = mkForce (
           mapAttrs (
             _name: profile:
               profile
@@ -356,7 +395,8 @@ in
                   };
               }
           )
-          vscodeProfiles;
+          vscodeProfiles
+        );
       })
     ]);
   }
