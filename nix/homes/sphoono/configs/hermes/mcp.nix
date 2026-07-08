@@ -41,6 +41,15 @@ with lib; {
             "wikipedia-mcp-server"
           ];
         };
+
+        "personal/filesystem" = {
+          command = "${pkgs.nodejs}/bin/npx";
+          args = [
+            "-y"
+            "@modelcontextprotocol/server-filesystem"
+            "${config.home.homeDirectory}"
+          ];
+        };
       };
     };
   };
