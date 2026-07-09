@@ -89,7 +89,7 @@
     };
 
     hermes-agent = {
-      url = "github:yzx9/hermes-agent/feat/home-manager";
+      url = "github:NousResearch/hermes-agent";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
