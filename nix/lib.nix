@@ -201,6 +201,18 @@ with prev; {
             default = package;
           };
 
+          extraPackages = mkOption {
+            type = types.listOf types.package;
+            default = [];
+            description = "Extra packages to install alongside the hermes agent";
+          };
+
+          environment = mkOption {
+            type = types.attrsOf types.str;
+            default = {};
+            description = "Environment variables for the hermes agent, NO SECRETS HERE";
+          };
+
           secrets = mkOption {
             type = with types; listOf str;
             default = [];
@@ -217,14 +229,6 @@ with prev; {
               ]);
             default = {};
             description = "";
-          };
-
-          documents = mkOption {
-            type = with types; attrsOf (either str path);
-            default = {};
-            description = ''
-              The documents to symlink to the agents configuration directory for per session loading
-            '';
           };
 
           skills = mkOption {

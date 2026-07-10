@@ -12,9 +12,9 @@ with lib; {
           autoupdate = false;
         };
 
-        documents = {
-          "AGENTS.md" = ./AGENTS.md;
-        };
+        # documents = {
+        #   "AGENTS.md" = ./AGENTS.md;
+        # };
 
         secrets = [
           "api/OPENCODE_API_KEY"
