@@ -6,7 +6,7 @@
     ./zen
     ./hypr
     ./helix
-    # ./hermes
+    ./hermes
     ./opencode
     ./fastfetch
   ];

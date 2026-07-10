@@ -148,7 +148,6 @@
       sops-nix.homeManagerModules.sops
       stylix.homeModules.stylix
       noctalia.homeModules.default
-      hermes-agent.homeManagerModules.default
     ];
 
     nixosModules = with inputs; [
