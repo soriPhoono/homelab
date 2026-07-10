@@ -289,6 +289,13 @@ in
     options.apps.development.editors.antigravity = homelab.agentics.mkVscodeEditor {
       name = "antigravity";
       package = pkgs.google-antigravity-ide;
+      extraOptions = {
+        agent.documents = mkOption {
+          type = types.attrsOf types.path;
+          default = {};
+          description = "Documents to be made available to the agent.";
+        };
+      };
     };
 
     config = mkIf cfg.enable (mkMerge [

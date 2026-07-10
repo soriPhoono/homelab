@@ -185,7 +185,7 @@ with prev; {
       in
         # Merge editor base + agent extras.
         # For shared keys (enable, package, secrets, userSettings), editor wins.
-        editorOpts // extraOptions;
+        prev.recursiveUpdate editorOpts extraOptions;
 
       mkAgent = {
         name,

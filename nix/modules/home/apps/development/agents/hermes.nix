@@ -79,14 +79,25 @@ with lib; let
     HERMES_NIX_ENV_${toUpper profileName}_EOF
   '';
 
-  mkDocuments = _profileName: _profile:
+  mkDocuments = profileName: profileCfg: let
+    targetDir =
+      if profileName == "default"
+      then stateDir
+      else "${stateDir}/profiles/${profileName}";
+    docDestinations = {
+      soul = "SOUL.md";
+      user = "memories/USER.md";
+      memory = "memories/MEMORY.md";
+    };
+  in
     concatStringsSep "\n"
-    (mapAttrs
+    (mapAttrsToList
       (
         name: document:
-          optionalString (document != null) "cp -rL ${document} ${stateDir}/${name}; chmod 0640 ${stateDir}/${name}"
+          optionalString (document != null && document != "")
+          "cp -rL ${document} ${targetDir}/${docDestinations.${name}}; chmod 0640 ${targetDir}/${docDestinations.${name}}"
       )
-      cfg.profiles.default.documents);
+      profileCfg.documents);
 in {
   # Installs cli tooling with global enable option, extra features get added with other options
   options.apps.development.agents.hermes = homelab.agentics.mkAgent {
@@ -122,8 +133,8 @@ in {
 
                   documents = {
                     soul = mkOption {
-                      type = types.path;
-                      default = "";
+                      type = types.nullOr types.path;
+                      default = null;
                       description = ''
                         Path to a soul file for the hermes agent, this will be symlinked to the agent workspace at 'SOUL.md'.
                       '';
@@ -191,6 +202,11 @@ in {
             ${mkDocuments profileName cfg.profiles.default}
           '';
       };
+
+      sops.secrets = let
+        allSecrets = unique (cfg.secrets ++ (concatLists (mapAttrsToList (_name: profileCfg: profileCfg.secrets) cfg.profiles)));
+      in
+        genAttrs allSecrets (_: {});
     }
 
     (mkIf pkgs.stdenv.hostPlatform.isLinux {
@@ -201,6 +217,7 @@ in {
           Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || cfg.profiles.default.secrets != []) "sops-nix.service";
         };
         Service = let
+          profileName = "default";
           servicePath = lib.makeBinPath [
             hermesPackage
             pkgs.bash
@@ -212,10 +229,7 @@ in {
             ENV_FILE="${stateDir}/.env"
             ${concatStringsSep "\n" (
               map (f: ''
-                if [ -f "${f}" ]; then
-                  echo "" >> "$ENV_FILE"
-                  cat "${f}" >> "$ENV_FILE"
-                fi
+                echo "${baseNameOf f}=${config.sops.secrets."${f}".path}" | tee -a "$ENV_FILE"
               '')
               (unique (cfg.secrets ++ cfg.profiles.default.secrets))
             )}
@@ -257,11 +271,21 @@ in {
 
     (mkIf ((builtins.attrNames (removeAttrs cfg.profiles ["default"])) != []) {
       home.activation =
-        mapAttrs
-        (name: _config: {
-          "hermes-agent-${name}-setup" = lib.hm.dag.entryAfter ["hermes-agent-default-setup"] ''
+        mapAttrs'
+        (name: profileCfg: {
+          name = "hermes-agent-${name}-setup";
+          value = lib.hm.dag.entryAfter ["hermes-agent-default-setup"] ''
             # Create folders for additional profiles
             ${mkProfileFolders (stateDir + "/profiles/${name}")}
+
+            # Install config.yaml for profile
+            ${mkConfig name profileCfg}
+
+            # Create base environment file
+            ${mkEnvBase name profileCfg}
+
+            # Link documents into agent profile
+            ${mkDocuments name profileCfg}
           '';
         }) (removeAttrs cfg.profiles ["default"]);
     })
