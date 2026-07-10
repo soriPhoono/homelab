@@ -220,13 +220,7 @@ with prev; {
           };
 
           userSettings = mkOption {
-            type = with types;
-              attrsOf (oneOf [
-                # NOTE: Can grow as needed
-                str
-                int
-                bool
-              ]);
+            type = types.attrs;
             default = {};
             description = "";
           };
@@ -253,14 +247,14 @@ with prev; {
                       '';
                     };
                     args = mkOption {
-                      type = listOf str;
-                      default = [];
+                      type = nullOr (listOf str);
+                      default = null;
                       description = ''
                         The list of command line args to give to this mcp server
                       '';
                     };
                     env = mkOption {
-                      type = attrsOf (either str (submodule {
+                      type = nullOr (attrsOf (either str (submodule {
                         options = {
                           secret = mkOption {
                             type = str;
@@ -269,8 +263,8 @@ with prev; {
                             '';
                           };
                         };
-                      }));
-                      default = {};
+                      })));
+                      default = null;
                       description = ''
                         The environment to pass to this mcp server
                       '';
@@ -283,7 +277,7 @@ with prev; {
                       '';
                     };
                     headers = mkOption {
-                      type = attrsOf (either str (submodule {
+                      type = nullOr (attrsOf (either str (submodule {
                         options = {
                           secret = mkOption {
                             type = str;
@@ -292,8 +286,8 @@ with prev; {
                             '';
                           };
                         };
-                      }));
-                      default = {};
+                      })));
+                      default = null;
                       description = ''
                         The headers to pass to this mcp server
                       '';

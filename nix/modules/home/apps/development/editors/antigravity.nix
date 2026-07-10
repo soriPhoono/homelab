@@ -51,14 +51,20 @@
       builtins.mapAttrs (
         _name: srv:
           (lib.optionalAttrs (srv.url != null) {
-            inherit (srv) url;
-            headers = srv.headers or {};
-          })
+              inherit (srv) url;
+            }
+            // lib.optionalAttrs (srv.headers != null) {
+              inherit (srv) headers;
+            })
           // (lib.optionalAttrs (srv.command != null) {
-            inherit (srv) command;
-            args = srv.args or [];
-            env = srv.env or {};
-          })
+              inherit (srv) command;
+            }
+            // lib.optionalAttrs (srv.args != null) {
+              inherit (srv) args;
+            }
+            // lib.optionalAttrs (srv.env != null) {
+              inherit (srv) env;
+            })
       )
       cfg.agent.mcpServers;
   };

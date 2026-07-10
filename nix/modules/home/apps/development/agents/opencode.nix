@@ -25,21 +25,24 @@
   # ---- Gather all secret names from MCP servers ----
   mcpSecrets = let
     extractSecretNames = attrs:
-      lib.filter (v: v != null) (
-        lib.mapAttrsToList (
-          _: val:
-            if builtins.isAttrs val && val ? "secret"
-            then val.secret
-            else null
-        )
-        attrs
-      );
+      if attrs == null
+      then []
+      else
+        lib.filter (v: v != null) (
+          lib.mapAttrsToList (
+            _: val:
+              if builtins.isAttrs val && val ? "secret"
+              then val.secret
+              else null
+          )
+          attrs
+        );
   in
     lib.flatten (
       lib.mapAttrsToList (
         _name: srv:
-          extractSecretNames (srv.env or {})
-          ++ extractSecretNames (srv.headers or {})
+          extractSecretNames srv.env
+          ++ extractSecretNames srv.headers
       )
       cfg.mcpServers
     );
@@ -48,10 +51,10 @@
 
   # ---- Predicates for secret detection ----
   hasEnvSecret = srv:
-    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.env or {}));
+    srv.env != null && lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues srv.env);
 
   hasHeaderSecret = srv:
-    lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues (srv.headers or {}));
+    srv.headers != null && lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues srv.headers);
 
   # ---- MCP server translation ----
   #
@@ -61,7 +64,24 @@
   # Servers with secrets in env/headers get wrapper scripts that resolve
   # at runtime from the environment (set by makeWrapper on the opencode
   # binary).
-  translateMcpServer = name: srv:
+  translateMcpServer = name: rawSrv: let
+    srv =
+      rawSrv
+      // {
+        env =
+          if rawSrv.env != null
+          then rawSrv.env
+          else {};
+        headers =
+          if rawSrv.headers != null
+          then rawSrv.headers
+          else {};
+        args =
+          if rawSrv.args != null
+          then rawSrv.args
+          else [];
+      };
+  in
     if (srv.url != null)
     then
       # ── HTTP / SSE transport ──
@@ -75,7 +95,7 @@
             then "--headers '${hname}' \"\${${baseNameOf val.secret}}\""
             else "--headers '${hname}' '${lib.escapeShellArg val}'";
           headerFlags = lib.concatStringsSep " \\\n                " (
-            lib.mapAttrsToList mkHeaderFlag (srv.headers or {})
+            lib.mapAttrsToList mkHeaderFlag srv.headers
           );
           transportFlag =
             if srv.transport or "http" == "sse"
@@ -92,12 +112,15 @@
           command = ["${wrapper}/bin/${wrapperName}"];
           enabled = true;
         }
-      else {
-        type = "remote";
-        inherit (srv) url;
-        headers = srv.headers or {};
-        enabled = true;
-      }
+      else
+        ({
+            type = "remote";
+            inherit (srv) url;
+            enabled = true;
+          }
+          // (lib.optionalAttrs (rawSrv.headers != null) {
+            inherit (srv) headers;
+          }))
     else
       # ── Stdio transport ──
       if hasEnvSecret srv
@@ -113,9 +136,10 @@
                 if value ? "secret"
                 then "export ${baseNameOf value.secret}=\"\$${baseNameOf value.secret}\""
                 else "export ${envName}=${lib.escapeShellArg value}"
-            ) (srv.env or {})
+            )
+            srv.env
           );
-          argsStr = lib.concatStringsSep " " (map lib.escapeShellArg (srv.args or []));
+          argsStr = lib.concatStringsSep " " (map lib.escapeShellArg srv.args);
           wrapper = pkgs.writeShellScriptBin wrapperName ''
             ${envExports}
             exec ${lib.escapeShellArg srv.command} ${argsStr}
@@ -125,12 +149,15 @@
           command = ["${wrapper}/bin/${wrapperName}"];
           enabled = true;
         }
-      else {
-        type = "local";
-        command = [srv.command] ++ (srv.args or []);
-        env = srv.env or {};
-        enabled = true;
-      };
+      else
+        ({
+            type = "local";
+            command = [srv.command] ++ srv.args;
+            enabled = true;
+          }
+          // (lib.optionalAttrs (rawSrv.env != null) {
+            inherit (srv) env;
+          }));
 in
   with lib; {
     options.apps.development.agents.opencode = homelab.agentics.mkAgent {
