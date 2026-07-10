@@ -62,12 +62,7 @@ in
               ];
             };
 
-            linger = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether to enable systemd lingering for this user.";
-              example = true;
-            };
+            linger = mkEnableOption "Enable service lingering on this user";
           };
         });
 

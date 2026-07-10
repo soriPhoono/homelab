@@ -12,6 +12,7 @@
         go = {
           enable = true;
           default = true;
+          model = "deepseek-v4-flash";
         };
       };
     };

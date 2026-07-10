@@ -14,12 +14,24 @@ with lib; let
         default = mkEnableOption ''
           Set this to true to enable OpenCode Zen AI provider integration as the default provider for hermes agents.
         '';
+        model = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "gemini-3.5-flash";
+          description = "The model to use for the OpenCode Zen AI provider.";
+        };
       };
       go = {
         enable = mkEnableOption "Enable OpenCode Go AI provider integration";
         default = mkEnableOption ''
           Set this to true to enable OpenCode Go AI provider integration as the default provider for hermes agents.
         '';
+        model = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "glm-5.2";
+          description = "The model to use for the OpenCode Go AI provider.";
+        };
       };
     };
 
@@ -62,7 +74,7 @@ with lib; let
 
   # Create profile config.yaml
   mkConfigFile = profileName: profileConfig:
-    pkgs.writeText "hermes-${profileName}-config.yaml"
+    pkgs.writeText "hermes-config-${profileName}.yaml"
     (builtins.toJSON (cfg.userSettings // profileConfig.userSettings));
 
   mkConfig = profileName: profile: ''
@@ -192,161 +204,181 @@ in {
   };
 
   config = mkIf cfg.enable (mkMerge [
-    {
-      home = {
-        activation.hermes-agent-default-setup = let
-          profileName = "default";
-        in
-          lib.hm.dag.entryAfter ["writeBoundary"] ''
-            # Ensure directories exist for hermes agent startup (Default profile)
-            ${mkProfileFolders stateDir}
-
-            # Write managed flag
-            echo "" > ${stateDir}/.managed
-
-            # NOTE: Removed auth seeding logic, instead auth.json is seeded by the hermes provider given it's oauth process bound or maintained by the agent
-
-            # Install config.yaml for default profile
-            ${mkConfig profileName cfg.profiles.default}
-
-            # Create base environment file
-            ${mkEnvBase profileName cfg.profiles.default}
-
-            # Link documents into default agent
-            ${mkDocuments profileName cfg.profiles.default}
-          '';
-
-        file =
-          mapAttrs'
-          (name: skill: {
-            name = "${stateDir}/skills/${name}";
-            value = {
-              source = skill;
-              recursive = true;
-            };
-          })
-          (cfg.skills // cfg.profiles.default.skills);
-      };
-
-      sops.secrets = let
-        allSecrets = unique (cfg.secrets ++ (concatLists (mapAttrsToList (_name: profileCfg: profileCfg.secrets) cfg.profiles)));
-      in
-        genAttrs allSecrets (_: {});
-
-      apps.development.agents.hermes.profiles.default = let
-        mcpServers = cfg.mcpServers // cfg.profiles.default.mcpServers;
+    (mkMerge [
+      (let
+        profileName = "default";
+        profileCfg = cfg.profiles.${profileName};
       in {
-        secrets = unique (concatLists (mapAttrsToList (
-            _: server:
-              (
-                mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                  if server.env != null
-                  then server.env
-                  else {}
-                ))
+        apps.development.agents.hermes.profiles.${profileName} = let
+          mcpServers = cfg.mcpServers // profileCfg.mcpServers;
+        in {
+          secrets = unique (concatLists (mapAttrsToList (
+              _: server:
+                (
+                  mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                    if server.env != null
+                    then server.env
+                    else {}
+                  ))
+                )
+                ++ (
+                  mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                    if server.headers != null
+                    then server.headers
+                    else {}
+                  ))
+                )
+            )
+            mcpServers));
+          userSettings = {
+            mcp_servers =
+              lib.mapAttrs (
+                _: server:
+                  (lib.optionalAttrs (server.command != null) {inherit (server) command;})
+                  // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
+                  // (lib.optionalAttrs (server.env != null) {
+                    env = mapAttrs (_: value:
+                      if value ? secret
+                      then "\${${baseNameOf value.secret}}"
+                      else value)
+                    server.env;
+                  })
+                  // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
+                  // (lib.optionalAttrs (server.headers != null) {
+                    headers = mapAttrs (_: value:
+                      if value ? secret
+                      then "\${${baseNameOf value.secret}}"
+                      else value)
+                    server.headers;
+                  })
               )
-              ++ (
-                mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                  if server.headers != null
-                  then server.headers
-                  else {}
-                ))
-              )
-          )
-          mcpServers));
-        userSettings.mcp_servers =
-          lib.mapAttrs (
-            _: server:
-              (lib.optionalAttrs (server.command != null) {inherit (server) command;})
-              // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
-              // (lib.optionalAttrs (server.env != null) {
-                env = mapAttrs (_: value:
-                  if value ? secret
-                  then "\${${baseNameOf value.secret}}"
-                  else value)
-                server.env;
-              })
-              // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
-              // (lib.optionalAttrs (server.headers != null) {
-                headers = mapAttrs (_: value:
-                  if value ? secret
-                  then "\${${baseNameOf value.secret}}"
-                  else value)
-                server.headers;
-              })
-          )
-          mcpServers;
-      };
-    }
+              mcpServers;
 
-    (mkIf cfg.providers.opencode.zen.default {
-      apps.development.agents.hermes.userSettings.model = {
-        provider = "opencode-zen";
-      };
-    })
-
-    (mkIf cfg.providers.opencode.go.default {
-      apps.development.agents.hermes.userSettings.model = {
-        provider = "opencode-go";
-      };
-    })
-
-    (mkIf pkgs.stdenv.hostPlatform.isLinux {
-      systemd.user.services.hermes-agent-default = {
-        Unit = {
-          Description = "Hermes AI Agent (Default)";
-          After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || cfg.profiles.default.secrets != []) "sops-nix.service";
-          Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || cfg.profiles.default.secrets != []) "sops-nix.service";
+            model =
+              if (cfg.providers.opencode.go.default || profileCfg.providers.opencode.go.default)
+              then {
+                provider = "opencode-go";
+                model =
+                  if cfg.providers.opencode.go.model != null
+                  then cfg.providers.opencode.go.model
+                  else profileCfg.providers.opencode.go.model;
+              }
+              else if (cfg.providers.opencode.zen.default || profileCfg.providers.opencode.zen.default)
+              then {
+                provider = "opencode-zen";
+                model =
+                  if cfg.providers.opencode.zen.model != null
+                  then cfg.providers.opencode.zen.model
+                  else profileCfg.providers.opencode.zen.model;
+              }
+              else {};
+          };
         };
-        Service = let
-          profileName = "default";
-          servicePath = lib.makeBinPath [
-            hermesPackage
-            pkgs.bash
-            pkgs.coreutils
-            pkgs.git
-          ];
+      })
 
-          envSeedScript = pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
-            ENV_FILE="${stateDir}/.env"
-            ${optionalString (cfg.providers.opencode.zen.enable || cfg.profiles.default.providers.opencode.zen.enable) ''
-              printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" | tee -a "$ENV_FILE"
-            ''}
-            ${optionalString (cfg.providers.opencode.go.enable || cfg.profiles.default.providers.opencode.go.enable) ''
-              printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" | tee -a "$ENV_FILE"
-            ''}
-            ${concatStringsSep "\n" (
-              map (f: ''
-                printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" | tee -a "$ENV_FILE"
-              '')
-              (unique (cfg.secrets ++ cfg.profiles.default.secrets))
-            )}
-          '';
-        in
-          lib.mkMerge [
-            {
-              Environment = [
-                "HOME=${config.home.homeDirectory}"
-                "HERMES_HOME=${stateDir}"
-                "HERMES_MANAGED=true"
-                ("PATH=" + servicePath + "\${PATH:+:$PATH}")
+      (let
+        profileName = "default";
+        profileCfg = cfg.profiles.${profileName};
+      in
+        mkIf profileCfg.enable {
+          home = {
+            activation."hermes-agent-${profileName}-setup" = lib.hm.dag.entryAfter ["writeBoundary"] ''
+              # Ensure directories exist for hermes agent startup (${profileName} profile)
+              ${mkProfileFolders stateDir}
+
+              # Write managed flag
+              echo "" > ${stateDir}/.managed
+
+              # NOTE: Removed auth seeding logic, instead auth.json is seeded by the hermes provider given it's oauth process bound or maintained by the agent
+
+              # Install config.yaml for default profile
+              ${mkConfig profileName profileCfg}
+
+              # Create base environment file
+              ${mkEnvBase profileName profileCfg}
+
+              # Link documents into default agent
+              ${mkDocuments profileName profileCfg}
+            '';
+
+            file =
+              mapAttrs'
+              (name: skill: {
+                name = "${stateDir}/skills/${name}";
+                value = {
+                  source = skill;
+                  recursive = true;
+                };
+              })
+              (cfg.skills // profileCfg.skills);
+          };
+
+          sops.secrets = let
+            allSecrets = unique (cfg.secrets ++ (concatLists (mapAttrsToList (_name: profileCfg: profileCfg.secrets) cfg.profiles)));
+          in
+            genAttrs allSecrets (_: {});
+        })
+
+      (let
+        profileName = "default";
+        profileCfg = cfg.profiles.${profileName};
+      in
+        mkIf (profileCfg.enable && pkgs.stdenv.hostPlatform.isLinux) {
+          systemd.user.services."hermes-agent-${profileName}" = {
+            Unit = {
+              Description = "Hermes AI Agent (${profileName} profile)";
+              After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
+              Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
+            };
+            Service = let
+              servicePath = lib.makeBinPath [
+                hermesPackage
+                pkgs.bash
+                pkgs.coreutils
+                pkgs.git
               ];
 
-              ExecStart = lib.concatStringsSep " " [
-                "${hermesPackage}/bin/hermes"
-                "gateway"
-              ];
+              envSeedScript = pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
+                ENV_FILE="${stateDir}/.env"
+                ${optionalString (cfg.providers.opencode.zen.enable || profileCfg.providers.opencode.zen.enable) ''
+                  printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" | tee -a "$ENV_FILE"
+                ''}
+                ${optionalString (cfg.providers.opencode.go.enable || profileCfg.providers.opencode.go.enable) ''
+                  printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" | tee -a "$ENV_FILE"
+                ''}
+                ${concatStringsSep "\n" (
+                  map (f: ''
+                    printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" | tee -a "$ENV_FILE"
+                  '')
+                  (unique (cfg.secrets ++ profileCfg.secrets))
+                )}
+              '';
+            in
+              lib.mkMerge [
+                {
+                  Environment = [
+                    "HOME=${config.home.homeDirectory}"
+                    "HERMES_HOME=${stateDir}"
+                    "HERMES_MANAGED=true"
+                    ("PATH=" + servicePath + "\${PATH:+:$PATH}")
+                  ];
 
-              Restart = "always";
-              RestartSec = 5;
-            }
-            (lib.mkIf (cfg.secrets != []) {
-              ExecStartPre = "${envSeedScript}";
-            })
-          ];
-        Install.WantedBy = ["default.target"];
-      };
-    })
+                  ExecStart = lib.concatStringsSep " " [
+                    "${hermesPackage}/bin/hermes"
+                    "gateway"
+                  ];
+
+                  Restart = "always";
+                  RestartSec = 5;
+                }
+                (lib.mkIf (cfg.secrets != [] || profileCfg.secrets != []) {
+                  ExecStartPre = "${envSeedScript}";
+                })
+              ];
+            Install.WantedBy = ["default.target"];
+          };
+        })
+    ])
 
     # Install core cli package and set environment variables
     (mkIf cfg.enableCli {
@@ -363,26 +395,5 @@ in {
     # Install desktop integration for hermes agent
     (mkIf cfg.enableDesktop {
       })
-
-    (mkIf ((builtins.attrNames (removeAttrs cfg.profiles ["default"])) != []) {
-      home.activation =
-        mapAttrs'
-        (name: profileCfg: {
-          name = "hermes-agent-${name}-setup";
-          value = lib.hm.dag.entryAfter ["hermes-agent-default-setup"] ''
-            # Create folders for additional profiles
-            ${mkProfileFolders (stateDir + "/profiles/${name}")}
-
-            # Install config.yaml for profile
-            ${mkConfig name profileCfg}
-
-            # Create base environment file
-            ${mkEnvBase name profileCfg}
-
-            # Link documents into agent profile
-            ${mkDocuments name profileCfg}
-          '';
-        }) (removeAttrs cfg.profiles ["default"]);
-    })
   ]);
 }
