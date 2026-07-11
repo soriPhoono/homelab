@@ -8,18 +8,21 @@
     enableDesktop = true;
 
     providers = {
-      opencode = {
-        go = {
-          enable = true;
-          default = true;
-          model = "deepseek-v4-flash";
+      models = {
+        opencode = {
+          go = {
+            enable = true;
+            default = true;
+            model = "deepseek-v4-flash";
+          };
         };
       };
-    };
 
-    secrets = [
-      "api/EXA_API_KEY"
-    ];
+      search = {
+        brave.enable = true;
+        exa.enable = true;
+      };
+    };
 
     skills = {
       create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
@@ -78,10 +81,58 @@
         documents = {
           soul = ./documents/default/soul.md;
         };
+
+        mcpServers = {
+          "office/pptx" = {
+            command = "${pkgs.office-mcp}/bin/office-mcp-pptx";
+            args = [];
+          };
+          "office/docx" = {
+            command = "${pkgs.office-mcp}/bin/office-mcp-docx";
+            args = [];
+          };
+          "office/xlsx" = {
+            command = "${pkgs.office-mcp}/bin/office-mcp-xlsx";
+            args = [];
+          };
+          "office/pdf" = {
+            command = "${pkgs.uv}/bin/uvx";
+            args = [
+              "pdf-edit-mcp"
+            ];
+          };
+        };
       };
       coder = {
         documents = {
           soul = ./documents/coder/soul.md;
+        };
+        mcpServers = {
+          "software-dev/github" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@modelcontextprotocol/server-github"
+            ];
+            env = {
+              GITHUB_PERSONAL_ACCESS_TOKEN = {
+                secret = "api/GITHUB_TOKEN";
+              };
+            };
+          };
+          "software-dev/nixos" = {
+            command = "${pkgs.uv}/bin/uvx";
+            args = [
+              "mcp-nixos"
+            ];
+          };
+          "software-dev/database" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "anydb-mcp"
+            ];
+          };
         };
       };
     };

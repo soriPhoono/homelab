@@ -111,14 +111,14 @@ with lib; {
       enable = true;
       gpu = "dedicated";
     };
-    inference.ollama = {
-      enable = true;
-      gpu = "dedicated";
-      numCtx = 262144;
-      environmentVariables = {
-        OLLAMA_KV_CACHE_TYPE = "q4_0";
-      };
-    };
+    # inference.ollama = {
+    #   enable = true;
+    #   gpu = "dedicated";
+    #   numCtx = 262144;
+    #   environmentVariables = {
+    #     OLLAMA_KV_CACHE_TYPE = "q4_0";
+    #   };
+    # };
     proxy = {
       enable = true;
       type = "traefik";

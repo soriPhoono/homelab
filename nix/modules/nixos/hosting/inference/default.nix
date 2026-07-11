@@ -7,7 +7,7 @@
 in
   with lib; {
     imports = [
-      ./ollama.nix
+      # ./ollama.nix
     ];
 
     options.hosting.inference = {
@@ -15,6 +15,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      hosting.inference.ollama.enable = mkDefault true;
+      # hosting.inference.ollama.enable = mkDefault true;
     };
   }
