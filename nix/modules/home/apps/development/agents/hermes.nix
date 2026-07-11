@@ -283,7 +283,21 @@ in {
 
     # Install desktop integration for hermes agent
     (mkIf cfg.enableDesktop {
-      })
+      # Install hermes-desktop
+      home.packages = [pkgs.hermes-desktop];
+
+      # Setup desktop entry for hermes-desktop
+      xdg.desktopEntries.hermes-desktop = {
+        name = "Hermes Desktop";
+        comment = "Hermes AI Agent - Desktop UI";
+        icon = "${pkgs.hermes-desktop}/share/hermes-desktop/dist/hermes.png";
+        exec = "${pkgs.hermes-desktop}/bin/hermes-desktop";
+        terminal = false;
+        type = "Application";
+        categories = ["Development" "Utility"];
+        startupNotify = true;
+      };
+    })
 
     # Load in all secrets from all profiles in central agent execution for simplicity
     {

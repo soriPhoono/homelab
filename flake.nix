@@ -89,7 +89,7 @@
     };
 
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:NousResearch/hermes-agent/pull/61824/head";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
