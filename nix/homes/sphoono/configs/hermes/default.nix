@@ -73,9 +73,16 @@
       };
     };
 
-    profiles.default = {
-      documents = {
-        soul = ./documents/default/soul.md;
+    profiles = {
+      default = {
+        documents = {
+          soul = ./documents/default/soul.md;
+        };
+      };
+      coder = {
+        documents = {
+          soul = ./documents/coder/soul.md;
+        };
       };
     };
   };
