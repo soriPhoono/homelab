@@ -150,6 +150,21 @@ in
         '';
       };
 
+      internalMac = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = ''
+          MAC address of the host's LAN interface for Wolf to use as its own.
+          Required when running over Tailscale — the tailscale0 interface has
+          NOARP and no MAC address, causing Wolf to fail with:
+          "Unable to get mac address of ip address: <tailscale-ip>"
+
+          Set this to the MAC address of the physical NIC (e.g. enp6s0).
+          Find it with: ip link show <interface> | grep -o 'ether [0-9a-f:]*'
+        '';
+        example = "c2:d8:de:57:c6:7c";
+      };
+
       extraOptions = mkOption {
         type = types.listOf types.str;
         default = [];
@@ -196,6 +211,9 @@ in
             }
             // optionalAttrs (!cfg.stopContainerOnExit) {
               WOLF_STOP_CONTAINER_ON_EXIT = "FALSE";
+            }
+            // optionalAttrs (cfg.internalMac != null) {
+              WOLF_INTERNAL_MAC = cfg.internalMac;
             };
 
           extraOptions =

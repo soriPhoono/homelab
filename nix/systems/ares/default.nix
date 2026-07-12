@@ -110,6 +110,7 @@ with lib; {
     gaming.wolf = {
       enable = true;
       gpu = "dedicated";
+      internalMac = "c2:d8:de:57:c6:7c";
     };
     # inference.ollama = {
     #   enable = true;
