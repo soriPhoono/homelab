@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  userapps.development.editors.helix = {
+  apps.development.editors.helix = {
     enable = true;
     defaultEditor = true;
 

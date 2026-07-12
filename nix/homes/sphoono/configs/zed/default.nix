@@ -4,7 +4,7 @@
     ./extensions.nix
   ];
 
-  userapps.development.editors.zed.secrets = [
+  apps.development.editors.zed.secrets = [
     "api/OPENCODE_API_KEY"
   ];
 

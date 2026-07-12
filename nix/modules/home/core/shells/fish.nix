@@ -9,6 +9,12 @@ in
   with lib; {
     options.core.shells.fish = {
       enable = mkEnableOption "Enable the fish shell";
+
+      interactiveShellInitExtra = mkOption {
+        type = types.lines;
+        default = "";
+        description = "Extra configuration to add to the interactive shell init.";
+      };
     };
 
     config = mkIf cfg.enable {
@@ -100,6 +106,8 @@ in
               end
             ''
           }
+
+          ${cfg.interactiveShellInitExtra}
         '';
       };
     };

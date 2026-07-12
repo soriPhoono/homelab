@@ -13,7 +13,7 @@ Analogous to `nix-agent-module` but for the editor category.
 ## Class structure
 
 ```
-nix/modules/home/userapps/development/editors/<editor>.nix
+nix/modules/home/apps/development/editors/<editor>.nix
 ```
 
 Every editor module follows the same layout:
@@ -42,9 +42,9 @@ Add editor-specific options via `extraOptions`.
 
 ```nix
 { lib, pkgs, config, ... }: let
-  cfg = config.userapps.development.editors.<name>;
+  cfg = config.apps.development.editors.<name>;
 in with lib; {
-  options.userapps.development.editors.<name> = homelab.agentics.mkEditor {
+  options.apps.development.editors.<name> = homelab.agentics.mkEditor {
     name = "<name>";
     package = pkgs.<editor-package>;
     extraOptions = {
@@ -110,7 +110,7 @@ mkVscodeEditor = {
 Then an editor module uses `mkVscodeEditor` instead of `mkEditor` directly:
 
 ```nix
-options.userapps.development.editors.vscode = homelab.agentics.mkVscodeEditor {
+options.apps.development.editors.vscode = homelab.agentics.mkVscodeEditor {
   name = "vscode";
   package = pkgs.vscode;
 };

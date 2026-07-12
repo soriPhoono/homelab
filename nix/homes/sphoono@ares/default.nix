@@ -1,7 +1,7 @@
 {
   imports = [
     ./hypr.nix
-    ./userapps.nix
+    ./apps.nix
   ];
 
   core = {

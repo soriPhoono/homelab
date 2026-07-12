@@ -94,6 +94,54 @@ in
         '';
       };
 
+      streamPorts = {
+        video = mkOption {
+          type = types.port;
+          default = 47998;
+          description = "UDP port for Moonlight video stream.";
+        };
+
+        control = mkOption {
+          type = types.port;
+          default = 47999;
+          description = "UDP port for Moonlight control stream.";
+        };
+
+        audio = mkOption {
+          type = types.port;
+          default = 48000;
+          description = "UDP port for Moonlight audio stream.";
+        };
+
+        mic = mkOption {
+          type = types.port;
+          default = 48002;
+          description = "UDP port for Moonlight microphone stream.";
+        };
+
+        rtsp = mkOption {
+          type = types.port;
+          default = 48010;
+          description = ''
+            TCP and UDP port for Moonlight RTSP control.
+            Also used for the RTSP control TCP port alongside moonlightPort.
+          '';
+        };
+      };
+
+      pingPorts = {
+        video = mkOption {
+          type = types.port;
+          default = 48100;
+          description = "UDP port for Wolf RTP video ping server. Used by Moonlight to verify UDP connectivity.";
+        };
+        audio = mkOption {
+          type = types.port;
+          default = 48200;
+          description = "UDP port for Wolf RTP audio ping server. Used by Moonlight to verify UDP connectivity.";
+        };
+      };
+
       logLevel = mkOption {
         type = types.enum [
           "ERROR"
@@ -113,6 +161,21 @@ in
           Whether to stop and remove app containers when the streaming client disconnects.
           Set to false to leave apps running between sessions.
         '';
+      };
+
+      internalMac = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = ''
+          MAC address of the host's LAN interface for Wolf to use as its own.
+          Required when running over Tailscale — the tailscale0 interface has
+          NOARP and no MAC address, causing Wolf to fail with:
+          "Unable to get mac address of ip address: <tailscale-ip>"
+
+          Set this to the MAC address of the physical NIC (e.g. enp6s0).
+          Find it with: ip link show <interface> | grep -o 'ether [0-9a-f:]*'
+        '';
+        example = "c2:d8:de:57:c6:7c";
       };
 
       extraOptions = mkOption {
@@ -161,6 +224,9 @@ in
             }
             // optionalAttrs (!cfg.stopContainerOnExit) {
               WOLF_STOP_CONTAINER_ON_EXIT = "FALSE";
+            }
+            // optionalAttrs (cfg.internalMac != null) {
+              WOLF_INTERNAL_MAC = cfg.internalMac;
             };
 
           extraOptions =
@@ -172,6 +238,31 @@ in
               "--device-cgroup-rule=c 13:* rmw"
             ]
             ++ cfg.extraOptions;
+        };
+      }
+
+      # ── Firewall ──────────────────────────────────
+      # Wolf uses --network=host, so its ports are bound on the host.
+      # The NixOS firewall blocks them by default — open the required ports
+      # so Moonlight clients (including over Tailscale) can connect.
+      {
+        networking.firewall = {
+          allowedTCPPorts = [
+            cfg.moonlightPort # RTSP
+            cfg.webUiPort # HTTPS web UI
+            cfg.httpPort # HTTP redirect
+            cfg.streamPorts.rtsp # RTSP control (TCP)
+          ];
+
+          allowedUDPPorts = [
+            cfg.streamPorts.video # 47998 video stream
+            cfg.streamPorts.control # 47999 control
+            cfg.streamPorts.audio # 48000 audio
+            cfg.streamPorts.mic # 48002 mic
+            cfg.streamPorts.rtsp # 48010 RTSP (UDP)
+            cfg.pingPorts.video # 48100 RTP video ping
+            cfg.pingPorts.audio # 48200 RTP audio ping
+          ];
         };
       }
 

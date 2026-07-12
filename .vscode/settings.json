@@ -1,9 +1,17 @@
 {
-  "nix.enableLSP": true,
+  "nix.enableLanguageServer": true,
   "nix.serverPath": "nil",
-  "nix.formatterPath": "alejandra",
   "[nix]": {
     "editor.defaultFormatter": "jnoortheen.nix-ide",
     "editor.formatOnSave": true
+  },
+  "nix.serverSettings": {
+    "nil": {
+      "formatting": {
+        "command": [
+          "alejandra"
+        ]
+      }
+    }
   }
 }

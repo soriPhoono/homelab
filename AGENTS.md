@@ -36,7 +36,7 @@ Modules in `nix/modules/nixos/` and `nix/modules/home/` are auto-imported via `l
 |-------|------|---------|
 | `core` | `nix/modules/home/core/` | Shells, git, SSH, secrets, email |
 | `desktop` | `nix/modules/home/desktop/` | Window managers (Hyprland), Wayland env |
-| `userapps` | `nix/modules/home/userapps/` | Browsers, editors, agents, media, office |
+| `apps` | `nix/modules/home/apps/` | Browsers, editors, agents, media, office |
 
 ### Home config layering
 
@@ -131,7 +131,7 @@ nix/
   lib.nix      - Custom library (homelab.core.discover, homelab.agentics, homelab.types)
   modules/
     nixos/     - System-level modules (core, desktop, hosting, themes)
-    home/      - User-level modules (core, desktop, userapps)
+    home/      - User-level modules (core, desktop, apps)
   overlays/    - Package overlays (auto-discovered)
   systems/     - Per-host NixOS configs (each with meta.json, disko.nix, secrets.yml, facter.json)
 ```

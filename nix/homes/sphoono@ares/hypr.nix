@@ -20,6 +20,11 @@
         }
       ];
 
+      autostart = [
+        "discord --start-minimized"
+        "element --hidden"
+      ];
+
       settings = {
         env = [
           {

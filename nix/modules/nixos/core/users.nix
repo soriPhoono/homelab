@@ -61,6 +61,8 @@ in
                 "docker"
               ];
             };
+
+            linger = mkEnableOption "Enable service lingering on this user";
           };
         });
 
@@ -97,7 +99,7 @@ in
 
         extraUsers =
           mapAttrs (name: user: {
-            inherit (user) hashedPassword shell;
+            inherit (user) hashedPassword shell linger;
             isNormalUser = true;
             extraGroups = user.extraGroups ++ optional user.admin "wheel";
             group = name;

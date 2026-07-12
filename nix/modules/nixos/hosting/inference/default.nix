@@ -15,6 +15,6 @@ in
     };
 
     config = mkIf cfg.enable {
-      hosting.inference.ollama.enable = mkDefault true;
+      # hosting.inference.ollama.enable = mkDefault true;
     };
   }

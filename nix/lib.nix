@@ -1,4 +1,4 @@
-_final: prev:
+final: prev:
 with prev; {
   homelab = {
     core = {
@@ -92,7 +92,7 @@ with prev; {
         package,
         extraOptions ? {},
       }: let
-        editorOpts = _final.homelab.agentics.mkEditor {
+        editorOpts = final.homelab.agentics.mkEditor {
           inherit name package;
           extraOptions = {
             common = mkOption {
@@ -176,7 +176,7 @@ with prev; {
               description = "Profiles to activate.";
             };
 
-            agent = removeAttrs (_final.homelab.agentics.mkAgent {
+            agent = removeAttrs (final.homelab.agentics.mkAgent {
               name = "${name} agent";
               package = null;
             }) ["package" "secrets" "userSettings"];
@@ -185,7 +185,7 @@ with prev; {
       in
         # Merge editor base + agent extras.
         # For shared keys (enable, package, secrets, userSettings), editor wins.
-        editorOpts // extraOptions;
+        prev.recursiveUpdate editorOpts extraOptions;
 
       mkAgent = {
         name,
@@ -201,6 +201,18 @@ with prev; {
             default = package;
           };
 
+          extraPackages = mkOption {
+            type = types.listOf types.package;
+            default = [];
+            description = "Extra packages to install alongside the hermes agent";
+          };
+
+          environment = mkOption {
+            type = types.attrsOf types.str;
+            default = {};
+            description = "Environment variables for the hermes agent, NO SECRETS HERE";
+          };
+
           secrets = mkOption {
             type = with types; listOf str;
             default = [];
@@ -208,23 +220,9 @@ with prev; {
           };
 
           userSettings = mkOption {
-            type = with types;
-              attrsOf (oneOf [
-                # NOTE: Can grow as needed
-                str
-                int
-                bool
-              ]);
+            type = types.attrs;
             default = {};
             description = "";
-          };
-
-          documents = mkOption {
-            type = with types; attrsOf (either str path);
-            default = {};
-            description = ''
-              The documents to symlink to the agents configuration directory for per session loading
-            '';
           };
 
           skills = mkOption {
@@ -249,14 +247,14 @@ with prev; {
                       '';
                     };
                     args = mkOption {
-                      type = listOf str;
-                      default = [];
+                      type = nullOr (listOf str);
+                      default = null;
                       description = ''
                         The list of command line args to give to this mcp server
                       '';
                     };
                     env = mkOption {
-                      type = attrsOf (either str (submodule {
+                      type = nullOr (attrsOf (either str (submodule {
                         options = {
                           secret = mkOption {
                             type = str;
@@ -265,8 +263,8 @@ with prev; {
                             '';
                           };
                         };
-                      }));
-                      default = {};
+                      })));
+                      default = null;
                       description = ''
                         The environment to pass to this mcp server
                       '';
@@ -279,7 +277,7 @@ with prev; {
                       '';
                     };
                     headers = mkOption {
-                      type = attrsOf (either str (submodule {
+                      type = nullOr (attrsOf (either str (submodule {
                         options = {
                           secret = mkOption {
                             type = str;
@@ -288,8 +286,8 @@ with prev; {
                             '';
                           };
                         };
-                      }));
-                      default = {};
+                      })));
+                      default = null;
                       description = ''
                         The headers to pass to this mcp server
                       '';

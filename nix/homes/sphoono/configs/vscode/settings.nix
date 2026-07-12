@@ -1,6 +1,5 @@
-{lib, ...}:
-with lib; {
-  userapps.development.editors.vscode = {
+_: {
+  apps.development.editors.vscode = {
     userSettings = {
       # Editor appearance — font and theme managed by Stylix
 

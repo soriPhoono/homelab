@@ -7,14 +7,14 @@ with lib; {
 
   config = mkMerge [
     {
-      userapps.development.agents.opencode = {
+      apps.development.agents.opencode = {
         userSettings = {
           autoupdate = false;
         };
 
-        documents = {
-          "AGENTS.md" = ./AGENTS.md;
-        };
+        # documents = {
+        #   "AGENTS.md" = ./AGENTS.md;
+        # };
 
         secrets = [
           "api/OPENCODE_API_KEY"

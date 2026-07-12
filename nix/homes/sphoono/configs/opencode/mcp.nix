@@ -6,7 +6,7 @@
 with lib; {
   config = mkMerge [
     {
-      userapps.development.agents.opencode = {
+      apps.development.agents.opencode = {
         mcpServers = {
           # github = {
           #   url = "https://api.githubcopilot.com/mcp";

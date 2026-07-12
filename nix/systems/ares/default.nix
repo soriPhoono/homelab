@@ -71,6 +71,7 @@ with lib; {
         admin = true;
         shell = pkgs.fish;
         publicKeys = {primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT Personal Key";};
+        linger = true;
       };
     };
   };
@@ -109,15 +110,16 @@ with lib; {
     gaming.wolf = {
       enable = true;
       gpu = "dedicated";
+      internalMac = "c2:d8:de:57:c6:7c";
     };
-    inference.ollama = {
-      enable = true;
-      gpu = "dedicated";
-      numCtx = 262144;
-      environmentVariables = {
-        OLLAMA_KV_CACHE_TYPE = "q4_0";
-      };
-    };
+    # inference.ollama = {
+    #   enable = true;
+    #   gpu = "dedicated";
+    #   numCtx = 262144;
+    #   environmentVariables = {
+    #     OLLAMA_KV_CACHE_TYPE = "q4_0";
+    #   };
+    # };
     proxy = {
       enable = true;
       type = "traefik";

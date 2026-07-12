@@ -8,7 +8,7 @@
     };
   };
 
-  userapps = {
+  apps = {
     defaultApplications.enable = true;
     desktop = {
       browsers = {
