@@ -175,6 +175,27 @@ in
         };
       }
 
+      # ── Firewall ──────────────────────────────────
+      # Wolf uses --network=host, so its ports are bound on the host.
+      # The NixOS firewall blocks them by default — open the required ports
+      # so Moonlight clients (including over Tailscale) can connect.
+      {
+        networking.firewall = {
+          allowedTCPPorts = [
+            cfg.moonlightPort # RTSP
+            cfg.webUiPort # HTTPS web UI
+            cfg.httpPort # HTTP redirect
+            (cfg.moonlightPort + 26) # RTSP control (usually 48010)
+          ];
+
+          allowedUDPPorts =
+            # Video/audio streaming ports are a range above the moonlight port.
+            # Standard Sunshine offsets: +14 (video), +15 (ctrl), +16 (audio),
+            # +18 (mic), +26 (rtsp). We open the full range.
+            lib.range (cfg.moonlightPort + 14) (cfg.moonlightPort + 26);
+        };
+      }
+
       # ── GPU selection ──────────────────────────────
       # When null: pass entire /dev/dri/ (all GPUs), no render node override
       (mkIf (gpu == null) {
