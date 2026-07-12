@@ -18,6 +18,8 @@
         };
       };
 
+      memory.variant = "honcho";
+
       search = {
         brave.enable = true;
         exa.enable = true;

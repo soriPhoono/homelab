@@ -42,33 +42,37 @@ with lib; let
       };
     };
 
-    search = mkOption {
-      type = types.submodule {
-        options = {
-          default = mkOption {
-            type = types.nullOr (types.enum ["firecrawl" "searxng" "brave-free" "ddgs" "tavily" "exa" "parallel" "xai"]);
-            default = null;
-            example = "brave";
-            description = "The search engine to use for hermes agent.";
-          };
+    memory = {
+      variant = mkOption {
+        type = types.nullOr (types.enum ["honcho" "holographic"]);
+        default = null;
+        description = "The memory variant to use for hermes agent.";
+      };
+    };
 
-          firecrawl.enable = mkEnableOption "Enable firecrawl search for hermes agent";
-          searxng = {
-            enable = mkEnableOption "Enable searxng search for hermes agent";
-            baseUrl = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-              description = "The base url of the searxng instance for this profile";
-            };
-          };
-          brave.enable = mkEnableOption "Enable brave search for hermes agent";
-          ddgs.enable = mkEnableOption "Enable ddgs search for hermes agent";
-          tavily.enable = mkEnableOption "Enable tavily search for hermes agent";
-          exa.enable = mkEnableOption "Enable exa search for hermes agent";
-          parallel.enable = mkEnableOption "Enable parallel search for hermes agent";
-          xai.enable = mkEnableOption "Enable xAI search for hermes agent";
+    search = {
+      variant = mkOption {
+        type = types.nullOr (types.enum ["firecrawl" "searxng" "brave-free" "ddgs" "tavily" "exa" "parallel" "xai"]);
+        default = null;
+        example = "brave";
+        description = "The search engine to use for hermes agent.";
+      };
+
+      firecrawl.enable = mkEnableOption "Enable firecrawl search for hermes agent";
+      searxng = {
+        enable = mkEnableOption "Enable searxng search for hermes agent";
+        baseUrl = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "The base url of the searxng instance for this profile";
         };
       };
+      brave.enable = mkEnableOption "Enable brave search for hermes agent";
+      ddgs.enable = mkEnableOption "Enable ddgs search for hermes agent";
+      tavily.enable = mkEnableOption "Enable tavily search for hermes agent";
+      exa.enable = mkEnableOption "Enable exa search for hermes agent";
+      parallel.enable = mkEnableOption "Enable parallel search for hermes agent";
+      xai.enable = mkEnableOption "Enable xAI search for hermes agent";
     };
   };
 
@@ -209,7 +213,7 @@ in {
                             description = "List of telegram chat ids to allow access to this profile";
                           };
                         };
-                      };
+                      }; # TODO: Finish implementing this
 
                       documents = {
                         soul = mkOption {
@@ -246,92 +250,104 @@ in {
                       };
                   };
 
-                config = let
-                  mcpServers = cfg.mcpServers // config.mcpServers;
-                in {
-                  secrets = unique (flatten ((mapAttrsToList (
-                        _: server:
-                          (
-                            mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                              if server.env != null
-                              then server.env
-                              else {}
-                            ))
-                          )
-                          ++ (
-                            mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                              if server.headers != null
-                              then server.headers
-                              else {}
-                            ))
-                          )
-                      )
-                      config.mcpServers)
-                    ++ (
-                      (optional config.providers.search.firecrawl.enable "api/FIRECRAWL_API_KEY")
-                      ++ (optional config.providers.search.brave.enable "api/BRAVE_SEARCH_API_KEY")
-                      ++ (optional config.providers.search.tavily.enable "api/TAVILY_API_KEY")
-                      ++ (optional config.providers.search.exa.enable "api/EXA_API_KEY")
-                      ++ (optional config.providers.search.parallel.enable "api/PARALLEL_API_KEY")
-                      ++ (optional config.providers.search.xai.enable "api/XAI_API_KEY")
-                    )));
+                config = mkMerge [
+                  (let
+                    mcpServers = cfg.mcpServers // config.mcpServers;
+                  in {
+                    secrets = unique (flatten ((mapAttrsToList (
+                          _: server:
+                            (
+                              mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                                if server.env != null
+                                then server.env
+                                else {}
+                              ))
+                            )
+                            ++ (
+                              mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                                if server.headers != null
+                                then server.headers
+                                else {}
+                              ))
+                            )
+                        )
+                        config.mcpServers)
+                      ++ (
+                        (optional config.providers.search.firecrawl.enable "api/FIRECRAWL_API_KEY")
+                        ++ (optional config.providers.search.brave.enable "api/BRAVE_SEARCH_API_KEY")
+                        ++ (optional config.providers.search.tavily.enable "api/TAVILY_API_KEY")
+                        ++ (optional config.providers.search.exa.enable "api/EXA_API_KEY")
+                        ++ (optional config.providers.search.parallel.enable "api/PARALLEL_API_KEY")
+                        ++ (optional config.providers.search.xai.enable "api/XAI_API_KEY")
+                      )));
 
-                  userSettings = {
-                    mcp_servers =
-                      lib.mapAttrs (
-                        _: server:
-                          (lib.optionalAttrs (server.command != null) {inherit (server) command;})
-                          // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
-                          // (lib.optionalAttrs (server.env != null) {
-                            env = mapAttrs (_: value:
-                              if value ? secret
-                              then "\${${baseNameOf value.secret}}"
-                              else value)
-                            server.env;
-                          })
-                          // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
-                          // (lib.optionalAttrs (server.headers != null) {
-                            headers = mapAttrs (_: value:
-                              if value ? secret
-                              then "\${${baseNameOf value.secret}}"
-                              else value)
-                            server.headers;
-                          })
-                      )
-                      mcpServers;
+                    userSettings = {
+                      mcp_servers =
+                        lib.mapAttrs (
+                          _: server:
+                            (lib.optionalAttrs (server.command != null) {inherit (server) command;})
+                            // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
+                            // (lib.optionalAttrs (server.env != null) {
+                              env = mapAttrs (_: value:
+                                if value ? secret
+                                then "\${${baseNameOf value.secret}}"
+                                else value)
+                              server.env;
+                            })
+                            // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
+                            // (lib.optionalAttrs (server.headers != null) {
+                              headers = mapAttrs (_: value:
+                                if value ? secret
+                                then "\${${baseNameOf value.secret}}"
+                                else value)
+                              server.headers;
+                            })
+                        )
+                        mcpServers;
 
-                    streaming.enabled = true;
-                    stt.enabled = true;
-
-                    memory.provider = "holographic"; # TODO: make this adjustable in providers settings
-                    web.backend =
-                      optionalString (config.providers.search.default != null || cfg.providers.search.default != null)
-                      (
+                      streaming.enabled = true;
+                      stt.enabled = true;
+                    };
+                  })
+                  (mkIf (config.providers.memory.variant != null || cfg.providers.memory.variant != null) {
+                    userSettings = {
+                      memory.provider =
+                        if config.providers.memory.variant != null
+                        then config.providers.memory.variant
+                        else cfg.providers.memory.variant;
+                    };
+                  })
+                  (mkIf (config.providers.search.variant != null || cfg.providers.search.variant != null) {
+                    userSettings = {
+                      web.backend =
                         if config.providers.search.default != null
                         then config.providers.search.default
-                        else cfg.providers.search.default
-                      );
-
-                    model =
-                      if (cfg.providers.models.opencode.go.default || config.providers.models.opencode.go.default)
-                      then {
+                        else cfg.providers.search.default;
+                    };
+                  })
+                  (mkIf (config.providers.models.opencode.go.default || cfg.providers.models.opencode.go.default) {
+                    userSettings = {
+                      model = {
                         provider = "opencode-go";
                         model =
-                          if cfg.providers.models.opencode.go.model != null
-                          then cfg.providers.models.opencode.go.model
-                          else config.providers.models.opencode.go.model;
-                      }
-                      else if (cfg.providers.models.opencode.zen.default || config.providers.models.opencode.zen.default)
-                      then {
+                          if config.providers.models.opencode.go.model != null
+                          then config.providers.models.opencode.go.model
+                          else cfg.providers.models.opencode.go.model;
+                      };
+                    };
+                  })
+                  (mkIf (config.providers.models.opencode.zen.default || cfg.providers.models.opencode.zen.default) {
+                    userSettings = {
+                      model = {
                         provider = "opencode-zen";
                         model =
-                          if cfg.providers.models.opencode.zen.model != null
-                          then cfg.providers.models.opencode.zen.model
-                          else config.providers.models.opencode.zen.model;
-                      }
-                      else {};
-                  };
-                };
+                          if config.providers.models.opencode.zen.model != null
+                          then config.providers.models.opencode.zen.model
+                          else cfg.providers.models.opencode.zen.model;
+                      };
+                    };
+                  })
+                ];
               }));
             default = {};
             description = "Profiles for the Hermes agent.";

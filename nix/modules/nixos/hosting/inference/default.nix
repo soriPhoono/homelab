@@ -7,7 +7,7 @@
 in
   with lib; {
     imports = [
-      # ./ollama.nix
+      ./ollama.nix
     ];
 
     options.hosting.inference = {

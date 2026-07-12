@@ -283,7 +283,9 @@ in
 
         home-manager.users =
           mapAttrs (_: _: {
-            programs.lazydocker.enable = true;
+            config = {
+              programs.lazydocker.enable = true;
+            };
           })
           config.core.users;
       }
