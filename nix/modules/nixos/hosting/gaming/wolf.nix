@@ -129,6 +129,19 @@ in
         };
       };
 
+      pingPorts = {
+        video = mkOption {
+          type = types.port;
+          default = 48100;
+          description = "UDP port for Wolf RTP video ping server. Used by Moonlight to verify UDP connectivity.";
+        };
+        audio = mkOption {
+          type = types.port;
+          default = 48200;
+          description = "UDP port for Wolf RTP audio ping server. Used by Moonlight to verify UDP connectivity.";
+        };
+      };
+
       logLevel = mkOption {
         type = types.enum [
           "ERROR"
@@ -247,6 +260,8 @@ in
             cfg.streamPorts.audio # 48000 audio
             cfg.streamPorts.mic # 48002 mic
             cfg.streamPorts.rtsp # 48010 RTSP (UDP)
+            cfg.pingPorts.video # 48100 RTP video ping
+            cfg.pingPorts.audio # 48200 RTP audio ping
           ];
         };
       }
