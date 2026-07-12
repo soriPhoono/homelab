@@ -156,6 +156,183 @@ with lib; let
           "cp -rL ${document} ${targetDir}/${docDestinations.${name}}; chmod 0640 ${targetDir}/${docDestinations.${name}}"
       )
       profileCfg.documents);
+
+  profileSubmodule = types.submodule ({
+    name,
+    config,
+    ...
+  }: {
+    options =
+      (removeAttrs (lib.homelab.agentics.mkAgent {
+        inherit name;
+        package = null;
+        extraOptions = {
+          repo = mkOption {
+            type = types.nullOr types.path;
+            default = null;
+            description = "Optional path to the profile repository, if null declarative configuration will be used.";
+            example = lib.literalExpression ''
+              pkgs.fetchFromGitHub {
+                owner = "<username>";
+                repo = "<repository-name>";
+                rev = "<revision>";
+                hash = "<hash>";
+              };
+            '';
+          };
+
+          providers = providerOptions;
+
+          gateway = {
+            telegram = {
+              enable = mkEnableOption "Enable telegram gateway for this profile";
+
+              botToken = mkOption {
+                type = types.nullOr types.str;
+                default = null;
+                description = "The sops secret name containing the telegram bot token for this profile.";
+              };
+
+              allowList = mkOption {
+                type = types.listOf types.str;
+                default = [];
+                description = "List of telegram chat ids to allow access to this profile";
+              };
+            };
+          }; # TODO: Finish implementing this
+
+          documents = {
+            soul = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+              description = ''
+                Path to a soul file for the hermes agent, this will be symlinked to the agent workspace at 'SOUL.md'.
+              '';
+            };
+
+            user = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+              description = ''
+                An optional initial USER.md file for the hermes agent, this will be copied to the agent workspace at 'memories/USER.md' in a form the agent can later alter.
+              '';
+            };
+
+            memory = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+              description = ''
+                An optional initial MEMORY.md file for the hermes agent, this will be copied to the agent workspace at 'memories/MEMORY.md' in a form the agent can later alter.
+              '';
+            };
+          };
+        };
+      }) ["enable" "package"])
+      // {
+        enable =
+          (mkEnableOption "Enable this agent profile")
+          // {
+            default = true;
+          };
+      };
+
+    config = mkMerge [
+      (let
+        mcpServers = cfg.mcpServers // config.mcpServers;
+      in {
+        secrets = let
+          mcpSecrets = concatLists (mapAttrsToList (
+              _: server:
+                (mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                  if server.env != null
+                  then server.env
+                  else {}
+                )))
+                ++ (mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                  if server.headers != null
+                  then server.headers
+                  else {}
+                )))
+            )
+            config.mcpServers);
+          searchSecrets =
+            optional config.providers.search.firecrawl.enable "api/FIRECRAWL_API_KEY"
+            ++ optional config.providers.search.brave.enable "api/BRAVE_SEARCH_API_KEY"
+            ++ optional config.providers.search.tavily.enable "api/TAVILY_API_KEY"
+            ++ optional config.providers.search.exa.enable "api/EXA_API_KEY"
+            ++ optional config.providers.search.parallel.enable "api/PARALLEL_API_KEY"
+            ++ optional config.providers.search.xai.enable "api/XAI_API_KEY";
+        in
+          unique (mcpSecrets ++ searchSecrets);
+
+        userSettings = {
+          mcp_servers =
+            lib.mapAttrs (
+              _: server:
+                (lib.optionalAttrs (server.command != null) {inherit (server) command;})
+                // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
+                // (lib.optionalAttrs (server.env != null) {
+                  env = mapAttrs (_: value:
+                    if value ? secret
+                    then "\${${baseNameOf value.secret}}"
+                    else value)
+                  server.env;
+                })
+                // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
+                // (lib.optionalAttrs (server.headers != null) {
+                  headers = mapAttrs (_: value:
+                    if value ? secret
+                    then "\${${baseNameOf value.secret}}"
+                    else value)
+                  server.headers;
+                })
+            )
+            mcpServers;
+
+          streaming.enabled = true;
+          stt.enabled = true;
+        };
+      })
+      (mkIf (config.providers.memory.variant != null || cfg.providers.memory.variant != null) {
+        userSettings = {
+          memory.provider =
+            if config.providers.memory.variant != null
+            then config.providers.memory.variant
+            else cfg.providers.memory.variant;
+        };
+      })
+      (mkIf (config.providers.search.variant != null || cfg.providers.search.variant != null) {
+        userSettings = {
+          web.backend =
+            if config.providers.search.default != null
+            then config.providers.search.default
+            else cfg.providers.search.default;
+        };
+      })
+      (mkIf (config.providers.models.opencode.go.default || cfg.providers.models.opencode.go.default) {
+        userSettings = {
+          model = {
+            provider = "opencode-go";
+            model =
+              if config.providers.models.opencode.go.model != null
+              then config.providers.models.opencode.go.model
+              else cfg.providers.models.opencode.go.model;
+          };
+        };
+      })
+      (mkIf (config.providers.models.opencode.zen.default || cfg.providers.models.opencode.zen.default) {
+        userSettings = {
+          model = {
+            provider = "opencode-zen";
+            model =
+              if config.providers.models.opencode.zen.model != null
+              then config.providers.models.opencode.zen.model
+              else cfg.providers.models.opencode.zen.model;
+          };
+        };
+      })
+    ];
+  });
 in {
   # Installs cli tooling with global enable option, extra features get added with other options
   options.apps.development.agents.hermes = mkOption {
@@ -170,185 +347,7 @@ in {
           providers = providerOptions;
 
           profiles = mkOption {
-            type = types.attrsOf (types.submodule
-              ({
-                name,
-                config,
-                ...
-              }: {
-                options =
-                  (removeAttrs (lib.homelab.agentics.mkAgent {
-                    inherit name;
-                    package = null;
-                    extraOptions = {
-                      repo = mkOption {
-                        type = types.nullOr types.path;
-                        default = null;
-                        description = "Optional path to the profile repository, if null declarative configuration will be used.";
-                        example = lib.literalExpression ''
-                          pkgs.fetchFromGitHub {
-                            owner = "<username>";
-                            repo = "<repository-name>";
-                            rev = "<revision>";
-                            hash = "<hash>";
-                          };
-                        '';
-                      };
-
-                      providers = providerOptions;
-
-                      gateway = {
-                        telegram = {
-                          enable = mkEnableOption "Enable telegram gateway for this profile";
-
-                          botToken = mkOption {
-                            type = types.nullOr types.str;
-                            default = null;
-                            description = "The sops secret name containing the telegram bot token for this profile.";
-                          };
-
-                          allowList = mkOption {
-                            type = types.listOf types.str;
-                            default = [];
-                            description = "List of telegram chat ids to allow access to this profile";
-                          };
-                        };
-                      }; # TODO: Finish implementing this
-
-                      documents = {
-                        soul = mkOption {
-                          type = types.nullOr types.path;
-                          default = null;
-                          description = ''
-                            Path to a soul file for the hermes agent, this will be symlinked to the agent workspace at 'SOUL.md'.
-                          '';
-                        };
-
-                        user = mkOption {
-                          type = types.nullOr types.path;
-                          default = null;
-                          description = ''
-                            An optional initial USER.md file for the hermes agent, this will be copied to the agent workspace at 'memories/USER.md' in a form the agent can later alter.
-                          '';
-                        };
-
-                        memory = mkOption {
-                          type = types.nullOr types.path;
-                          default = null;
-                          description = ''
-                            An optional initial MEMORY.md file for the hermes agent, this will be copied to the agent workspace at 'memories/MEMORY.md' in a form the agent can later alter.
-                          '';
-                        };
-                      };
-                    };
-                  }) ["enable" "package"])
-                  // {
-                    enable =
-                      (mkEnableOption "Enable this agent profile")
-                      // {
-                        default = true;
-                      };
-                  };
-
-                config = mkMerge [
-                  (let
-                    mcpServers = cfg.mcpServers // config.mcpServers;
-                  in {
-                    secrets = unique (flatten ((mapAttrsToList (
-                          _: server:
-                            (
-                              mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                                if server.env != null
-                                then server.env
-                                else {}
-                              ))
-                            )
-                            ++ (
-                              mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                                if server.headers != null
-                                then server.headers
-                                else {}
-                              ))
-                            )
-                        )
-                        config.mcpServers)
-                      ++ (
-                        (optional config.providers.search.firecrawl.enable "api/FIRECRAWL_API_KEY")
-                        ++ (optional config.providers.search.brave.enable "api/BRAVE_SEARCH_API_KEY")
-                        ++ (optional config.providers.search.tavily.enable "api/TAVILY_API_KEY")
-                        ++ (optional config.providers.search.exa.enable "api/EXA_API_KEY")
-                        ++ (optional config.providers.search.parallel.enable "api/PARALLEL_API_KEY")
-                        ++ (optional config.providers.search.xai.enable "api/XAI_API_KEY")
-                      )));
-
-                    userSettings = {
-                      mcp_servers =
-                        lib.mapAttrs (
-                          _: server:
-                            (lib.optionalAttrs (server.command != null) {inherit (server) command;})
-                            // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
-                            // (lib.optionalAttrs (server.env != null) {
-                              env = mapAttrs (_: value:
-                                if value ? secret
-                                then "\${${baseNameOf value.secret}}"
-                                else value)
-                              server.env;
-                            })
-                            // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
-                            // (lib.optionalAttrs (server.headers != null) {
-                              headers = mapAttrs (_: value:
-                                if value ? secret
-                                then "\${${baseNameOf value.secret}}"
-                                else value)
-                              server.headers;
-                            })
-                        )
-                        mcpServers;
-
-                      streaming.enabled = true;
-                      stt.enabled = true;
-                    };
-                  })
-                  (mkIf (config.providers.memory.variant != null || cfg.providers.memory.variant != null) {
-                    userSettings = {
-                      memory.provider =
-                        if config.providers.memory.variant != null
-                        then config.providers.memory.variant
-                        else cfg.providers.memory.variant;
-                    };
-                  })
-                  (mkIf (config.providers.search.variant != null || cfg.providers.search.variant != null) {
-                    userSettings = {
-                      web.backend =
-                        if config.providers.search.default != null
-                        then config.providers.search.default
-                        else cfg.providers.search.default;
-                    };
-                  })
-                  (mkIf (config.providers.models.opencode.go.default || cfg.providers.models.opencode.go.default) {
-                    userSettings = {
-                      model = {
-                        provider = "opencode-go";
-                        model =
-                          if config.providers.models.opencode.go.model != null
-                          then config.providers.models.opencode.go.model
-                          else cfg.providers.models.opencode.go.model;
-                      };
-                    };
-                  })
-                  (mkIf (config.providers.models.opencode.zen.default || cfg.providers.models.opencode.zen.default) {
-                    userSettings = {
-                      model = {
-                        provider = "opencode-zen";
-                        model =
-                          if config.providers.models.opencode.zen.model != null
-                          then config.providers.models.opencode.zen.model
-                          else cfg.providers.models.opencode.zen.model;
-                      };
-                    };
-                  })
-                ];
-              }));
+            type = types.attrsOf profileSubmodule;
             default = {};
             description = "Profiles for the Hermes agent.";
           };
