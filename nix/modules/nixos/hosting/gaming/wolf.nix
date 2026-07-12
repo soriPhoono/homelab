@@ -94,6 +94,41 @@ in
         '';
       };
 
+      streamPorts = {
+        video = mkOption {
+          type = types.port;
+          default = 47998;
+          description = "UDP port for Moonlight video stream.";
+        };
+
+        control = mkOption {
+          type = types.port;
+          default = 47999;
+          description = "UDP port for Moonlight control stream.";
+        };
+
+        audio = mkOption {
+          type = types.port;
+          default = 48000;
+          description = "UDP port for Moonlight audio stream.";
+        };
+
+        mic = mkOption {
+          type = types.port;
+          default = 48002;
+          description = "UDP port for Moonlight microphone stream.";
+        };
+
+        rtsp = mkOption {
+          type = types.port;
+          default = 48010;
+          description = ''
+            TCP and UDP port for Moonlight RTSP control.
+            Also used for the RTSP control TCP port alongside moonlightPort.
+          '';
+        };
+      };
+
       logLevel = mkOption {
         type = types.enum [
           "ERROR"
@@ -185,14 +220,16 @@ in
             cfg.moonlightPort # RTSP
             cfg.webUiPort # HTTPS web UI
             cfg.httpPort # HTTP redirect
-            (cfg.moonlightPort + 26) # RTSP control (usually 48010)
+            cfg.streamPorts.rtsp # RTSP control (TCP)
           ];
 
-          allowedUDPPorts =
-            # Video/audio streaming ports are a range above the moonlight port.
-            # Standard Sunshine offsets: +14 (video), +15 (ctrl), +16 (audio),
-            # +18 (mic), +26 (rtsp). We open the full range.
-            lib.range (cfg.moonlightPort + 14) (cfg.moonlightPort + 26);
+          allowedUDPPorts = [
+            cfg.streamPorts.video # 47998 video stream
+            cfg.streamPorts.control # 47999 control
+            cfg.streamPorts.audio # 48000 audio
+            cfg.streamPorts.mic # 48002 mic
+            cfg.streamPorts.rtsp # 48010 RTSP (UDP)
+          ];
         };
       }
 
