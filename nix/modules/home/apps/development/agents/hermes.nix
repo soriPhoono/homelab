@@ -48,7 +48,7 @@ with lib; let
         default = null;
         description = "The memory variant to use for hermes agent.";
       };
-    };
+    }; # TODO: configure honcho memory server configuration
 
     search = {
       variant = mkOption {
