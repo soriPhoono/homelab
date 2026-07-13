@@ -4,5 +4,6 @@
     ./keyboards.nix
     ./tablet.nix
     ./xbox_controllers.nix
+    ./xp-pen.nix
   ];
 }
