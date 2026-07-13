@@ -30,7 +30,7 @@
           {
             _args = [
               "AQ_DRM_DEVICES"
-              "/dev/dri/card1:/dev/dri/card2"
+              "/dev/dri/card0:/dev/dri/card1"
             ];
           }
         ];
