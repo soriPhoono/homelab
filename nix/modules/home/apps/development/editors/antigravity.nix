@@ -292,7 +292,7 @@
     else null;
 in
   with lib; {
-    options.apps.development.editors.antigravity = homelab.agentics.mkVscodeEditor {
+    options.apps.development.editors.antigravity = homelab.development.mkVscodeEditor {
       name = "antigravity";
       package = pkgs.google-antigravity-ide;
       extraOptions = {

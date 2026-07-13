@@ -70,7 +70,7 @@
     };
 in
   with lib; {
-    options.apps.development.editors.code-oss = removeAttrs (homelab.agentics.mkVscodeEditor {
+    options.apps.development.editors.code-oss = removeAttrs (homelab.development.mkVscodeEditor {
       name = "code-oss";
       package = pkgs.vscodium;
     }) ["agent"];

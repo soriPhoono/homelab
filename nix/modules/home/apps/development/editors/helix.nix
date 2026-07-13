@@ -8,7 +8,7 @@
   cfg = config.apps.development.editors.helix;
 in
   with lib; {
-    options.apps.development.editors.helix = homelab.agentics.mkEditor {
+    options.apps.development.editors.helix = homelab.development.mkEditor {
       name = "helix";
       package = pkgs.helix;
       extraOptions = {

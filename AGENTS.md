@@ -128,7 +128,7 @@ This evaluates all NixOS configurations, home configurations, dev shells, and fl
 ```
 nix/
   homes/       - Home Manager user configs
-  lib.nix      - Custom library (homelab.core.discover, homelab.agentics, homelab.types)
+  lib.nix      - Custom library (homelab.core.discover, homelab.development, homelab.types)
   modules/
     nixos/     - System-level modules (core, desktop, hosting, themes)
     home/      - User-level modules (core, desktop, apps)
@@ -146,7 +146,7 @@ nix/
 
 This repo manages AI agent config for OpenCode, pi, Hermes Agent, and GitHub Copilot.
 
-Each agent has its own set of options defined via `homelab.agentics.mkAgent` in `lib.nix`, including MCP servers, skills, subagents, commands, and context. Per-agent configs live at `nix/homes/<user>/configs/<agent>/`. There is no shared agentics layer — each agent is fully self-contained.
+Each agent has its own set of options defined via `homelab.development.mkAgent` in `lib.nix`, including MCP servers, skills, subagents, commands, and context. Per-agent configs live at `nix/homes/<user>/configs/<agent>/`. There is no shared development layer — each agent is fully self-contained.
 
 ## Secrets Management
 

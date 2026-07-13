@@ -5,7 +5,7 @@ ______________________________________________________________________
 # Nix Editor Module Authoring
 
 Pattern for writing home-manager modules for text editors that bridge
-custom/homelab options (via `homelab.agentics.mkEditor`) to upstream
+custom/homelab options (via `homelab.development.mkEditor`) to upstream
 `programs.*` home-manager modules.
 
 Analogous to `nix-agent-module` but for the editor category.
@@ -18,7 +18,7 @@ nix/modules/home/apps/development/editors/<editor>.nix
 
 Every editor module follows the same layout:
 
-1. **Options** — use `homelab.agentics.mkEditor` for the common option set
+1. **Options** — use `homelab.development.mkEditor` for the common option set
 1. **Config** — `mkMerge` + `mkIf cfg.enable` delegating to the upstream
    `programs.*` module
 
@@ -44,7 +44,7 @@ Add editor-specific options via `extraOptions`.
 { lib, pkgs, config, ... }: let
   cfg = config.apps.development.editors.<name>;
 in with lib; {
-  options.apps.development.editors.<name> = homelab.agentics.mkEditor {
+  options.apps.development.editors.<name> = homelab.development.mkEditor {
     name = "<name>";
     package = pkgs.<editor-package>;
     extraOptions = {
@@ -82,7 +82,7 @@ mkVscodeEditor = {
   package ? pkgs.vscode,
   extraOptions ? {},
 }:
-  homelab.agentics.mkEditor {
+  homelab.development.mkEditor {
     inherit name package;
     extraOptions = {
       extensionProfiles = mkOption {
@@ -110,7 +110,7 @@ mkVscodeEditor = {
 Then an editor module uses `mkVscodeEditor` instead of `mkEditor` directly:
 
 ```nix
-options.apps.development.editors.vscode = homelab.agentics.mkVscodeEditor {
+options.apps.development.editors.vscode = homelab.development.mkVscodeEditor {
   name = "vscode";
   package = pkgs.vscode;
 };

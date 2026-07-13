@@ -25,6 +25,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       (mkIf (options ? services.comin) {
+        sops.secrets."gitops/auth_key" = {};
+
         services.comin = {
           enable = true;
           remotes = [
@@ -32,7 +34,7 @@ in
               name = "origin";
               url = cfg.repo;
               branches.main.name = "main";
-              auth.access_token_path = mkIf (options ? sops) sops.secrets."gitops/auth_key".path;
+              auth.access_token_path = sops.secrets."gitops/auth_key".path;
             }
           ];
 
@@ -44,9 +46,6 @@ in
             title = "Comin [GitOps Update]:";
           };
         };
-      })
-      (mkIf (options ? services.comin && options ? sops) {
-        sops.secrets."gitops/auth_key" = {};
       })
     ]);
   }

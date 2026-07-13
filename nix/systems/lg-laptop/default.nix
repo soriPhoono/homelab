@@ -76,7 +76,7 @@ with lib; {
       printing.enable = true;
       pipewire.enable = true;
     };
-    features.gaming.enable = true;
+    features.gaming.desktop.enable = true;
   };
 
   hosting = {

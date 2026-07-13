@@ -49,12 +49,8 @@ in
         services = {
           gvfs.enable = true;
           gnome.gnome-keyring.enable = true;
-
           power-profiles-daemon.enable = true;
-          upower = {
-            enable = true;
-            criticalPowerAction = "PowerOff";
-          };
+          upower.enable = true;
         };
 
         # Enable the home-manager desktop framework for every system user
@@ -74,10 +70,7 @@ in
             ];
 
             # Activate the desktop framework: core → WM base → Hyprland
-            desktop.window-managers = {
-              enable = true;
-              hyprland.enable = true;
-            };
+            desktop.window-managers.hyprland.enable = true;
 
             home.sessionVariables = {
               SSH_AUTH_SOCK = mkDefault "$XDG_RUNTIME_DIR/ssh-agent";

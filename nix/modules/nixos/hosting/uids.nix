@@ -8,53 +8,47 @@
 # UID range: 901-949 for media services
 #             980 for the shared media group
 {
-  media = {
-    # Shared media group — members are the service users
-    group = {gid = 980;};
+  lib,
+  config,
+  ...
+}: let
+  hostingCfg = config.hosting;
+in
+  with lib; {
+    users = concatLists [
+      (mkIf hostingCfg.media.enable [
+        "qbittorrent"
+        "prowlarr"
+        "sonarr"
+        "radarr"
+        "jellyfin"
+        "seerr"
+      ])
+    ];
 
-    qbittorrent = {
-      uid = 901;
-      gid = 901;
-    };
-    sonarr = {
-      uid = 902;
-      gid = 902;
-    };
-    radarr = {
-      uid = 903;
-      gid = 903;
-    };
-    prowlarr = {
-      uid = 904;
-      gid = 904;
-    };
-    seerr = {
-      uid = 905;
-      gid = 905;
-    };
-    jellyfin = {
-      uid = 906;
-      gid = 906;
-    };
+    groups = [
+      (mkIf hostingCfg.media.enable "media")
+    ];
 
-    navidrome = {
-      uid = 907;
-      gid = 907;
-    };
+    # media = {
+    #   navidrome = {
+    #     uid = 907;
+    #     gid = 907;
+    #   };
 
-    lidarr = {
-      uid = 908;
-      gid = 908;
-    };
+    #   lidarr = {
+    #     uid = 908;
+    #     gid = 908;
+    #   };
 
-    bookshelf = {
-      uid = 909;
-      gid = 909;
-    };
+    #   bookshelf = {
+    #     uid = 909;
+    #     gid = 909;
+    #   };
 
-    booklore = {
-      uid = 910;
-      gid = 910;
-    };
-  };
-}
+    #   booklore = {
+    #     uid = 910;
+    #     gid = 910;
+    #   };
+    # };
+  }

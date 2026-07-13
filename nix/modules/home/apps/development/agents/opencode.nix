@@ -1,6 +1,6 @@
 # OpenCode home-manager module.
 #
-# Bridges our homelab agent config (homelab.agentics.mkAgent) to the
+# Bridges our homelab agent config (homelab.development.mkAgent) to the
 # upstream programs.opencode home-manager module.
 #
 # What the upstream handles:
@@ -160,7 +160,7 @@
           }));
 in
   with lib; {
-    options.apps.development.agents.opencode = homelab.agentics.mkAgent {
+    options.apps.development.agents.opencode = homelab.development.mkAgent {
       name = "opencode";
       package = pkgs.opencode;
       extraOptions = {

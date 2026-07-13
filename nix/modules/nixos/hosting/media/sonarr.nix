@@ -87,6 +87,19 @@ in
             isSystemUser = true;
             uid = mkDefault cfg.userUid;
             group = config.users.groups.sonarr.name;
+
+            subUidRanges = [
+              {
+                startUid = 100000;
+                count = 65536;
+              }
+            ];
+            subGidRanges = [
+              {
+                startGid = 100000;
+                count = 65536;
+              }
+            ];
           };
           groups = {
             sonarr = {

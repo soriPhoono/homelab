@@ -98,8 +98,20 @@ with lib; {
       pipewire.enable = true;
     };
     features.gaming = {
-      enable = true;
+      desktop = {
+        enable = true;
+        clients = [
+          "steam"
+          "lutris"
+          "prismlauncher"
+          "gzdoom"
+        ];
+      };
       console.enable = true;
+      streaming = {
+        enable = true;
+        mode = "client";
+      };
     };
     tools = {
       partition-manager.enable = true;

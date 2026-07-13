@@ -1,3 +1,6 @@
+# TODO: create device version specific driver installation flags
+# i.e.: xp-pen artist 13.3 pro vs xp-pen artist 15.6 pro drivers
+# this is due to some devices only having pen input and no touch or display
 {
   lib,
   config,

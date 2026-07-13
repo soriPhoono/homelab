@@ -15,9 +15,69 @@ with prev; {
               || (type == "regular" && name != "default.nix" && prev.hasSuffix ".nix" name)
           ) (builtins.readDir dir)
         );
+
+      # NixOS
+      mkContainerUser = {
+        name,
+        group,
+        nixosConfig,
+        configurationDirectory,
+        ...
+      }: let
+        userId = (prev.lists.findFirstIndex (systemUser: systemUser == name) (throw "System user ${name} not found in system users list") nixosConfig.hosting.uuids.users) + 1;
+
+        containerUserUid = 900;
+        groupUserUid = 10 * (prev.lists.findFirstIndex (systemGroup: systemGroup == group) (throw "System group ${name} not found in system users list") nixosConfig.hosting.uuids.groups);
+        uid = containerUserUid + groupUserUid + userId;
+      in {
+        users = {
+          users.${name} = {
+            inherit uid;
+            group = name;
+
+            home = configurationDirectory;
+            createHome = true;
+
+            isSystemUser = true;
+
+            subUidRanges = [
+              {
+                startUid = 100000 + (65536 * userId);
+                count = 65536;
+              }
+            ];
+
+            subGidRanges = [
+              {
+                startGid = 100000 + (65536 * userId);
+                count = 65536;
+              }
+            ];
+
+            linger = true;
+          };
+        };
+
+        groups = {
+          ${name} = {
+            gid = containerUserUid + groupUserUid + userId;
+          };
+          ${group} = {
+            gid = containerUserUid + groupUserUid - 1;
+            members = [
+              name
+            ];
+          };
+        };
+
+        systemd.tmpfiles.rules = [
+          "D ${configurationDirectory} 0755 ${name} ${name} -"
+        ];
+      };
     };
 
-    agentics = {
+    # Home manager
+    development = {
       mkEditor = {
         name,
         package,
@@ -81,111 +141,6 @@ with prev; {
           };
         }
         // extraOptions;
-
-      # mkVscodeEditor: merges mkEditor + mkAgent into one option namespace.
-      # Editor options (common profiles, extensionProfiles, activeProfiles)
-      # come from mkEditor. Agent options (documents, skills, mcpServers)
-      # come from mkAgent and sit alongside editor options at the top level.
-      # Shared keys (enable, package, secrets, userSettings) are editor-focused.
-      mkVscodeEditor = {
-        name,
-        package,
-        extraOptions ? {},
-      }: let
-        editorOpts = final.homelab.agentics.mkEditor {
-          inherit name package;
-          extraOptions = {
-            common = mkOption {
-              type = with types;
-                submodule {
-                  options = {
-                    extensions = mkOption {
-                      type = types.listOf types.package;
-                      default = [];
-                      description = "Extensions added to every profile.";
-                    };
-                    userTasks = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Tasks merged into every profile.";
-                    };
-                    keybindings = mkOption {
-                      type = listOf attrs;
-                      default = [];
-                      description = "Keybindings added to every profile.";
-                    };
-                    languageSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Language snippets added to every profile.";
-                    };
-                    globalSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Global snippets added to every profile.";
-                    };
-                  };
-                };
-              default = {};
-              description = "Common VS Code config merged into every active profile.";
-            };
-
-            extensionProfiles = mkOption {
-              type = with types;
-                attrsOf (submodule {
-                  options = {
-                    extensions = mkOption {
-                      type = types.listOf types.package;
-                      default = [];
-                      description = "Extensions for this profile.";
-                    };
-                    userSettings = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific settings on top of common.";
-                    };
-                    userTasks = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific tasks on top of common.";
-                    };
-                    keybindings = mkOption {
-                      type = listOf attrs;
-                      default = [];
-                      description = "Profile-specific keybindings.";
-                    };
-                    languageSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific language snippets.";
-                    };
-                    globalSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific global snippets.";
-                    };
-                  };
-                });
-              default = {};
-              description = "Named VS Code profiles.";
-            };
-
-            activeProfiles = mkOption {
-              type = with types; listOf str;
-              default = ["default"];
-              description = "Profiles to activate.";
-            };
-
-            agent = removeAttrs (final.homelab.agentics.mkAgent {
-              name = "${name} agent";
-              package = null;
-            }) ["package" "secrets" "userSettings"];
-          };
-        };
-      in
-        # Merge editor base + agent extras.
-        # For shared keys (enable, package, secrets, userSettings), editor wins.
-        prev.recursiveUpdate editorOpts extraOptions;
 
       mkAgent = {
         name,
@@ -298,6 +253,111 @@ with prev; {
           };
         }
         // extraOptions;
+
+      # mkVscodeEditor: merges mkEditor + mkAgent into one option namespace.
+      # Editor options (common profiles, extensionProfiles, activeProfiles)
+      # come from mkEditor. Agent options (documents, skills, mcpServers)
+      # come from mkAgent and sit alongside editor options at the top level.
+      # Shared keys (enable, package, secrets, userSettings) are editor-focused.
+      mkVscodeEditor = {
+        name,
+        package,
+        extraOptions ? {},
+      }: let
+        editorOpts = final.homelab.development.mkEditor {
+          inherit name package;
+          extraOptions = {
+            common = mkOption {
+              type = with types;
+                submodule {
+                  options = {
+                    extensions = mkOption {
+                      type = types.listOf types.package;
+                      default = [];
+                      description = "Extensions added to every profile.";
+                    };
+                    userTasks = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Tasks merged into every profile.";
+                    };
+                    keybindings = mkOption {
+                      type = listOf attrs;
+                      default = [];
+                      description = "Keybindings added to every profile.";
+                    };
+                    languageSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Language snippets added to every profile.";
+                    };
+                    globalSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Global snippets added to every profile.";
+                    };
+                  };
+                };
+              default = {};
+              description = "Common VS Code config merged into every active profile.";
+            };
+
+            extensionProfiles = mkOption {
+              type = with types;
+                attrsOf (submodule {
+                  options = {
+                    extensions = mkOption {
+                      type = types.listOf types.package;
+                      default = [];
+                      description = "Extensions for this profile.";
+                    };
+                    userSettings = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific settings on top of common.";
+                    };
+                    userTasks = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific tasks on top of common.";
+                    };
+                    keybindings = mkOption {
+                      type = listOf attrs;
+                      default = [];
+                      description = "Profile-specific keybindings.";
+                    };
+                    languageSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific language snippets.";
+                    };
+                    globalSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific global snippets.";
+                    };
+                  };
+                });
+              default = {};
+              description = "Named VS Code profiles.";
+            };
+
+            activeProfiles = mkOption {
+              type = with types; listOf str;
+              default = ["default"];
+              description = "Profiles to activate.";
+            };
+
+            agent = removeAttrs (final.homelab.development.mkAgent {
+              name = "${name} agent";
+              package = null;
+            }) ["package" "secrets" "userSettings"];
+          };
+        };
+      in
+        # Merge editor base + agent extras.
+        # For shared keys (enable, package, secrets, userSettings), editor wins.
+        prev.recursiveUpdate editorOpts extraOptions;
     };
   };
 }

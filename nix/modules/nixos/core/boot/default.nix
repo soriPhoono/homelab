@@ -2,7 +2,6 @@
   lib,
   pkgs,
   config,
-  options,
   ...
 }: let
   cfg = config.core.boot;
@@ -17,7 +16,7 @@ in
       enable = lib.mkEnableOption ''
         Enable system boot configuration with systemd-boot and ZRAM swap
       '';
-      secure-boot = lib.mkEnableOption ''
+      secure-boot.enable = lib.mkEnableOption ''
         Enable bootloader hardening features via lanzaboote dependency
       '';
 
@@ -78,24 +77,17 @@ in
             loader = {
               efi.canTouchEfiVariables = true;
               systemd-boot = {
-                enable = lib.mkForce (!cfg.secure-boot);
+                enable = lib.mkForce (!cfg.secure-boot.enable);
                 configurationLimit = 3;
               };
             };
+            # TODO: Enable secure boot and measured boot for luks on all systems
+            # lanzaboote = {
+            #   inherit (cfg.secure-boot) enable;
+            #   pkiBundle = "/var/lib/sbctl";
+            # };
           };
         }
-        (lib.optionalAttrs (options ? boot.lanzaboote) {
-          # TODO: this needs upgrading and refactoring
-          boot.lanzaboote = {
-            inherit (cfg.secure-boot) enable;
-            pkiBundle = "/var/lib/sbctl";
-          };
-        })
-        (mkIf (cfg.secure-boot && !(options ? boot.lanzaboote)) {
-          warnings = [
-            "secure-boot is enabled but lanzaboote is not available (add lanzaboote to nixos modules)"
-          ];
-        })
       ]
     );
   }
