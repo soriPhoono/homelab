@@ -39,7 +39,7 @@ with lib; {
       };
 
       hid = {
-        tablet.enable = true;
+        xp-pen.enable = true;
         xbox_controllers.enable = true;
       };
 

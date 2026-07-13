@@ -9,10 +9,7 @@ in
   with lib; {
     options.${modulePath} = {
       enable =
-        mkEnableOption "Enable cosmic greeter display manager"
-        // {
-          default = config.desktop.environments.variant == "cosmic";
-        };
+        mkEnableOption "Enable cosmic greeter display manager";
     };
 
     config = mkIf cfg.enable (mkMerge [
