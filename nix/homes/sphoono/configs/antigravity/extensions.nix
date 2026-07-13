@@ -1,14 +1,13 @@
 {pkgs, ...}: let
   # Grafana VS Code extension — not in nixpkgs, fetched from marketplace
-  grafana = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "Grafana";
-      name = "grafana-vscode";
-      version = "0.0.19";
-      sha256 = "sha256-TpLOMwdaEdgzWVwUcn+fO4rgLiQammWQM8LQobt8gLw=";
-    };
-  };
-
+  # grafana = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+  #   mktplcRef = {
+  #     publisher = "Grafana";
+  #     name = "grafana-vscode";
+  #     version = "0.0.19";
+  #     sha256 = "sha256-TpLOMwdaEdgzWVwUcn+fO4rgLiQammWQM8LQobt8gLw=";
+  #   };
+  # };
   # Sorbet VS Code extension — not in nixpkgs, fetched from marketplace
   sorbet = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
     mktplcRef = {
@@ -101,29 +100,29 @@ in {
     extensionProfiles = {
       # ── DevOps profile — infra / ops ──────────────────────────────────────
       devops = {
-        extensions = with pkgs.vscode-extensions;
-          [
-            # Golang
-            golang.go
+        extensions = with pkgs.vscode-extensions; [
+          # Golang
+          golang.go
 
-            # Python
-            ms-python.python
-            ms-python.vscode-pylance
+          # Python
+          ms-python.python
+          ms-python.vscode-pylance
 
-            # Container ops
-            ms-azuretools.vscode-containers
-            # Pinned to v1.3.0 — newer versions require VS Code >= 1.110 which
-            # Antigravity IDE's bundled engine (v1.107.0) doesn't meet.
-            k8s-tools
+          # Container ops
+          ms-azuretools.vscode-containers
+          # Pinned to v1.3.0 — newer versions require VS Code >= 1.110 which
+          # Antigravity IDE's bundled engine (v1.107.0) doesn't meet.
+          k8s-tools
 
-            # Terraform / OpenTofu
-            hashicorp.hcl
+          # Terraform / OpenTofu
+          hashicorp.hcl
 
-            # GitLab
-            gitlab.gitlab-workflow
-          ]
-          # Grafana (marketplace-only)
-          ++ [grafana];
+          # GitLab
+          gitlab.gitlab-workflow
+
+          # Grafana
+          pkgs.vscode-marketplace.grafana.grafana-vscode
+        ];
 
         userSettings = {
           # Container Tools — Docker client

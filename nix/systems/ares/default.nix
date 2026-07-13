@@ -47,6 +47,7 @@ with lib; {
       hid = {
         xbox_controllers.enable = true;
         logitech.enable = true;
+        xp-pen.enable = true;
       };
 
       adb.enable = true;
