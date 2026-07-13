@@ -15,7 +15,7 @@ in
       {
         desktop = {
           enable = true;
-          environments.variant = "kde";
+          environments.selectedEnvironment = "kde";
         };
 
         environment = {

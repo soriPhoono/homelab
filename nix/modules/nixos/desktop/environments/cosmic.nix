@@ -15,7 +15,7 @@ in
       {
         desktop = {
           enable = true;
-          environments.variant = "cosmic";
+          environments.selectedEnvironment = "cosmic";
         };
 
         environment = {
