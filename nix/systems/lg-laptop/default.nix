@@ -19,6 +19,7 @@ with lib; {
       enable = true;
       kernel.packages = pkgs.linuxPackages_latest;
       plymouth.enable = true;
+      zram.enable = true;
     };
 
     hardware = {
@@ -26,6 +27,7 @@ with lib; {
       reportPath = ./facter.json;
 
       cpu.vendor = "intel";
+
       gpu = {
         intel = {
           enable = true;
@@ -45,44 +47,47 @@ with lib; {
       bluetooth.enable = true;
     };
 
+    networking = {
+      network-manager.enable = true;
+      tailscale.enable = true;
+    };
+
     secrets = {
       enable = true;
       defaultSopsFile = ./secrets.yml;
     };
 
-    networking = {
-      network-manager.enable = true;
-      tailscale = {
-        enable = true;
-        serve.tailnetOrigin = mkForce "https://laptop-spooky.xerus-augmented.ts.net";
-      };
-    };
-
     users = {
       spookyskelly = {
+        description = "Spooky Skelly";
         hashedPassword = "$y$j9T$2ClMbK8AGR2tDvxqsQi7N/$VoJZOzxRwbq6GZ9zBR0E2gq0GsZ3Oo27RcjCyG/Gct5";
         admin = true;
-        description = "Spooky Skelly";
         shell = pkgs.fish;
-        publicKeys = {primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEe5elK6ZPxVfoUBM1Ytd9/15OjdTeIfyUU61qR3osP8";};
+        publicKeys = {
+          primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEe5elK6ZPxVfoUBM1Ytd9/15OjdTeIfyUU61qR3osP8";
+        };
       };
     };
   };
 
   desktop = {
     environments.kde.enable = true;
-    features.gaming.enable = true;
     services = {
       printing.enable = true;
       pipewire.enable = true;
     };
+    features.gaming.enable = true;
   };
 
   hosting = {
     media.enable = true;
-    proxy.dns = {
-      baseDomain = "cryptic-coders.net";
-      email = "soriphoono@gmail.com";
+    proxy = {
+      enable = true;
+      type = "traefik";
+      dns = {
+        baseDomain = "cryptic-coders.net";
+        email = "soriphoono@gmail.com";
+      };
     };
   };
 }
