@@ -279,13 +279,13 @@ in
         };
       })
 
-      # When a specific GPU is selected: pass only its devices + set render node
+      # When a specific GPU is selected: pass only its devices via --device + set render node
+      # Bind-mounting /dev/dri/* paths is intentionally avoided: if the device node
+      # doesn't exist yet when Docker starts, it creates a regular directory at that path,
+      # which then blocks the kernel from creating the actual device node (race condition).
+      # --device is the correct passthrough mechanism — it waits for the device.
       (mkIf (gpu != null) {
         virtualisation.oci-containers.containers.wolf = {
-          volumes = [
-            "${selectedGpu.render}:${selectedGpu.render}"
-            "${selectedGpu.card}:${selectedGpu.card}"
-          ];
           environment.WOLF_RENDER_NODE = selectedGpu.render;
           extraOptions = [
             "--device=${selectedGpu.render}"
