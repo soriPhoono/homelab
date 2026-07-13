@@ -9,15 +9,14 @@
   #   };
   # };
   # Sorbet VS Code extension — not in nixpkgs, fetched from marketplace
-  sorbet = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "sorbet";
-      name = "sorbet-vscode-extension";
-      version = "0.3.46";
-      sha256 = "sha256-fKJbaJgsLgypprylbUKUjyeU1B9x0RlaD1dUnFd1w7Y=";
-    };
-  };
-
+  # sorbet = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+  #   mktplcRef = {
+  #     publisher = "sorbet";
+  #     name = "sorbet-vscode-extension";
+  #     version = "0.3.46";
+  #     sha256 = "sha256-fKJbaJgsLgypprylbUKUjyeU1B9x0RlaD1dUnFd1w7Y=";
+  #   };
+  # };
   # Nix IDE v0.5.5 — pinned to a version compatible with Antigravity IDE's
   # bundled VS Code engine (v1.107.0).  The nixpkgs version (v0.5.9) requires
   # VS Code >= 1.112.0, which postdates the engine shipped inside Antigravity.
@@ -158,7 +157,7 @@ in {
 
           # Ruby — Shopify LSP + Sorbet type checker
           shopify.ruby-lsp
-          sorbet
+          pkgs.vscode-marketplace.sorbet.sorbet-vscode-extension
 
           # JavaScript / TypeScript
           dbaeumer.vscode-eslint
