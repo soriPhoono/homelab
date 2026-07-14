@@ -36,6 +36,7 @@
       asset-creation = {
         krita.enable = true;
         gimp.enable = true;
+        darktable.enable = true;
         blender.enable = true;
       };
       editors = {
