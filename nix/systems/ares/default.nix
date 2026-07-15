@@ -144,6 +144,28 @@ with lib; {
   #   };
   # };
 
+  hosting = {
+    platforms.podman.enable = true;
+
+    media = {
+      enable = true;
+
+      jellyfin.acceleration.enable = true;
+    };
+
+    proxy = {
+      enable = true;
+
+      local.provider = "traefik";
+
+      dns = {
+        provider = "cloudflare";
+        email = "soriphoono@gmail.com";
+        domain = "cryptic-coders.net";
+      };
+    };
+  };
+
   themes = {
     enable = true;
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";

@@ -85,10 +85,13 @@ with lib; {
     media.enable = true;
     proxy = {
       enable = true;
-      type = "traefik";
+
+      local.provider = "traefik";
+
       dns = {
-        baseDomain = "cryptic-coders.net";
+        provider = "cloudflare";
         email = "soriphoono@gmail.com";
+        domain = "cryptic-coders.net";
       };
     };
   };

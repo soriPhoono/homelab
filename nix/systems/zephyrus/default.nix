@@ -127,13 +127,13 @@ with lib; {
     };
     proxy = {
       enable = true;
-      type = "traefik";
+
+      local.provider = "traefik";
+
       dns = {
-        baseDomain = "cryptic-coders.net";
+        provider = "cloudflare";
         email = "soriphoono@gmail.com";
-      };
-      traefik.dashboard = {
-        enable = true;
+        domain = "cryptic-coders.net";
       };
     };
   };

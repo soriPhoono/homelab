@@ -163,7 +163,7 @@ with lib; let
     ...
   }: {
     options =
-      (removeAttrs (lib.homelab.developmentent.mkAgent {
+      (removeAttrs (lib.homelab.development.mkAgent {
         inherit name;
         package = null;
         extraOptions = {

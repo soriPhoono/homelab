@@ -20,14 +20,14 @@ with prev; {
       mkContainerUser = {
         name,
         group,
-        nixosConfig,
+        config,
         configurationDirectory,
         ...
       }: let
-        userId = (prev.lists.findFirstIndex (systemUser: systemUser == name) (throw "System user ${name} not found in system users list") nixosConfig.hosting.uuids.users) + 1;
+        userId = (prev.lists.findFirstIndex (systemUser: systemUser == name) (throw "System user ${name} not found in system users list") config.hosting.uuids.${group}.users) + 1;
 
         containerUserUid = 900;
-        groupUserUid = 10 * (prev.lists.findFirstIndex (systemGroup: systemGroup == group) (throw "System group ${name} not found in system users list") nixosConfig.hosting.uuids.groups);
+        groupUserUid = 50 * (prev.lists.findFirstIndex (systemGroup: systemGroup == group) (throw "System group ${group} not found in system groups list") (attrNames config.hosting.uuids));
         uid = containerUserUid + groupUserUid + userId;
       in {
         users = {
@@ -42,36 +42,36 @@ with prev; {
 
             subUidRanges = [
               {
-                startUid = 100000 + (65536 * userId);
+                startUid = 100000 * userId;
                 count = 65536;
               }
             ];
 
             subGidRanges = [
               {
-                startGid = 100000 + (65536 * userId);
+                startGid = 100000 * userId;
                 count = 65536;
               }
             ];
 
             linger = true;
           };
-        };
 
-        groups = {
-          ${name} = {
-            gid = containerUserUid + groupUserUid + userId;
-          };
-          ${group} = {
-            gid = containerUserUid + groupUserUid - 1;
-            members = [
-              name
-            ];
+          groups = {
+            ${name} = {
+              gid = uid;
+            };
+            ${group} = {
+              gid = containerUserUid + groupUserUid;
+              members = [
+                name
+              ];
+            };
           };
         };
 
         systemd.tmpfiles.rules = [
-          "D ${configurationDirectory} 0755 ${name} ${name} -"
+          "d ${configurationDirectory} 0755 ${name} ${name} -"
         ];
       };
     };

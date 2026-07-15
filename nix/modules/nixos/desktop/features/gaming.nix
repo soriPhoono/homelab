@@ -127,7 +127,7 @@ in
         };
       })
       (mkIf cfg.streaming.enable {
-        hosting.platforms.podman.enable = true;
+        hosting.platforms.podman.enable = mkIf (cfg.streaming.mode == "server") true;
 
         environment.systemPackages = with pkgs; [
           (mkIf (cfg.streaming.mode == "client") moonlight-qt)

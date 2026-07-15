@@ -5,5 +5,7 @@
     ./proxy
     ./media
     ./inference
+
+    ./uids.nix
   ];
 }

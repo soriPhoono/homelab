@@ -13,47 +13,80 @@ in
     options.hosting.proxy = {
       enable = mkEnableOption "Enable proxy services";
 
-      type = mkOption {
-        type = types.enum [
-          "traefik"
-        ];
-        default = "traefik";
-        description = ''
-          The reverse proxy backend to use for service exposure.
-          Currently only "traefik" is supported.
-        '';
-      };
-
       dns = {
         provider = mkOption {
           type = types.enum ["cloudflare"];
-          default = "cloudflare";
-          description = "DNS provider for proxy TLS certificates";
+          description = ''
+            The DNS provider providing support for TLS certificates
+          '';
+          default = null;
         };
 
         email = mkOption {
           type = types.str;
+          default = null;
           description = "Email for TLS certificate registration (used by ACME)";
           example = "[EMAIL_ADDRESS]";
         };
 
-        baseDomain = mkOption {
+        domain = mkOption {
           type = types.str;
-          description = "Base domain (e.g., cryptic-coders.net)";
-          example = "cryptic-coders.net";
+          default = null;
+          description = "Domain to set up DNS-01 Challenge for TLS certificates";
+          example = "mydomain.net";
         };
 
-        localSubdomain = mkOption {
+        subdomain = mkOption {
           type = types.str;
           default = "local";
           description = "Subdomain for local services (e.g., local)";
         };
       };
-    };
 
-    config = mkIf cfg.enable {
-      hosting.proxy = {
-        traefik.enable = cfg.type == "traefik";
+      local = {
+        provider = mkOption {
+          type = types.enum ["traefik"];
+          description = "The provider of the local network service";
+          default = null;
+        };
       };
     };
+
+    config = mkIf cfg.enable (mkMerge [
+      {
+        hosting = {
+          uuids.proxy = {};
+
+          proxy = {
+            traefik.enable = cfg.local.provider == "traefik";
+          };
+        };
+      }
+      (mkIf (cfg.local.provider == "traefik") (mkMerge [
+        (mkIf (cfg.dns.provider == "cloudflare") {
+          sops = {
+            secrets."api/cloudflare-${cfg.dns.domain}" = {};
+            templates."hosting/traefik-${cfg.dns.domain}.env" = {
+              owner = "traefik";
+              group = "traefik";
+              mode = "0400";
+              content = ''
+                CF_DNS_API_TOKEN=${config.sops.placeholder."api/cloudflare-${cfg.dns.domain}"}
+              '';
+            };
+          };
+
+          virtualisation.oci-containers.containers.traefik = {
+            environmentFiles = [
+              config.sops.templates."hosting/traefik-${cfg.dns.domain}.env".path
+            ];
+            cmd = [
+              "--certificatesresolvers.le.acme.dnschallenge.provider=cloudflare"
+              "--certificatesresolvers.le.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+              "--certificatesresolvers.le.acme.email=${cfg.dns.email}"
+            ];
+          };
+        })
+      ]))
+    ]);
   }
