@@ -103,46 +103,11 @@ with lib; {
         };
         console.enable = true;
         vr.enable = true;
-        streaming = {
-          enable = true;
-          mode = "server";
-        };
+        streaming.enable = true;
       };
     };
     tools.partition-manager.enable = true;
   };
-
-  # hosting = {
-  #   platforms.docker.enable = true;
-  #   media = {
-  #     enable = true;
-  #     jellyfin.acceleration.enable = true;
-  #   };
-  #   # gaming.wolf = {
-  #   #   enable = true;
-  #   #   gpu = "dedicated";
-  #   #   internalMac = "c2:d8:de:57:c6:7c";
-  #   # };
-  #   # inference.ollama = {
-  #   #   enable = true;
-  #   #   gpu = "dedicated";
-  #   #   numCtx = 262144;
-  #   #   environmentVariables = {
-  #   #     OLLAMA_KV_CACHE_TYPE = "q4_0";
-  #   #   };
-  #   # };
-  #   proxy = {
-  #     enable = true;
-  #     type = "traefik";
-  #     dns = {
-  #       baseDomain = "cryptic-coders.net";
-  #       email = "soriphoono@gmail.com";
-  #     };
-  #     traefik.dashboard = {
-  #       enable = true;
-  #     };
-  #   };
-  # };
 
   hosting = {
     platforms.podman.enable = true;
@@ -153,15 +118,26 @@ with lib; {
       jellyfin.acceleration.enable = true;
     };
 
+    gaming = {
+      enable = true;
+
+      wolf = {
+        gpu = "mesa-compatible";
+        internalMac = "c2:d8:de:57:c6:7c";
+      };
+    };
+
     proxy = {
       enable = true;
 
-      local.provider = "traefik";
+      local = {
+        provider = "traefik";
+        domain = "cryptic-coders.net";
+      };
 
       dns = {
         provider = "cloudflare";
         email = "soriphoono@gmail.com";
-        domain = "cryptic-coders.net";
       };
     };
   };

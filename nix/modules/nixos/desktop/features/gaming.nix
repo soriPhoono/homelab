@@ -47,17 +47,7 @@ in
       vr.enable = mkEnableOption "Enable WiVRn OpenXR streaming server for Meta Quest devices";
 
       streaming = {
-        enable = mkEnableOption "Enable wolf games-on-whales streaming server integration on this system (Will pull in podman)";
-
-        mode = mkOption {
-          type = types.enum ["client" "server"];
-          default = "client";
-          description = ''
-            Toggle the modules behaviour between creating a client with the moonlight streaming application installed,
-            or a server with podman running the gaming-on-whales wolf game streaming server. Enabling the server will
-            open firewall ports on the system for discovery.
-          '';
-        };
+        enable = mkEnableOption "Enable wolf games-on-whales streaming client integration on this system";
       };
     };
 
@@ -127,13 +117,11 @@ in
         };
       })
       (mkIf cfg.streaming.enable {
-        hosting.platforms.podman.enable = mkIf (cfg.streaming.mode == "server") true;
-
         environment.systemPackages = with pkgs; [
-          (mkIf (cfg.streaming.mode == "client") moonlight-qt)
+          moonlight-qt
         ];
 
-        networking.networkmanager.dispatcherScripts = mkIf (cfg.streaming.mode == "client") [
+        networking.networkmanager.dispatcherScripts = [
           {
             source = "${
               pkgs.writeShellApplication {

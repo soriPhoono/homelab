@@ -1,165 +1,46 @@
+# TODO: Add NVIDIA support
+# TODO: Refactor this into a rootful container for cgroup support, will require expanding the mkContainer function to support rootful containers
 {
   lib,
   config,
+  pkgs,
   ...
 }: let
-  cfg = config.hosting.gaming.wolf;
-  inherit (cfg) gpu;
+  inherit (lib.homelab.containers) mkContainer;
 
-  # GPU device paths — these are the DRM render + primary nodes.
-  # On most multi-GPU Linux systems, renderD128 is the integrated GPU
-  # and renderD129+ are dedicated GPUs. Adjust here if needed.
-  gpuDevices = {
-    integrated = {
+  cfg = config.hosting.gaming.${name};
+
+  name = "wolf";
+  configurationDirectory = "/var/lib/${name}";
+
+  gpuDevices =
+    if cfg.gpu == "integrated"
+    then {
       render = "/dev/dri/renderD128";
-      card = "/dev/dri/card1";
-    };
-    dedicated = {
+      card = "/dev/dri/card0";
+    }
+    else if cfg.gpu == "mesa-compatible"
+    then {
       render = "/dev/dri/renderD129";
-      card = "/dev/dri/card2";
-    };
-  };
-
-  selectedGpu =
-    if gpu == null
-    then null
-    else gpuDevices.${gpu};
+      card = "/dev/dri/card1";
+    }
+    else if cfg.gpu == "NVIDIA"
+    then throw "TODO: Create nvidia gpu module support"
+    else throw "No gpu selected";
 in
   with lib; {
-    options.hosting.gaming.wolf = {
+    options.hosting.gaming.${name} = {
       enable = mkEnableOption "Enable Games on Whales (Wolf) game streaming server";
 
-      image = mkOption {
-        type = types.str;
-        default = "ghcr.io/games-on-whales/wolf:stable";
-        description = "Docker image for Wolf game streaming";
-      };
-
-      configDir = mkOption {
-        type = types.str;
-        default = "/etc/wolf";
-        description = ''
-          Host directory for Wolf configuration data.
-          Wolf writes its config, TLS certificates, and state here.
-        '';
-      };
-
       gpu = mkOption {
-        type = types.nullOr (types.enum ["integrated" "dedicated"]);
+        type = types.enum ["integrated" "mesa-compatible" "NVIDIA"];
         default = null;
         description = ''
           GPU to pass through for game rendering and encoding.
 
-          - `null` (default): pass through `/dev/dri/` (all GPUs). Wolf auto-detects
-            and defaults to the first render node (`/dev/dri/renderD128`,
-            usually the integrated GPU).
-          - `"integrated"`: pass only the integrated GPU (`renderD128` + `card1`).
-            Best for low-power desktop streaming.
-          - `"dedicated"`: pass only the dedicated GPU (`renderD129` + `card2`).
-            Best for high-performance gaming.
-
-          On most multi-GPU Linux systems, renderD128 maps to the integrated GPU
-          and renderD129+ to dedicated GPUs. If your system has a different layout,
-          adjust the `gpuDevices` map in the module source.
-
-          When a specific GPU is selected, only that GPU's devices are exposed
-          and the Wolf `WOLF_RENDER_NODE` env var is set to the correct render
-          node. No other GPU devices are visible inside the container.
-        '';
-      };
-
-      moonlightPort = mkOption {
-        type = types.port;
-        default = 47984;
-        description = ''
-          Port for the Moonlight/Sunshine RTSP server.
-          Moonlight clients connect to this TCP port plus a range of UDP ports above it.
-        '';
-      };
-
-      webUiPort = mkOption {
-        type = types.port;
-        default = 47989;
-        description = ''
-          HTTPS port for the Wolf web UI and PIN pairing page.
-          Accessible at https://<host>:47989/.
-        '';
-      };
-
-      httpPort = mkOption {
-        type = types.port;
-        default = 47990;
-        description = ''
-          HTTP port for the Wolf web UI (redirects to HTTPS by default).
-        '';
-      };
-
-      streamPorts = {
-        video = mkOption {
-          type = types.port;
-          default = 47998;
-          description = "UDP port for Moonlight video stream.";
-        };
-
-        control = mkOption {
-          type = types.port;
-          default = 47999;
-          description = "UDP port for Moonlight control stream.";
-        };
-
-        audio = mkOption {
-          type = types.port;
-          default = 48000;
-          description = "UDP port for Moonlight audio stream.";
-        };
-
-        mic = mkOption {
-          type = types.port;
-          default = 48002;
-          description = "UDP port for Moonlight microphone stream.";
-        };
-
-        rtsp = mkOption {
-          type = types.port;
-          default = 48010;
-          description = ''
-            TCP and UDP port for Moonlight RTSP control.
-            Also used for the RTSP control TCP port alongside moonlightPort.
-          '';
-        };
-      };
-
-      pingPorts = {
-        video = mkOption {
-          type = types.port;
-          default = 48100;
-          description = "UDP port for Wolf RTP video ping server. Used by Moonlight to verify UDP connectivity.";
-        };
-        audio = mkOption {
-          type = types.port;
-          default = 48200;
-          description = "UDP port for Wolf RTP audio ping server. Used by Moonlight to verify UDP connectivity.";
-        };
-      };
-
-      logLevel = mkOption {
-        type = types.enum [
-          "ERROR"
-          "WARNING"
-          "INFO"
-          "DEBUG"
-          "TRACE"
-        ];
-        default = "INFO";
-        description = "Log level for Wolf";
-      };
-
-      stopContainerOnExit = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Whether to stop and remove app containers when the streaming client disconnects.
-          Set to false to leave apps running between sessions.
+          - `"integrated"`: pass only the integrated GPU (`/dev/dri/renderD128` + `/dev/dri/card1`).
+          - `"mesa-compatible"`: pass only the dedicated GPU (`/dev/dri/renderD129` + `/dev/dri/card2`).
+          - `"NVIDIA"`: TODO, create a dedicated option for nvidia gpu pass through.
         '';
       };
 
@@ -177,22 +58,13 @@ in
         '';
         example = "c2:d8:de:57:c6:7c";
       };
-
-      extraOptions = mkOption {
-        type = types.listOf types.str;
-        default = [];
-        description = "Extra Docker options passed directly to the container runtime.";
-      };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
-        # Auto-enable the Docker container hosting platform
-        hosting.platforms.docker.enable = mkDefault true;
-
         # Ensure config directory exists
         systemd.tmpfiles.rules = [
-          "d ${cfg.configDir} 0755 - - -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         # Ensure /dev/uinput exists and is accessible
@@ -202,96 +74,67 @@ in
           KERNEL=="uhid", MODE="0660", GROUP="input"
         '';
 
+        users.users.microserver.extraGroups = [
+          "input"
+          "render"
+          "video"
+        ];
+
+        systemd.services.podman-wolf.preStart = ''
+          ${pkgs.podman}/bin/podman rm --force WolfPulseAudio
+        '';
+
         # Wolf container via OCI module
-        virtualisation.oci-containers.containers.wolf = {
-          inherit (cfg) image;
-          autoStart = true;
+        virtualisation.oci-containers.containers.${name} = mkMerge [
+          (mkContainer {
+            inherit name cfg config;
+            image = "ghcr.io/games-on-whales/wolf:stable";
+            root = true;
+          })
+          {
+            volumes = [
+              "${configurationDirectory}:/etc/wolf:rw"
+              "/var/run/docker.sock:/var/run/docker.sock:rw"
+              "/run/udev:/run/udev:rw"
+              "/dev:/dev:rw"
+            ];
 
-          # Host networking is required — Wolf uses multiple ports
-          # (RTSP, HTTP, HTTPS) and needs direct host network access
-          # for Moonlight client discovery and streaming.
-          networks = [];
-
-          volumes = [
-            "${cfg.configDir}:/etc/wolf:rw"
-            "/var/run/docker.sock:/var/run/docker.sock:rw"
-            "/run/udev:/run/udev:rw"
-          ];
-
-          environment =
-            {
-              WOLF_LOG_LEVEL = cfg.logLevel;
-            }
-            // optionalAttrs (!cfg.stopContainerOnExit) {
-              WOLF_STOP_CONTAINER_ON_EXIT = "FALSE";
-            }
-            // optionalAttrs (cfg.internalMac != null) {
+            environment = {
+              WOLF_LOG_LEVEL = "INFO";
+              WOLF_STOP_CONTAINER_ON_EXIT = "TRUE";
               WOLF_INTERNAL_MAC = cfg.internalMac;
+              WOLF_RENDER_NODE = gpuDevices.render;
             };
 
-          extraOptions =
-            [
+            extraOptions = [
               "--network=host"
               "--init"
               "--device=/dev/uinput"
               "--device=/dev/uhid"
               "--device-cgroup-rule=c 13:* rmw"
-            ]
-            ++ cfg.extraOptions;
-        };
-      }
+              "--device=${gpuDevices.render}"
+              "--device=${gpuDevices.card}"
+            ];
+          }
+        ];
 
-      # ── Firewall ──────────────────────────────────
-      # Wolf uses --network=host, so its ports are bound on the host.
-      # The NixOS firewall blocks them by default — open the required ports
-      # so Moonlight clients (including over Tailscale) can connect.
-      {
         networking.firewall = {
           allowedTCPPorts = [
-            cfg.moonlightPort # RTSP
-            cfg.webUiPort # HTTPS web UI
-            cfg.httpPort # HTTP redirect
-            cfg.streamPorts.rtsp # RTSP control (TCP)
+            47984
+            47989
+            47990
+            48010
           ];
 
           allowedUDPPorts = [
-            cfg.streamPorts.video # 47998 video stream
-            cfg.streamPorts.control # 47999 control
-            cfg.streamPorts.audio # 48000 audio
-            cfg.streamPorts.mic # 48002 mic
-            cfg.streamPorts.rtsp # 48010 RTSP (UDP)
-            cfg.pingPorts.video # 48100 RTP video ping
-            cfg.pingPorts.audio # 48200 RTP audio ping
+            47998
+            47999
+            48002
+            48010
+            48100
+            48200
           ];
         };
       }
-
-      # ── GPU selection ──────────────────────────────
-      # When null: pass entire /dev/dri/ (all GPUs), no render node override
-      (mkIf (gpu == null) {
-        virtualisation.oci-containers.containers.wolf = {
-          volumes = [
-            "/dev/:/dev/:rw"
-          ];
-          extraOptions = [
-            "--device=/dev/dri/"
-          ];
-        };
-      })
-
-      # When a specific GPU is selected: pass only its devices via --device + set render node
-      # Bind-mounting /dev/dri/* paths is intentionally avoided: if the device node
-      # doesn't exist yet when Docker starts, it creates a regular directory at that path,
-      # which then blocks the kernel from creating the actual device node (race condition).
-      # --device is the correct passthrough mechanism — it waits for the device.
-      (mkIf (gpu != null) {
-        virtualisation.oci-containers.containers.wolf = {
-          environment.WOLF_RENDER_NODE = selectedGpu.render;
-          extraOptions = [
-            "--device=${selectedGpu.render}"
-            "--device=${selectedGpu.card}"
-          ];
-        };
-      })
     ]);
   }

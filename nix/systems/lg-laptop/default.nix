@@ -82,16 +82,24 @@ with lib; {
   };
 
   hosting = {
-    media.enable = true;
+    platforms.podman.enable = true;
+
+    media = {
+      enable = true;
+      jellyfin.acceleration.enable = true;
+    };
+
     proxy = {
       enable = true;
 
-      local.provider = "traefik";
+      local = {
+        provider = "traefik";
+        domain = "cryptic-coders.net";
+      };
 
       dns = {
         provider = "cloudflare";
         email = "soriphoono@gmail.com";
-        domain = "cryptic-coders.net";
       };
     };
   };

@@ -110,7 +110,6 @@ with lib; {
       console.enable = true;
       streaming = {
         enable = true;
-        mode = "client";
       };
     };
     tools = {
@@ -120,20 +119,25 @@ with lib; {
   };
 
   hosting = {
-    platforms.docker.enable = true;
+    platforms.podman.enable = true;
+
     media = {
       enable = true;
+
       jellyfin.acceleration.enable = true;
     };
+
     proxy = {
       enable = true;
 
-      local.provider = "traefik";
+      local = {
+        provider = "traefik";
+        domain = "cryptic-coders.net";
+      };
 
       dns = {
         provider = "cloudflare";
         email = "soriphoono@gmail.com";
-        domain = "cryptic-coders.net";
       };
     };
   };

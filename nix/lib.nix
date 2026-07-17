@@ -1,82 +1,24 @@
 final: prev:
 with prev; {
   homelab = {
-    core = {
-      discover = dir:
-        prev.mapAttrs'
-        (name: _: {
-          name = prev.removeSuffix ".nix" name;
-          value = dir + "/${name}";
-        })
-        (
-          prev.filterAttrs (
-            name: type:
-              (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
-              || (type == "regular" && name != "default.nix" && prev.hasSuffix ".nix" name)
-          ) (builtins.readDir dir)
-        );
-
-      # NixOS
-      mkContainerUser = {
-        name,
-        group,
-        config,
-        configurationDirectory,
-        ...
-      }: let
-        userId = (prev.lists.findFirstIndex (systemUser: systemUser == name) (throw "System user ${name} not found in system users list") config.hosting.uuids.${group}.users) + 1;
-
-        containerUserUid = 900;
-        groupUserUid = 50 * (prev.lists.findFirstIndex (systemGroup: systemGroup == group) (throw "System group ${group} not found in system groups list") (attrNames config.hosting.uuids));
-        uid = containerUserUid + groupUserUid + userId;
-      in {
-        users = {
-          users.${name} = {
-            inherit uid;
-            group = name;
-
-            home = configurationDirectory;
-            createHome = true;
-
-            isSystemUser = true;
-
-            subUidRanges = [
-              {
-                startUid = 100000 * userId;
-                count = 65536;
-              }
-            ];
-
-            subGidRanges = [
-              {
-                startGid = 100000 * userId;
-                count = 65536;
-              }
-            ];
-
-            linger = true;
-          };
-
-          groups = {
-            ${name} = {
-              gid = uid;
-            };
-            ${group} = {
-              gid = containerUserUid + groupUserUid;
-              members = [
-                name
-              ];
-            };
-          };
-        };
-
-        systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 ${name} ${name} -"
-        ];
+    helpers = {
+      core = {
+        discover = dir:
+          prev.mapAttrs'
+          (name: _: {
+            name = prev.removeSuffix ".nix" name;
+            value = dir + "/${name}";
+          })
+          (
+            prev.filterAttrs (
+              name: type:
+                (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
+                || (type == "regular" && name != "default.nix" && prev.hasSuffix ".nix" name)
+            ) (builtins.readDir dir)
+          );
       };
     };
 
-    # Home manager
     development = {
       mkEditor = {
         name,
@@ -358,6 +300,77 @@ with prev; {
         # Merge editor base + agent extras.
         # For shared keys (enable, package, secrets, userSettings), editor wins.
         prev.recursiveUpdate editorOpts extraOptions;
+    };
+
+    containers = {
+      # NixOS
+      mkContainerOption = {
+        name,
+        description,
+        extraOptions ? {},
+        ...
+      }:
+        {
+          enable = mkEnableOption "Enable ${name}: ${description}";
+
+          container.publication = mkOption {
+            type = types.listOf (types.enum ["local" "tailscale"]);
+            default = ["local"];
+            description = ''
+              Determines where the container is published to. "local" for the local
+              loopback via a reverse proxy, "tailscale" for the tailscale network via docktail
+            '';
+          };
+        }
+        // extraOptions;
+
+      # TODO: make feature users
+      mkContainer = {
+        cfg,
+        name,
+        image,
+        config,
+        subdomain ? null,
+        port ? null,
+        service ? null,
+        publish ? false,
+        root ? false,
+        ...
+      }: {
+        inherit image;
+
+        networks = mkIf publish [
+          "proxy"
+        ];
+
+        podman = mkIf (!root) {
+          sdnotify = "conmon";
+          user = "microserver";
+        };
+
+        labels = mkIf ((port != null || service != null) && subdomain != null) (mkMerge [
+          (mkIf (elem "local" cfg.container.publication) (mkMerge [
+            (mkIf (config.hosting.proxy.local.provider == "traefik") {
+              "traefik.enable" = "true";
+              "traefik.http.routers.${name}.rule" = "Host(`${subdomain}.${config.hosting.proxy.local.subdomain}.${config.hosting.proxy.local.domain}`)";
+              "traefik.http.routers.${name}.entrypoints" = "websecure";
+              "traefik.http.routers.${name}.tls" = "true";
+              "traefik.http.routers.${name}.tls.certresolver" = "le";
+            })
+            (mkIf (config.hosting.proxy.local.provider == "traefik" && port != null) {
+              "traefik.http.services.${name}.loadbalancer.server.port" = toString port;
+            })
+            (mkIf (config.hosting.proxy.local.provider == "traefik" && port == null && service != null) {
+              "traefik.http.routers.${name}.service" = service;
+            })
+            (mkIf (config.hosting.proxy.local.provider == "traefik" && port == null && service == null) (throw ''
+              You must provide either a port or a service for traefik to route to.
+              This is because containers without a port are assumed to be services (e.g. a database)
+              which need to be referenced by name rather than port.
+            ''))
+          ]))
+        ]);
+      };
     };
   };
 }
