@@ -366,7 +366,7 @@
 
         # All systems in the /systems folder
         nixosConfigurations = lib.mapAttrs (hostName: _: mkSystem hostName) (
-          lib.homelab.core.discover ./nix/systems
+          lib.homelab.helpers.core.discover ./nix/systems
         );
 
         # All standalone homes in the /homes folder

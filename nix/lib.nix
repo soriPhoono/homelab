@@ -1,23 +1,25 @@
 final: prev:
 with prev; {
   homelab = {
-    core = {
-      discover = dir:
-        prev.mapAttrs'
-        (name: _: {
-          name = prev.removeSuffix ".nix" name;
-          value = dir + "/${name}";
-        })
-        (
-          prev.filterAttrs (
-            name: type:
-              (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
-              || (type == "regular" && name != "default.nix" && prev.hasSuffix ".nix" name)
-          ) (builtins.readDir dir)
-        );
+    helpers = {
+      core = {
+        discover = dir:
+          prev.mapAttrs'
+          (name: _: {
+            name = prev.removeSuffix ".nix" name;
+            value = dir + "/${name}";
+          })
+          (
+            prev.filterAttrs (
+              name: type:
+                (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"))
+                || (type == "regular" && name != "default.nix" && prev.hasSuffix ".nix" name)
+            ) (builtins.readDir dir)
+          );
+      };
     };
 
-    agentics = {
+    development = {
       mkEditor = {
         name,
         package,
@@ -81,111 +83,6 @@ with prev; {
           };
         }
         // extraOptions;
-
-      # mkVscodeEditor: merges mkEditor + mkAgent into one option namespace.
-      # Editor options (common profiles, extensionProfiles, activeProfiles)
-      # come from mkEditor. Agent options (documents, skills, mcpServers)
-      # come from mkAgent and sit alongside editor options at the top level.
-      # Shared keys (enable, package, secrets, userSettings) are editor-focused.
-      mkVscodeEditor = {
-        name,
-        package,
-        extraOptions ? {},
-      }: let
-        editorOpts = final.homelab.agentics.mkEditor {
-          inherit name package;
-          extraOptions = {
-            common = mkOption {
-              type = with types;
-                submodule {
-                  options = {
-                    extensions = mkOption {
-                      type = types.listOf types.package;
-                      default = [];
-                      description = "Extensions added to every profile.";
-                    };
-                    userTasks = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Tasks merged into every profile.";
-                    };
-                    keybindings = mkOption {
-                      type = listOf attrs;
-                      default = [];
-                      description = "Keybindings added to every profile.";
-                    };
-                    languageSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Language snippets added to every profile.";
-                    };
-                    globalSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Global snippets added to every profile.";
-                    };
-                  };
-                };
-              default = {};
-              description = "Common VS Code config merged into every active profile.";
-            };
-
-            extensionProfiles = mkOption {
-              type = with types;
-                attrsOf (submodule {
-                  options = {
-                    extensions = mkOption {
-                      type = types.listOf types.package;
-                      default = [];
-                      description = "Extensions for this profile.";
-                    };
-                    userSettings = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific settings on top of common.";
-                    };
-                    userTasks = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific tasks on top of common.";
-                    };
-                    keybindings = mkOption {
-                      type = listOf attrs;
-                      default = [];
-                      description = "Profile-specific keybindings.";
-                    };
-                    languageSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific language snippets.";
-                    };
-                    globalSnippets = mkOption {
-                      type = attrs;
-                      default = {};
-                      description = "Profile-specific global snippets.";
-                    };
-                  };
-                });
-              default = {};
-              description = "Named VS Code profiles.";
-            };
-
-            activeProfiles = mkOption {
-              type = with types; listOf str;
-              default = ["default"];
-              description = "Profiles to activate.";
-            };
-
-            agent = removeAttrs (final.homelab.agentics.mkAgent {
-              name = "${name} agent";
-              package = null;
-            }) ["package" "secrets" "userSettings"];
-          };
-        };
-      in
-        # Merge editor base + agent extras.
-        # For shared keys (enable, package, secrets, userSettings), editor wins.
-        prev.recursiveUpdate editorOpts extraOptions;
 
       mkAgent = {
         name,
@@ -298,6 +195,182 @@ with prev; {
           };
         }
         // extraOptions;
+
+      # mkVscodeEditor: merges mkEditor + mkAgent into one option namespace.
+      # Editor options (common profiles, extensionProfiles, activeProfiles)
+      # come from mkEditor. Agent options (documents, skills, mcpServers)
+      # come from mkAgent and sit alongside editor options at the top level.
+      # Shared keys (enable, package, secrets, userSettings) are editor-focused.
+      mkVscodeEditor = {
+        name,
+        package,
+        extraOptions ? {},
+      }: let
+        editorOpts = final.homelab.development.mkEditor {
+          inherit name package;
+          extraOptions = {
+            common = mkOption {
+              type = with types;
+                submodule {
+                  options = {
+                    extensions = mkOption {
+                      type = types.listOf types.package;
+                      default = [];
+                      description = "Extensions added to every profile.";
+                    };
+                    userTasks = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Tasks merged into every profile.";
+                    };
+                    keybindings = mkOption {
+                      type = listOf attrs;
+                      default = [];
+                      description = "Keybindings added to every profile.";
+                    };
+                    languageSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Language snippets added to every profile.";
+                    };
+                    globalSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Global snippets added to every profile.";
+                    };
+                  };
+                };
+              default = {};
+              description = "Common VS Code config merged into every active profile.";
+            };
+
+            extensionProfiles = mkOption {
+              type = with types;
+                attrsOf (submodule {
+                  options = {
+                    extensions = mkOption {
+                      type = types.listOf types.package;
+                      default = [];
+                      description = "Extensions for this profile.";
+                    };
+                    userSettings = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific settings on top of common.";
+                    };
+                    userTasks = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific tasks on top of common.";
+                    };
+                    keybindings = mkOption {
+                      type = listOf attrs;
+                      default = [];
+                      description = "Profile-specific keybindings.";
+                    };
+                    languageSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific language snippets.";
+                    };
+                    globalSnippets = mkOption {
+                      type = attrs;
+                      default = {};
+                      description = "Profile-specific global snippets.";
+                    };
+                  };
+                });
+              default = {};
+              description = "Named VS Code profiles.";
+            };
+
+            activeProfiles = mkOption {
+              type = with types; listOf str;
+              default = ["default"];
+              description = "Profiles to activate.";
+            };
+
+            agent = removeAttrs (final.homelab.development.mkAgent {
+              name = "${name} agent";
+              package = null;
+            }) ["package" "secrets" "userSettings"];
+          };
+        };
+      in
+        # Merge editor base + agent extras.
+        # For shared keys (enable, package, secrets, userSettings), editor wins.
+        prev.recursiveUpdate editorOpts extraOptions;
+    };
+
+    containers = {
+      # NixOS
+      mkContainerOption = {
+        name,
+        description,
+        extraOptions ? {},
+        ...
+      }:
+        {
+          enable = mkEnableOption "Enable ${name}: ${description}";
+
+          container.publication = mkOption {
+            type = types.listOf (types.enum ["local" "tailscale"]);
+            default = ["local"];
+            description = ''
+              Determines where the container is published to. "local" for the local
+              loopback via a reverse proxy, "tailscale" for the tailscale network via docktail
+            '';
+          };
+        }
+        // extraOptions;
+
+      # TODO: make feature users
+      mkContainer = {
+        cfg,
+        name,
+        image,
+        config,
+        subdomain ? null,
+        port ? null,
+        service ? null,
+        publish ? false,
+        root ? false,
+        ...
+      }: {
+        inherit image;
+
+        networks = mkIf publish [
+          "proxy"
+        ];
+
+        podman = mkIf (!root) {
+          sdnotify = "conmon";
+          user = "microserver";
+        };
+
+        labels = mkIf ((port != null || service != null) && subdomain != null) (mkMerge [
+          (mkIf (elem "local" cfg.container.publication) (mkMerge [
+            (mkIf (config.hosting.proxy.local.provider == "traefik") {
+              "traefik.enable" = "true";
+              "traefik.http.routers.${name}.rule" = "Host(`${subdomain}.${config.hosting.proxy.local.subdomain}.${config.hosting.proxy.local.domain}`)";
+              "traefik.http.routers.${name}.entrypoints" = "websecure";
+              "traefik.http.routers.${name}.tls" = "true";
+              "traefik.http.routers.${name}.tls.certresolver" = "le";
+            })
+            (mkIf (config.hosting.proxy.local.provider == "traefik" && port != null) {
+              "traefik.http.services.${name}.loadbalancer.server.port" = toString port;
+            })
+            (mkIf (config.hosting.proxy.local.provider == "traefik" && port == null && service != null) {
+              "traefik.http.routers.${name}.service" = service;
+            })
+            (mkIf (config.hosting.proxy.local.provider == "traefik" && port == null && service == null) (throw ''
+              You must provide either a port or a service for traefik to route to.
+              This is because containers without a port are assumed to be services (e.g. a database)
+              which need to be referenced by name rather than port.
+            ''))
+          ]))
+        ]);
+      };
     };
   };
 }

@@ -4,11 +4,11 @@
   config,
   ...
 }: let
-  cfg = config.desktop.services.virtualisation;
+  cfg = config.desktop.services.virtualization;
 in
   with lib; {
-    options.desktop.services.virtualisation = {
-      enable = mkEnableOption "Enable virtualisation with virt-manager";
+    options.desktop.services.virtualization = {
+      enable = mkEnableOption "Enable virtualization with virt-manager";
       mode = mkOption {
         type = with types;
           enum [
@@ -17,7 +17,7 @@ in
           ];
         default = "host";
         description = ''
-          Mode of virtualisation for this machine.
+          Mode of virtualization for this machine.
           - "host": Run VMs with virt-manager and libvirtd (desktop/workstation).
           - "guest": Run as a QEMU guest with spice-vdagent (VM).
         '';

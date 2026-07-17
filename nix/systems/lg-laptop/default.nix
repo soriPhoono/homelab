@@ -78,16 +78,27 @@ with lib; {
       printing.enable = true;
       pipewire.enable = true;
     };
-    features.gaming.enable = true;
+    features.gaming.desktop.enable = true;
   };
 
   hosting = {
-    media.enable = true;
+    platforms.podman.enable = true;
+
+    media = {
+      enable = true;
+      jellyfin.acceleration.enable = true;
+    };
+
     proxy = {
       enable = true;
-      type = "traefik";
+
+      local = {
+        provider = "traefik";
+        domain = "cryptic-coders.net";
+      };
+
       dns = {
-        baseDomain = "cryptic-coders.net";
+        provider = "cloudflare";
         email = "soriphoono@gmail.com";
       };
     };

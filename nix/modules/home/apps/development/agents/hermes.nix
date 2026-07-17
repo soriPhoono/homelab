@@ -163,7 +163,7 @@ with lib; let
     ...
   }: {
     options =
-      (removeAttrs (lib.homelab.agentics.mkAgent {
+      (removeAttrs (lib.homelab.development.mkAgent {
         inherit name;
         package = null;
         extraOptions = {
@@ -337,7 +337,7 @@ in {
   # Installs cli tooling with global enable option, extra features get added with other options
   options.apps.development.agents.hermes = mkOption {
     type = types.submodule ({config, ...}: {
-      options = homelab.agentics.mkAgent {
+      options = homelab.development.mkAgent {
         name = "hermes";
         package = pkgs.hermes;
         extraOptions = {

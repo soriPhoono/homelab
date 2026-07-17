@@ -85,27 +85,6 @@ jobs:
           use-flakehub: false
       - name: Build
         run: nix build .#nixosConfigurations.lg-laptop.config.system.build.toplevel
-  build-nixos-testbench:
-    needs:
-      - evaluate
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-      - name: Cachix cache
-        uses: cachix/cachix-action@v17
-        with:
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          name: homelab
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
-        with:
-          use-flakehub: false
-      - name: Build
-        run: nix build .#nixosConfigurations.testbench.config.system.build.toplevel
   build-nixos-zephyrus:
     needs:
       - evaluate

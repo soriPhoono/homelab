@@ -6,12 +6,13 @@ These are the tasks that are intended for future development goals
   - [ ] configure local matrix server for bot accounts
 - [ ] Test vr support on desktop
 - [ ] Finish implementing better security hardening with nixos-mineral
-- [ ] Implement impermenance on all nixos devices
+- [ ] Implement impermanence on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
-- [ ] Finish reorganizing and cleaning up module structure in core/ and desktop/ nixos modules
-- [ ] Finish rewrite of hosting nixos modules to use podman and remove badly generated architecture
 - [ ] Finish rewrite of vscode/antigravity/code-oss+acp support to actually work properly
+- [ ] Finish updating clamav binary
+- [ ] Fix printing support
+- [ ] Fix flatpak autoenable oneshot
 
 ## MCP Infrastructure — Server Issues & Fixes
 

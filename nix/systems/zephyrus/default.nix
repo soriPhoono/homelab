@@ -98,8 +98,19 @@ with lib; {
       pipewire.enable = true;
     };
     features.gaming = {
-      enable = true;
+      desktop = {
+        enable = true;
+        clients = [
+          "steam"
+          "lutris"
+          "prismlauncher"
+          "gzdoom"
+        ];
+      };
       console.enable = true;
+      streaming = {
+        enable = true;
+      };
     };
     tools = {
       partition-manager.enable = true;
@@ -108,20 +119,25 @@ with lib; {
   };
 
   hosting = {
-    platforms.docker.enable = true;
+    platforms.podman.enable = true;
+
     media = {
       enable = true;
+
       jellyfin.acceleration.enable = true;
     };
+
     proxy = {
       enable = true;
-      type = "traefik";
-      dns = {
-        baseDomain = "cryptic-coders.net";
-        email = "soriphoono@gmail.com";
+
+      local = {
+        provider = "traefik";
+        domain = "cryptic-coders.net";
       };
-      traefik.dashboard = {
-        enable = true;
+
+      dns = {
+        provider = "cloudflare";
+        email = "soriphoono@gmail.com";
       };
     };
   };

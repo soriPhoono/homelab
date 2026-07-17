@@ -1,7 +1,6 @@
 {
   lib,
   config,
-  options,
   ...
 }: let
   cfg = config.core.secrets;
@@ -25,13 +24,13 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        # TODO: Make this section ONLY delete sops key when something breaks, this crash and delete everything strategy is dumb
         systemd.tmpfiles.rules = concatMap (username: [
           "d /home/${username}/.config/ 0755 ${username} ${username} -"
           "d /home/${username}/.config/sops/ 0700 ${username} ${username} -"
           "d /home/${username}/.config/sops/age/ 0700 ${username} ${username} -"
         ]) (attrNames config.core.users);
-      }
-      (optionalAttrs (options ? sops) {
+
         sops = {
           defaultSopsFile = mkIf (cfg.defaultSopsFile != null) cfg.defaultSopsFile;
 
@@ -47,6 +46,6 @@ in
             };
           }) (filterAttrs (_name: user: user.secrets) config.core.users);
         };
-      })
+      }
     ]);
   }

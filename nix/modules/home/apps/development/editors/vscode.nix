@@ -98,7 +98,7 @@
     };
 in
   with lib; {
-    options.apps.development.editors.vscode = homelab.agentics.mkVscodeEditor {
+    options.apps.development.editors.vscode = homelab.development.mkVscodeEditor {
       name = "vscode";
       package = pkgs.vscode;
     };

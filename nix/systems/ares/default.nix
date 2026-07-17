@@ -88,48 +88,56 @@ with lib; {
     services = {
       printing.enable = true;
       pipewire.enable = true;
+      virtualization.enable = true;
     };
     features = {
       gaming = {
-        enable = true;
-        vr.enable = true;
+        desktop = {
+          enable = true;
+          clients = [
+            "steam"
+            "lutris"
+            "prismlauncher"
+            "gzdoom"
+          ];
+        };
         console.enable = true;
+        vr.enable = true;
+        streaming.enable = true;
       };
     };
-    tools = {
-      partition-manager.enable = true;
-      virtualbox.enable = true;
-    };
+    tools.partition-manager.enable = true;
   };
 
   hosting = {
-    platforms.docker.enable = true;
+    platforms.podman.enable = true;
+
     media = {
       enable = true;
+
       jellyfin.acceleration.enable = true;
     };
-    # gaming.wolf = {
-    #   enable = true;
-    #   gpu = "dedicated";
-    #   internalMac = "c2:d8:de:57:c6:7c";
-    # };
-    # inference.ollama = {
-    #   enable = true;
-    #   gpu = "dedicated";
-    #   numCtx = 262144;
-    #   environmentVariables = {
-    #     OLLAMA_KV_CACHE_TYPE = "q4_0";
-    #   };
-    # };
+
+    gaming = {
+      enable = true;
+
+      wolf = {
+        gpu = "mesa-compatible";
+        internalMac = "c2:d8:de:57:c6:7c";
+      };
+    };
+
     proxy = {
       enable = true;
-      type = "traefik";
-      dns = {
-        baseDomain = "cryptic-coders.net";
-        email = "soriphoono@gmail.com";
+
+      local = {
+        provider = "traefik";
+        domain = "cryptic-coders.net";
       };
-      traefik.dashboard = {
-        enable = true;
+
+      dns = {
+        provider = "cloudflare";
+        email = "soriphoono@gmail.com";
       };
     };
   };

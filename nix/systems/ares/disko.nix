@@ -15,7 +15,7 @@
                 "compress=zstd"
                 "noatime"
               ];
-              mountpoint = "/etc/wolf";
+              mountpoint = "/var/lib/wolf";
             };
           };
         };

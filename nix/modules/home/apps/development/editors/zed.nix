@@ -53,7 +53,7 @@ Zed editor module
   ];
 in
   with lib; {
-    options.apps.development.editors.zed = homelab.agentics.mkEditor {
+    options.apps.development.editors.zed = homelab.development.mkEditor {
       name = "zed";
       package = pkgs.zed-editor;
       extraOptions = {
