@@ -16,7 +16,25 @@ in
       inherit name;
       description = "Enable jellyfin container for media streaming";
       extraOptions = {
-        acceleration.enable = mkEnableOption "Enable hardware acceleration (VAAPI/QSV) on the integrated GPU";
+        acceleration = {
+          enable = mkEnableOption "Enable hardware acceleration (VAAPI/QSV) on the integrated GPU";
+
+          renderDevice = mkOption {
+            type = types.str;
+            default = "/dev/dri/renderD128";
+            description = ''
+              The render device to use for hardware acceleration
+            '';
+          };
+
+          cardDevice = mkOption {
+            type = types.str;
+            default = "/dev/dri/card0";
+            description = ''
+              The card device to use for hardware acceleration
+            '';
+          };
+        };
       };
     };
 
@@ -56,8 +74,8 @@ in
         # Use mkBefore so this is prepended to (not override) any user-set extraOptions
         virtualisation.oci-containers.containers.${name}.extraOptions = mkBefore [
           # Pass the integrated GPU device for VAAPI (AMD/Intel) or QSV (Intel)
-          "--device=/dev/dri/renderD128:/dev/dri/renderD128"
-          "--device=/dev/dri/card0:/dev/dri/card0"
+          "--device=${cfg.acceleration.renderDevice}:${cfg.acceleration.renderDevice}"
+          "--device=${cfg.acceleration.cardDevice}:${cfg.acceleration.cardDevice}"
         ];
       })
     ]);
