@@ -133,16 +133,7 @@ with lib; {
 
     proxy = {
       enable = true;
-
-      local = {
-        provider = "traefik";
-        domain = "cryptic-coders.net";
-      };
-
-      dns = {
-        provider = "cloudflare";
-        email = "soriphoono@gmail.com";
-      };
+      tailscale.enable = true;
     };
   };
 

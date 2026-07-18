@@ -48,9 +48,8 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "linuxserver/jellyfin:10.11.11";
-            subdomain = "media";
-            port = 8096;
-            publish = true;
+            serviceName = "media";
+            servicePort = 8096;
           })
           {
             volumes = [

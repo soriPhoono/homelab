@@ -24,11 +24,9 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-
             image = "linuxserver/lidarr:latest";
-            subdomain = "music";
-            port = 8686;
-            publish = true;
+            serviceName = "music";
+            servicePort = 8686;
           })
           {
             environment = {

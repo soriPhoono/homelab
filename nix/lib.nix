@@ -321,8 +321,8 @@ with prev; {
           enable = mkEnableOption "Enable ${name}: ${description}";
 
           container.publication = mkOption {
-            type = types.listOf (types.enum ["local" "tailscale"]);
-            default = ["local"];
+            type = types.listOf (types.enum ["tailscale"]);
+            default = ["tailscale"];
             description = ''
               Determines where the container is published to. "local" for the local
               loopback via a reverse proxy, "tailscale" for the tailscale network via docktail
@@ -333,21 +333,18 @@ with prev; {
 
       # TODO: make feature users
       mkContainer = {
-        cfg,
-        name,
-        image,
         config,
-        subdomain ? null,
-        port ? null,
-        service ? null,
-        publish ? false,
+        cfg,
+        image,
         root ? false,
+        serviceName ? null,
+        servicePort ? null,
         ...
       }: {
         inherit image;
 
-        networks = mkIf publish [
-          "proxy"
+        networks = mkIf (elem "tailscale" (cfg.container.publication or [])) [
+          "tailscale"
         ];
 
         podman = mkIf (!root) {
@@ -355,28 +352,29 @@ with prev; {
           user = "microserver";
         };
 
-        labels = mkIf ((port != null || service != null) && subdomain != null) (mkMerge [
-          (mkIf (elem "local" cfg.container.publication) (mkMerge [
-            (mkIf (config.hosting.proxy.local.provider == "traefik") {
-              "traefik.enable" = "true";
-              "traefik.http.routers.${name}.rule" = "Host(`${subdomain}.${config.hosting.proxy.local.subdomain}.${config.hosting.proxy.local.domain}`)";
-              "traefik.http.routers.${name}.entrypoints" = "websecure";
-              "traefik.http.routers.${name}.tls" = "true";
-              "traefik.http.routers.${name}.tls.certresolver" = "le";
-            })
-            (mkIf (config.hosting.proxy.local.provider == "traefik" && port != null) {
-              "traefik.http.services.${name}.loadbalancer.server.port" = toString port;
-            })
-            (mkIf (config.hosting.proxy.local.provider == "traefik" && port == null && service != null) {
-              "traefik.http.routers.${name}.service" = service;
-            })
-            (mkIf (config.hosting.proxy.local.provider == "traefik" && port == null && service == null) (throw ''
-              You must provide either a port or a service for traefik to route to.
-              This is because containers without a port are assumed to be services (e.g. a database)
-              which need to be referenced by name rather than port.
-            ''))
-          ]))
-        ]);
+        labels = let
+          hostname = config.networking.hostName;
+        in
+          mkMerge [
+            (mkIf (elem "tailscale" (cfg.container.publication or [])) (
+              {
+                "docktail.service.enable" = "true";
+                "docktail.service.service-port" = "80";
+                "docktail.service.service-protocol" = "http";
+                "docktail.service.1.enable" = "true";
+                "docktail.service.1.service-port" = "443";
+                "docktail.service.1.service-protocol" = "https";
+              }
+              // optionalAttrs (serviceName != null) {
+                "docktail.service.name" = "${hostname}-${serviceName}";
+                "docktail.service.1.name" = "${hostname}-${serviceName}";
+              }
+              // optionalAttrs (servicePort != null) {
+                "docktail.service.port" = toString servicePort;
+                "docktail.service.1.port" = toString servicePort;
+              }
+            ))
+          ];
       };
     };
   };

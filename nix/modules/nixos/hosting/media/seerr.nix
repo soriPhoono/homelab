@@ -26,9 +26,8 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "seerr/seerr";
-            subdomain = "pvr";
-            port = 5055;
-            publish = true;
+            serviceName = "pvr";
+            servicePort = 5055;
           })
           {
             user = "0:0";

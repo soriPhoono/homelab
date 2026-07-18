@@ -26,9 +26,8 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "linuxserver/prowlarr:2.4.0";
-            subdomain = "indexers";
-            port = "9696";
-            publish = true;
+            serviceName = "indexers";
+            servicePort = 9696;
           })
           {
             volumes = [

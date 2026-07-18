@@ -27,9 +27,8 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "ghcr.io/pennydreadful/bookshelf:hardcover";
-            subdomain = "books";
-            port = 8787;
-            publish = true;
+            serviceName = "books";
+            servicePort = 8787;
           })
           {
             volumes = [

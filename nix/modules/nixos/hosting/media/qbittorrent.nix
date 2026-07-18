@@ -26,9 +26,8 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "linuxserver/qbittorrent:5.2.3";
-            subdomain = "downloads";
-            port = 8080;
-            publish = true;
+            serviceName = "downloads";
+            servicePort = 8080;
           })
           {
             environment = {

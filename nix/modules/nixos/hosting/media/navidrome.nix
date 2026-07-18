@@ -24,11 +24,9 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-
             image = "deluan/navidrome:0.63.2";
-            subdomain = "jukebox";
-            port = 4533;
-            publish = true;
+            serviceName = "jukebox";
+            servicePort = 4533;
           })
           {
             user = "0:0";
