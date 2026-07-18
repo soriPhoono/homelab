@@ -19,11 +19,7 @@
       };
 
       memory.variant = "honcho";
-
-      search = {
-        brave.enable = true;
-        exa.enable = true;
-      };
+      search.exa.enable = true;
     };
 
     skills = {
@@ -67,15 +63,6 @@
           "wikipedia-mcp-server"
         ];
       };
-
-      "personal/filesystem" = {
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@modelcontextprotocol/server-filesystem"
-          "${config.home.homeDirectory}/Projects"
-        ];
-      };
     };
 
     profiles = {
@@ -104,9 +91,18 @@
               "pdf-edit-mcp"
             ];
           };
+          "personal/filesystem" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@modelcontextprotocol/server-filesystem"
+              "${config.home.homeDirectory}/Documents"
+            ];
+          };
         };
       };
       coder = {
+        type = "background";
         documents = {
           soul = ../assets/documents/coder/soul.md;
           user = ../assets/documents/user.md;
@@ -135,6 +131,14 @@
             args = [
               "-y"
               "anydb-mcp"
+            ];
+          };
+          "personal/filesystem" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@modelcontextprotocol/server-filesystem"
+              "${config.home.homeDirectory}/Projects"
             ];
           };
         };

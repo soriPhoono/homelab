@@ -84,7 +84,7 @@ with lib; let
       for bin in $out/bin/*; do
         if [ -f "$bin" ] && [ -x "$bin" ]; then
           wrapArgs=(
-            --set-default HERMES_HOME "${stateDir}"
+            --set-default HERMES_HOME "${foregroundStateDir}"
             --set HERMES_MANAGED true
           )
           ${optionalString (cfg.extraPackages != []) ''
@@ -96,12 +96,21 @@ with lib; let
     '';
   };
 
-  stateDir = "${config.home.homeDirectory}/.hermes";
+  foregroundStateDir = "${config.home.homeDirectory}/.hermes";
+  backgroundStateDir = "${config.home.homeDirectory}/.local/share/hermes";
 
   profileDir = profileName:
-    if profileName == "default"
-    then stateDir
-    else "${stateDir}/profiles/${profileName}";
+    if (cfg.profiles.${profileName}.type == "foreground")
+    then
+      if profileName == "default"
+      then foregroundStateDir
+      else "${foregroundStateDir}/profiles/${profileName}"
+    else if (cfg.profiles.${profileName}.type == "background")
+    then
+      if profileName == "default"
+      then "${backgroundStateDir}"
+      else "${backgroundStateDir}/profiles/${profileName}"
+    else throw "Unknown profile type ${cfg.profiles.${profileName}.type} for ${profileName}";
 
   # Create folder structure for hermes profiles
   mkProfileFolders = pDir: ''
@@ -113,14 +122,14 @@ with lib; let
   '';
 
   # Create profile config.yaml
-  mkConfigFile = profileName: profileConfig:
+  mkConfigFile = profileName: profileCfg:
     pkgs.writeText "hermes-config-${profileName}.yaml"
-    (builtins.toJSON (cfg.userSettings // profileConfig.userSettings));
+    (builtins.toJSON (cfg.userSettings // profileCfg.userSettings));
 
-  mkConfig = profileName: profile: ''
+  mkConfig = profileName: profileCfg: ''
     CONFIG_FILE="${profileDir profileName}/config.yaml"
 
-    cp -rL ${mkConfigFile profileName profile} "$CONFIG_FILE"
+    cp -rL ${mkConfigFile profileName profileCfg} "$CONFIG_FILE"
     chmod 0640 "$CONFIG_FILE"
   '';
 
@@ -167,17 +176,13 @@ with lib; let
         inherit name;
         package = null;
         extraOptions = {
-          repo = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = "Optional path to the profile repository, if null declarative configuration will be used.";
-            example = lib.literalExpression ''
-              pkgs.fetchFromGitHub {
-                owner = "<username>";
-                repo = "<repository-name>";
-                rev = "<revision>";
-                hash = "<hash>";
-              };
+          type = mkOption {
+            type = types.enum ["foreground" "background"];
+            default = "foreground";
+            description = ''
+              This controls the agent's deployment mode:
+              - foreground: The agent is deployed in the foreground, will be available via the desktop/cli as a profile accessable with a local execution environment (not sandboxed in podman). HERMES_HOME will be set to ~/.hermes.
+              - background: The agent is deployed in the background, will not be available via the desktop/cli as a profile, but instead will be run in podman as a standalone sandboxed agent with a docker container as it's tool environment for persistence, use this option if you want to hook a bot up to a messaging platform as a standalone autonomous agent.
             '';
           };
 
@@ -498,15 +503,17 @@ in {
                   # This script writes this agent's secrets and all global secrets to the profile agent .env file
                   envSeedScript = pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
                     ENV_FILE="${profileDir profileName}/.env"
+                    mkdir -p "$(dirname "$ENV_FILE")"
+                    : > "$ENV_FILE"
                     ${optionalString (cfg.providers.models.opencode.zen.enable || profileCfg.providers.models.opencode.zen.enable) ''
-                      printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" | tee -a "$ENV_FILE"
+                      printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
                     ''}
                     ${optionalString (cfg.providers.models.opencode.go.enable || profileCfg.providers.models.opencode.go.enable) ''
-                      printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" | tee -a "$ENV_FILE"
+                      printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
                     ''}
                     ${concatStringsSep "\n" (
                       map (f: ''
-                        printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" | tee -a "$ENV_FILE"
+                        printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
                       '')
                       (unique (cfg.secrets ++ profileCfg.secrets))
                     )}
