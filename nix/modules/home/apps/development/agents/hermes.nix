@@ -282,7 +282,7 @@ with lib; let
                 // (lib.optionalAttrs (server.headers != null) {
                   headers = mapAttrs (_: value:
                     if value ? secret
-                    then "\${${baseNameOf value.secret}}"
+                    then "${value.prefix}\${${baseNameOf value.secret}}${value.suffix}"
                     else value)
                   server.headers;
                 })

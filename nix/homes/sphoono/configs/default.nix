@@ -1,7 +1,5 @@
 {
   imports = [
-    ./zed
-    ./vscode
     ./antigravity
     ./zen
     ./hypr

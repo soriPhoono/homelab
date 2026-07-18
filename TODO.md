@@ -9,10 +9,12 @@ These are the tasks that are intended for future development goals
 - [ ] Implement impermanence on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
-- [ ] Finish rewrite of vscode/antigravity/code-oss+acp support to actually work properly
+- [x] Finish rewrite of vscode/antigravity/code-oss+acp support to actually work properly
+- [ ] Finish rewrite of opencode
 - [ ] Finish updating clamav binary
 - [ ] Fix printing support
 - [ ] Fix flatpak autoenable oneshot
+- [ ] Create automatic configuration of wolf server
 
 ## MCP Infrastructure — Server Issues & Fixes
 

@@ -176,6 +176,13 @@ with prev; {
                     headers = mkOption {
                       type = nullOr (attrsOf (either str (submodule {
                         options = {
+                          prefix = mkOption {
+                            type = nullOr str;
+                            default = null;
+                            description = ''
+                              The prefix to include before the secret (e.g. "Bearer ")
+                            '';
+                          };
                           secret = mkOption {
                             type = str;
                             description = ''

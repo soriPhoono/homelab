@@ -73,7 +73,7 @@
         args = [
           "-y"
           "@modelcontextprotocol/server-filesystem"
-          "${config.home.homeDirectory}"
+          "${config.home.homeDirectory}/Projects"
         ];
       };
     };
@@ -81,7 +81,8 @@
     profiles = {
       default = {
         documents = {
-          soul = ./documents/default/soul.md;
+          soul = ../assets/documents/default/soul.md;
+          user = ../assets/documents/user.md;
         };
 
         mcpServers = {
@@ -107,7 +108,8 @@
       };
       coder = {
         documents = {
-          soul = ./documents/coder/soul.md;
+          soul = ../assets/documents/coder/soul.md;
+          user = ../assets/documents/user.md;
         };
         mcpServers = {
           "software-dev/github" = {

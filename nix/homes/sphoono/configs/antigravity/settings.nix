@@ -12,6 +12,12 @@ _: {
       "editor.guides.indentation" = true;
       "editor.guides.bracketPairs" = true;
 
+      # General UI/UX improvements
+      "workbench.startupEditor" = "none";
+      "editor.inlineSuggest.enabled" = true;
+      "editor.tabCompletion" = "on";
+      "workbench.editor.closeOnFileDelete" = false;
+
       # Formatting
       "editor.formatOnSave" = true;
       "editor.formatOnPaste" = true;
@@ -44,6 +50,34 @@ _: {
       "git.autofetch" = true;
       "git.confirmSync" = false;
       "git.enableSmartCommit" = true;
+
+      # Formatting default formatters
+      "[shellscript]" = {
+        "editor.defaultFormatter" = "foxundermoon.shell-format";
+      };
+      "[yaml]" = {
+        "editor.defaultFormatter" = "redhat.vscode-yaml";
+        "editor.tabSize" = 2;
+      };
+      "yaml.format.enable" = true;
+
+      # Markdown settings
+      "[markdown]" = {
+        "editor.wordWrap" = "on";
+        "editor.quickSuggestions" = {
+          "comments" = "on";
+          "strings" = "on";
+          "other" = "on";
+        };
+      };
+
+      # Go/Python/Rust settings
+      "[go]" = {
+        "editor.defaultFormatter" = "golang.go";
+      };
+      "[rust]" = {
+        "editor.defaultFormatter" = "rust-lang.rust-analyzer";
+      };
 
       # Nix
       "[nix]" = {

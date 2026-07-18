@@ -1,22 +1,4 @@
 {pkgs, ...}: let
-  # Grafana VS Code extension — not in nixpkgs, fetched from marketplace
-  # grafana = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-  #   mktplcRef = {
-  #     publisher = "Grafana";
-  #     name = "grafana-vscode";
-  #     version = "0.0.19";
-  #     sha256 = "sha256-TpLOMwdaEdgzWVwUcn+fO4rgLiQammWQM8LQobt8gLw=";
-  #   };
-  # };
-  # Sorbet VS Code extension — not in nixpkgs, fetched from marketplace
-  # sorbet = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-  #   mktplcRef = {
-  #     publisher = "sorbet";
-  #     name = "sorbet-vscode-extension";
-  #     version = "0.3.46";
-  #     sha256 = "sha256-fKJbaJgsLgypprylbUKUjyeU1B9x0RlaD1dUnFd1w7Y=";
-  #   };
-  # };
   # Nix IDE v0.5.5 — pinned to a version compatible with Antigravity IDE's
   # bundled VS Code engine (v1.107.0).  The nixpkgs version (v0.5.9) requires
   # VS Code >= 1.112.0, which postdates the engine shipped inside Antigravity.
@@ -47,6 +29,7 @@ in {
     # Language-specific tools belong in profile extensions instead.
     common = {
       extensions = with pkgs.vscode-extensions; [
+        pkgs.vscode-marketplace.ms-vscode.atom-keybindings
         catppuccin.catppuccin-vsc
 
         # Nix Code
@@ -67,6 +50,10 @@ in {
         # Configuration
         redhat.vscode-xml
         redhat.vscode-yaml
+        tamasfe.even-better-toml
+
+        # Tooling
+        christian-kohler.path-intellisense
 
         # CI/CD
         github.vscode-github-actions
@@ -175,7 +162,6 @@ in {
           # Tooling
           christian-kohler.npm-intellisense
           mikestead.dotenv
-          tamasfe.even-better-toml
         ];
 
         userSettings = {

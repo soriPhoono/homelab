@@ -1,9 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}:
-with lib; {
+{pkgs, ...}: {
   imports = [
     ./disko.nix
   ];
@@ -86,6 +81,7 @@ with lib; {
 
     media = {
       enable = true;
+
       jellyfin.acceleration.enable = true;
     };
 
