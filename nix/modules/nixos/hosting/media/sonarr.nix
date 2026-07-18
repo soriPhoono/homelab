@@ -26,9 +26,8 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "linuxserver/sonarr:4.0.19";
-            subdomain = "shows";
-            port = 8989;
-            publish = true;
+            serviceName = "shows";
+            servicePort = 8989;
           })
           {
             environment = {

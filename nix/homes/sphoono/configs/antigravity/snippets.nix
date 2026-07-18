@@ -233,6 +233,114 @@ _: {
             description = "YAML key-value pair (string)";
           };
         };
+
+        # --- Go snippets ---
+        go = {
+          "errcheck" = {
+            prefix = ["err"];
+            body = [
+              ''if err != nil {''
+              ''return ''${1:err}''
+              ''}''
+            ];
+            description = "Error check and return";
+          };
+          "test" = {
+            prefix = ["test"];
+            body = [
+              ''func Test''${1:Name}(t *testing.T) {''
+              ''$0''
+              ''}''
+            ];
+            description = "Go unit test function";
+          };
+          "printf" = {
+            prefix = ["printf" "fp"];
+            body = [
+              ''fmt.Printf("''${1:var}: %+v\n", ''${1:var})''
+            ];
+            description = "Printf print helper";
+          };
+        };
+
+        # --- Rust snippets ---
+        rust = {
+          "test" = {
+            prefix = ["test" "tmod"];
+            body = [
+              ''#[cfg(test)]''
+              ''mod tests {''
+              ''use super::*;''
+              ''''
+              ''#[test]''
+              ''fn test_''${1:name}() {''
+              ''$0''
+              ''}''
+              ''}''
+            ];
+            description = "Rust test module and test case";
+          };
+          "derive" = {
+            prefix = ["derive" "drv"];
+            body = [
+              ''#[derive(Debug, Clone, PartialEq, Eq''${1:, Serialize, Deserialize})]''
+            ];
+            description = "Common derive traits";
+          };
+          "maperr" = {
+            prefix = ["maperr" "me"];
+            body = [
+              ''map_err(|e| ''${1:anyhow!("''${2:failed}: {:?}", e)})''
+            ];
+            description = "map_err with anyhow/eyre";
+          };
+        };
+
+        # --- Python snippets ---
+        python = {
+          "main" = {
+            prefix = ["main"];
+            body = [
+              ''if __name__ == "__main__":''
+              ''''${1:main()}''
+            ];
+            description = "Python standard main guard";
+          };
+          "try" = {
+            prefix = ["try"];
+            body = [
+              ''try:''
+              ''$1''
+              ''except ''${2:Exception} as e:''
+              ''''${3:raise e}''
+            ];
+            description = "Try-except block";
+          };
+        };
+
+        # --- HCL / Terraform snippets ---
+        terraform = {
+          "resource" = {
+            prefix = ["resource" "res"];
+            body = [
+              ''resource "''${1:type}" "''${2:name}" {''
+              ''$0''
+              ''}''
+            ];
+            description = "Terraform resource definition";
+          };
+          "variable" = {
+            prefix = ["variable" "var"];
+            body = [
+              ''variable "''${1:name}" {''
+              ''type        = ''${2:string}''
+              ''description = "''${3:description}"''
+              ''default     = ''${4:null}''
+              ''}''
+            ];
+            description = "Terraform input variable definition";
+          };
+        };
       };
     };
   };

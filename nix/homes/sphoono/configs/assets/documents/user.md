@@ -19,8 +19,8 @@ in various projects, usually within nix devshells.
 
 ## My environment
 
-- Linux 7.0.12-zen1, NixOS unstable
+- Linux zen, NixOS unstable
 - Desktop: Hyprland (ares workstation), Hyprland (zephyrus laptop)
 - Secrets: sops-nix with age keys
-- AI agents: Hermes, OpenCode
+- AI agents: Hermes, OpenCode, Antigravity
 - Obsidian vault at `~/Nextcloud/Vault` for notes

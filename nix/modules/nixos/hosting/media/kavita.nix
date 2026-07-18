@@ -24,11 +24,9 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-
             image = "linuxserver/kavita:latest";
-            subdomain = "library";
-            port = 5000;
-            publish = true;
+            serviceName = "library";
+            servicePort = 5000;
           })
           {
             environment = {

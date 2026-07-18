@@ -26,9 +26,8 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "linuxserver/radarr:6.3.0";
-            subdomain = "movies";
-            port = 7878;
-            publish = true;
+            serviceName = "movies";
+            servicePort = 7878;
           })
           {
             environment = {

@@ -1,9 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}:
-with lib; {
+{pkgs, ...}: {
   imports = [
     ./disko.nix
   ];
@@ -86,21 +81,17 @@ with lib; {
 
     media = {
       enable = true;
-      jellyfin.acceleration.enable = true;
+
+      jellyfin.acceleration = {
+        enable = true;
+        renderDevice = "/dev/dri/renderD128";
+        cardDevice = "/dev/dri/card1";
+      };
     };
 
     proxy = {
       enable = true;
-
-      local = {
-        provider = "traefik";
-        domain = "cryptic-coders.net";
-      };
-
-      dns = {
-        provider = "cloudflare";
-        email = "soriphoono@gmail.com";
-      };
+      tailscale.enable = true;
     };
   };
 }

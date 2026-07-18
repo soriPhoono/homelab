@@ -2,7 +2,6 @@
   lib,
   config,
   pkgs,
-  options,
   ...
 }: let
   cfg = config.apps.development.editors.antigravity;
@@ -47,24 +46,49 @@
 
   # Translate agent MCP servers into Antigravity userMcp format
   mcpUserMcp = {
-    servers =
+    mcpServers =
       builtins.mapAttrs (
-        _name: srv:
-          (lib.optionalAttrs (srv.url != null) {
-              inherit (srv) url;
-            }
-            // lib.optionalAttrs (srv.headers != null) {
-              inherit (srv) headers;
-            })
-          // (lib.optionalAttrs (srv.command != null) {
-              inherit (srv) command;
-            }
-            // lib.optionalAttrs (srv.args != null) {
-              inherit (srv) args;
-            }
-            // lib.optionalAttrs (srv.env != null) {
-              inherit (srv) env;
-            })
+        name: srv:
+          if (srv.url != null && srv.command == null)
+          then {
+            inherit (srv) url;
+            headers =
+              lib.mapAttrs
+              (_name: value:
+                if value ? "secret"
+                then "${
+                  if value.prefix != null
+                  then value.prefix
+                  else ""
+                }${config.sops.placeholder.${value.secret}}
+                ${
+                  if value.suffix != null
+                  then value.suffix
+                  else ""
+                }"
+                else value)
+              (
+                if srv.headers != null
+                then srv.headers
+                else {}
+              );
+          }
+          else if (srv.command != null && srv.url == null)
+          then {
+            inherit (srv) command args;
+            env =
+              lib.mapAttrs
+              (_name: value:
+                if value ? "secret"
+                then config.sops.placeholder.${value.secret}
+                else value)
+              (
+                if srv.env != null
+                then srv.env
+                else {}
+              );
+          }
+          else throw "MCP server ${name} must have either url or command"
       )
       cfg.agent.mcpServers;
   };
@@ -80,8 +104,6 @@
         keybindings = cfg.common.keybindings ++ profile.keybindings;
         languageSnippets = cfg.common.languageSnippets // profile.languageSnippets;
         globalSnippets = cfg.common.globalSnippets // profile.globalSnippets;
-
-        userMcp = mcpUserMcp;
       })
       filtered)
     // {
@@ -92,20 +114,19 @@
         keybindings = cfg.common.keybindings;
         languageSnippets = cfg.common.languageSnippets;
         globalSnippets = cfg.common.globalSnippets;
-        userMcp = mcpUserMcp;
       };
     };
 
   # Stylix VS Code theme extension — only evaluated when stylix is available
   stylixThemeExt =
-    if options ? stylix && config.stylix.enable
+    if config.stylix.enable
     then let
       c = config.lib.stylix.colors;
 
       # Theme JSON mapping base16 colors to VS Code theme color keys.
       # Full reference: https://github.com/nix-community/stylix/blob/master/modules/vscode/templates/theme.nix
       themeJson = builtins.toJSON (
-        with c; rec {
+        with c; {
           name = "Stylix";
           type =
             if config.stylix.polarity == "light"
@@ -296,9 +317,9 @@ in
       name = "antigravity";
       package = pkgs.google-antigravity-ide;
       extraOptions = {
-        agent.documents = mkOption {
-          type = types.attrsOf types.path;
-          default = {};
+        agent.instructions = mkOption {
+          type = types.nullOr (types.oneOf [types.path types.lines]);
+          default = null;
           description = "Documents to be made available to the agent.";
         };
       };
@@ -362,21 +383,42 @@ in
           profiles = vscodeProfiles;
         };
 
+        sops = {
+          secrets =
+            genAttrs
+            (flatten (mapAttrsToList (_name: srv:
+              mapAttrsToList (_name: value: value.secret)
+              (filterAttrs
+                (_name: value: value ? "secret")
+                (
+                  if srv.env != null
+                  then srv.env
+                  else if srv.headers != null
+                  then srv.headers
+                  else {}
+                )))
+            cfg.agent.mcpServers))
+            (_name: {});
+          templates."gemini/mcp_config.json" = {
+            path = "${config.home.homeDirectory}/.gemini/config/mcp_config.json";
+            content = ''
+              ${builtins.toJSON mcpUserMcp}
+            '';
+          };
+        };
+
         # Wire agent context documents and skills into Antigravity IDE's
         # config directory. The IDE scans ~/.gemini/antigravity/ for global
         # agent config, and ~/.gemini/antigravity/skills/<name>/SKILL.md for
         # global skills.
         home.file =
-          # Agent context documents
-          mapAttrs' (
-            name: value:
-              nameValuePair ".gemini/antigravity/instructions/${name}" (
-                if builtins.isPath value
-                then {source = value;}
-                else {text = value;}
-              )
-          )
-          cfg.agent.documents
+          {
+            ".gemini/GEMINI.md" = mkIf (cfg.agent.instructions != null) (
+              if builtins.isPath cfg.agent.instructions
+              then {source = cfg.agent.instructions;}
+              else {text = cfg.agent.instructions;}
+            );
+          }
           # Agent skills — each is a package containing SKILL.md,
           # symlinked into Antigravity's global skills directory.
           // mapAttrs' (
@@ -394,7 +436,7 @@ in
       # profiles definition above, which would cause list-valued options like
       # globalSnippets.*.body and globalSnippets.*.prefix to be concatenated
       # (doubling every snippet).
-      (mkIf (options ? stylix && config.stylix.enable && stylixThemeExt != null) {
+      (mkIf (config.stylix.enable && stylixThemeExt != null) {
         programs.antigravity.profiles = mkForce (
           mapAttrs (
             _name: profile:
