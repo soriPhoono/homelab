@@ -544,7 +544,7 @@ in {
               };
             }
           else acc
-      ) {} (attrNames cfg.profiles);
+      ) {} (attrNames (filterAttrs (_name: profile: profile.type == "foreground") cfg.profiles));
     }
   ]);
 }
