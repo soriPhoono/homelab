@@ -10,20 +10,16 @@
     providers = {
       models = {
         opencode = {
-          go = {
+          zen = {
             enable = true;
             default = true;
-            model = "deepseek-v4-flash";
+            model = "big-pickle";
           };
         };
       };
 
       memory.variant = "honcho";
-
-      search = {
-        brave.enable = true;
-        exa.enable = true;
-      };
+      search.exa.enable = true;
     };
 
     skills = {
@@ -67,15 +63,6 @@
           "wikipedia-mcp-server"
         ];
       };
-
-      "personal/filesystem" = {
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@modelcontextprotocol/server-filesystem"
-          "${config.home.homeDirectory}/Projects"
-        ];
-      };
     };
 
     profiles = {
@@ -83,6 +70,19 @@
         documents = {
           soul = ../assets/documents/default/soul.md;
           user = ../assets/documents/user.md;
+        };
+
+        permissions = {
+          accessDirectories = [
+            "${config.home.homeDirectory}/Downloads"
+            "${config.home.homeDirectory}/Documents"
+            "${config.home.homeDirectory}/Pictures"
+            "${config.home.homeDirectory}/Music"
+            "${config.home.homeDirectory}/Videos"
+            "${config.home.homeDirectory}/Projects"
+            "${config.home.homeDirectory}/GoogleDrive"
+            "${config.home.homeDirectory}/Nextcloud"
+          ];
         };
 
         mcpServers = {
@@ -106,11 +106,21 @@
           };
         };
       };
+
       coder = {
+        type = "hybrid";
+
         documents = {
           soul = ../assets/documents/coder/soul.md;
           user = ../assets/documents/user.md;
         };
+
+        permissions = {
+          accessDirectories = [
+            "${config.home.homeDirectory}/Projects"
+          ];
+        };
+
         mcpServers = {
           "software-dev/github" = {
             command = "${pkgs.nodejs}/bin/npx";

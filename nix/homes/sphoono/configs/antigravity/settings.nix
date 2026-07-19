@@ -3,7 +3,7 @@ _: {
     userSettings = {
       # Editor appearance — font and theme managed by Stylix
 
-      "editor.minimap.enabled" = false;
+      "editor.minimap.enabled" = true;
       "editor.renderWhitespace" = "trailing";
       "editor.cursorBlinking" = "smooth";
       "editor.cursorSmoothCaretAnimation" = "on";

@@ -118,25 +118,6 @@ with lib; {
     };
   };
 
-  hosting = {
-    platforms.podman.enable = true;
-
-    media = {
-      enable = true;
-
-      jellyfin.acceleration = {
-        enable = true;
-        renderDevice = "/dev/dri/renderD128";
-        cardDevice = "/dev/dri/card1";
-      };
-    };
-
-    proxy = {
-      enable = true;
-      tailscale.enable = true;
-    };
-  };
-
   themes = {
     enable = true;
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
