@@ -1,3 +1,5 @@
+# TODO: Setup matrix integration for hermes gateway for coder profile
+# TODO: Configure hermes agent to support ollama cloud models and ollama models off of user level hosted container for ollama
 {
   lib,
   pkgs,
@@ -98,18 +100,14 @@ with lib; let
   };
 
   foregroundStateDir = "${config.home.homeDirectory}/.hermes";
-  backgroundStateDir = "${config.home.homeDirectory}/.local/share/hermes";
 
   profileDir = profileName: let
-    profile = cfg.profiles.${profileName};
     directory = prefix:
       if profileName == "default"
       then "${prefix}"
       else "${prefix}/profiles/${profileName}";
   in
-    if (elem profile.type ["foreground" "hybrid"])
-    then directory foregroundStateDir
-    else directory backgroundStateDir;
+    directory foregroundStateDir;
 
   # Create folder structure for hermes profiles
   mkProfileFolders = pDir: ''
@@ -229,7 +227,7 @@ with lib; let
         package = null;
         extraOptions = {
           type = mkOption {
-            type = types.enum ["foreground" "hybrid" "background"];
+            type = types.enum ["foreground" "hybrid"];
             default = "foreground";
             description = ''
               This controls the agent's deployment mode:
@@ -241,11 +239,6 @@ with lib; let
                     will be available via the desktop/cli as a profile
                     accessable with a docker based execution environment (sandboxed in podman).
                     And will be available via a systemd service as a messaging gateway.
-                - `background`: The agent is deployed in the background,
-                    will not be available via the desktop/cli as a profile,
-                    but instead will be run in podman as a standalone sandboxed
-                    agent with a docker container as it's tool environment for persistence,
-                    use this option if you want to hook a bot up to a messaging platform as a standalone autonomous agent.
             '';
           };
 
@@ -597,76 +590,10 @@ in {
       ) {} (attrNames cfg.profiles);
 
       # Generate systemd services for all enabled profiles (Linux only)
-      systemd.user.services =
+      systemd.user.services = let
+        agentsForType = type: (attrNames (filterAttrs (_name: profile: profile.type == type) cfg.profiles));
+      in
         (foldl' (
-          acc: profileName: let
-            profileCfg = cfg.profiles.${profileName};
-          in
-            if profileCfg.enable && pkgs.stdenv.hostPlatform.isLinux
-            then
-              acc
-              // {
-                "hermes-agent-${profileName}" = {
-                  Unit = {
-                    Description = "Hermes AI Agent (${profileName} profile) (oneshot) - Generates environment variables from sops secrets";
-                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
-                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
-                  };
-                  Service = let
-                    servicePath = lib.makeBinPath [
-                      hermesPackage
-                      pkgs.bash
-                      pkgs.coreutils
-                      pkgs.git
-                    ];
-
-                    # This script writes this agent's secrets and all global secrets to the profile agent .env file
-                    envSeedScript = pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
-                      set -euo pipefail
-                      ENV_FILE="${profileDir profileName}/.env"
-                      mkdir -p "$(dirname "$ENV_FILE")"
-                      chmod 0700 "$(dirname "$ENV_FILE")"
-                      : > "$ENV_FILE"
-                      chmod 0600 "$ENV_FILE"
-                      ${optionalString (cfg.providers.models.opencode.zen.enable || profileCfg.providers.models.opencode.zen.enable) ''
-                        printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
-                      ''}
-                      ${optionalString (cfg.providers.models.opencode.go.enable || profileCfg.providers.models.opencode.go.enable) ''
-                        printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
-                      ''}
-                      ${concatStringsSep "\n" (
-                        map (f: ''
-                          printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
-                        '')
-                        (unique (cfg.secrets ++ profileCfg.secrets))
-                      )}
-                    '';
-                  in {
-                    Type = "oneshot";
-
-                    Environment = [
-                      "HOME=${config.home.homeDirectory}"
-                      "HERMES_HOME=${profileDir profileName}"
-                      "HERMES_MANAGED=true"
-                      "PATH=${servicePath}"
-                    ];
-
-                    ExecStart = ''
-                      ${envSeedScript}
-                    '';
-
-                    # Security hardening
-                    UMask = "0077";
-                    NoNewPrivileges = true;
-                    RestrictSUIDSGID = true;
-                    ProtectSystem = "full";
-                  };
-                  Install.WantedBy = ["default.target"];
-                };
-              }
-            else acc
-        ) {} (attrNames (filterAttrs (_name: profile: profile.type == "foreground") cfg.profiles)))
-        // (foldl' (
           acc: profileName: let
             profileCfg = cfg.profiles.${profileName};
           in
@@ -748,7 +675,75 @@ in {
                 };
               }
             else acc
-        ) {} (attrNames (filterAttrs (_name: profile: profile.type == "hybrid") cfg.profiles)));
+        ) {} (agentsForType "hybrid"))
+        // (foldl' (
+          acc: profileName: let
+            profileCfg = cfg.profiles.${profileName};
+          in
+            if profileCfg.enable && pkgs.stdenv.hostPlatform.isLinux
+            then
+              acc
+              // {
+                "hermes-agent-${profileName}" = {
+                  Unit = {
+                    Description = "Hermes AI Agent (${profileName} profile) (oneshot) - Generates environment variables from sops secrets";
+                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
+                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
+                  };
+                  Service = let
+                    servicePath = lib.makeBinPath [
+                      hermesPackage
+                      pkgs.bash
+                      pkgs.coreutils
+                      pkgs.git
+                    ];
+
+                    # This script writes this agent's secrets and all global secrets to the profile agent .env file
+                    envSeedScript = pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
+                      set -euo pipefail
+                      ENV_FILE="${profileDir profileName}/.env"
+                      mkdir -p "$(dirname "$ENV_FILE")"
+                      chmod 0700 "$(dirname "$ENV_FILE")"
+                      : > "$ENV_FILE"
+                      chmod 0600 "$ENV_FILE"
+                      ${optionalString (cfg.providers.models.opencode.zen.enable || profileCfg.providers.models.opencode.zen.enable) ''
+                        printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
+                      ''}
+                      ${optionalString (cfg.providers.models.opencode.go.enable || profileCfg.providers.models.opencode.go.enable) ''
+                        printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
+                      ''}
+                      ${concatStringsSep "\n" (
+                        map (f: ''
+                          printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
+                        '')
+                        (unique (cfg.secrets ++ profileCfg.secrets))
+                      )}
+                    '';
+                  in {
+                    Type = "oneshot";
+
+                    Environment = [
+                      "HOME=${config.home.homeDirectory}"
+                      "HERMES_HOME=${profileDir profileName}"
+                      "HERMES_MANAGED=true"
+                      "PATH=${servicePath}"
+                    ];
+
+                    ExecStart = ''
+                      ${envSeedScript}
+                    '';
+
+                    # Security hardening
+                    UMask = "0077";
+                    NoNewPrivileges = true;
+                    RestrictSUIDSGID = true;
+                    ProtectSystem = "full";
+                  };
+                  Install.WantedBy = ["default.target"];
+                };
+              }
+            else acc
+        ) {} (agentsForType "foreground"));
     }
   ]);
 }

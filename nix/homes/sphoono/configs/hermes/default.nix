@@ -18,7 +18,7 @@
         };
       };
 
-      memory.variant = "honcho";
+      memory.variant = "holographic";
       search.exa.enable = true;
     };
 
@@ -31,15 +31,6 @@
     };
 
     mcpServers = {
-      "personal/obsidian" = {
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@bitbonsai/mcpvault@latest"
-          "${config.home.homeDirectory}/Nextcloud/Vault"
-        ];
-      };
-
       "personal/sequential-thinking" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
@@ -104,6 +95,14 @@
               "pdf-edit-mcp"
             ];
           };
+          "personal/obsidian" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@bitbonsai/mcpvault@latest"
+              "${config.home.homeDirectory}/Nextcloud/Vault"
+            ];
+          };
         };
       };
 
@@ -113,6 +112,9 @@
         documents = {
           soul = ../assets/documents/coder/soul.md;
           user = ../assets/documents/user.md;
+        };
+
+        gateway = {
         };
 
         permissions = {
@@ -145,6 +147,14 @@
             args = [
               "-y"
               "anydb-mcp"
+            ];
+          };
+          "personal/obsidian" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@bitbonsai/mcpvault@latest"
+              "${config.home.homeDirectory}/Nextcloud/Vault"
             ];
           };
         };
