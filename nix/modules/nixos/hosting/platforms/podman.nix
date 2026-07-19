@@ -41,7 +41,6 @@ in
           enable = true;
           autoPrune.enable = true;
           dockerSocket.enable = true;
-          dockerCompat = true;
         };
 
         systemd.user.sockets.podman = {

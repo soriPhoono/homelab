@@ -10,10 +10,10 @@
     providers = {
       models = {
         opencode = {
-          go = {
+          zen = {
             enable = true;
             default = true;
-            model = "deepseek-v4-flash";
+            model = "big-pickle";
           };
         };
       };
@@ -72,6 +72,19 @@
           user = ../assets/documents/user.md;
         };
 
+        permissions = {
+          accessDirectories = [
+            "${config.home.homeDirectory}/Downloads"
+            "${config.home.homeDirectory}/Documents"
+            "${config.home.homeDirectory}/Pictures"
+            "${config.home.homeDirectory}/Music"
+            "${config.home.homeDirectory}/Videos"
+            "${config.home.homeDirectory}/Projects"
+            "${config.home.homeDirectory}/GoogleDrive"
+            "${config.home.homeDirectory}/Nextcloud"
+          ];
+        };
+
         mcpServers = {
           "office/pptx" = {
             command = "${pkgs.office-mcp}/bin/office-mcp-pptx";
@@ -91,22 +104,23 @@
               "pdf-edit-mcp"
             ];
           };
-          "personal/filesystem" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@modelcontextprotocol/server-filesystem"
-              "${config.home.homeDirectory}/Documents"
-            ];
-          };
         };
       };
+
       coder = {
-        type = "background";
+        type = "hybrid";
+
         documents = {
           soul = ../assets/documents/coder/soul.md;
           user = ../assets/documents/user.md;
         };
+
+        permissions = {
+          accessDirectories = [
+            "${config.home.homeDirectory}/Projects"
+          ];
+        };
+
         mcpServers = {
           "software-dev/github" = {
             command = "${pkgs.nodejs}/bin/npx";
@@ -131,14 +145,6 @@
             args = [
               "-y"
               "anydb-mcp"
-            ];
-          };
-          "personal/filesystem" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@modelcontextprotocol/server-filesystem"
-              "${config.home.homeDirectory}/Projects"
             ];
           };
         };
