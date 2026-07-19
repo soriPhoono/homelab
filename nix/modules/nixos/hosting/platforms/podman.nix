@@ -176,11 +176,11 @@ in
 
                       # Rootless networks for microserver user
                       if id -u microserver >/dev/null 2>&1; then
-                        EXISTING_MICROSERVER_NETWORKS=$(runuser -u microserver -- env XDG_RUNTIME_DIR=/run/user/900 podman network ls --format '{{.Name}}' 2>/dev/null || true)
+                        EXISTING_MICROSERVER_NETWORKS=$(runuser -u microserver -- env XDG_RUNTIME_DIR=/run/user/${toString config.users.users.microserver.uid} podman network ls --format '{{.Name}}' 2>/dev/null || true)
                         ${concatStringsSep "\n" (
                         map (network: ''
                           if ! echo "$EXISTING_MICROSERVER_NETWORKS" | grep -Fxq "${network}"; then
-                            runuser -u microserver -- env XDG_RUNTIME_DIR=/run/user/900 podman network create "${network}"
+                            runuser -u microserver -- env XDG_RUNTIME_DIR=/run/user/${toString config.users.users.microserver.uid} podman network create "${network}"
                           fi
                         '')
                         networks
