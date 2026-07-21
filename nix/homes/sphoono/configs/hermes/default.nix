@@ -4,33 +4,28 @@
   ...
 }: {
   apps.development.agents.hermes = {
-    enableCli = true;
-    enableDesktop = true;
+    enable = true;
 
     providers = {
-      models = {
-        opencode = {
-          zen = {
-            enable = true;
-            default = true;
-            model = "big-pickle";
-          };
-        };
-      };
-
-      memory.variant = "holographic";
+      models.openrouter.enable = true;
+      memory.variant = "honcho";
       search.exa.enable = true;
     };
 
     skills = {
-      create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
-
       stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
-
-      git-commit = pkgs.skills.github.awesome-copilot.git-commit;
     };
 
     mcpServers = {
+      "personal/obsidian" = {
+        command = "${pkgs.nodejs}/bin/npx";
+        args = [
+          "-y"
+          "@bitbonsai/mcpvault@latest"
+          "${config.home.homeDirectory}/Nextcloud/Vault"
+        ];
+      };
+
       "personal/sequential-thinking" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
@@ -38,26 +33,14 @@
           "@modelcontextprotocol/server-sequential-thinking"
         ];
       };
-
-      "personal/arxiv" = {
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "arxiv-query-mcp"
-        ];
-      };
-
-      "personal/wikipedia" = {
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "wikipedia-mcp-server"
-        ];
-      };
     };
 
     profiles = {
       default = {
+        providers.memory.honcho = {
+          workspace = "general";
+        };
+
         documents = {
           soul = ../assets/documents/default/soul.md;
           user = ../assets/documents/user.md;
@@ -70,9 +53,6 @@
             "${config.home.homeDirectory}/Pictures"
             "${config.home.homeDirectory}/Music"
             "${config.home.homeDirectory}/Videos"
-            "${config.home.homeDirectory}/Projects"
-            "${config.home.homeDirectory}/GoogleDrive"
-            "${config.home.homeDirectory}/Nextcloud"
           ];
         };
 
@@ -95,32 +75,44 @@
               "pdf-edit-mcp"
             ];
           };
-          "personal/obsidian" = {
+
+          "personal/arxiv" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [
               "-y"
-              "@bitbonsai/mcpvault@latest"
-              "${config.home.homeDirectory}/Nextcloud/Vault"
+              "arxiv-query-mcp"
+            ];
+          };
+
+          "personal/wikipedia" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "wikipedia-mcp-server"
             ];
           };
         };
       };
 
       coder = {
-        type = "hybrid";
+        providers.memory.honcho = {
+          workspace = "software-development";
+        };
 
         documents = {
           soul = ../assets/documents/coder/soul.md;
           user = ../assets/documents/user.md;
         };
 
-        gateway = {
-        };
-
         permissions = {
           accessDirectories = [
             "${config.home.homeDirectory}/Projects"
           ];
+        };
+
+        skills = {
+          create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
+          git-commit = pkgs.skills.github.awesome-copilot.git-commit;
         };
 
         mcpServers = {
@@ -147,14 +139,6 @@
             args = [
               "-y"
               "anydb-mcp"
-            ];
-          };
-          "personal/obsidian" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@bitbonsai/mcpvault@latest"
-              "${config.home.homeDirectory}/Nextcloud/Vault"
             ];
           };
         };

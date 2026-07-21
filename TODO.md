@@ -9,10 +9,15 @@ These are the tasks that are intended for future development goals
 - [ ] Implement impermanence on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
-- [ ] Finish rewrite of opencode
+- [ ] Finish implementation of opencode, and agent zero for custom agents
 - [ ] Finish updating clamav binary
 - [ ] Fix printing support
 - [ ] Fix flatpak autoenable oneshot
+- [ ] Create communications selfhosted category (opt-in in configuration)
+- [ ] Setup matrix integration for hermes gateway
+- [ ] Configure hermes agent, opencode, and agent zero to support honcho collective memory
+- [ ] Configure hermes agent, opencode, and agent zero to support ollama integration with ollama cloud integration
+- [ ] Create self hosted honcho memory server on micro server's ai branch (opt-in)
 
 ## MCP Infrastructure — Server Issues & Fixes
 

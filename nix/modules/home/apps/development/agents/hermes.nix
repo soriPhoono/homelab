@@ -1,5 +1,3 @@
-# TODO: Setup matrix integration for hermes gateway for coder profile
-# TODO: Configure hermes agent to support ollama cloud models and ollama models off of user level hosted container for ollama
 {
   lib,
   pkgs,
@@ -10,7 +8,28 @@ with lib; let
   cfg = config.apps.development.agents.hermes;
 
   providerOptions = {
+    sopsFile = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        Used to create system specific agents, when set will override the default secrets
+        file located in the user core configuration directory
+      '';
+    };
+
     models = {
+      openrouter = {
+        enable = mkEnableOption "Enable OpenRouter AI provider integration";
+        default = mkEnableOption ''
+          Set this to true to enable OpenRouter AI provider integration as the default provider for hermes agents.
+        '';
+        model = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "gemini-3.5-flash";
+          description = "The model to use for the OpenRouter AI provider.";
+        };
+      };
       opencode = {
         zen = {
           enable = mkEnableOption "Enable OpenCode Zen AI provider integration";
@@ -50,7 +69,15 @@ with lib; let
         default = null;
         description = "The memory variant to use for hermes agent.";
       };
-    }; # TODO: configure honcho memory server configuration
+
+      honcho = {
+        workspace = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "The workspace name to use for hermes agent.";
+        };
+      };
+    };
 
     search = {
       variant = mkOption {
@@ -124,10 +151,10 @@ with lib; let
     pkgs.writeText "hermes-config-${profileName}.yaml"
     (builtins.toJSON (cfg.userSettings // profileCfg.userSettings));
 
-  mkConfig = profileName: profileCfg: ''
+  mkConfig = profileName: ''
     CONFIG_FILE="${profileDir profileName}/config.yaml"
-
-    cp -rL ${mkConfigFile profileName profileCfg} "$CONFIG_FILE"
+    rm -f "$CONFIG_FILE"
+    cp -rL ${mkConfigFile profileName cfg.profiles.${profileName}} "$CONFIG_FILE"
     chmod 0600 "$CONFIG_FILE"
   '';
 
@@ -180,9 +207,9 @@ with lib; let
   in
     mapped;
 
-  baseEnvironment = _profileName: profileCfg: let
-    terminalEnv = mapTerminalConfigToEnv (cfg.userSettings // profileCfg.userSettings);
-    mergedEnv = cfg.environment // profileCfg.environment // terminalEnv;
+  baseEnvironment = _profileName: let
+    terminalEnv = mapTerminalConfigToEnv (cfg.userSettings // cfg.profiles.${_profileName}.userSettings);
+    mergedEnv = cfg.environment // cfg.profiles.${_profileName}.environment // terminalEnv;
   in
     concatStringsSep
     "\n"
@@ -190,16 +217,16 @@ with lib; let
       (key: value: "${key}=${value}")
       mergedEnv);
 
-  mkEnvBase = profileName: profileCfg: ''
+  mkEnvBase = profileName: ''
     # Set profile specific environment variables
     ENV_FILE="${profileDir profileName}/.env"
     install -m 0600 /dev/null "$ENV_FILE"
     cat > "$ENV_FILE" <<HERMES_NIX_ENV_${toUpper profileName}_EOF
-    ${baseEnvironment profileName profileCfg}
+    ${baseEnvironment profileName}
     HERMES_NIX_ENV_${toUpper profileName}_EOF
   '';
 
-  mkDocuments = profileName: profileCfg: let
+  mkDocuments = profileName: let
     targetDir = profileDir profileName;
     docDestinations = {
       soul = "SOUL.md";
@@ -211,10 +238,63 @@ with lib; let
     (mapAttrsToList
       (
         name: document:
-          optionalString (document != null && document != "")
-          "cp -rL ${document} ${targetDir}/${docDestinations.${name}}; chmod 0640 ${targetDir}/${docDestinations.${name}}"
+          optionalString (document != null && document != "") ''
+            rm -rf "${targetDir}/${docDestinations.${name}}"
+            mkdir -p "$(dirname "${targetDir}/${docDestinations.${name}}")"
+            cp -rL ${document} "${targetDir}/${docDestinations.${name}}"
+            chmod 0640 "${targetDir}/${docDestinations.${name}}"
+          ''
       )
-      profileCfg.documents);
+      cfg.profiles.${profileName}.documents);
+
+  mkSkills = profileName: let
+    targetDir = profileDir profileName;
+    skills = cfg.skills // cfg.profiles.${profileName}.skills;
+  in
+    concatStringsSep "\n"
+    (mapAttrsToList
+      (name: skill:
+        optionalString (skill != null) ''
+          mkdir -p "${targetDir}/skills"
+          cp -rL ${skill} "${targetDir}/skills/${name}"
+          chmod -R u+w "${targetDir}/skills/${name}"
+          find "${targetDir}/skills/${name}" -type d -exec chmod 0750 {} +
+          find "${targetDir}/skills/${name}" -type f -exec chmod 0640 {} +
+        '')
+      skills);
+
+  mkSupportingConfig = profileName: let
+    profileCfg = cfg.profiles.${profileName};
+  in ''
+    ${optionalString (cfg.providers.memory.variant == "honcho" || profileCfg.providers.memory.variant == "honcho") ''
+      # Configure honcho memory provider
+      cat > ${profileDir profileName}/honcho.json <<HERMES_NIX_HONCHO_${toUpper profileName}_EOF
+      ${builtins.toJSON (
+        let
+          workspace =
+            if profileCfg.providers.memory.honcho.workspace != null
+            then profileCfg.providers.memory.honcho.workspace
+            else cfg.providers.memory.honcho.workspace;
+        in {
+          hosts = {
+            "hermes_${profileName}" =
+              {
+                enabled = true;
+                aiPeer = profileName;
+                peerName = config.home.username;
+              }
+              // (optionalAttrs (workspace != null) {
+                inherit workspace;
+              });
+          };
+        }
+      )}
+      HERMES_NIX_HONCHO_${toUpper profileName}_EOF
+    ''}
+  '';
+
+  getProfileSecrets = profileName:
+    cfg.profiles.${profileName}.secrets;
 
   profileSubmodule = types.submodule ({
     name,
@@ -260,7 +340,7 @@ with lib; let
                 description = "List of telegram chat ids to allow access to this profile";
               };
             };
-          }; # TODO: Finish implementing this
+          };
 
           documents = {
             soul = mkOption {
@@ -314,69 +394,75 @@ with lib; let
         secrets = let
           mcpSecrets = concatLists (mapAttrsToList (
               _: server:
-                (mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                (mapAttrsToList (_: value: "hermes/${name}/${value.secret}") (filterAttrs (_: value: value ? secret) (
                   if server.env != null
                   then server.env
                   else {}
                 )))
-                ++ (mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
+                ++ (mapAttrsToList (_: value: "hermes/${name}/${value.secret}") (filterAttrs (_: value: value ? secret) (
                   if server.headers != null
                   then server.headers
                   else {}
                 )))
             )
-            config.mcpServers);
-          searchSecrets =
-            optional config.providers.search.firecrawl.enable "api/FIRECRAWL_API_KEY"
-            ++ optional config.providers.search.brave.enable "api/BRAVE_SEARCH_API_KEY"
-            ++ optional config.providers.search.tavily.enable "api/TAVILY_API_KEY"
-            ++ optional config.providers.search.exa.enable "api/EXA_API_KEY"
-            ++ optional config.providers.search.parallel.enable "api/PARALLEL_API_KEY"
-            ++ optional config.providers.search.xai.enable "api/XAI_API_KEY";
+            mcpServers);
+          providerSecrets =
+            optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
+            ++ optional (cfg.providers.models.opencode.zen.enable || config.providers.models.opencode.zen.enable) "hermes/${name}/api/OPENCODE_ZEN_API_KEY"
+            ++ optional (cfg.providers.models.opencode.go.enable || config.providers.models.opencode.go.enable) "hermes/${name}/api/OPENCODE_GO_API_KEY"
+            ++ optional (cfg.providers.memory.variant == "honcho" || config.providers.memory.variant == "honcho") "hermes/${name}/api/HONCHO_API_KEY"
+            ++ optional (cfg.providers.search.firecrawl.enable || config.providers.search.firecrawl.enable) "hermes/${name}/api/FIRECRAWL_API_KEY"
+            ++ optional (cfg.providers.search.brave.enable || config.providers.search.brave.enable) "hermes/${name}/api/BRAVE_SEARCH_API_KEY"
+            ++ optional (cfg.providers.search.tavily.enable || config.providers.search.tavily.enable) "hermes/${name}/api/TAVILY_API_KEY"
+            ++ optional (cfg.providers.search.exa.enable || config.providers.search.exa.enable) "hermes/${name}/api/EXA_API_KEY"
+            ++ optional (cfg.providers.search.parallel.enable || config.providers.search.parallel.enable) "hermes/${name}/api/PARALLEL_API_KEY"
+            ++ optional (cfg.providers.search.xai.enable || config.providers.search.xai.enable) "hermes/${name}/api/XAI_API_KEY";
         in
-          unique (mcpSecrets ++ searchSecrets);
-
-        mcpServers.filesystem = mkIf (config.type == "foreground") (mkForce {
-          command = "${pkgs.nodejs}/bin/npx";
-          args =
-            [
-              "-y"
-              "@modelcontextprotocol/server-filesystem"
-            ]
-            ++ config.permissions.accessDirectories;
-        });
+          unique (mcpSecrets ++ providerSecrets);
 
         userSettings = mkMerge [
           {
-            mcp_servers =
-              lib.mapAttrs (
-                _: server:
-                  (lib.optionalAttrs (server.command != null) {inherit (server) command;})
-                  // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
-                  // (lib.optionalAttrs (server.env != null) {
-                    env = mapAttrs (_: value:
-                      if value ? secret
-                      then "\${${baseNameOf value.secret}}"
-                      else value)
-                    server.env;
-                  })
-                  // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
-                  // (lib.optionalAttrs (server.headers != null) {
-                    headers = mapAttrs (_: value:
-                      if value ? secret
-                      then "${value.prefix}\${${baseNameOf value.secret}}${value.suffix}"
-                      else value)
-                    server.headers;
-                  })
-              )
-              mcpServers;
+            mcp_servers = mkMerge [
+              (lib.mapAttrs (
+                  _: server:
+                    (lib.optionalAttrs (server.command != null) {inherit (server) command;})
+                    // (lib.optionalAttrs (server.args != null) {inherit (server) args;})
+                    // (lib.optionalAttrs (server.env != null) {
+                      env = mapAttrs (_: value:
+                        if value ? secret
+                        then "\${${baseNameOf value.secret}}"
+                        else value)
+                      server.env;
+                    })
+                    // (lib.optionalAttrs (server.url != null) {inherit (server) url;})
+                    // (lib.optionalAttrs (server.headers != null) {
+                      headers = mapAttrs (_: value:
+                        if value ? secret
+                        then "${value.prefix}\${${baseNameOf value.secret}}${value.suffix}"
+                        else value)
+                      server.headers;
+                    })
+                )
+                mcpServers)
+              (mkIf (config.type == "foreground") {
+                filesystem = mkForce {
+                  command = "${pkgs.nodejs}/bin/npx";
+                  args =
+                    [
+                      "-y"
+                      "@modelcontextprotocol/server-filesystem"
+                    ]
+                    ++ config.permissions.accessDirectories;
+                };
+              })
+            ];
 
             streaming.enabled = true;
             stt.enabled = true;
           }
           (mkIf (config.type == "hybrid") {
             backend = "docker";
-            docker_image = "nikolaik/python-nodejs:python3.11-nodejs20";
+            docker_image = "nikolaik/python-nodejs:python3.14-nodejs26";
             docker_mount_cwd_to_workspace = true;
             docker_run_as_host_user = false;
             docker_forward_env = [
@@ -406,58 +492,69 @@ with lib; let
             timeout = 180;
             lifetime_seconds = 300;
           })
+          (mkIf (config.providers.memory.variant != null || cfg.providers.memory.variant != null) {
+            memory.provider =
+              if config.providers.memory.variant != null
+              then config.providers.memory.variant
+              else cfg.providers.memory.variant;
+          })
+          (mkIf (config.providers.search.variant != null || cfg.providers.search.variant != null) {
+            web.backend =
+              if config.providers.search.default != null
+              then config.providers.search.default
+              else cfg.providers.search.default;
+          })
+          (mkIf (config.providers.models.openrouter.default || cfg.providers.models.openrouter.default) {
+            model = {
+              provider = "openrouter";
+              model =
+                if config.providers.models.openrouter.model != null
+                then config.providers.models.openrouter.model
+                else cfg.providers.models.openrouter.model;
+            };
+          })
+          (mkIf (config.providers.models.opencode.go.default || cfg.providers.models.opencode.go.default) {
+            model = {
+              provider = "opencode-go";
+              model =
+                if config.providers.models.opencode.go.model != null
+                then config.providers.models.opencode.go.model
+                else cfg.providers.models.opencode.go.model;
+            };
+          })
+          (mkIf (config.providers.models.opencode.zen.default || cfg.providers.models.opencode.zen.default) {
+            model = {
+              provider = "opencode-zen";
+              model =
+                if config.providers.models.opencode.zen.model != null
+                then config.providers.models.opencode.zen.model
+                else cfg.providers.models.opencode.zen.model;
+            };
+          })
         ];
-      })
-      (mkIf (config.providers.memory.variant != null || cfg.providers.memory.variant != null) {
-        userSettings = {
-          memory.provider =
-            if config.providers.memory.variant != null
-            then config.providers.memory.variant
-            else cfg.providers.memory.variant;
-        };
-      })
-      (mkIf (config.providers.search.variant != null || cfg.providers.search.variant != null) {
-        userSettings = {
-          web.backend =
-            if config.providers.search.default != null
-            then config.providers.search.default
-            else cfg.providers.search.default;
-        };
-      })
-      (mkIf (config.providers.models.opencode.go.default || cfg.providers.models.opencode.go.default) {
-        userSettings = {
-          model = {
-            provider = "opencode-go";
-            model =
-              if config.providers.models.opencode.go.model != null
-              then config.providers.models.opencode.go.model
-              else cfg.providers.models.opencode.go.model;
-          };
-        };
-      })
-      (mkIf (config.providers.models.opencode.zen.default || cfg.providers.models.opencode.zen.default) {
-        userSettings = {
-          model = {
-            provider = "opencode-zen";
-            model =
-              if config.providers.models.opencode.zen.model != null
-              then config.providers.models.opencode.zen.model
-              else cfg.providers.models.opencode.zen.model;
-          };
-        };
       })
     ];
   });
 in {
   # Installs cli tooling with global enable option, extra features get added with other options
   options.apps.development.agents.hermes = mkOption {
-    type = types.submodule ({config, ...}: {
+    type = types.submodule (_: let
+      name = "hermes";
+    in {
       options = homelab.development.mkAgent {
-        name = "hermes";
+        inherit name;
         package = pkgs.hermes;
         extraOptions = {
           enableCli = mkEnableOption "Enable cli integration for hermes agent";
           enableDesktop = mkEnableOption "Enable desktop integration for hermes agents";
+
+          desktopPackage = mkOption {
+            type = types.package;
+            default = pkgs.hermes-desktop;
+            description = ''
+              The package to use for the desktop integration of the hermes agent.
+            '';
+          };
 
           providers = providerOptions;
 
@@ -468,39 +565,6 @@ in {
           };
         };
       };
-
-      config = mkMerge [
-        {
-          secrets = unique (flatten ((mapAttrsToList (
-                _: server:
-                  (
-                    mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                      if server.env != null
-                      then server.env
-                      else {}
-                    ))
-                  )
-                  ++ (
-                    mapAttrsToList (_: value: value.secret) (filterAttrs (_: value: value ? secret) (
-                      if server.headers != null
-                      then server.headers
-                      else {}
-                    ))
-                  )
-              )
-              config.mcpServers)
-            ++ (
-              (optional config.providers.search.firecrawl.enable "api/FIRECRAWL_API_KEY")
-              ++ (optional config.providers.search.brave.enable "api/BRAVE_SEARCH_API_KEY")
-              ++ (optional config.providers.search.tavily.enable "api/TAVILY_API_KEY")
-              ++ (optional config.providers.search.exa.enable "api/EXA_API_KEY")
-              ++ (optional config.providers.search.parallel.enable "api/PARALLEL_API_KEY")
-              ++ (optional config.providers.search.xai.enable "api/XAI_API_KEY")
-            )));
-
-          profiles.default.type = "foreground";
-        }
-      ];
     });
   };
 
@@ -520,14 +584,14 @@ in {
     # Install desktop integration for hermes agent
     (mkIf cfg.enableDesktop {
       # Install hermes-desktop
-      home.packages = [pkgs.hermes-desktop];
+      home.packages = [cfg.desktopPackage];
 
       # Setup desktop entry for hermes-desktop
       xdg.desktopEntries.hermes-desktop = {
         name = "Hermes Desktop";
         comment = "Hermes AI Agent - Desktop UI";
-        icon = "${pkgs.hermes-desktop}/share/hermes-desktop/dist/hermes.png";
-        exec = "${pkgs.hermes-desktop}/bin/hermes-desktop";
+        icon = "${cfg.desktopPackage}/share/hermes-desktop/dist/hermes.png";
+        exec = "${cfg.desktopPackage}/bin/hermes-desktop";
         terminal = false;
         type = "Application";
         categories = ["Development" "Utility"];
@@ -538,9 +602,32 @@ in {
     # Load in all secrets from all profiles in central agent execution for simplicity
     {
       sops.secrets = let
-        allSecrets = unique (cfg.secrets ++ (concatLists (mapAttrsToList (_name: profileCfg: profileCfg.secrets) cfg.profiles)));
+        allSecrets = unique (
+          cfg.secrets
+          ++ (concatLists (map getProfileSecrets (attrNames cfg.profiles)))
+        );
+
+        secretToSopsFile =
+          foldl' (
+            acc: profileName: let
+              profileCfg = cfg.profiles.${profileName};
+              sopsFile = profileCfg.providers.sopsFile;
+            in
+              if sopsFile != null
+              then acc // (genAttrs (getProfileSecrets profileName) (_: sopsFile))
+              else acc
+          ) (
+            if cfg.providers.sopsFile != null
+            then genAttrs cfg.secrets (_: cfg.providers.sopsFile)
+            else {}
+          );
       in
-        genAttrs allSecrets (_: {});
+        genAttrs allSecrets (
+          secret:
+            optionalAttrs (secretToSopsFile ? ${secret}) {
+              sopsFile = secretToSopsFile.${secret};
+            }
+        );
 
       # Generate activation scripts for all enabled profiles
       home.activation = foldl' (
@@ -559,39 +646,48 @@ in {
                 echo "" > ${profileDir profileName}/.managed
 
                 # Install config.yaml for profile
-                ${mkConfig profileName profileCfg}
+                ${mkConfig profileName}
 
                 # Create base environment file
-                ${mkEnvBase profileName profileCfg}
+                ${mkEnvBase profileName}
 
                 # Link documents into profile
-                ${mkDocuments profileName profileCfg}
+                ${mkDocuments profileName}
+
+                # Copy skill files
+                ${mkSkills profileName}
+
+                # Configure memory providers
+                ${mkSupportingConfig profileName}
               '';
             }
-          else acc
-      ) {} (attrNames cfg.profiles);
-
-      # Generate skill files for all enabled profiles
-      home.file = foldl' (
-        acc: profileName: let
-          profileCfg = cfg.profiles.${profileName};
-        in
-          if profileCfg.enable
-          then
-            acc
-            // (mapAttrs' (name: skill: {
-              name = "${profileDir profileName}/skills/${name}";
-              value = {
-                source = skill;
-                recursive = true;
-              };
-            }) (cfg.skills // profileCfg.skills))
           else acc
       ) {} (attrNames cfg.profiles);
 
       # Generate systemd services for all enabled profiles (Linux only)
       systemd.user.services = let
         agentsForType = type: (attrNames (filterAttrs (_name: profile: profile.type == type) cfg.profiles));
+
+        # This script writes this agent's secrets and all global secrets to the profile agent .env file
+        envSeedScript = profileName: let
+          profileCfg = cfg.profiles.${profileName};
+        in
+          pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
+            set -euo pipefail
+            ENV_FILE="$HERMES_HOME/.env"
+            mkdir -p "$(dirname "$ENV_FILE")"
+            chmod 0700 "$(dirname "$ENV_FILE")"
+            cat << 'HERMES_NIX_ENV_EOF' > "$ENV_FILE"
+            ${baseEnvironment profileName}
+            HERMES_NIX_ENV_EOF
+            chmod 0600 "$ENV_FILE"
+            ${concatStringsSep "\n" (
+              map (f: ''
+                printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
+              '')
+              (unique (cfg.secrets ++ profileCfg.secrets))
+            )}
+          '';
       in
         (foldl' (
           acc: profileName: let
@@ -604,8 +700,8 @@ in {
                 "hermes-agent-${profileName}" = {
                   Unit = {
                     Description = "Hermes AI Agent (${profileName} profile)";
-                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
-                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
+                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
+                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
                   };
                   Service = let
                     servicePath = lib.makeBinPath [
@@ -613,39 +709,12 @@ in {
                       pkgs.bash
                       pkgs.coreutils
                       pkgs.git
+                      pkgs.jq
                       pkgs.podman
                       "/run/wrappers"
                       "/run/current-system/sw"
                       config.home.profileDirectory
                     ];
-
-                    # This script writes this agent's secrets and all global secrets to the profile agent .env file
-                    envSeedScript = pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
-                      set -euo pipefail
-                      ENV_FILE="${profileDir profileName}/.env"
-                      mkdir -p "$(dirname "$ENV_FILE")"
-                      chmod 0700 "$(dirname "$ENV_FILE")"
-                      cat << 'HERMES_NIX_ENV_EOF' > "$ENV_FILE"
-                      ${baseEnvironment profileName profileCfg}
-                      HERMES_NIX_ENV_EOF
-                      chmod 0600 "$ENV_FILE"
-                      ${optionalString (cfg.providers.models.opencode.zen.enable || profileCfg.providers.models.opencode.zen.enable) ''
-                        printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
-                      ''}
-                      ${optionalString (cfg.providers.models.opencode.go.enable || profileCfg.providers.models.opencode.go.enable) ''
-                        printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
-                      ''}
-                      ${concatStringsSep "\n" (
-                        map (f: ''
-                          printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
-                        '')
-                        (unique (cfg.secrets ++ profileCfg.secrets))
-                      )}
-
-                      if ! podman network exists "hermes-agent-${profileName}"; then
-                        podman network create "hermes-agent-${profileName}"
-                      fi
-                    '';
                   in
                     lib.mkMerge [
                       {
@@ -657,6 +726,10 @@ in {
                         ];
 
                         ExecStart = lib.concatStringsSep " " [
+                          "if ! podman network exists \"hermes-agent-${profileName}\"; then"
+                          "  podman network create \"hermes-agent-${profileName}\""
+                          "fi"
+
                           "${hermesPackage}/bin/hermes"
                           "gateway"
                         ];
@@ -668,7 +741,7 @@ in {
                         UMask = "0077";
                       }
                       (lib.mkIf (cfg.secrets != [] || profileCfg.secrets != []) {
-                        ExecStartPre = "${envSeedScript}";
+                        ExecStartPre = "${envSeedScript profileName}";
                       })
                     ];
                   Install.WantedBy = ["default.target"];
@@ -687,8 +760,8 @@ in {
                 "hermes-agent-${profileName}" = {
                   Unit = {
                     Description = "Hermes AI Agent (${profileName} profile) (oneshot) - Generates environment variables from sops secrets";
-                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
-                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || profileCfg.secrets != []) "sops-nix.service";
+                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
+                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
                   };
                   Service = let
                     servicePath = lib.makeBinPath [
@@ -696,29 +769,8 @@ in {
                       pkgs.bash
                       pkgs.coreutils
                       pkgs.git
+                      pkgs.jq
                     ];
-
-                    # This script writes this agent's secrets and all global secrets to the profile agent .env file
-                    envSeedScript = pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
-                      set -euo pipefail
-                      ENV_FILE="${profileDir profileName}/.env"
-                      mkdir -p "$(dirname "$ENV_FILE")"
-                      chmod 0700 "$(dirname "$ENV_FILE")"
-                      : > "$ENV_FILE"
-                      chmod 0600 "$ENV_FILE"
-                      ${optionalString (cfg.providers.models.opencode.zen.enable || profileCfg.providers.models.opencode.zen.enable) ''
-                        printf "OPENCODE_ZEN_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
-                      ''}
-                      ${optionalString (cfg.providers.models.opencode.go.enable || profileCfg.providers.models.opencode.go.enable) ''
-                        printf "OPENCODE_GO_API_KEY=%s\n" "$(cat ${config.sops.secrets."api/OPENCODE_API_KEY".path})" >> "$ENV_FILE"
-                      ''}
-                      ${concatStringsSep "\n" (
-                        map (f: ''
-                          printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
-                        '')
-                        (unique (cfg.secrets ++ profileCfg.secrets))
-                      )}
-                    '';
                   in {
                     Type = "oneshot";
 
@@ -730,7 +782,7 @@ in {
                     ];
 
                     ExecStart = ''
-                      ${envSeedScript}
+                      ${envSeedScript profileName}
                     '';
 
                     # Security hardening

@@ -1,6 +1,6 @@
 {
   imports = [
-    ./opencode.nix
+    ./antigravity.nix
     ./hermes.nix
   ];
 }

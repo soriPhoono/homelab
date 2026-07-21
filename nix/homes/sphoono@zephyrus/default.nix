@@ -5,26 +5,11 @@
   ];
 
   core = {
-    shells = {
-      shellAliases = {
-        gs = "git status";
-        ga = "git add";
-        gc = "git commit -m";
-        gch = "git checkout -b";
-        gp = "git push";
-        gpl = "git pull";
+    shells.shellAliases = {
+      lzg = "lazygit";
 
-        lzg = "lazygit";
-
-        d = "docker";
-        dc = "docker compose";
-        lzd = "lazydocker";
-      };
-      starship.enable = true;
-      fastfetch.enable = true;
+      d = "docker";
+      dc = "docker compose";
     };
-
-    apps.git.enable = true;
-    apps.zellij.enable = true;
   };
 }

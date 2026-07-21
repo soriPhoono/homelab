@@ -5,7 +5,6 @@
     ./hypr
     ./helix
     ./hermes
-    ./opencode
     ./fastfetch
   ];
 }

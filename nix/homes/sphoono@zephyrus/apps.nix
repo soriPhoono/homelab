@@ -35,8 +35,10 @@ _: {
       enable = true;
       terminal.ghostty.enable = true;
       agents = {
-        opencode.enable = true;
-        hermes.enable = true;
+        hermes = {
+          enableCli = true;
+          enableDesktop = true;
+        };
       };
       editors.antigravity.enable = true;
       # appliances.bambu-studio.enable = true;
