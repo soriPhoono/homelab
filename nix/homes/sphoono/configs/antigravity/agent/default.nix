@@ -52,6 +52,19 @@
           "${config.home.homeDirectory}/Projects"
         ];
       };
+
+      honcho = {
+        url = "https://mcp.honcho.dev";
+        headers = {
+          Authorization = {
+            prefix = "Bearer ";
+            secret = "api/HONCHO_API_KEY";
+          };
+          "X-Honcho-User-Name" = "soriphoono";
+          "X-Honcho-Assistant-Name" = "Antigravity";
+          "X-Honcho-Workspace-ID" = "software-development";
+        };
+      };
     };
   };
 }

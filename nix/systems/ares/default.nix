@@ -118,7 +118,7 @@ with lib; {
       jellyfin.acceleration = {
         enable = true;
         renderDevice = "/dev/dri/renderD128";
-        cardDevice = "/dev/dri/card0";
+        cardDevice = "/dev/dri/card1";
       };
     };
 

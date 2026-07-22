@@ -1,4 +1,4 @@
-{inputs, ...}: _final: prev: let
+{inputs, ...}: final: prev: let
   inherit (prev.stdenv.hostPlatform) system;
   origHermes = inputs.hermes-agent.packages.${system}.default;
   origVenv = origHermes.passthru.hermesVenv;
@@ -44,25 +44,18 @@
             cp -r "${origHermes}/share" "$out/share"
           fi
     '';
+
+  patchedDesktop = final.callPackage "${inputs.hermes-agent}/nix/desktop.nix" {
+    hermesNpmLib = origHermes.passthru.hermesNpmLib;
+    inherit (final) electron;
+    hermesAgent = patchedHermes;
+  };
 in {
-  hermes-desktop =
-    prev.runCommand "hermes-desktop-0.15.1" {
-      nativeBuildInputs = [prev.makeWrapper];
-      buildInputs = [inputs.hermes-agent.packages.${system}.desktop];
-      inherit patchedHermes;
-    } ''
-      mkdir -p $out/bin
-      # Copy the original desktop wrapper script but patch its
-      # HERMES_DESKTOP_HERMES to point at our shimmed hermes.
-      # Must NOT use --set (makeWrapper) because the inner script's
-      # own `export HERMES_DESKTOP_HERMES=...` overrides it.
-      sed 's|/nix/store/[a-z0-9]\+-hermes-agent-[^/]*/bin/hermes|${patchedHermes}/bin/hermes|g' \
-        "${inputs.hermes-agent.packages.${system}.desktop}/bin/hermes-desktop" > "$out/bin/hermes-desktop"
-      chmod +x "$out/bin/hermes-desktop"
-      if [ -d "${inputs.hermes-agent.packages.${system}.desktop}/share" ]; then
-        mkdir -p $out/share
-        cp -r "${inputs.hermes-agent.packages.${system}.desktop}/share"/* "$out/share/" 2>/dev/null || true
-      fi
-    '';
+  fetchurl = args:
+    if args ? url && args.url == "https://artifacts.electronjs.org/headers/dist/v41.9.1/node-v41.9.1-headers.tar.gz"
+    then prev.fetchurl (args // {sha256 = "sha256-zOl8rx6woWh7aeRUOlkTMviKc/EAQQX6nr/MxAx1ZPI=";})
+    else prev.fetchurl args;
+
+  hermes-desktop = patchedDesktop;
   hermes = patchedHermes;
 }

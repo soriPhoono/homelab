@@ -13,21 +13,23 @@
         name: srv:
           if (srv.url != null && srv.command == null)
           then {
-            inherit (srv) url;
+            serverUrl = srv.url;
             headers =
               lib.mapAttrs
               (_name: value:
-                if value ? "secret"
-                then "${
-                  if value.prefix != null
-                  then value.prefix
-                  else ""
-                }${config.sops.placeholder.${value.secret}}
-                ${
-                  if value.suffix != null
-                  then value.suffix
-                  else ""
-                }"
+                if (builtins.isAttrs value && value ? "secret")
+                then
+                  (
+                    if value.prefix != null
+                    then value.prefix
+                    else ""
+                  )
+                  + config.sops.placeholder.${value.secret}
+                  + (
+                    if value.suffix != null
+                    then value.suffix
+                    else ""
+                  )
                 else value)
               (
                 if srv.headers != null
@@ -89,7 +91,7 @@ in
             (flatten (mapAttrsToList (_name: srv:
               mapAttrsToList (_name: value: value.secret)
               (filterAttrs
-                (_name: value: value ? "secret")
+                (_name: value: builtins.isAttrs value && value ? "secret")
                 (
                   if srv.env != null
                   then srv.env

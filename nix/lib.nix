@@ -183,6 +183,13 @@ with prev; {
                               The prefix to include before the secret (e.g. "Bearer ")
                             '';
                           };
+                          suffix = mkOption {
+                            type = nullOr str;
+                            default = null;
+                            description = ''
+                              The suffix to include after the secret
+                            '';
+                          };
                           secret = mkOption {
                             type = str;
                             description = ''

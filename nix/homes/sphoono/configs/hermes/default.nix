@@ -57,25 +57,12 @@
         };
 
         mcpServers = {
-          "office/pptx" = {
-            command = "${pkgs.office-mcp}/bin/office-mcp-pptx";
-            args = [];
-          };
-          "office/docx" = {
-            command = "${pkgs.office-mcp}/bin/office-mcp-docx";
-            args = [];
-          };
-          "office/xlsx" = {
-            command = "${pkgs.office-mcp}/bin/office-mcp-xlsx";
-            args = [];
-          };
-          "office/pdf" = {
+          "personal/markitdown" = {
             command = "${pkgs.uv}/bin/uvx";
             args = [
-              "pdf-edit-mcp"
+              "markitdown-mcp"
             ];
           };
-
           "personal/arxiv" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [
@@ -83,7 +70,6 @@
               "arxiv-query-mcp"
             ];
           };
-
           "personal/wikipedia" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [

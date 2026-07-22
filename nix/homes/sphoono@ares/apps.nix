@@ -35,10 +35,7 @@ _: {
       enable = true;
       terminal.ghostty.enable = true;
       agents = {
-        antigravity = {
-          enableCli = true;
-          enableDesktop = true;
-        };
+        antigravity.enableCli = true;
         hermes = {
           enableCli = true;
           enableDesktop = true;

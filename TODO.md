@@ -2,8 +2,6 @@
 
 These are the tasks that are intended for future development goals
 
-- [ ] Configure hermes agent
-  - [ ] configure local matrix server for bot accounts
 - [ ] Test vr support on desktop
 - [ ] Finish implementing better security hardening with nixos-mineral
 - [ ] Implement impermanence on all nixos devices
@@ -15,7 +13,7 @@ These are the tasks that are intended for future development goals
 - [ ] Fix flatpak autoenable oneshot
 - [ ] Create communications selfhosted category (opt-in in configuration)
 - [ ] Setup matrix integration for hermes gateway
-- [ ] Configure hermes agent, opencode, and agent zero to support honcho collective memory
+- [-] Configure hermes agent, opencode, and agent zero to support honcho collective memory
 - [ ] Configure hermes agent, opencode, and agent zero to support ollama integration with ollama cloud integration
 - [ ] Create self hosted honcho memory server on micro server's ai branch (opt-in)
 
