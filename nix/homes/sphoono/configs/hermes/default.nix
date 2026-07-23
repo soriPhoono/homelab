@@ -14,7 +14,7 @@
 
     skills = {
       stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
-      vault-structure = pkgs.skills.soriphoono.skills.vault-structure;
+      # vault-structure = pkgs.skills.soriphoono.skills.vault-structure;
     };
 
     mcpServers = {
