@@ -14,6 +14,7 @@
 
     skills = {
       stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
+      vault-structure = pkgs.skills.soriphoono.skills.vault-structure;
     };
 
     mcpServers = {
@@ -57,12 +58,6 @@
         };
 
         mcpServers = {
-          "personal/markitdown" = {
-            command = "${pkgs.uv}/bin/uvx";
-            args = [
-              "markitdown-mcp"
-            ];
-          };
           "personal/arxiv" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [
@@ -75,6 +70,12 @@
             args = [
               "-y"
               "wikipedia-mcp-server"
+            ];
+          };
+          "personal/markitdown" = {
+            command = "${pkgs.uv}/bin/uvx";
+            args = [
+              "markitdown-mcp"
             ];
           };
         };

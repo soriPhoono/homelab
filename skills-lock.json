@@ -1,15 +1,11 @@
 {
   "version": 1,
   "skills": {
-    "find-skills": {
-      "source": "vercel-labs/skills",
+    "vault-structure": {
+      "source": "soriphoono/skills",
       "sourceType": "github",
-      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
-    },
-    "nixos-best-practices": {
-      "source": "lihaoze123/my-skills",
-      "sourceType": "github",
-      "computedHash": "eef05314101f6ba0ce1b6743eed54432912af05d643e433c101a524f6adf6615"
-    },
+      "skillPath": "skills/vault-structure/SKILL.md",
+      "computedHash": "c9eb96fc6f760a4e41581cf3430800c19677677967d2901fb6ce9e88d745622a"
+    }
   }
 }
