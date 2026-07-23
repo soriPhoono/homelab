@@ -4,8 +4,6 @@
   ...
 }: {
   apps.development.agents.hermes.profiles.video-editor = {
-    type = "hybrid";
-
     providers.memory = {
       honcho.workspace = "content-creation";
     };
@@ -17,9 +15,6 @@
 
     permissions = {
       accessDirectories = [
-        "${config.home.homeDirectory}/Documents"
-        "${config.home.homeDirectory}/Pictures"
-        "${config.home.homeDirectory}/Music"
         "${config.home.homeDirectory}/Videos"
       ];
     };

@@ -23,7 +23,7 @@
     };
 
     mcpServers = {
-      "obsidian" = {
+      "personal/obsidian" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
           "-y"
@@ -32,7 +32,7 @@
         ];
       };
 
-      "sequential-thinking" = {
+      "personal/sequential-thinking" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
           "-y"
@@ -40,7 +40,7 @@
         ];
       };
 
-      "filesystem" = {
+      "personal/filesystem" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
           "-y"
@@ -53,7 +53,7 @@
         ];
       };
 
-      honcho = {
+      "personal/honcho" = {
         url = "https://mcp.honcho.dev";
         headers = {
           Authorization = {

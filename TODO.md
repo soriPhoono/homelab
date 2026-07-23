@@ -7,7 +7,7 @@ These are the tasks that are intended for future development goals
 - [ ] Implement impermanence on all nixos devices
 - [ ] Recreate the neovim configuration system that allows for creation of nixvim customized neovim editors
 - [ ] Recreate nix on droid configuration system as second type of system
-- [ ] Finish implementation of opencode, and agent zero for custom agents
+- [-] Finish implementation of opencode, and agent zero for custom agents
 - [ ] Finish updating clamav binary
 - [ ] Fix printing support
 - [ ] Fix flatpak autoenable oneshot
