@@ -34,6 +34,15 @@
           "@modelcontextprotocol/server-sequential-thinking"
         ];
       };
+
+      "personal/composio" = {
+        url = "https://connect.composio.dev/mcp";
+        headers = {
+          x-consumer-api-key = {
+            secret = "api/COMPOSIO_API_KEY";
+          };
+        };
+      };
     };
 
     profiles = {

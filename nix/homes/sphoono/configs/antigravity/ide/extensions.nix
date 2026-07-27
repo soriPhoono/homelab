@@ -59,16 +59,6 @@ in {
         github.vscode-github-actions
       ];
 
-      # Common keybindings (merged before profile-specific ones)
-      keybindings = [
-        # Nix-specific: evaluate current file
-        {
-          key = "ctrl+shift+n";
-          command = "nix-ide.evaluate";
-          when = "editorLangId == 'nix'";
-        }
-      ];
-
       # Common language snippets
       languageSnippets = {
         nix = {

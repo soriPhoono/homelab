@@ -23,7 +23,7 @@
     };
 
     mcpServers = {
-      "personal/obsidian" = {
+      "obsidian" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
           "-y"
@@ -32,7 +32,7 @@
         ];
       };
 
-      "personal/sequential-thinking" = {
+      "sequential-thinking" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
           "-y"
@@ -40,7 +40,7 @@
         ];
       };
 
-      "personal/filesystem" = {
+      "filesystem" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
           "-y"
@@ -53,7 +53,7 @@
         ];
       };
 
-      "personal/honcho" = {
+      "honcho" = {
         url = "https://mcp.honcho.dev";
         headers = {
           Authorization = {
@@ -63,6 +63,15 @@
           "X-Honcho-User-Name" = "soriphoono";
           "X-Honcho-Assistant-Name" = "Antigravity";
           "X-Honcho-Workspace-ID" = "software-development";
+        };
+      };
+
+      "composio" = {
+        url = "https://connect.composio.dev/mcp";
+        headers = {
+          x-consumer-api-key = {
+            secret = "api/COMPOSIO_API_KEY";
+          };
         };
       };
     };

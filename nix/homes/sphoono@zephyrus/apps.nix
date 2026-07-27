@@ -27,8 +27,8 @@ _: {
         slack.enable = true;
       };
       virtualization = {
-        # distrobox.enable = true;
-        # bottles.enable = true;
+        distrobox.enable = true;
+        bottles.enable = true;
       };
     };
     development = {
@@ -42,24 +42,10 @@ _: {
         };
       };
       editors.antigravity.enable = true;
-      # appliances.bambu-studio.enable = true;
     };
     data-fortress = {
-      # cloud.nextcloud.enable = true;
-      # auth.bitwarden.enable = true;
-      notes.obsidian.enable = true;
       p2p.qbittorrent.enable = true;
-    };
-    content-creation = {
-      asset-creation = {
-        gimp.enable = true;
-        # blender.enable = true;
-      };
-      streaming.obs-studio.enable = true;
-      editors = {
-        audacity.enable = true;
-        kdenlive.enable = true;
-      };
+      notes.obsidian.enable = true;
     };
   };
 }

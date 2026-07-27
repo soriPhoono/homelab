@@ -48,16 +48,18 @@ _: {
           "Nix module boilerplate" = {
             prefix = ["module" "nixmod"];
             body = [
-              ''{ lib, config, pkgs, ... }:''
-              ''''
+              ''{ lib, pkgs, config, ... }:''
+              ''let''
+              ''cfg = config.''${1:namespace}.''${2:name};''
+              ''in''
               ''with lib; { ''
               ''options.''${1:namespace}.''${2:name} = { ''
               ''enable = mkEnableOption "''${3:description}";''
               ''};''
               ''''
-              ''config = mkIf cfg.enable {''
+              ''config = mkIf cfg.enable (mkMerge [{''
               ''$0''
-              ''};''
+              ''}]);''
               ''}''
             ];
             description = "Standard NixOS/home-manager module skeleton";

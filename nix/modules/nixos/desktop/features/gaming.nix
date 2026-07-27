@@ -18,6 +18,7 @@ in
             "lutris"
             "prismlauncher"
             "gzdoom"
+            "ygo-omega"
           ]);
           default = [
             "steam"
@@ -60,6 +61,7 @@ in
           (mkIf (elem "lutris" cfg.desktop.clients) lutris)
           (mkIf (elem "prismlauncher" cfg.desktop.clients) prismlauncher)
           (mkIf (elem "gzdoom" cfg.desktop.clients) gzdoom)
+          (mkIf (elem "ygo-omega" cfg.desktop.clients) ygo-omega)
         ];
 
         programs = {

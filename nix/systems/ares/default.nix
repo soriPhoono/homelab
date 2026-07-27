@@ -99,6 +99,7 @@ with lib; {
             "lutris"
             "prismlauncher"
             "gzdoom"
+            "ygo-omega"
           ];
         };
         console.enable = true;

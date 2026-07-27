@@ -9,6 +9,7 @@ in
     imports = [
       ./agents
       ./appliances
+      ./design
       ./editors
       ./inference
       ./infrastructure
