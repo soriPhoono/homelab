@@ -28,6 +28,8 @@ in
             List of game clients to install on the system. Select from a list of known gaming applications.
           '';
         };
+
+        modSupport = mkEnableOption "Enable mod manager support via steamtinkerlaunch";
       };
 
       console = {
@@ -62,6 +64,7 @@ in
           (mkIf (elem "prismlauncher" cfg.desktop.clients) prismlauncher)
           (mkIf (elem "gzdoom" cfg.desktop.clients) gzdoom)
           (mkIf (elem "ygo-omega" cfg.desktop.clients) ygo-omega)
+          (mkIf cfg.desktop.modSupport steamtinkerlaunch)
         ];
 
         programs = {

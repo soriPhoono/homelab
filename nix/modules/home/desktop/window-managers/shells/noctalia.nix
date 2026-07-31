@@ -62,6 +62,52 @@ in
         description = "Location configuration for weather and time display.";
       };
 
+      plugins = mkOption {
+        type = with types;
+          coercedTo (listOf str) (enabled: {inherit enabled;}) (submodule {
+            options = {
+              enabled = mkOption {
+                type = listOf str;
+                default = [];
+                description = "List of enabled fully-qualified plugin IDs (e.g., [ \"noctalia/screen_recorder\" ]).";
+              };
+              autoUpdate = mkOption {
+                type = bool;
+                default = true;
+                description = "Whether Noctalia should automatically update enabled git plugin sources.";
+              };
+              sources = mkOption {
+                type = listOf (submodule {
+                  options = {
+                    name = mkOption {
+                      type = str;
+                      description = "Plugin source identifier name.";
+                    };
+                    kind = mkOption {
+                      type = enum ["git" "path"];
+                      default = "git";
+                      description = "Source kind (\"git\" or \"path\").";
+                    };
+                    location = mkOption {
+                      type = str;
+                      description = "Location URL for git sources or directory path for path sources.";
+                    };
+                    enabled = mkOption {
+                      type = bool;
+                      default = true;
+                      description = "Whether this plugin source is enabled.";
+                    };
+                  };
+                });
+                default = [];
+                description = "List of custom plugin sources.";
+              };
+            };
+          });
+        default = {};
+        description = "Plugin configuration for Noctalia shell.";
+      };
+
       settings = mkOption {
         type = types.attrs;
         default = {};
@@ -194,7 +240,7 @@ in
 
             # ── Lock Screen ─────────────────────────────────────────
             lockscreen = {
-              blurred_desktop = false;
+              blurred_desktop = true;
               blur_intensity = 0.5;
               tint_intensity = 0.3;
             };
@@ -212,7 +258,7 @@ in
             # ── Audio ───────────────────────────────────────────────
             audio = {
               enable_overdrive = false;
-              enable_sounds = false;
+              enable_sounds = true;
               sound_volume = 0.5;
             };
 
@@ -267,6 +313,15 @@ in
               enabled = true;
               refresh_minutes = 15;
             };
+
+            plugins =
+              {
+                enabled = cfg.plugins.enabled;
+                auto_update = cfg.plugins.autoUpdate;
+              }
+              // optionalAttrs (cfg.plugins.sources != []) {
+                source = cfg.plugins.sources;
+              };
           }
           // optionalAttrs (config.stylix.enable or false) {
             theme = {

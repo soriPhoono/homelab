@@ -32,7 +32,6 @@ _: {
       };
     };
     development = {
-      enable = true;
       terminal.ghostty.enable = true;
       agents = {
         antigravity.enableCli = true;

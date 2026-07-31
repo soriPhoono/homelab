@@ -101,6 +101,7 @@ with lib; {
             "gzdoom"
             "ygo-omega"
           ];
+          modSupport = true;
         };
         console.enable = true;
         vr.enable = true;
