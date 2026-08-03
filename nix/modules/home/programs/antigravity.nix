@@ -10,9 +10,9 @@ in {
   imports = [
     (mkVscodeModule {
       modulePath = ["programs" "antigravity"];
-      name = "Antigravity";
-      packageName = "antigravity";
-      nameShort = "Antigravity";
+      name = "Antigravity-ide";
+      packageName = "antigravity-ide";
+      nameShort = "Antigravity-ide";
       dataFolderName = ".antigravity-ide";
       skipVersionCheck = true;
     })
