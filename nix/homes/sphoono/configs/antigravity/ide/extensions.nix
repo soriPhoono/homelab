@@ -23,6 +23,36 @@
       sha256 = "sha256-mXM9mA6oJ/qQgS/NgctpkvUNfouMBD30ayLs25H3sH0=";
     };
   };
+
+  # Devicetree support for ZMK / Zephyr
+  devicetree = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+    mktplcRef = {
+      publisher = "trond-snekvik";
+      name = "devicetree";
+      version = "2.3.1";
+      sha256 = "sha256-xzKxRO3Iz2VzNMMFcX3gdK6VcKdP7JbGp2rhlWme4Xs=";
+    };
+  };
+
+  # Kconfig language support for ZMK / Zephyr
+  kconfig = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+    mktplcRef = {
+      publisher = "trond-snekvik";
+      name = "kconfig-lang";
+      version = "1.2.0";
+      sha256 = "sha256-uX8CJh7EuwNwmXc3GX2MXPQ9/Xm2PElVD7o8SY0FUqA=";
+    };
+  };
+
+  # ZMK Tools
+  zmk-tools = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+    mktplcRef = {
+      publisher = "spadin";
+      name = "zmk-tools";
+      version = "1.5.0";
+      sha256 = "sha256-ov2vQXXc4WhAY8NWFzIkMJMeeGutahggpyuJztGXDIs=";
+    };
+  };
 in {
   apps.development.editors.antigravity = {
     # Common extensions added to EVERY profile — keep this minimal.
@@ -183,38 +213,45 @@ in {
         };
       };
 
-      # ── Webdev profile — distilled from fullstack ────────────────────────
-      webdev = {
+      # ── Systems profile — C/C++, Rust, Zig, ZMK/QMK firmware ────────────────
+      systems = {
         extensions = with pkgs.vscode-extensions; [
-          # JavaScript / TypeScript
-          dbaeumer.vscode-eslint
+          # C / C++
+          llvm-vs-code-extensions.vscode-clangd
+          vadimcn.vscode-lldb
 
-          # Formatting
-          esbenp.prettier-vscode
+          # Zig
+          ziglang.vscode-zig
 
-          # Tooling
-          christian-kohler.npm-intellisense
-          mikestead.dotenv
+          # Rust
+          rust-lang.rust-analyzer
+          serayuzgur.crates
 
-          # Preview
-          ms-vscode.live-server
+          # Firmware & Build tooling (ZMK / QMK)
+          ms-vscode.cmake-tools
+          ms-vscode.hexeditor
+          devicetree
+          kconfig
+          zmk-tools
         ];
 
         userSettings = {
-          # Prettier as default formatter for web languages
-          "[javascript]".editor.defaultFormatter = "esbenp.prettier-vscode";
-          "[typescript]".editor.defaultFormatter = "esbenp.prettier-vscode";
-          "[css]".editor.defaultFormatter = "esbenp.prettier-vscode";
-          "[html]".editor.defaultFormatter = "esbenp.prettier-vscode";
+          # C / C++ formatting and flags
+          "[c]".editor.defaultFormatter = "llvm-vs-code-extensions.vscode-clangd";
+          "[cpp]".editor.defaultFormatter = "llvm-vs-code-extensions.vscode-clangd";
+          "clangd.fallbackFlags" = ["-std=c++20"];
 
-          # ESLint
-          "eslint.enable" = true;
-          "eslint.format.enable" = true;
-          "eslint.run" = "onSave";
+          # Rust
+          "[rust]".editor.defaultFormatter = "rust-lang.rust-analyzer";
+          "rust-analyzer.check.command" = "clippy";
+          "rust-analyzer.inlayHints.enable" = true;
 
-          # Live preview
-          "liveServer.settings.donotShowInfoMsg" = true;
-          "liveServer.settings.donotVerifyTags" = true;
+          # Zig
+          "[zig]".editor.defaultFormatter = "ziglang.vscode-zig";
+          "zig.zigPath" = "zig";
+
+          # Firmware (Devicetree / Kconfig)
+          "[devicetree]".editor.defaultFormatter = "trond-snekvik.devicetree";
         };
       };
     };
