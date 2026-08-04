@@ -17,34 +17,6 @@
       # vault-structure = pkgs.skills.soriphoono.skills.vault-structure;
     };
 
-    mcpServers = {
-      "personal/obsidian" = {
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@bitbonsai/mcpvault@latest"
-          "${config.home.homeDirectory}/Nextcloud/Vault"
-        ];
-      };
-
-      "personal/sequential-thinking" = {
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@modelcontextprotocol/server-sequential-thinking"
-        ];
-      };
-
-      "personal/composio" = {
-        url = "https://connect.composio.dev/mcp";
-        headers = {
-          x-consumer-api-key = {
-            secret = "api/COMPOSIO_API_KEY";
-          };
-        };
-      };
-    };
-
     profiles = {
       default = {
         providers.memory.honcho = {
@@ -87,6 +59,29 @@
               "markitdown-mcp"
             ];
           };
+          "personal/obsidian" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@bitbonsai/mcpvault@latest"
+              "${config.home.homeDirectory}/Nextcloud/Vault"
+            ];
+          };
+          "personal/sequential-thinking" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@modelcontextprotocol/server-sequential-thinking"
+            ];
+          };
+          "personal/composio" = {
+            url = "https://connect.composio.dev/mcp";
+            headers = {
+              x-consumer-api-key = {
+                secret = "api/COMPOSIO_API_KEY";
+              };
+            };
+          };
         };
       };
 
@@ -112,6 +107,21 @@
         };
 
         mcpServers = {
+          "personal/obsidian" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@bitbonsai/mcpvault@latest"
+              "${config.home.homeDirectory}/Nextcloud/Vault"
+            ];
+          };
+          "personal/sequential-thinking" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@modelcontextprotocol/server-sequential-thinking"
+            ];
+          };
           "software-dev/github" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [
@@ -137,6 +147,12 @@
               "anydb-mcp"
             ];
           };
+        };
+      };
+
+      test = {
+        providers.memory.honcho = {
+          workspace = "general";
         };
       };
     };

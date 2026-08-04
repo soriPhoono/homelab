@@ -275,7 +275,7 @@ in
         # --user-data-dir="$HOME/.antigravity-ide", so the IDE reads its user
         # config from ~/.antigravity-ide/User/. However, the home-manager vscode
         # module (used by programs.antigravity) writes config files to
-        # ~/.config/Antigravity/User/ based on nameShort = "Antigravity".
+        # ~/.config/Antigravity-ide/User/ based on nameShort = "Antigravity-ide".
         # Symlink the runtime dir to the managed dir so snippets, settings,
         # keybindings, and MCP config all reach the IDE correctly.
         home.activation.fixAntigravityUserDir = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -283,7 +283,7 @@ in
           # XDG_CONFIG_HOME may be unset in systemd service context (the
           # home-manager-sphoono.service runs as a system-level one-shot with
           # a minimal environment). Fall back to the default ~/.config.
-          managedDir="$HOME/.config/Antigravity/User"
+          managedDir="$HOME/.config/Antigravity-ide/User"
 
           if [[ -v DRY_RUN ]]; then
             if [ -e "$runtimeDir" ] && [ ! -L "$runtimeDir" ]; then
@@ -305,6 +305,15 @@ in
             fi
           fi
         '';
+
+        # Register non-default user profiles in profiles.json so the editor's
+        # Profile Switcher UI recognizes them.
+        home.file.".config/Antigravity-ide/User/profiles.json".text = builtins.toJSON {
+          userDataProfiles = map (name: {
+            inherit name;
+            location = name;
+          }) (builtins.attrNames (lib.filterAttrs (n: _: n != "default") vscodeProfiles));
+        };
 
         home.sessionVariables = mkIf cfg.defaultEditor {
           EDITOR = "${getExe cfg.package}";

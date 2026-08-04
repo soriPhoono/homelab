@@ -127,6 +127,7 @@ with lib; let
   };
 
   foregroundStateDir = "${config.home.homeDirectory}/.hermes";
+  backgroundStateDir = "${config.home.homeDirectory}/.local/share/hermes";
 
   profileDir = profileName: let
     directory = prefix:
@@ -134,7 +135,9 @@ with lib; let
       then "${prefix}"
       else "${prefix}/profiles/${profileName}";
   in
-    directory foregroundStateDir;
+    if cfg.profiles.${profileName}.type == "background"
+    then directory backgroundStateDir
+    else directory foregroundStateDir;
 
   # Create folder structure for hermes profiles
   mkProfileFolders = pDir: ''
@@ -307,7 +310,7 @@ with lib; let
         package = null;
         extraOptions = {
           type = mkOption {
-            type = types.enum ["foreground" "hybrid"];
+            type = types.enum ["foreground" "hybrid" "background"];
             default = "foreground";
             description = ''
               This controls the agent's deployment mode:
@@ -319,6 +322,12 @@ with lib; let
                     will be available via the desktop/cli as a profile
                     accessable with a docker based execution environment (sandboxed in podman).
                     And will be available via a systemd service as a messaging gateway.
+                - `background`: The agent is deployed as a background
+                    systemd service, will be available via a messaging gateway only.
+                    HERMES_HOME will be set to ~/.local/share/hermes (i.e. no profiles will be available via desktop/cli).
+                    In addition the agent will be deployed in a docker container and tool calls will also be executed in
+                    the docker backend (no access to the host system). The docker container will be started via a nixos
+                    level systemd service if any background agents are enabled.
             '';
           };
 
@@ -555,6 +564,7 @@ in {
         extraOptions = {
           enableCli = mkEnableOption "Enable cli integration for hermes agent";
           enableDesktop = mkEnableOption "Enable desktop integration for hermes agents";
+          enableBackgroundAgents = mkEnableOption "Enable background agents container for this user profile";
 
           desktopPackage = mkOption {
             type = types.package;
@@ -609,6 +619,10 @@ in {
 
     # Load in all secrets from all profiles in central agent execution for simplicity
     {
+      # Setup background agents
+      apps.development.agents.hermes.enableBackgroundAgents =
+        builtins.any (profileName: cfg.profiles.${profileName}.type == "background") (attrNames cfg.profiles);
+
       sops.secrets = let
         allSecrets = unique (
           cfg.secrets
