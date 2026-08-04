@@ -125,7 +125,7 @@ in
                     else null;
                   addresses =
                     if device.addresses != []
-                    then device.addresses
+                    then unique (device.addresses ++ ["dynamic"])
                     else null;
                 }
             )
