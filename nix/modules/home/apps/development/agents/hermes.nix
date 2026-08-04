@@ -477,7 +477,7 @@ with lib; let
             streaming.enabled = true;
             stt.enabled = true;
           }
-          (mkIf (config.type == "hybrid") {
+          (mkIf (config.type == "hybrid" || config.type == "background") {
             backend = "docker";
             docker_image = "nikolaik/python-nodejs:python3.14-nodejs26";
             docker_mount_cwd_to_workspace = true;
@@ -517,9 +517,9 @@ with lib; let
           })
           (mkIf (config.providers.search.variant != null || cfg.providers.search.variant != null) {
             web.backend =
-              if config.providers.search.default != null
-              then config.providers.search.default
-              else cfg.providers.search.default;
+              if config.providers.search.variant != null
+              then config.providers.search.variant
+              else cfg.providers.search.variant;
           })
           (mkIf (config.providers.models.openrouter.default || cfg.providers.models.openrouter.default) {
             model = {
@@ -564,7 +564,11 @@ in {
         extraOptions = {
           enableCli = mkEnableOption "Enable cli integration for hermes agent";
           enableDesktop = mkEnableOption "Enable desktop integration for hermes agents";
-          enableBackgroundAgents = mkEnableOption "Enable background agents container for this user profile";
+          enableBackgroundAgents = mkOption {
+            type = types.bool;
+            default = builtins.any (profile: profile.type == "background") (builtins.attrValues config.profiles);
+            description = "Enable background agents container for this user profile";
+          };
 
           desktopPackage = mkOption {
             type = types.package;
@@ -619,10 +623,6 @@ in {
 
     # Load in all secrets from all profiles in central agent execution for simplicity
     {
-      # Setup background agents
-      apps.development.agents.hermes.enableBackgroundAgents =
-        builtins.any (profileName: cfg.profiles.${profileName}.type == "background") (attrNames cfg.profiles);
-
       sops.secrets = let
         allSecrets = unique (
           cfg.secrets

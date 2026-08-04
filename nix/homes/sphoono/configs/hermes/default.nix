@@ -149,12 +149,6 @@
           };
         };
       };
-
-      test = {
-        providers.memory.honcho = {
-          workspace = "general";
-        };
-      };
     };
   };
 }
