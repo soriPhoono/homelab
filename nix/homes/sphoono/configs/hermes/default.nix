@@ -149,6 +149,15 @@
           };
         };
       };
+
+      test = {
+        type = "background";
+
+        documents = {
+          soul = ../assets/documents/default/soul.md;
+          user = ../assets/documents/user.md;
+        };
+      };
     };
   };
 }

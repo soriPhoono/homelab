@@ -150,14 +150,14 @@ with lib; let
   '';
 
   # Create profile config.yaml
-  mkConfigFile = profileName: profileCfg:
+  mkConfigFile = profileName:
     pkgs.writeText "hermes-config-${profileName}.yaml"
-    (builtins.toJSON (cfg.userSettings // profileCfg.userSettings));
+    (builtins.toJSON (cfg.userSettings // cfg.profiles.${profileName}.userSettings));
 
   mkConfig = profileName: ''
     CONFIG_FILE="${profileDir profileName}/config.yaml"
     rm -f "$CONFIG_FILE"
-    cp -rL ${mkConfigFile profileName cfg.profiles.${profileName}} "$CONFIG_FILE"
+    cp -rL ${mkConfigFile profileName} "$CONFIG_FILE"
     chmod 0600 "$CONFIG_FILE"
   '';
 
@@ -210,9 +210,9 @@ with lib; let
   in
     mapped;
 
-  baseEnvironment = _profileName: let
-    terminalEnv = mapTerminalConfigToEnv (cfg.userSettings // cfg.profiles.${_profileName}.userSettings);
-    mergedEnv = cfg.environment // cfg.profiles.${_profileName}.environment // terminalEnv;
+  baseEnvironment = profileName: let
+    terminalEnv = mapTerminalConfigToEnv (cfg.userSettings // cfg.profiles.${profileName}.userSettings);
+    mergedEnv = cfg.environment // cfg.profiles.${profileName}.environment // terminalEnv;
   in
     concatStringsSep
     "\n"
@@ -566,7 +566,7 @@ in {
           enableDesktop = mkEnableOption "Enable desktop integration for hermes agents";
           enableBackgroundAgents = mkOption {
             type = types.bool;
-            default = builtins.any (profile: profile.type == "background") (builtins.attrValues config.profiles);
+            default = builtins.any (profile: profile.type == "background") (builtins.attrValues cfg.profiles);
             description = "Enable background agents container for this user profile";
           };
 
@@ -711,7 +711,70 @@ in {
             )}
           '';
       in
-        (foldl' (
+        {
+          "hermes-agent-background" = let
+            agents = filterAttrs (_name: value: value.type == "background") cfg.profiles;
+            bgList = attrValues agents;
+            needsSecrets = (cfg.secrets != []) || (any (profile: profile.secrets != []) bgList);
+          in
+            mkIf (cfg.enableBackgroundAgents && agents != {}) {
+              Unit = {
+                Description = "Hermes AI Agent (Background agents container service)";
+                After = ["network-online.target"] ++ optional needsSecrets "sops-nix.service";
+                Wants = ["network-online.target"] ++ optional needsSecrets "sops-nix.service";
+              };
+
+              Service = let
+                servicePath = with pkgs;
+                  makeBinPath [
+                    bash
+                    coreutils
+                    git
+                    jq
+                    podman
+                    "/run/wrappers"
+                    "/run/current-system/sw"
+                  ];
+              in
+                mkMerge [
+                  {
+                    Environment = [
+                      "HOME=${config.home.homeDirectory}"
+                      "HERMES_HOME=${backgroundStateDir}"
+                      "HERMES_MANAGED=true"
+                      "PATH=${servicePath}"
+                    ];
+
+                    ExecStartPre = pkgs.writeShellScript "hermes-background-pre-start" ''
+                      set -euo pipefail
+                      mkdir -p "${backgroundStateDir}/logs" "${backgroundStateDir}/cron" "${backgroundStateDir}/sessions" "${backgroundStateDir}/memories"
+                      ${optionalString needsSecrets ''
+                        ${concatStringsSep "\n" (map (pName: ''
+                          HERMES_HOME="${profileDir pName}"
+                          ${envSeedScript pName}
+                        '') (attrNames agents))}
+                      ''}
+                    '';
+
+                    ExecStart = concatStringsSep " " [
+                      "${pkgs.podman}/bin/podman run --rm"
+                      "--userns=keep-id"
+                      "-v ${backgroundStateDir}:/opt/data"
+                      "docker.io/nousresearch/hermes-agent"
+                      "gateway"
+                    ];
+
+                    Restart = "always";
+                    RestartSec = 3;
+
+                    # Security hardening
+                    UMask = "0077";
+                  }
+                ];
+              Install = {WantedBy = ["default.target"];};
+            };
+        }
+        // (foldl' (
           acc: profileName: let
             profileCfg = cfg.profiles.${profileName};
           in
@@ -735,7 +798,7 @@ in {
                       pkgs.podman
                       "/run/wrappers"
                       "/run/current-system/sw"
-                      config.home.profileDirectory
+                      # config.home.profileDirectory
                     ];
                   in
                     lib.mkMerge [
