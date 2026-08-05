@@ -1,3 +1,4 @@
+# NOTE:
 {
   lib,
   pkgs,
@@ -56,11 +57,6 @@ with lib; let
           };
         };
       };
-
-      ollama = {
-        enable = mkEnableOption "Enable ollama provider for hermes agents";
-        useCloudModels = mkEnableOption "Enable ollama cloud provider api key integration for hermes agents";
-      };
     };
 
     memory = {
@@ -105,6 +101,7 @@ with lib; let
     };
   };
 
+  # Wrap the hermes binary to set default environment variables for foreground and hybrid agents
   hermesPackage = pkgs.symlinkJoin {
     name = "${cfg.package.name or "hermes"}-wrapped";
     paths = [cfg.package];
@@ -126,9 +123,11 @@ with lib; let
     '';
   };
 
+  # Define state directories
   foregroundStateDir = "${config.home.homeDirectory}/.hermes";
   backgroundStateDir = "${config.home.homeDirectory}/.local/share/hermes";
 
+  # Correctly set profile directory based on profile type
   profileDir = profileName: let
     directory = prefix:
       if profileName == "default"
@@ -161,6 +160,7 @@ with lib; let
     chmod 0600 "$CONFIG_FILE"
   '';
 
+  # Map user settings to environment variables for the Docker modal
   mapTerminalConfigToEnv = userSettings: let
     mapping = {
       backend = "TERMINAL_ENV";
@@ -210,6 +210,7 @@ with lib; let
   in
     mapped;
 
+  # Generate base environment for a profile
   baseEnvironment = profileName: let
     terminalEnv = mapTerminalConfigToEnv (cfg.userSettings // cfg.profiles.${profileName}.userSettings);
     mergedEnv = cfg.environment // cfg.profiles.${profileName}.environment // terminalEnv;
@@ -220,6 +221,7 @@ with lib; let
       (key: value: "${key}=${value}")
       mergedEnv);
 
+  # Create environment file for a profile
   mkEnvBase = profileName: ''
     # Set profile specific environment variables
     ENV_FILE="${profileDir profileName}/.env"
@@ -229,6 +231,7 @@ with lib; let
     HERMES_NIX_ENV_${toUpper profileName}_EOF
   '';
 
+  # Copy documents to profile directory
   mkDocuments = profileName: let
     targetDir = profileDir profileName;
     docDestinations = {
@@ -250,6 +253,7 @@ with lib; let
       )
       cfg.profiles.${profileName}.documents);
 
+  # Create skill directories for a profile
   mkSkills = profileName: let
     targetDir = profileDir profileName;
     skills = cfg.skills // cfg.profiles.${profileName}.skills;
@@ -266,6 +270,7 @@ with lib; let
         '')
       skills);
 
+  # Create supporting configuration for a profile
   mkSupportingConfig = profileName: let
     profileCfg = cfg.profiles.${profileName};
   in ''
@@ -296,6 +301,7 @@ with lib; let
     ''}
   '';
 
+  # Get secrets for a profile
   getProfileSecrets = profileName:
     cfg.profiles.${profileName}.secrets;
 
