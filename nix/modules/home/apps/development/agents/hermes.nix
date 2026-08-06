@@ -19,6 +19,7 @@ with lib; let
     };
 
     models = {
+      oauth.enable = mkEnableOption "OAuth support for different AI providers";
       openrouter = {
         enable = mkEnableOption "Enable OpenRouter AI provider integration";
         default = mkEnableOption ''
@@ -299,6 +300,13 @@ with lib; let
       )}
       HERMES_NIX_HONCHO_${toUpper profileName}_EOF
     ''}
+
+    # Configure OAuth secret file for hermes profiles
+    ${optionalString (cfg.providers.models.oauth.enable || profileCfg.providers.models.oauth.enable) ''
+      cp ${config.sops.secrets."hermes/${profileName}/core/oauth.json".path} \
+        ${profileDir profileName}/auth.json
+      chmod 0600 ${profileDir profileName}/auth.json
+    ''}
   '';
 
   # Get secrets for a profile
@@ -422,7 +430,8 @@ with lib; let
             )
             mcpServers);
           providerSecrets =
-            optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
+            optional (cfg.providers.models.oauth.enable || config.providers.models.oauth.enable) "hermes/${name}/core/oauth.json"
+            ++ optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
             ++ optional (cfg.providers.models.opencode.zen.enable || config.providers.models.opencode.zen.enable) "hermes/${name}/api/OPENCODE_ZEN_API_KEY"
             ++ optional (cfg.providers.models.opencode.go.enable || config.providers.models.opencode.go.enable) "hermes/${name}/api/OPENCODE_GO_API_KEY"
             ++ optional (cfg.providers.memory.variant == "honcho" || config.providers.memory.variant == "honcho") "hermes/${name}/api/HONCHO_API_KEY"

@@ -7,8 +7,11 @@
     enable = true;
 
     providers = {
-      models.openrouter.enable = true;
       memory.variant = "honcho";
+      models = {
+        oauth.enable = true;
+        openrouter.enable = true;
+      };
       search.exa.enable = true;
     };
 
@@ -147,15 +150,6 @@
               "anydb-mcp"
             ];
           };
-        };
-      };
-
-      test = {
-        type = "background";
-
-        documents = {
-          soul = ../assets/documents/default/soul.md;
-          user = ../assets/documents/user.md;
         };
       };
     };
