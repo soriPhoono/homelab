@@ -52,7 +52,9 @@
   };
 in {
   fetchurl = args:
-    if args ? url && args.url == "https://artifacts.electronjs.org/headers/dist/v41.9.1/node-v41.9.1-headers.tar.gz"
+    if args ? url && args.url == "https://artifacts.electronjs.org/headers/dist/v41.10.3/node-v41.10.3-headers.tar.gz"
+    then prev.fetchurl (args // {sha256 = "sha256-f8bSbLRmtbP93CJAvEBs+sHWDZ1xP2bcpLhC1EnOmZU=";})
+    else if args ? url && args.url == "https://artifacts.electronjs.org/headers/dist/v41.9.1/node-v41.9.1-headers.tar.gz"
     then prev.fetchurl (args // {sha256 = "sha256-zOl8rx6woWh7aeRUOlkTMviKc/EAQQX6nr/MxAx1ZPI=";})
     else prev.fetchurl args;
 

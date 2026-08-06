@@ -8,6 +8,10 @@
       honcho.workspace = "content-creation";
     };
 
+    gateway.telegram = {
+      enable = true;
+    };
+
     documents = {
       soul = ../assets/documents/video-editor/soul.md;
       user = ../../../sphoono/configs/assets/documents/user.md;

@@ -303,9 +303,11 @@ with lib; let
 
     # Configure OAuth secret file for hermes profiles
     ${optionalString (cfg.providers.models.oauth.enable || profileCfg.providers.models.oauth.enable) ''
-      cp ${config.sops.secrets."hermes/${profileName}/core/oauth.json".path} \
-        ${profileDir profileName}/auth.json
-      chmod 0600 ${profileDir profileName}/auth.json
+      if [[ ! -f ${profileDir profileName}/auth.json ]]; then
+        cp ${config.sops.secrets."hermes/${profileName}/core/auth.json".path} \
+          ${profileDir profileName}/auth.json
+        chmod 0600 ${profileDir profileName}/auth.json
+      fi
     ''}
   '';
 
@@ -357,10 +359,16 @@ with lib; let
                 description = "The sops secret name containing the telegram bot token for this profile.";
               };
 
-              allowList = mkOption {
+              allowedUsers = mkOption {
                 type = types.listOf types.str;
                 default = [];
-                description = "List of telegram chat ids to allow access to this profile";
+                description = "List of telegram user ids to allow access to this bot";
+              };
+
+              allowedChats = mkOption {
+                type = types.listOf types.str;
+                default = [];
+                description = "List of telegram chat ids to allow access to this bot";
               };
             };
           };
@@ -430,7 +438,7 @@ with lib; let
             )
             mcpServers);
           providerSecrets =
-            optional (cfg.providers.models.oauth.enable || config.providers.models.oauth.enable) "hermes/${name}/core/oauth.json"
+            optional (cfg.providers.models.oauth.enable || config.providers.models.oauth.enable) "hermes/${name}/core/auth.json"
             ++ optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
             ++ optional (cfg.providers.models.opencode.zen.enable || config.providers.models.opencode.zen.enable) "hermes/${name}/api/OPENCODE_ZEN_API_KEY"
             ++ optional (cfg.providers.models.opencode.go.enable || config.providers.models.opencode.go.enable) "hermes/${name}/api/OPENCODE_GO_API_KEY"
@@ -440,7 +448,8 @@ with lib; let
             ++ optional (cfg.providers.search.tavily.enable || config.providers.search.tavily.enable) "hermes/${name}/api/TAVILY_API_KEY"
             ++ optional (cfg.providers.search.exa.enable || config.providers.search.exa.enable) "hermes/${name}/api/EXA_API_KEY"
             ++ optional (cfg.providers.search.parallel.enable || config.providers.search.parallel.enable) "hermes/${name}/api/PARALLEL_API_KEY"
-            ++ optional (cfg.providers.search.xai.enable || config.providers.search.xai.enable) "hermes/${name}/api/XAI_API_KEY";
+            ++ optional (cfg.providers.search.xai.enable || config.providers.search.xai.enable) "hermes/${name}/api/XAI_API_KEY"
+            ++ optional config.gateway.telegram.enable "hermes/${name}/core/telegram/bot_token";
         in
           unique (mcpSecrets ++ providerSecrets);
 
@@ -500,14 +509,10 @@ with lib; let
             docker_forward_env = [
               "GITHUB_TOKEN"
             ];
-            docker_env = {
-              #
-            };
+            docker_env = {};
             docker_volumes =
-              map (
-                value: "${value}:/workspace/${baseNameOf value}"
-              )
-              config.permissions.accessDirectories;
+              optional config.gateway.telegram.enable "${profileDir name}/cache/documents:/output"
+              ++ map (value: "${value}:/workspace/${baseNameOf value}") config.permissions.accessDirectories;
             docker_extra_args = [
               "--network=hermes-agent-${name}"
             ];
@@ -523,6 +528,23 @@ with lib; let
 
             timeout = 180;
             lifetime_seconds = 300;
+          })
+          (mkIf config.gateway.telegram.enable {
+            gateway.platforms.telegram = {
+              extra = {
+                status_indicator = true;
+                status_online = "🟢 Online";
+                status_offline = "🔴 Offline";
+              };
+            };
+
+            telegram = {
+              allowed_chats = config.gateway.telegram.allowedChats;
+              group_allowed_chats = config.gateway.telegram.allowedChats;
+
+              require_mention = true;
+              observe_unmentioned_group_messages = true;
+            };
           })
           (mkIf (config.providers.memory.variant != null || cfg.providers.memory.variant != null) {
             memory.provider =
@@ -718,6 +740,10 @@ in {
             ${baseEnvironment profileName}
             HERMES_NIX_ENV_EOF
             chmod 0600 "$ENV_FILE"
+            ${optionalString profileCfg.gateway.telegram.enable ''
+              printf "TELEGRAM_BOT_TOKEN=%s\n" "$(cat ${config.sops.secrets."hermes/${profileName}/core/telegram/bot_token".path})" >> "$ENV_FILE"
+              printf "TELEGRAM_ALLOWED_USERS=%s\n" "${concatStringsSep "," profileCfg.gateway.telegram.allowedUsers}" >> "$ENV_FILE"
+            ''}
             ${concatStringsSep "\n" (
               map (f: ''
                 printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
