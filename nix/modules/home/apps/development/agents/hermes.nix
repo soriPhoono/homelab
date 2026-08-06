@@ -741,7 +741,7 @@ in {
             HERMES_NIX_ENV_EOF
             chmod 0600 "$ENV_FILE"
             ${optionalString profileCfg.gateway.telegram.enable ''
-              printf "TELEGRAM_BOT_TOKEN=%s\n" "$(cat ${config.sops.secrets."hermes/${profileName}/core/telegram/bot_token".path})" >> "$ENV_FILE"
+              printf "TELEGRAM_BOT_TOKEN=%s\n" "$(cat ${config.sops.secrets."hermes/${profileName}/${cfg.profiles.${profileName}.gateway.telegram.botToken}".path})" >> "$ENV_FILE"
               printf "TELEGRAM_ALLOWED_USERS=%s\n" "${concatStringsSep "," profileCfg.gateway.telegram.allowedUsers}" >> "$ENV_FILE"
             ''}
             ${concatStringsSep "\n" (
