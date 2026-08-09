@@ -143,6 +143,10 @@ with lib; {
         cardDevice = "/dev/dri/card0";
       };
     };
+
+    services = {
+      portainer.enable = true;
+    };
   };
 
   themes = {

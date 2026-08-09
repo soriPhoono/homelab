@@ -4,5 +4,6 @@
     ./gaming
     ./proxy
     ./media
+    ./services
   ];
 }

@@ -61,6 +61,7 @@ in {
       extensions = with pkgs.vscode-extensions; [
         pkgs.vscode-marketplace.ms-vscode.atom-keybindings
         catppuccin.catppuccin-vsc
+        pkgs.vscode-marketplace.formulahendry.acp-client
 
         # Nix Code
         mkhl.direnv
@@ -84,7 +85,6 @@ in {
 
         # Tooling
         christian-kohler.path-intellisense
-        pkgs.vscode-marketplace.formulahendry.acp-client
 
         # CI/CD
         github.vscode-github-actions

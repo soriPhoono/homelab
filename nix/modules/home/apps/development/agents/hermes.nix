@@ -374,7 +374,7 @@ with lib; let
 
         userSettings = mkMerge [
           {
-            mcp_servers = mkMerge [
+            mcp_servers =
               (lib.mapAttrs (
                   _: server:
                     (lib.optionalAttrs (server.command != null) {inherit (server) command;})
@@ -404,8 +404,8 @@ with lib; let
                     })
                 )
                 mcpServers)
-              {
-                filesystem = mkForce {
+              // {
+                filesystem = {
                   command = "${pkgs.nodejs}/bin/npx";
                   args =
                     [
@@ -414,8 +414,7 @@ with lib; let
                     ]
                     ++ config.permissions.accessDirectories;
                 };
-              }
-            ];
+              };
 
             streaming.enabled = true;
             stt.enabled = true;

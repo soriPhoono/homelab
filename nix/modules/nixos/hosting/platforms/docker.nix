@@ -69,12 +69,238 @@ in
           description = "The priority of the ip rules (must be lower than 5270 to take precedence).";
         };
       };
+
+      swarmMode = {
+        enable = mkEnableOption "Enable docker swarm mode";
+
+        role = mkOption {
+          type = types.enum [
+            "initiator"
+            "manager"
+            "worker"
+          ];
+          default = "initiator";
+          description = "Role of this node in the Docker Swarm cluster (initiator initializes cluster, manager/worker joins existing cluster).";
+        };
+
+        listenAddr = mkOption {
+          type = with types; nullOr str;
+          default = null;
+          description = "Address on which the node listens for inbound Swarm manager traffic (e.g. 0.0.0.0:2377).";
+        };
+
+        advertiseAddr = mkOption {
+          type = with types; nullOr str;
+          default = null;
+          description = "Address advertised to other Swarm nodes for cluster communications.";
+        };
+
+        joinTokenFile = mkOption {
+          type = with types; nullOr path;
+          default = null;
+          description = "Path to file containing the Swarm join token (required for manager and worker roles).";
+        };
+
+        remoteAddrs = mkOption {
+          type = with types; listOf str;
+          default = [];
+          description = "List of remote Swarm manager addresses to join (required for manager and worker roles).";
+        };
+
+        listenInterfaces = mkOption {
+          type = with types; listOf str;
+          default = ["tailscale0"];
+          description = "List of network interfaces on which Swarm firewall ports (2377/tcp, 7946/tcp, 7946/udp, 4789/udp) are opened.";
+        };
+
+        overlayNetworks = mkOption {
+          type = types.listOf (
+            types.submodule {
+              options = {
+                name = mkOption {
+                  type = types.str;
+                  description = "The name of the overlay network.";
+                };
+                driver = mkOption {
+                  type = types.str;
+                  default = "overlay";
+                  description = "Network driver (default: overlay).";
+                };
+                attachable = mkOption {
+                  type = types.bool;
+                  default = true;
+                  description = "Whether standalone containers (e.g., oci-containers) can attach to this overlay network.";
+                };
+                subnet = mkOption {
+                  type = with types; nullOr str;
+                  default = null;
+                  description = "Optional CIDR subnet for the overlay network.";
+                };
+                extraArgs = mkOption {
+                  type = with types; listOf str;
+                  default = [];
+                  description = "Extra CLI flags passed to `docker network create`.";
+                };
+              };
+            }
+          );
+          default = [];
+          description = "List of Docker Swarm overlay networks to automatically create on manager/initiator nodes.";
+        };
+      };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.services =
           {
+            docker-swarm-init = mkIf (cfg.swarmMode.enable && cfg.swarmMode.role == "initiator") {
+              description = "Initialize Docker Swarm Cluster Initiator Node";
+              after = [
+                "docker.service"
+                "network-online.target"
+              ];
+              wants = ["network-online.target"];
+              wantedBy = ["multi-user.target"];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = "${
+                  pkgs.writeShellApplication {
+                    name = "docker-swarm-init";
+                    runtimeInputs = with pkgs; [
+                      docker
+                      gnugrep
+                    ];
+                    text = ''
+                      SWARM_STATE=$(docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null || echo "inactive")
+                      if [ "$SWARM_STATE" = "inactive" ] || [ "$SWARM_STATE" = "pending" ]; then
+                        echo "Initializing Docker Swarm..."
+                        INIT_ARGS=()
+                        ${optionalString (cfg.swarmMode.advertiseAddr != null) ''
+                        INIT_ARGS+=("--advertise-addr" "${cfg.swarmMode.advertiseAddr}")
+                      ''}
+                        ${optionalString (cfg.swarmMode.listenAddr != null) ''
+                        INIT_ARGS+=("--listen-addr" "${cfg.swarmMode.listenAddr}")
+                      ''}
+                        docker swarm init "''${INIT_ARGS[@]}"
+                      else
+                        echo "Docker Swarm already active (State: $SWARM_STATE)."
+                      fi
+                    '';
+                  }
+                }/bin/docker-swarm-init";
+              };
+            };
+
+            docker-swarm-join = mkIf (cfg.swarmMode.enable && (cfg.swarmMode.role == "manager" || cfg.swarmMode.role == "worker")) {
+              description = "Join Docker Swarm Cluster";
+              after = [
+                "docker.service"
+                "network-online.target"
+              ];
+              wants = ["network-online.target"];
+              wantedBy = ["multi-user.target"];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = "${
+                  pkgs.writeShellApplication {
+                    name = "docker-swarm-join";
+                    runtimeInputs = with pkgs; [
+                      docker
+                      gnugrep
+                    ];
+                    text = ''
+                      SWARM_STATE=$(docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null || echo "inactive")
+                      if [ "$SWARM_STATE" = "inactive" ] || [ "$SWARM_STATE" = "pending" ]; then
+                        echo "Joining Docker Swarm as ${cfg.swarmMode.role}..."
+                        ${
+                        if cfg.swarmMode.joinTokenFile == null
+                        then ''
+                          echo "Error: joinTokenFile must be set for ${cfg.swarmMode.role} role." >&2
+                          exit 1
+                        ''
+                        else ''
+                          TOKEN=$(cat "${toString cfg.swarmMode.joinTokenFile}")
+                          ${
+                            if cfg.swarmMode.remoteAddrs == []
+                            then ''
+                              echo "Error: remoteAddrs must not be empty for ${cfg.swarmMode.role} role." >&2
+                              exit 1
+                            ''
+                            else ''
+                              JOIN_ARGS=("--token" "$TOKEN")
+                              ${optionalString (cfg.swarmMode.advertiseAddr != null) ''
+                                JOIN_ARGS+=("--advertise-addr" "${cfg.swarmMode.advertiseAddr}")
+                              ''}
+                              ${optionalString (cfg.swarmMode.listenAddr != null) ''
+                                JOIN_ARGS+=("--listen-addr" "${cfg.swarmMode.listenAddr}")
+                              ''}
+                              docker swarm join "''${JOIN_ARGS[@]}" ${concatStringsSep " " cfg.swarmMode.remoteAddrs}
+                            ''
+                          }
+                        ''
+                      }
+                      else
+                        echo "Docker Swarm already active (State: $SWARM_STATE)."
+                      fi
+                    '';
+                  }
+                }/bin/docker-swarm-join";
+              };
+            };
+
+            docker-create-swarm-networks = mkIf (cfg.swarmMode.enable && cfg.swarmMode.overlayNetworks != [] && (cfg.swarmMode.role == "initiator" || cfg.swarmMode.role == "manager")) {
+              description = "Create Docker Swarm Overlay Networks";
+              after = [
+                "docker.service"
+                "docker-swarm-init.service"
+                "docker-swarm-join.service"
+              ];
+              wants = [
+                "docker-swarm-init.service"
+                "docker-swarm-join.service"
+              ];
+              wantedBy = ["multi-user.target"];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = "${
+                  pkgs.writeShellApplication {
+                    name = "docker-create-swarm-networks";
+                    runtimeInputs = with pkgs; [
+                      docker
+                      gnugrep
+                    ];
+                    text = ''
+                      EXISTING_NETWORKS=$(docker network ls --format '{{.Name}}')
+                      ${concatStringsSep "\n" (
+                        map (net: ''
+                          if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${net.name}"; then
+                            echo "Creating overlay network ${net.name}..."
+                            CREATE_ARGS=("--driver" "${net.driver}")
+                            ${optionalString net.attachable ''
+                            CREATE_ARGS+=("--attachable")
+                          ''}
+                            ${optionalString (net.subnet != null) ''
+                            CREATE_ARGS+=("--subnet" "${net.subnet}")
+                          ''}
+                            ${optionalString (net.extraArgs != []) ''
+                            CREATE_ARGS+=(${concatStringsSep " " (map (a: "\"${a}\"") net.extraArgs)})
+                          ''}
+                            CREATE_ARGS+=("${net.name}")
+                            docker network create "''${CREATE_ARGS[@]}"
+                          fi
+                        '')
+                        cfg.swarmMode.overlayNetworks
+                      )}
+                    '';
+                  }
+                }/bin/docker-create-swarm-networks";
+              };
+            };
+
             docker-create-networks = let
               networks = unique (
                 flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
@@ -226,17 +452,13 @@ in
                     ];
                     text = ''
                       ${concatStringsSep "\n" (
-                        flatten (
-                          map (subnet: [
-                            ''
-                              if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "to ${subnet} lookup main"; then
-                                echo "Removing bypass rule to ${subnet}..."
-                                ip rule del to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
-                              fi
-                            ''
-                          ])
-                          cfg.tailscaleBypass.subnets
-                        )
+                        map (subnet: ''
+                          if ip rule show priority ${toString cfg.tailscaleBypass.priority} | grep -q "to ${subnet} lookup main"; then
+                            echo "Removing bypass rule to ${subnet}..."
+                            ip rule del to ${subnet} lookup main prio ${toString cfg.tailscaleBypass.priority}
+                          fi
+                        '')
+                        cfg.tailscaleBypass.subnets
                       )}
                     '';
                   }
@@ -248,18 +470,35 @@ in
             mapAttrsToList (name: _: {
               name = "docker-${name}";
               value = {
-                after = [
-                  "docker-create-networks.service"
-                  "docker-install-plugins.service"
-                ];
-                bindsTo = [
-                  "docker-create-networks.service"
-                  "docker-install-plugins.service"
-                ];
+                after =
+                  [
+                    "docker-create-networks.service"
+                    "docker-install-plugins.service"
+                  ]
+                  ++ optional (cfg.swarmMode.enable && cfg.swarmMode.overlayNetworks != []) "docker-create-swarm-networks.service";
+                bindsTo =
+                  [
+                    "docker-create-networks.service"
+                    "docker-install-plugins.service"
+                  ]
+                  ++ optional (cfg.swarmMode.enable && cfg.swarmMode.overlayNetworks != []) "docker-create-swarm-networks.service";
               };
             })
             config.virtualisation.oci-containers.containers
           ));
+
+        networking.firewall.interfaces = mkIf (cfg.swarmMode.enable && cfg.swarmMode.listenInterfaces != []) (
+          genAttrs cfg.swarmMode.listenInterfaces (_iface: {
+            allowedTCPPorts = [
+              2377
+              7946
+            ];
+            allowedUDPPorts = [
+              7946
+              4789
+            ];
+          })
+        );
 
         virtualisation = {
           oci-containers.backend = "docker";
