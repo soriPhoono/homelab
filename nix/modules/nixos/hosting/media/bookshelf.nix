@@ -20,7 +20,7 @@ in
       {
         # Ensure config directory exists
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.bookshelf = mkMerge [

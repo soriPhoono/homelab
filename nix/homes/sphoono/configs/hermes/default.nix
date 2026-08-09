@@ -9,7 +9,13 @@
     providers = {
       memory.variant = "honcho";
       models = {
-        oauth.enable = true;
+        oauth = {
+          enable = true;
+          default = true;
+          provider = "codex";
+          model = "gpt-5.5";
+          base_url = "https://chatgpt.com/backend-api/codex";
+        };
         openrouter.enable = true;
       };
       search.exa.enable = true;

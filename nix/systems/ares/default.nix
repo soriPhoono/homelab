@@ -115,16 +115,9 @@ with lib; {
   };
 
   hosting = {
-    platforms.podman.enable = true;
-
-    media = {
-      enable = true;
-
-      jellyfin.acceleration = {
-        enable = true;
-        renderDevice = "/dev/dri/renderD128";
-        cardDevice = "/dev/dri/card0";
-      };
+    platforms = {
+      docker.enable = true;
+      podman.enable = true;
     };
 
     gaming = {
@@ -139,6 +132,16 @@ with lib; {
     proxy = {
       enable = true;
       tailscale.enable = true;
+    };
+
+    media = {
+      enable = true;
+
+      jellyfin.acceleration = {
+        enable = true;
+        renderDevice = "/dev/dri/renderD128";
+        cardDevice = "/dev/dri/card0";
+      };
     };
   };
 

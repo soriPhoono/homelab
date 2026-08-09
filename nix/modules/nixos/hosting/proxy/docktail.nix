@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
   inherit (lib.homelab.containers) mkContainerOption mkContainer;
@@ -9,6 +10,11 @@
   cfg = proxyCfg.docktail;
 
   name = "docktail";
+
+  dockerSocket =
+    if config.virtualisation.oci-containers.backend == "podman"
+    then "/run/podman/podman.sock"
+    else "/var/run/docker.sock";
 in
   with lib; {
     options.hosting.proxy.${name} = mkContainerOption {
@@ -25,7 +31,7 @@ in
           }
         ];
 
-        sops = {
+        sops = mkIf (options ? sops) {
           secrets = {
             "api/tailscale-sidecar-authkey" = {};
             "api/tailscale-oauth-client-id" = {};
@@ -33,14 +39,12 @@ in
           };
           templates = {
             "docktail/tailscale-oauth" = {
-              owner = "microserver";
               content = ''
                 TAILSCALE_OAUTH_CLIENT_ID=${config.sops.placeholder."api/tailscale-oauth-client-id"}
                 TAILSCALE_OAUTH_CLIENT_SECRET=${config.sops.placeholder."api/tailscale-oauth-client-secret"}
               '';
             };
             "docktail/tailscale-sidecar-authkey" = {
-              owner = "microserver";
               content = ''
                 TS_AUTHKEY=${config.sops.placeholder."api/tailscale-sidecar-authkey"}
               '';
@@ -50,7 +54,7 @@ in
 
         virtualisation.oci-containers.containers = {
           tailscale-sidecar = {
-            image = "tailscale/tailscale:latest";
+            image = "tailscale/tailscale:v1.98.8";
             capabilities = {
               NET_ADMIN = true;
             };
@@ -68,16 +72,12 @@ in
               "tailscale-state:/var/lib/tailscale"
               "tailscale-socket:/var/run/tailscale"
             ];
-            extraOptions = [
-              "--network=tailscale"
+            networks = [
+              "tailscale"
             ];
             ports = [
               "41642:41641/udp"
             ];
-            podman = {
-              sdnotify = "conmon";
-              user = "microserver";
-            };
           };
           ${name} = mkMerge [
             (mkContainer {
@@ -95,11 +95,7 @@ in
               ];
 
               volumes = [
-                (
-                  if config.virtualisation.oci-containers.backend == "podman"
-                  then "/run/user/${toString config.users.users.microserver.uid}/podman/podman.sock:/var/run/docker.sock:ro"
-                  else "/var/run/docker.sock:/var/run/docker.sock:ro"
-                )
+                "${dockerSocket}:/var/run/docker.sock:ro"
                 "tailscale-socket:/var/run/tailscale"
               ];
 

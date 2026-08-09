@@ -19,7 +19,28 @@ with lib; let
     };
 
     models = {
-      oauth.enable = mkEnableOption "OAuth support for different AI providers";
+      oauth = {
+        enable = mkEnableOption "OAuth support for different AI providers";
+        default = mkEnableOption "Enable OAuth provider as the default for hermes agents.";
+        base_url = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "https://chatgpt.com/backend-api/codex";
+          description = "The base url to use for inference";
+        };
+        provider = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "chatgpt";
+          description = "The provider to use for the OAuth AI provider integration.";
+        };
+        model = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "gpt-5.5";
+          description = "The model to use from the given provider";
+        };
+      };
       openrouter = {
         enable = mkEnableOption "Enable OpenRouter AI provider integration";
         default = mkEnableOption ''
@@ -102,7 +123,7 @@ with lib; let
     };
   };
 
-  # Wrap the hermes binary to set default environment variables for foreground and hybrid agents
+  # Wrap the hermes binary to set default environment variables for foreground agents
   hermesPackage = pkgs.symlinkJoin {
     name = "${cfg.package.name or "hermes"}-wrapped";
     paths = [cfg.package];
@@ -126,7 +147,6 @@ with lib; let
 
   # Define state directories
   foregroundStateDir = "${config.home.homeDirectory}/.hermes";
-  backgroundStateDir = "${config.home.homeDirectory}/.local/share/hermes";
 
   # Correctly set profile directory based on profile type
   profileDir = profileName: let
@@ -135,9 +155,7 @@ with lib; let
       then "${prefix}"
       else "${prefix}/profiles/${profileName}";
   in
-    if cfg.profiles.${profileName}.type == "background"
-    then directory backgroundStateDir
-    else directory foregroundStateDir;
+    directory foregroundStateDir;
 
   # Create folder structure for hermes profiles
   mkProfileFolders = pDir: ''
@@ -161,60 +179,9 @@ with lib; let
     chmod 0600 "$CONFIG_FILE"
   '';
 
-  # Map user settings to environment variables for the Docker modal
-  mapTerminalConfigToEnv = userSettings: let
-    mapping = {
-      backend = "TERMINAL_ENV";
-      modal_mode = "TERMINAL_MODAL_MODE";
-      cwd = "TERMINAL_CWD";
-      timeout = "TERMINAL_TIMEOUT";
-      lifetime_seconds = "TERMINAL_LIFETIME_SECONDS";
-      docker_image = "TERMINAL_DOCKER_IMAGE";
-      docker_forward_env = "TERMINAL_DOCKER_FORWARD_ENV";
-      singularity_image = "TERMINAL_SINGULARITY_IMAGE";
-      modal_image = "TERMINAL_MODAL_IMAGE";
-      daytona_image = "TERMINAL_DAYTONA_IMAGE";
-      ssh_host = "TERMINAL_SSH_HOST";
-      ssh_user = "TERMINAL_SSH_USER";
-      ssh_port = "TERMINAL_SSH_PORT";
-      ssh_key = "TERMINAL_SSH_KEY";
-      container_cpu = "TERMINAL_CONTAINER_CPU";
-      container_memory = "TERMINAL_CONTAINER_MEMORY";
-      container_disk = "TERMINAL_CONTAINER_DISK";
-      container_persistent = "TERMINAL_CONTAINER_PERSISTENT";
-      docker_volumes = "TERMINAL_DOCKER_VOLUMES";
-      docker_env = "TERMINAL_DOCKER_ENV";
-      docker_mount_cwd_to_workspace = "TERMINAL_DOCKER_MOUNT_CWD_TO_WORKSPACE";
-      docker_network = "TERMINAL_DOCKER_NETWORK";
-      docker_extra_args = "TERMINAL_DOCKER_EXTRA_ARGS";
-      docker_run_as_host_user = "TERMINAL_DOCKER_RUN_AS_HOST_USER";
-      docker_persist_across_processes = "TERMINAL_DOCKER_PERSIST_ACROSS_PROCESSES";
-      docker_orphan_reaper = "TERMINAL_DOCKER_ORPHAN_REAPER";
-      sandbox_dir = "TERMINAL_SANDBOX_DIR";
-      persistent_shell = "TERMINAL_PERSISTENT_SHELL";
-    };
-    formatValue = val:
-      if builtins.isList val || builtins.isAttrs val
-      then builtins.toJSON val
-      else if builtins.isBool val
-      then
-        (
-          if val
-          then "true"
-          else "false"
-        )
-      else toString val;
-    mapped = lib.mapAttrs' (key: envVar: {
-      name = envVar;
-      value = formatValue userSettings.${key};
-    }) (lib.filterAttrs (key: _: userSettings ? ${key}) mapping);
-  in
-    mapped;
-
   # Generate base environment for a profile
   baseEnvironment = profileName: let
-    terminalEnv = mapTerminalConfigToEnv (cfg.userSettings // cfg.profiles.${profileName}.userSettings);
-    mergedEnv = cfg.environment // cfg.profiles.${profileName}.environment // terminalEnv;
+    mergedEnv = cfg.environment // cfg.profiles.${profileName}.environment;
   in
     concatStringsSep
     "\n"
@@ -325,53 +292,7 @@ with lib; let
         inherit name;
         package = null;
         extraOptions = {
-          type = mkOption {
-            type = types.enum ["foreground" "hybrid" "background"];
-            default = "foreground";
-            description = ''
-              This controls the agent's deployment mode:
-                - `foreground`: The agent is deployed in the foreground,
-                    will be available via the desktop/cli as a profile
-                    accessable with a local execution environment (not sandboxed in podman).
-                    HERMES_HOME will be set to ~/.hermes.
-                - `hybrid`: The agent is deployed in the foreground,
-                    will be available via the desktop/cli as a profile
-                    accessable with a docker based execution environment (sandboxed in podman).
-                    And will be available via a systemd service as a messaging gateway.
-                - `background`: The agent is deployed as a background
-                    systemd service, will be available via a messaging gateway only.
-                    HERMES_HOME will be set to ~/.local/share/hermes (i.e. no profiles will be available via desktop/cli).
-                    In addition the agent will be deployed in a docker container and tool calls will also be executed in
-                    the docker backend (no access to the host system). The docker container will be started via a nixos
-                    level systemd service if any background agents are enabled.
-            '';
-          };
-
           providers = providerOptions;
-
-          gateway = {
-            telegram = {
-              enable = mkEnableOption "Enable telegram gateway for this profile";
-
-              botToken = mkOption {
-                type = types.nullOr types.str;
-                default = null;
-                description = "The sops secret name containing the telegram bot token for this profile.";
-              };
-
-              allowedUsers = mkOption {
-                type = types.listOf types.str;
-                default = [];
-                description = "List of telegram user ids to allow access to this bot";
-              };
-
-              allowedChats = mkOption {
-                type = types.listOf types.str;
-                default = [];
-                description = "List of telegram chat ids to allow access to this bot";
-              };
-            };
-          };
 
           documents = {
             soul = mkOption {
@@ -438,8 +359,7 @@ with lib; let
             )
             mcpServers);
           providerSecrets =
-            optional (cfg.providers.models.oauth.enable || config.providers.models.oauth.enable) "hermes/${name}/core/auth.json"
-            ++ optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
+            optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
             ++ optional (cfg.providers.models.opencode.zen.enable || config.providers.models.opencode.zen.enable) "hermes/${name}/api/OPENCODE_ZEN_API_KEY"
             ++ optional (cfg.providers.models.opencode.go.enable || config.providers.models.opencode.go.enable) "hermes/${name}/api/OPENCODE_GO_API_KEY"
             ++ optional (cfg.providers.memory.variant == "honcho" || config.providers.memory.variant == "honcho") "hermes/${name}/api/HONCHO_API_KEY"
@@ -448,8 +368,7 @@ with lib; let
             ++ optional (cfg.providers.search.tavily.enable || config.providers.search.tavily.enable) "hermes/${name}/api/TAVILY_API_KEY"
             ++ optional (cfg.providers.search.exa.enable || config.providers.search.exa.enable) "hermes/${name}/api/EXA_API_KEY"
             ++ optional (cfg.providers.search.parallel.enable || config.providers.search.parallel.enable) "hermes/${name}/api/PARALLEL_API_KEY"
-            ++ optional (cfg.providers.search.xai.enable || config.providers.search.xai.enable) "hermes/${name}/api/XAI_API_KEY"
-            ++ optional config.gateway.telegram.enable "hermes/${name}/core/telegram/bot_token";
+            ++ optional (cfg.providers.search.xai.enable || config.providers.search.xai.enable) "hermes/${name}/api/XAI_API_KEY";
         in
           unique (mcpSecrets ++ providerSecrets);
 
@@ -485,7 +404,7 @@ with lib; let
                     })
                 )
                 mcpServers)
-              (mkIf (config.type == "foreground") {
+              {
                 filesystem = mkForce {
                   command = "${pkgs.nodejs}/bin/npx";
                   args =
@@ -495,57 +414,12 @@ with lib; let
                     ]
                     ++ config.permissions.accessDirectories;
                 };
-              })
+              }
             ];
 
             streaming.enabled = true;
             stt.enabled = true;
           }
-          (mkIf (config.type == "hybrid" || config.type == "background") {
-            backend = "docker";
-            docker_image = "nikolaik/python-nodejs:python3.14-nodejs26";
-            docker_mount_cwd_to_workspace = true;
-            docker_run_as_host_user = false;
-            docker_forward_env = [
-              "GITHUB_TOKEN"
-            ];
-            docker_env = {};
-            docker_volumes =
-              optional config.gateway.telegram.enable "${profileDir name}/cache/documents:/output"
-              ++ map (value: "${value}:/workspace/${baseNameOf value}") config.permissions.accessDirectories;
-            docker_extra_args = [
-              "--network=hermes-agent-${name}"
-            ];
-            docker_network = true;
-
-            container_cpu = 0;
-            container_memory = 8192;
-            container_disk = 51200;
-            container_persistent = true;
-
-            docker_persist_across_processes = true;
-            docker_orphan_reaper = true;
-
-            timeout = 180;
-            lifetime_seconds = 300;
-          })
-          (mkIf config.gateway.telegram.enable {
-            gateway.platforms.telegram = {
-              extra = {
-                status_indicator = true;
-                status_online = "🟢 Online";
-                status_offline = "🔴 Offline";
-              };
-            };
-
-            telegram = {
-              allowed_chats = config.gateway.telegram.allowedChats;
-              group_allowed_chats = config.gateway.telegram.allowedChats;
-
-              require_mention = true;
-              observe_unmentioned_group_messages = true;
-            };
-          })
           (mkIf (config.providers.memory.variant != null || cfg.providers.memory.variant != null) {
             memory.provider =
               if config.providers.memory.variant != null
@@ -557,6 +431,18 @@ with lib; let
               if config.providers.search.variant != null
               then config.providers.search.variant
               else cfg.providers.search.variant;
+          })
+          (mkIf (config.providers.models.oauth.default || cfg.providers.models.oauth.default) {
+            model = {
+              provider =
+                if config.providers.models.oauth.provider != null
+                then config.providers.models.oauth.provider
+                else cfg.providers.models.oauth.provider;
+              model =
+                if config.providers.models.oauth.model != null
+                then config.providers.models.oauth.model
+                else cfg.providers.models.oauth.model;
+            };
           })
           (mkIf (config.providers.models.openrouter.default || cfg.providers.models.openrouter.default) {
             model = {
@@ -601,11 +487,6 @@ in {
         extraOptions = {
           enableCli = mkEnableOption "Enable cli integration for hermes agent";
           enableDesktop = mkEnableOption "Enable desktop integration for hermes agents";
-          enableBackgroundAgents = mkOption {
-            type = types.bool;
-            default = builtins.any (profile: profile.type == "background") (builtins.attrValues cfg.profiles);
-            description = "Enable background agents container for this user profile";
-          };
 
           desktopPackage = mkOption {
             type = types.package;
@@ -628,42 +509,30 @@ in {
   };
 
   config = mkIf cfg.enable (mkMerge [
-    # Install core cli package and set environment variables
     (mkIf cfg.enableCli {
+      # Install core cli package
       home.packages = [hermesPackage];
-
-      core.shells = {
-        fish.interactiveShellInitExtra = ''
-          # Set fish completions for hermes
-          ${hermesPackage}/bin/hermes completion fish | source
-        '';
-      };
     })
 
-    # Install desktop integration for hermes agent
     (mkIf cfg.enableDesktop {
       # Install hermes-desktop
       home.packages = [cfg.desktopPackage];
-
-      # Setup desktop entry for hermes-desktop
-      xdg.desktopEntries.hermes-desktop = {
-        name = "Hermes Desktop";
-        comment = "Hermes AI Agent - Desktop UI";
-        icon = "${cfg.desktopPackage}/share/hermes-desktop/dist/hermes.png";
-        exec = "${cfg.desktopPackage}/bin/hermes-desktop";
-        terminal = false;
-        type = "Application";
-        categories = ["Development" "Utility"];
-        startupNotify = true;
-      };
     })
 
-    # Load in all secrets from all profiles in central agent execution for simplicity
     {
+      # Load in all secrets from all profiles in central agent execution for simplicity
       sops.secrets = let
         allSecrets = unique (
           cfg.secrets
-          ++ (concatLists (map getProfileSecrets (attrNames cfg.profiles)))
+          ++ (concatLists (map (
+              profile:
+                (getProfileSecrets profile)
+                ++ (optional (
+                  cfg.providers.models.oauth.enable
+                  || cfg.profiles.${profile}.providers.models.oauth.enable
+                ) "hermes/${profile}/core/auth.json")
+            )
+            (attrNames cfg.profiles)))
         );
 
         secretToSopsFile =
@@ -725,14 +594,13 @@ in {
 
       # Generate systemd services for all enabled profiles (Linux only)
       systemd.user.services = let
-        agentsForType = type: (attrNames (filterAttrs (_name: profile: profile.type == type) cfg.profiles));
-
         # This script writes this agent's secrets and all global secrets to the profile agent .env file
         envSeedScript = profileName: let
           profileCfg = cfg.profiles.${profileName};
         in
           pkgs.writeShellScript "hermes-seed-envfiles-${profileName}" ''
             set -euo pipefail
+            HERMES_HOME="''${HERMES_HOME:-${profileDir profileName}}"
             ENV_FILE="$HERMES_HOME/.env"
             mkdir -p "$(dirname "$ENV_FILE")"
             chmod 0700 "$(dirname "$ENV_FILE")"
@@ -740,10 +608,6 @@ in {
             ${baseEnvironment profileName}
             HERMES_NIX_ENV_EOF
             chmod 0600 "$ENV_FILE"
-            ${optionalString profileCfg.gateway.telegram.enable ''
-              printf "TELEGRAM_BOT_TOKEN=%s\n" "$(cat ${config.sops.secrets."hermes/${profileName}/${cfg.profiles.${profileName}.gateway.telegram.botToken}".path})" >> "$ENV_FILE"
-              printf "TELEGRAM_ALLOWED_USERS=%s\n" "${concatStringsSep "," profileCfg.gateway.telegram.allowedUsers}" >> "$ENV_FILE"
-            ''}
             ${concatStringsSep "\n" (
               map (f: ''
                 printf "${baseNameOf f}=%s\n" "$(cat ${config.sops.secrets."${f}".path})" >> "$ENV_FILE"
@@ -752,130 +616,7 @@ in {
             )}
           '';
       in
-        {
-          "hermes-agent-background" = let
-            agents = filterAttrs (_name: value: value.type == "background") cfg.profiles;
-            bgList = attrValues agents;
-            needsSecrets = (cfg.secrets != []) || (any (profile: profile.secrets != []) bgList);
-          in
-            mkIf (cfg.enableBackgroundAgents && agents != {}) {
-              Unit = {
-                Description = "Hermes AI Agent (Background agents container service)";
-                After = ["network-online.target"] ++ optional needsSecrets "sops-nix.service";
-                Wants = ["network-online.target"] ++ optional needsSecrets "sops-nix.service";
-              };
-
-              Service = let
-                servicePath = with pkgs;
-                  makeBinPath [
-                    bash
-                    coreutils
-                    git
-                    jq
-                    podman
-                    "/run/wrappers"
-                    "/run/current-system/sw"
-                  ];
-              in
-                mkMerge [
-                  {
-                    Environment = [
-                      "HOME=${config.home.homeDirectory}"
-                      "HERMES_HOME=${backgroundStateDir}"
-                      "HERMES_MANAGED=true"
-                      "PATH=${servicePath}"
-                    ];
-
-                    ExecStartPre = pkgs.writeShellScript "hermes-background-pre-start" ''
-                      set -euo pipefail
-                      mkdir -p "${backgroundStateDir}/logs" "${backgroundStateDir}/cron" "${backgroundStateDir}/sessions" "${backgroundStateDir}/memories"
-                      ${optionalString needsSecrets ''
-                        ${concatStringsSep "\n" (map (pName: ''
-                          HERMES_HOME="${profileDir pName}"
-                          ${envSeedScript pName}
-                        '') (attrNames agents))}
-                      ''}
-                    '';
-
-                    ExecStart = concatStringsSep " " [
-                      "${pkgs.podman}/bin/podman run --rm"
-                      "--userns=keep-id"
-                      "-v ${backgroundStateDir}:/opt/data"
-                      "docker.io/nousresearch/hermes-agent"
-                      "gateway"
-                    ];
-
-                    Restart = "always";
-                    RestartSec = 3;
-
-                    # Security hardening
-                    UMask = "0077";
-                  }
-                ];
-              Install = {WantedBy = ["default.target"];};
-            };
-        }
-        // (foldl' (
-          acc: profileName: let
-            profileCfg = cfg.profiles.${profileName};
-          in
-            if profileCfg.enable && pkgs.stdenv.hostPlatform.isLinux
-            then
-              acc
-              // {
-                "hermes-agent-${profileName}" = {
-                  Unit = {
-                    Description = "Hermes AI Agent (${profileName} profile)";
-                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
-                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
-                  };
-                  Service = let
-                    servicePath = lib.makeBinPath [
-                      hermesPackage
-                      pkgs.bash
-                      pkgs.coreutils
-                      pkgs.git
-                      pkgs.jq
-                      pkgs.podman
-                      "/run/wrappers"
-                      "/run/current-system/sw"
-                      # config.home.profileDirectory
-                    ];
-                  in
-                    lib.mkMerge [
-                      {
-                        Environment = [
-                          "HOME=${config.home.homeDirectory}"
-                          "HERMES_HOME=${profileDir profileName}"
-                          "HERMES_MANAGED=true"
-                          "PATH=${servicePath}"
-                        ];
-
-                        ExecStart = lib.concatStringsSep " " [
-                          "if ! podman network exists \"hermes-agent-${profileName}\"; then"
-                          "  podman network create \"hermes-agent-${profileName}\""
-                          "fi"
-
-                          "${hermesPackage}/bin/hermes"
-                          "gateway"
-                        ];
-
-                        Restart = "always";
-                        RestartSec = 5;
-
-                        # Security hardening
-                        UMask = "0077";
-                      }
-                      (lib.mkIf (cfg.secrets != [] || profileCfg.secrets != []) {
-                        ExecStartPre = "${envSeedScript profileName}";
-                      })
-                    ];
-                  Install.WantedBy = ["default.target"];
-                };
-              }
-            else acc
-        ) {} (agentsForType "hybrid"))
-        // (foldl' (
+        foldl' (
           acc: profileName: let
             profileCfg = cfg.profiles.${profileName};
           in
@@ -921,7 +662,7 @@ in {
                 };
               }
             else acc
-        ) {} (agentsForType "foreground"));
+        ) {} (attrNames cfg.profiles);
     }
   ]);
 }

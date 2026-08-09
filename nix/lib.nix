@@ -343,7 +343,6 @@ with prev; {
         config,
         cfg,
         image,
-        root ? false,
         serviceName ? null,
         servicePort ? null,
         ...
@@ -353,11 +352,6 @@ with prev; {
         networks = mkIf (elem "tailscale" (cfg.container.publication or [])) [
           "tailscale"
         ];
-
-        podman = mkIf (!root) {
-          sdnotify = "conmon";
-          user = "microserver";
-        };
 
         labels = let
           hostname = config.networking.hostName;

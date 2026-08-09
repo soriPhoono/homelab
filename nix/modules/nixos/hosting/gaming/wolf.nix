@@ -74,14 +74,8 @@ in
           KERNEL=="uhid", MODE="0660", GROUP="input"
         '';
 
-        users.users.microserver.extraGroups = [
-          "input"
-          "render"
-          "video"
-        ];
-
         systemd.services.podman-wolf.preStart = ''
-          ${pkgs.podman}/bin/podman rm --force WolfPulseAudio
+          ${pkgs.docker}/bin/docker rm --force WolfPulseAudio
         '';
 
         # Wolf container via OCI module
@@ -89,7 +83,6 @@ in
           (mkContainer {
             inherit name cfg config;
             image = "ghcr.io/games-on-whales/wolf:stable";
-            root = true;
           })
           {
             volumes = [

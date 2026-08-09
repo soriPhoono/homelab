@@ -84,6 +84,7 @@ in {
 
         # Tooling
         christian-kohler.path-intellisense
+        pkgs.vscode-marketplace.formulahendry.acp-client
 
         # CI/CD
         github.vscode-github-actions

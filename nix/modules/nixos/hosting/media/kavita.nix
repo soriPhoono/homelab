@@ -18,7 +18,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
@@ -30,8 +30,8 @@ in
           })
           {
             environment = {
-              PUID = toString config.users.users.microserver.uid;
-              PGID = toString config.users.groups.microserver.gid;
+              PUID = "1000";
+              PGID = "1000";
               TZ = config.time.timeZone;
             };
 

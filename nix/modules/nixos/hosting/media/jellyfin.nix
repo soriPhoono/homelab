@@ -41,7 +41,7 @@ in
     config = mkIf mediaCfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
@@ -69,7 +69,6 @@ in
       }
       # ── Hardware acceleration (VAAPI/QSV) ────────────────
       (mkIf cfg.acceleration.enable {
-        users.users.microserver.extraGroups = ["render" "video"];
         # Use mkBefore so this is prepended to (not override) any user-set extraOptions
         virtualisation.oci-containers.containers.${name}.extraOptions = mkBefore [
           # Pass the integrated GPU device for VAAPI (AMD/Intel) or QSV (Intel)

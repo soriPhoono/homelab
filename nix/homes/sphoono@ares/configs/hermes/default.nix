@@ -8,21 +8,6 @@
       honcho.workspace = "content-creation";
     };
 
-    gateway.telegram = {
-      enable = true;
-
-      botToken = "core/telegram/bot_token";
-
-      allowedUsers = [
-        "8925872516"
-      ];
-
-      allowedChats = [
-        "8925872516"
-        "-5460355812"
-      ];
-    };
-
     documents = {
       soul = ../assets/documents/video-editor/soul.md;
       user = ../../../sphoono/configs/assets/documents/user.md;

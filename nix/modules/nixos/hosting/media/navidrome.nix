@@ -18,7 +18,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
