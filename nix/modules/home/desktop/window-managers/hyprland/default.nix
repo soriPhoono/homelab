@@ -105,7 +105,7 @@ in
         wayland.windowManager.hyprland = {
           enable = true;
           systemd = {
-            enable = true;
+            enable = false;
             enableXdgAutostart = true;
           };
           xwayland.enable = true;
