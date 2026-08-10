@@ -12,35 +12,74 @@
   configurationDirectory = "/var/lib/portainer";
 in
   with lib; {
-    options.hosting.services.portainer = mkContainerOption {
-      inherit name;
-      description = "A container management platform";
-    };
+    options.hosting.services.portainer =
+      (mkContainerOption {
+        inherit name;
+        description = "A container management platform";
+      })
+      // {
+        edgeId = mkOption {
+          type = types.str;
+          description = "The ID of the edge device";
+        };
+      };
 
     config = mkIf cfg.enable (mkMerge [
       {
+        sops = {
+          secrets = {
+            portainer-edge-key = {};
+          };
+
+          templates = {
+            "hosting/services/portainer.env".content = ''
+              EDGE_ID=${cfg.edgeId}
+              EDGE_KEY=${sops.secrets.portainer-edge-key.placeholder}
+            '';
+          };
+        };
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
 
-        virtualisation.oci-containers.containers.${name} = mkMerge [
-          (mkContainer {
-            inherit name cfg config;
-            image = "docker.io/portainer/portainer-ee:lts";
-            serviceName = "admin";
-            servicePort = 9000;
-          })
-          {
-            volumes = [
-              "/var/run/docker.sock:/var/run/docker.sock"
-              "${configurationDirectory}:/data"
-            ];
+        virtualisation.oci-containers.containers = {
+          # portainer-agent = {
+          #   image = "docker.io/portainer/agent:2.39.5";
+          #   environment = {
+          #     EDGE = "1";
+          #     EDGE_INSECURE_POLL = "1";
+          #     EDGE_ASYNC = "1";
+          #   };
+          #   environmentFiles = [
+          #     config.sops.templates."hosting/services/portainer.env".path
+          #   ];
+          #   volumes = [
+          #     "portainer_agent_data:/data"
+          #     "/:/host:ro"
+          #     "/var/run/docker.sock:/var/run/docker.sock"
+          #     "/var/lib/docker/volumes:/var/lib/docker/volumes"
+          #   ];
+          # };
+          ${name} = mkMerge [
+            (mkContainer {
+              inherit name cfg config;
+              image = "docker.io/portainer/portainer-ee:lts";
+              serviceName = "admin";
+              servicePort = 9000;
+            })
+            {
+              volumes = [
+                "/var/run/docker.sock:/var/run/docker.sock"
+                "${configurationDirectory}:/data"
+              ];
 
-            ports = [
-              "8000:8000"
-            ];
-          }
-        ];
+              ports = [
+                "8000:8000"
+              ];
+            }
+          ];
+        };
       }
     ]);
   }

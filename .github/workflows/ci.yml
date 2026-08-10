@@ -43,7 +43,7 @@ jobs:
           use-flakehub: false
       - name: Build
         run: nix build .#homeConfigurations.spookyskelly.activationPackage
-  build-nixos-ares:
+  build-nixos-desktop-ares:
     needs:
       - evaluate
     runs-on: ubuntu-24.04
@@ -63,8 +63,8 @@ jobs:
         with:
           use-flakehub: false
       - name: Build
-        run: nix build .#nixosConfigurations.ares.config.system.build.toplevel
-  build-nixos-lg-laptop:
+        run: nix build .#nixosConfigurations.desktop-ares.config.system.build.toplevel
+  build-nixos-laptop-ares:
     needs:
       - evaluate
     runs-on: ubuntu-24.04
@@ -84,8 +84,8 @@ jobs:
         with:
           use-flakehub: false
       - name: Build
-        run: nix build .#nixosConfigurations.lg-laptop.config.system.build.toplevel
-  build-nixos-zephyrus:
+        run: nix build .#nixosConfigurations.laptop-ares.config.system.build.toplevel
+  build-nixos-laptop-vesper:
     needs:
       - evaluate
     runs-on: ubuntu-24.04
@@ -105,7 +105,7 @@ jobs:
         with:
           use-flakehub: false
       - name: Build
-        run: nix build .#nixosConfigurations.zephyrus.config.system.build.toplevel
+        run: nix build .#nixosConfigurations.laptop-vesper.config.system.build.toplevel
   evaluate:
     runs-on: ubuntu-24.04
     steps:
