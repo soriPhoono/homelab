@@ -123,6 +123,13 @@ in {
 
           # Terraform / OpenTofu
           hashicorp.hcl
+          pkgs.vscode-marketplace.opentofu.vscode-opentofu
+          pkgs.vscode-marketplace.hashicorp.terraform
+          pkgs.vscode-marketplace.gruntwork.terragrunt-ls
+          pkgs.vscode-marketplace.nandovdk.tflint-vscode
+          pkgs.vscode-marketplace.tfsec.tfsec
+          pkgs.vscode-marketplace.derekcashmore.terraform-docs
+          pkgs.vscode-marketplace.saramorillon.terraform-graph
 
           # GitLab
           gitlab.gitlab-workflow
@@ -142,9 +149,21 @@ in {
           "vs-kubernetes.outputFormat" = "yaml";
           "vs-kubernetes.suppress-kubectl-not-found-alerts" = true;
 
-          # HCL / OpenTofu
+          # HCL / OpenTofu / Terraform
           "[terraform]".editor.tabSize = 2;
           "[terraform-vars]".editor.tabSize = 2;
+          "[hcl]".editor.tabSize = 2;
+
+          # Prefer OpenTofu while maintaining compatibility with official Terraform registry
+          "opentofu.languageServer.path" = "tofu";
+          "terraform.languageServer.enable" = true;
+          "terraform.languageServer.args" = [];
+          "terraform.indexing.enabled" = true;
+          "terraform.validation.enableEnhancedValidation" = true;
+
+          # TFLint & Terragrunt
+          "tflint.enable" = true;
+          "terragrunt.path" = "terragrunt";
         };
       };
 
