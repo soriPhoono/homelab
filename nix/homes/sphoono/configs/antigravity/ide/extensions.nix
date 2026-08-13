@@ -123,7 +123,6 @@ in {
 
           # Terraform / OpenTofu
           hashicorp.hcl
-          pkgs.vscode-marketplace.opentofu.vscode-opentofu
           pkgs.vscode-marketplace.hashicorp.terraform
           pkgs.vscode-marketplace.gruntwork.terragrunt-ls
           pkgs.vscode-marketplace.nandovdk.tflint-vscode
@@ -155,9 +154,8 @@ in {
           "[hcl]".editor.tabSize = 2;
 
           # Prefer OpenTofu while maintaining compatibility with official Terraform registry
-          "opentofu.languageServer.path" = "tofu";
           "terraform.languageServer.enable" = true;
-          "terraform.languageServer.args" = [];
+          "terraform.languageServer.args" = ["serve"];
           "terraform.indexing.enabled" = true;
           "terraform.validation.enableEnhancedValidation" = true;
 

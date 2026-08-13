@@ -76,6 +76,13 @@ in
             extest.enable = true;
             protontricks.enable = true;
 
+            extraPackages = with pkgs; [
+              freetype
+              pkgsi686Linux.freetype
+              fontconfig
+              pkgsi686Linux.fontconfig
+            ];
+
             extraCompatPackages = with pkgs; [
               proton-ge-bin
             ];
