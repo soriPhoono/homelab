@@ -16,7 +16,23 @@
   # drivers for all GPU families (Intel, AMD, NVIDIA via Nouveau), making
   # this fix architecture-neutral and system-independent.
   bottles' = pkgs.bottles.override {
-    extraLibraries = p: [p.mesa];
+    extraLibraries = p:
+      with p; [
+        mesa
+        libglvnd
+        libunwind
+        freetype
+        alsa-lib
+        libpulseaudio
+        vulkan-loader
+        xorg.libX11
+        xorg.libXext
+        xorg.libXcursor
+        xorg.libXrandr
+        xorg.libXi
+        xorg.libXcomposite
+        xorg.libXinerama
+      ];
   };
 in
   with lib; {

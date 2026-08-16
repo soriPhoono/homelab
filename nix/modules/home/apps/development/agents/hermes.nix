@@ -3,10 +3,32 @@
   lib,
   pkgs,
   config,
+  options,
   ...
 }:
 with lib; let
+  hmConfig = config;
   cfg = config.apps.development.agents.hermes;
+
+  hermesOllamaModels = let
+    topLevelModel =
+      if
+        (cfg.providers.models.ollama.enable || cfg.providers.models.ollama.default)
+        && cfg.providers.models.ollama.model != null
+      then [cfg.providers.models.ollama.model]
+      else [];
+    profileModels = concatLists (mapAttrsToList (
+        _: pCfg:
+          if
+            pCfg.enable
+            && (pCfg.providers.models.ollama.enable || pCfg.providers.models.ollama.default)
+            && pCfg.providers.models.ollama.model != null
+          then [pCfg.providers.models.ollama.model]
+          else []
+      )
+      cfg.profiles);
+  in
+    unique (topLevelModel ++ profileModels);
 
   providerOptions = {
     sopsFile = mkOption {
@@ -77,6 +99,18 @@ with lib; let
             example = "glm-5.2";
             description = "The model to use for the OpenCode Go AI provider.";
           };
+        };
+      };
+      ollama = {
+        enable = mkEnableOption "Enable ollama local inference integration";
+        default = mkEnableOption ''
+          Set this to true to enable Ollama local inference integration as the default provider for hermes agents.
+        '';
+        model = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "gemma4:e4b";
+          description = "The model to use for the Ollama local inference provider.";
         };
       };
     };
@@ -470,6 +504,16 @@ with lib; let
                 else cfg.providers.models.opencode.zen.model;
             };
           })
+          (mkIf (config.providers.models.ollama.default || cfg.providers.models.ollama.default) {
+            model = {
+              provider = "custom";
+              default =
+                if config.providers.models.ollama.model != null
+                then config.providers.models.ollama.model
+                else cfg.providers.models.ollama.model;
+              base_url = "http://${hmConfig.services.ollama.host}:${toString hmConfig.services.ollama.port}/v1";
+            };
+          })
         ];
       })
     ];
@@ -516,6 +560,13 @@ in {
     (mkIf cfg.enableDesktop {
       # Install hermes-desktop
       home.packages = [cfg.desktopPackage];
+    })
+
+    (mkIf (hermesOllamaModels != [] && options ? apps && options.apps ? development && options.apps.development ? inference && options.apps.development.inference ? ollama) {
+      apps.development.inference.ollama = {
+        enable = mkDefault true;
+        loadModels = hermesOllamaModels;
+      };
     })
 
     {

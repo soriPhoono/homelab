@@ -4,8 +4,10 @@
   ...
 }: {
   apps.development.agents.hermes.profiles.video-editor = {
-    providers.memory = {
-      honcho.workspace = "content-creation";
+    providers = {
+      memory = {
+        honcho.workspace = "content-creation";
+      };
     };
 
     documents = {

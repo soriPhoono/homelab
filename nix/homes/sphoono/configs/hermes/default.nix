@@ -16,6 +16,11 @@
           model = "gpt-5.5";
           base_url = "https://chatgpt.com/backend-api/codex";
         };
+        ollama = {
+          enable = true;
+          model = "gemma4:e4b";
+          default = true;
+        };
         openrouter.enable = true;
       };
       search.exa.enable = true;
