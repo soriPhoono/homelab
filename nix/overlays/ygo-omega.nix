@@ -12,6 +12,7 @@
 in {
   ygo-omega = basePkg.overrideAttrs (_old: {
     inherit version;
+    __intentionallyOverridingVersion = true;
 
     unpackPhase = ''
       runHook preUnpack

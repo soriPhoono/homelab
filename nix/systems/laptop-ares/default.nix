@@ -145,7 +145,6 @@ with lib; {
         loadModels = [
           "gemma4:e4b"
         ];
-        syncModels = true;
       };
     };
   };

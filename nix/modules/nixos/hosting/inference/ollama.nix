@@ -4,115 +4,119 @@
   config,
   ...
 }: let
+  inherit (lib.homelab.containers) mkContainerOption mkContainer;
+
   cfg = config.hosting.inference.ollama;
+
+  name = "ollama";
+  configurationDirectory = "/var/lib/${name}";
 in
   with lib; {
-    options.hosting.inference.ollama = {
-      enable = mkEnableOption "the Ollama local LLM execution engine and server";
-
-      acceleration = mkOption {
-        type = types.nullOr (types.enum ["cuda" "rocm" "vulkan" "cpu"]);
-        default = null;
-        example = "cuda";
-        description = ''
-          Hardware acceleration backend to use for Ollama.
-          Maps to the appropriate nixpkgs package (`ollama-cuda`, `ollama-rocm`, `ollama-vulkan`, `ollama-cpu`, or default `ollama`).
-        '';
-      };
-
-      rocmOverrideGfx = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "10.3.0";
-        description = ''
-          Override GPU architecture for ROCm (`HSA_OVERRIDE_GFX_VERSION`).
-        '';
-      };
-
-      loadModels = mkOption {
-        type = types.listOf types.str;
-        apply = builtins.filter (model: model != "");
-        default = [
-          "llama3.2"
-          "qwen2.5-coder"
-        ];
-        example = [
-          "llama3.2"
-          "mistral"
-        ];
-        description = ''
-          List of default admin-approved models to download automatically via systemd `ollama-model-loader`.
-        '';
-      };
-
-      syncModels = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Synchronize installed models with declared `loadModels` list,
-          removing any models that are installed but not currently declared there.
-        '';
-      };
-
-      host = mkOption {
-        type = types.str;
-        default = "127.0.0.1";
-        example = "0.0.0.0";
-        description = ''
-          Host address for the Ollama server to listen on.
-        '';
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 11434;
-        example = 11434;
-        description = ''
-          Port for the Ollama server to listen on.
-        '';
-      };
-
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to open the firewall port for Ollama.
-        '';
-      };
-
-      environmentVariables = mkOption {
-        type = types.attrsOf types.str;
-        default = {};
-        example = {
-          OLLAMA_LLM_LIBRARY = "cpu";
+    options.hosting.inference.ollama = mkContainerOption {
+      inherit name;
+      description = "Enable Ollama container for local LLM inference";
+      extraOptions = {
+        container.publication = mkOption {
+          type = types.listOf (types.enum ["tailscale"]);
+          default = [];
+          description = ''
+            Determines where the container is published to. Defaults to [] (unpublished)
+            so high-resource inference hardware is opt-in for network sharing.
+          '';
         };
-        description = ''
-          Extra environment variables for the systemd Ollama service.
-        '';
+
+        acceleration = mkOption {
+          type = types.nullOr (types.enum ["cuda" "rocm"]);
+          default = null;
+          example = "cuda";
+          description = ''
+            Hardware acceleration backend for the Ollama container (cuda, rocm, or null).
+          '';
+        };
+
+        loadModels = mkOption {
+          type = types.listOf types.str;
+          apply = builtins.filter (model: model != "");
+          default = [];
+          example = [
+            "llama3.2"
+            "mistral"
+          ];
+          description = ''
+            List of default admin-approved models to download automatically via HTTP API model loader.
+          '';
+        };
+
+        port = mkOption {
+          type = types.port;
+          default = 11434;
+          example = 11434;
+          description = ''
+            Host port for the Ollama server to listen on.
+          '';
+        };
       };
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
-        services.ollama = {
-          enable = true;
-          inherit (cfg) host;
-          inherit (cfg) port;
-          inherit (cfg) openFirewall;
-          inherit (cfg) loadModels;
-          inherit (cfg) syncModels;
-          inherit (cfg) rocmOverrideGfx;
-          inherit (cfg) environmentVariables;
-          package =
-            if cfg.acceleration == "cuda"
-            then pkgs.ollama-cuda
-            else if cfg.acceleration == "rocm"
-            then pkgs.ollama-rocm
-            else if cfg.acceleration == "vulkan"
-            then pkgs.ollama-vulkan
-            else if cfg.acceleration == "cpu"
-            then pkgs.ollama-cpu
-            else pkgs.ollama;
+        hosting.enable = true;
+
+        systemd.tmpfiles.rules = [
+          "d ${configurationDirectory} 0755 root root -"
+        ];
+
+        virtualisation.oci-containers.containers.${name} = mkMerge [
+          (mkContainer {
+            inherit name cfg config;
+            image = "docker.io/ollama/ollama:latest";
+            serviceName = "ollama";
+            servicePort = cfg.port;
+          })
+          {
+            volumes = [
+              "${configurationDirectory}:/root/.ollama"
+            ];
+
+            ports = [
+              "${toString cfg.port}:11434"
+            ];
+
+            environment = {
+              OLLAMA_HOST = "0.0.0.0:11434";
+            };
+          }
+        ];
+
+        systemd.services.ollama-model-loader = mkIf (cfg.loadModels != []) {
+          description = "Download Ollama models";
+          wantedBy = ["multi-user.target"];
+          wants = ["network-online.target"];
+          after = ["network-online.target" "${config.virtualisation.oci-containers.backend}-${name}.service"];
+          serviceConfig = {
+            Type = "oneshot";
+            Restart = "on-failure";
+            RestartSec = "5s";
+            ExecStart = let
+              backendCmd = "${pkgs.${config.virtualisation.oci-containers.backend}}/bin/${config.virtualisation.oci-containers.backend}";
+              curl = getExe pkgs.curl;
+
+              pullScript = pkgs.writeShellScript "ollama-model-pull" ''
+                set -euo pipefail
+                echo "Waiting for Ollama container endpoint..."
+                until ${curl} -sf http://127.0.0.1:${toString cfg.port}/ > /dev/null 2>&1; do
+                  sleep 2
+                done
+                echo "Ollama container is ready."
+
+                ${concatMapStrings (model: ''
+                    echo "Pulling model: ${model}..."
+                    ${backendCmd} exec ${name} ollama pull ${escapeShellArg model} || true
+                  '')
+                  cfg.loadModels}
+              '';
+            in "${pullScript}";
+          };
         };
 
         home-manager.users =
@@ -122,8 +126,22 @@ in
           config.core.users;
 
         environment.variables = {
-          OLLAMA_HOST = "${cfg.host}:${toString cfg.port}";
+          OLLAMA_HOST = "127.0.0.1:${toString cfg.port}";
         };
       }
+
+      # ── Hardware acceleration (CUDA / ROCm) ────────────────
+      (mkIf (cfg.acceleration == "cuda") {
+        virtualisation.oci-containers.containers.${name}.extraOptions = [
+          "--device=nvidia.com/gpu=all"
+        ];
+      })
+
+      (mkIf (cfg.acceleration == "rocm") {
+        virtualisation.oci-containers.containers.${name}.extraOptions = [
+          "--device=/dev/kfd"
+          "--device=/dev/dri"
+        ];
+      })
     ]);
   }

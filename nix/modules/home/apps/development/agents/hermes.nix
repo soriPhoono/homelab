@@ -1,4 +1,3 @@
-# NOTE:
 {
   lib,
   pkgs,
@@ -516,13 +515,13 @@ with lib; let
                 nixosOllamaEnabled = nixosConfig != null && (nixosConfig.hosting.inference.ollama.enable or false);
                 host =
                   if nixosOllamaEnabled
-                  then nixosConfig.services.ollama.host
+                  then (nixosConfig.hosting.inference.ollama.host or nixosConfig.services.ollama.host or "127.0.0.1")
                   else if hmConfig.services.ollama.enable or false
                   then hmConfig.services.ollama.host
                   else "127.0.0.1";
                 port =
                   if nixosOllamaEnabled
-                  then nixosConfig.services.ollama.port
+                  then (nixosConfig.hosting.inference.ollama.port or nixosConfig.services.ollama.port or 11434)
                   else if hmConfig.services.ollama.enable or false
                   then hmConfig.services.ollama.port
                   else 11434;
