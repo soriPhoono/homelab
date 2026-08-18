@@ -14,18 +14,18 @@ creation_rules:
       - age:
           - *admin_soriphoono
           - *admin_spookyskelly
-  - path_regex: nix/systems/lg-laptop/[^/]+\.(yml|json|env|ini)$
-    key_groups:
-      - age:
-          - *admin_soriphoono
-          - *system_lg_laptop
-  - path_regex: nix/systems/zephyrus/[^/]+\.(yml|json|env|ini)$
+  - path_regex: nix/systems/laptop-ares/[^/]+\.(yml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono
           - *system_zephyrus
-  - path_regex: nix/systems/ares/[^/]+\.(yml|json|env|ini)$
+  - path_regex: nix/systems/desktop-ares/[^/]+\.(yml|json|env|ini)$
     key_groups:
       - age:
           - *admin_soriphoono
           - *system_ares
+  - path_regex: nix/systems/laptop-vesper/[^/]+\.(yml|json|env|ini)$
+    key_groups:
+      - age:
+          - *admin_soriphoono
+          - *system_lg_laptop

@@ -142,56 +142,57 @@ in
                 }/bin/podman-tailscale-bypass-stop";
               };
             };
-
-            podman-create-networks = let
-              networks = unique (
-                flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
-              );
-            in {
-              after = ["podman.service"];
-              wantedBy = ["multi-user.target"];
-              path = ["/run/wrappers"];
-              serviceConfig = {
-                Type = "oneshot";
-                RemainAfterExit = true;
-                ExecStart = "${
-                  pkgs.writeShellApplication {
-                    name = "podman-create-networks";
-                    runtimeInputs = with pkgs; [
-                      podman
-                      util-linux
-                    ];
-                    text = optionalString (networks != []) ''
-                      # Rootful networks
-                      EXISTING_NETWORKS=$(podman network ls --format '{{.Name}}')
-                      ${concatStringsSep "\n" (
-                        map (network: ''
-                          if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${network}"; then
-                            podman network create "${network}"
-                          fi
-                        '')
-                        networks
-                      )}
-                    '';
-                  }
-                }/bin/podman-create-networks";
-              };
-            };
           }
-          // (listToAttrs (
-            mapAttrsToList (name: _: {
-              name = "podman-${name}";
-              value = {
-                after = [
-                  "podman-create-networks.service"
-                ];
-                bindsTo = [
-                  "podman-create-networks.service"
-                ];
+          // (optionalAttrs (config.virtualisation.oci-containers.backend == "podman") ({
+              podman-create-networks = let
+                networks = unique (
+                  flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
+                );
+              in {
+                after = ["podman.service"];
+                wantedBy = ["multi-user.target"];
+                path = ["/run/wrappers"];
+                serviceConfig = {
+                  Type = "oneshot";
+                  RemainAfterExit = true;
+                  ExecStart = "${
+                    pkgs.writeShellApplication {
+                      name = "podman-create-networks";
+                      runtimeInputs = with pkgs; [
+                        podman
+                        util-linux
+                      ];
+                      text = optionalString (networks != []) ''
+                        # Rootful networks
+                        EXISTING_NETWORKS=$(podman network ls --format '{{.Name}}')
+                        ${concatStringsSep "\n" (
+                          map (network: ''
+                            if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${network}"; then
+                              podman network create "${network}"
+                            fi
+                          '')
+                          networks
+                        )}
+                      '';
+                    }
+                  }/bin/podman-create-networks";
+                };
               };
-            })
-            config.virtualisation.oci-containers.containers
-          ));
+            }
+            // (listToAttrs (
+              mapAttrsToList (name: _: {
+                name = "podman-${name}";
+                value = {
+                  after = [
+                    "podman-create-networks.service"
+                  ];
+                  bindsTo = [
+                    "podman-create-networks.service"
+                  ];
+                };
+              })
+              config.virtualisation.oci-containers.containers
+            ))));
       }
     ]);
   }

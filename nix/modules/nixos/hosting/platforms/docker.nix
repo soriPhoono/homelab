@@ -466,7 +466,7 @@ in
               };
             };
           }
-          // (listToAttrs (
+          // (optionalAttrs (config.virtualisation.oci-containers.backend == "docker") (listToAttrs (
             mapAttrsToList (name: _: {
               name = "docker-${name}";
               value = {
@@ -485,7 +485,7 @@ in
               };
             })
             config.virtualisation.oci-containers.containers
-          ));
+          )));
 
         networking.firewall.interfaces = mkIf (cfg.swarmMode.enable && cfg.swarmMode.listenInterfaces != []) (
           genAttrs cfg.swarmMode.listenInterfaces (_iface: {

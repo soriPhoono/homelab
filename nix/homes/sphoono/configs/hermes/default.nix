@@ -11,9 +11,7 @@
       models = {
         oauth = {
           enable = true;
-          default = true;
           provider = "codex";
-          model = "gpt-5.5";
           base_url = "https://chatgpt.com/backend-api/codex";
         };
         ollama = {

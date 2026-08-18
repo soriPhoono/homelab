@@ -5,5 +5,6 @@
     ./proxy
     ./media
     ./services
+    ./inference
   ];
 }

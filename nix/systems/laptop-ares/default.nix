@@ -109,13 +109,44 @@ with lib; {
         ];
       };
       console.enable = true;
-      streaming = {
-        enable = true;
-      };
+      streaming.enable = true;
     };
     tools = {
       partition-manager.enable = true;
       virtualbox.enable = true;
+    };
+  };
+
+  hosting = {
+    platforms = {
+      docker.enable = true;
+      podman.enable = true;
+    };
+
+    proxy = {
+      enable = true;
+      tailscale.enable = true;
+    };
+
+    media = {
+      enable = true;
+
+      jellyfin.acceleration = {
+        enable = true;
+        renderDevice = "/dev/dri/renderD128";
+        cardDevice = "/dev/dri/card0";
+      };
+    };
+
+    inference = {
+      ollama = {
+        enable = true;
+        acceleration = "cuda";
+        loadModels = [
+          "gemma4:e4b"
+        ];
+        syncModels = true;
+      };
     };
   };
 

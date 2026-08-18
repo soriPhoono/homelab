@@ -74,7 +74,7 @@ in
           KERNEL=="uhid", MODE="0660", GROUP="input"
         '';
 
-        systemd.services.podman-wolf.preStart = ''
+        systemd.services."${config.virtualisation.oci-containers.backend}-wolf".preStart = ''
           ${pkgs.docker}/bin/docker rm --force WolfPulseAudio
         '';
 

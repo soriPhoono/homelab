@@ -4,6 +4,7 @@
   pkgs,
   config,
   options,
+  nixosConfig ? null,
   ...
 }:
 with lib; let
@@ -511,7 +512,21 @@ with lib; let
                 if config.providers.models.ollama.model != null
                 then config.providers.models.ollama.model
                 else cfg.providers.models.ollama.model;
-              base_url = "http://${hmConfig.services.ollama.host}:${toString hmConfig.services.ollama.port}/v1";
+              base_url = let
+                nixosOllamaEnabled = nixosConfig != null && (nixosConfig.hosting.inference.ollama.enable or false);
+                host =
+                  if nixosOllamaEnabled
+                  then nixosConfig.services.ollama.host
+                  else if hmConfig.services.ollama.enable or false
+                  then hmConfig.services.ollama.host
+                  else "127.0.0.1";
+                port =
+                  if nixosOllamaEnabled
+                  then nixosConfig.services.ollama.port
+                  else if hmConfig.services.ollama.enable or false
+                  then hmConfig.services.ollama.port
+                  else 11434;
+              in "http://${host}:${toString port}/v1";
             };
           })
         ];
