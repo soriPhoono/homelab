@@ -3,7 +3,6 @@
     ./vscode
     ./zen
     ./hypr
-    ./helix
     ./hermes
     ./fastfetch
   ];

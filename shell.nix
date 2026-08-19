@@ -22,6 +22,7 @@ with pkgs;
         agenix-cli
         sops
         ssh-to-age
+        secretspec
       ]
       ++ lib.optional stdenv.isLinux [
         disko

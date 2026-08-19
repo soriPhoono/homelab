@@ -40,7 +40,10 @@ _: {
           enableDesktop = true;
         };
       };
-      editors.vscode.enable = true;
+      editors = {
+        neovim.enable = true;
+        vscode.enable = true;
+      };
     };
     data-fortress = {
       p2p.qbittorrent.enable = true;

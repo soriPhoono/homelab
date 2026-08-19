@@ -40,7 +40,10 @@ _: {
           enableDesktop = true;
         };
       };
-      editors.vscode.enable = true;
+      editors = {
+        neovim.enable = true;
+        vscode.enable = true;
+      };
       design.freecad.enable = true;
       appliances.bambu-studio.enable = true;
     };
