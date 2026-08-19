@@ -40,7 +40,7 @@ _: {
           enableDesktop = true;
         };
       };
-      editors.antigravity.enable = true;
+      editors.vscode.enable = true;
       design.freecad.enable = true;
       appliances.bambu-studio.enable = true;
     };

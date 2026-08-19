@@ -40,7 +40,7 @@ _: {
           enableDesktop = true;
         };
       };
-      editors.antigravity.enable = true;
+      editors.vscode.enable = true;
     };
     data-fortress = {
       p2p.qbittorrent.enable = true;

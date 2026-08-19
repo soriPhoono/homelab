@@ -1,6 +1,6 @@
 {...}: {
   imports = [
     ./ide
-    ./agent
+    # ./agent
   ];
 }

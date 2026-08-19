@@ -122,6 +122,15 @@ with prev; {
             description = "";
           };
 
+          documents = mkOption {
+            type = with types; attrsOf (either path str);
+            default = {};
+            description = ''
+              Context documents to make available to the ${name} agent.
+              Map of document relative path/name to file path or string content.
+            '';
+          };
+
           skills = mkOption {
             type = with types; attrsOf types.package;
             default = {};

@@ -1,5 +1,5 @@
 _: {
-  apps.development.editors.antigravity = {
+  apps.development.editors.vscode = {
     # Common snippets applied to every active profile.
     #
     # globalSnippets are keyed by snippet name and available in all languages.

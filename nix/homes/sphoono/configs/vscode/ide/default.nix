@@ -6,7 +6,7 @@
     ./snippets.nix
   ];
 
-  apps.development.editors.antigravity = {
+  apps.development.editors.vscode = {
     # Active profiles — switch via VS Code profile picker
     activeProfiles = ["devops" "fullstack" "systems"];
   };

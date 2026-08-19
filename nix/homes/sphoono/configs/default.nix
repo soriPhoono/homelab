@@ -1,6 +1,6 @@
 {
   imports = [
-    ./antigravity
+    ./vscode
     ./zen
     ./hypr
     ./helix

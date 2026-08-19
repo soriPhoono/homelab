@@ -303,63 +303,6 @@
               ;
           };
         };
-
-        # --- Packages and applications --- #
-        apps = rec {
-          install = {
-            type = "app";
-            program = pkgs.writeShellApplication {
-              name = "install.sh";
-              runtimeInputs = with pkgs; [
-                disko
-              ];
-              text = ''
-                target=$1
-
-                nix run .#writeDisks -- $target
-
-                sudo nixos-install --flake .#$target --option max-jobs 1 --option cores 4
-              '';
-            };
-            meta.description = "Install NixOS to a target machine (disko + nixos-install)";
-          };
-          writeDisks = {
-            type = "app";
-            program = pkgs.writeShellApplication {
-              name = "write-disk-config.sh";
-              runtimeInputs = with pkgs; [
-                disko
-              ];
-              text = ''
-                target=$1
-
-                sudo disko -m destroy,format,mount --flake .#$target
-              '';
-            };
-            meta.description = "Partition and format disks for a target machine using disko";
-          };
-          default = install;
-        };
-
-        # --- QCOW2 VM images (auto-generated per system) ---
-        packages = builtins.listToAttrs (
-          map (hostName: {
-            name = "${hostName}-qcow";
-            value =
-              (self.nixosConfigurations.${hostName}.extendModules {
-                modules = [
-                  {
-                    core.vm-image.enable = true;
-                  }
-                  (import ./nix/modules/nixos/core/vm-image.nix)
-                ];
-              })
-              .config
-              .system
-              .build
-              .image;
-          }) (builtins.attrNames self.nixosConfigurations)
-        );
       };
 
       flake = {

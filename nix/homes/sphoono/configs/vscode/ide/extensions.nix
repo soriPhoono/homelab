@@ -54,7 +54,7 @@
     };
   };
 in {
-  apps.development.editors.antigravity = {
+  apps.development.editors.vscode = {
     # Common extensions added to EVERY profile — keep this minimal.
     # Language-specific tools belong in profile extensions instead.
     common = {
