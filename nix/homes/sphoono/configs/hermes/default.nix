@@ -16,6 +16,7 @@
         };
         ollama = {
           enable = true;
+          enableCloud = true;
           model = "gemma4:e4b";
           default = true;
         };

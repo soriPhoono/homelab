@@ -119,15 +119,19 @@ in
           };
         };
 
-        home-manager.users =
-          mapAttrs (_name: _user: {
-            apps.development.inference.ollama.enable = mkForce false;
-          })
-          config.core.users;
-
         environment.variables = {
           OLLAMA_HOST = "127.0.0.1:${toString cfg.port}";
         };
+
+        environment.systemPackages = [
+          (pkgs.writeShellScriptBin "ollama" ''
+            if [ -t 0 ]; then
+              exec ${getExe pkgs.${config.virtualisation.oci-containers.backend}} exec -it ${name} ollama "$@"
+            else
+              exec ${getExe pkgs.${config.virtualisation.oci-containers.backend}} exec -i ${name} ollama "$@"
+            fi
+          '')
+        ];
       }
 
       # ── Hardware acceleration (CUDA / ROCm) ────────────────

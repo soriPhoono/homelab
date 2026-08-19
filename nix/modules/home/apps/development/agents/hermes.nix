@@ -2,33 +2,11 @@
   lib,
   pkgs,
   config,
-  options,
   nixosConfig ? null,
   ...
 }:
 with lib; let
-  hmConfig = config;
   cfg = config.apps.development.agents.hermes;
-
-  hermesOllamaModels = let
-    topLevelModel =
-      if
-        (cfg.providers.models.ollama.enable || cfg.providers.models.ollama.default)
-        && cfg.providers.models.ollama.model != null
-      then [cfg.providers.models.ollama.model]
-      else [];
-    profileModels = concatLists (mapAttrsToList (
-        _: pCfg:
-          if
-            pCfg.enable
-            && (pCfg.providers.models.ollama.enable || pCfg.providers.models.ollama.default)
-            && pCfg.providers.models.ollama.model != null
-          then [pCfg.providers.models.ollama.model]
-          else []
-      )
-      cfg.profiles);
-  in
-    unique (topLevelModel ++ profileModels);
 
   providerOptions = {
     sopsFile = mkOption {
@@ -103,6 +81,7 @@ with lib; let
       };
       ollama = {
         enable = mkEnableOption "Enable ollama local inference integration";
+        enableCloud = mkEnableOption "Enable ollama cloud models";
         default = mkEnableOption ''
           Set this to true to enable Ollama local inference integration as the default provider for hermes agents.
         '';
@@ -396,6 +375,7 @@ with lib; let
             optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
             ++ optional (cfg.providers.models.opencode.zen.enable || config.providers.models.opencode.zen.enable) "hermes/${name}/api/OPENCODE_ZEN_API_KEY"
             ++ optional (cfg.providers.models.opencode.go.enable || config.providers.models.opencode.go.enable) "hermes/${name}/api/OPENCODE_GO_API_KEY"
+            ++ optional (cfg.providers.models.ollama.enableCloud || config.providers.models.ollama.enableCloud) "hermes/${name}/api/OLLAMA_API_KEY"
             ++ optional (cfg.providers.memory.variant == "honcho" || config.providers.memory.variant == "honcho") "hermes/${name}/api/HONCHO_API_KEY"
             ++ optional (cfg.providers.search.firecrawl.enable || config.providers.search.firecrawl.enable) "hermes/${name}/api/FIRECRAWL_API_KEY"
             ++ optional (cfg.providers.search.brave.enable || config.providers.search.brave.enable) "hermes/${name}/api/BRAVE_SEARCH_API_KEY"
@@ -515,15 +495,11 @@ with lib; let
                 nixosOllamaEnabled = nixosConfig != null && (nixosConfig.hosting.inference.ollama.enable or false);
                 host =
                   if nixosOllamaEnabled
-                  then (nixosConfig.hosting.inference.ollama.host or nixosConfig.services.ollama.host or "127.0.0.1")
-                  else if hmConfig.services.ollama.enable or false
-                  then hmConfig.services.ollama.host
+                  then (nixosConfig.hosting.inference.ollama.host or "127.0.0.1")
                   else "127.0.0.1";
                 port =
                   if nixosOllamaEnabled
-                  then (nixosConfig.hosting.inference.ollama.port or nixosConfig.services.ollama.port or 11434)
-                  else if hmConfig.services.ollama.enable or false
-                  then hmConfig.services.ollama.port
+                  then (nixosConfig.hosting.inference.ollama.port or 11434)
                   else 11434;
               in "http://${host}:${toString port}/v1";
             };
@@ -574,13 +550,6 @@ in {
     (mkIf cfg.enableDesktop {
       # Install hermes-desktop
       home.packages = [cfg.desktopPackage];
-    })
-
-    (mkIf (hermesOllamaModels != [] && options ? apps && options.apps ? development && options.apps.development ? inference && options.apps.development.inference ? ollama) {
-      apps.development.inference.ollama = {
-        enable = mkDefault true;
-        loadModels = hermesOllamaModels;
-      };
     })
 
     {
