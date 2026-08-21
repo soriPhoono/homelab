@@ -203,13 +203,18 @@ with lib; let
       mergedEnv);
 
   # Create environment file for a profile
+  # Populating the file is the systemd oneshot's job (it needs decrypted sops
+  # secrets, which don't exist yet at activation time). Activation only ensures
+  # the file exists so a running agent doesn't crash before the oneshot runs.
+  # Do NOT truncate here: doing so would wipe the oneshot's output on every
+  # home-manager switch, and HM's unit-restart race means the oneshot does not
+  # reliably re-run in the same pass.
   mkEnvBase = profileName: ''
     # Set profile specific environment variables
     ENV_FILE="${profileDir profileName}/.env"
-    install -m 0600 /dev/null "$ENV_FILE"
-    cat > "$ENV_FILE" <<HERMES_NIX_ENV_${toUpper profileName}_EOF
-    ${baseEnvironment profileName}
-    HERMES_NIX_ENV_${toUpper profileName}_EOF
+    if [ ! -e "$ENV_FILE" ]; then
+      install -m 0600 /dev/null "$ENV_FILE"
+    fi
   '';
 
   # Copy documents to profile directory
@@ -635,6 +640,27 @@ in {
             set -euo pipefail
             HERMES_HOME="''${HERMES_HOME:-${profileDir profileName}}"
             ENV_FILE="$HERMES_HOME/.env"
+
+            # Wait until sops-nix has finished decrypting AND populating every
+            # secret this profile needs. sops-nix can materialize secret files as
+            # zero-length before their content lands; reading them in that window
+            # writes blank API keys into the .env. Retry briefly, then fail loudly
+            # so systemd surface the error instead of silently minting an unusable
+            # environment file.
+            ${concatStringsSep "\n" (
+              map (f: ''
+                for _ in $(seq 1 30); do
+                  [ -s "${config.sops.secrets."${f}".path}" ] && break
+                  sleep 1
+                done
+                if [ ! -s "${config.sops.secrets."${f}".path}" ]; then
+                  echo "hermes-agent-${profileName}: secret missing or empty: ${f}" >&2
+                  exit 1
+                fi
+              '')
+              (unique (cfg.secrets ++ profileCfg.secrets))
+            )}
+
             mkdir -p "$(dirname "$ENV_FILE")"
             chmod 0700 "$(dirname "$ENV_FILE")"
             cat << 'HERMES_NIX_ENV_EOF' > "$ENV_FILE"
@@ -658,10 +684,15 @@ in {
               acc
               // {
                 "hermes-agent-${profileName}" = {
-                  Unit = {
+                  Unit = let
+                    hasSecrets = cfg.secrets != [] || getProfileSecrets profileName != [];
+                  in {
                     Description = "Hermes AI Agent (${profileName} profile) (oneshot) - Generates environment variables from sops secrets";
-                    After = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
-                    Wants = ["network-online.target"] ++ lib.optional (cfg.secrets != [] || getProfileSecrets profileName != []) "sops-nix.service";
+                    After = ["network-online.target"] ++ lib.optional hasSecrets "sops-nix.service";
+                    Wants = ["network-online.target"] ++ lib.optional hasSecrets "sops-nix.service";
+                    # Hard dependency: if sops-nix fails to decrypt, fail this unit
+                    # instead of running and minting an .env full of blank API keys.
+                    Requires = lib.optional hasSecrets "sops-nix.service";
                   };
                   Service = let
                     servicePath = lib.makeBinPath [

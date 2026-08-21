@@ -1,0 +1,16 @@
+{
+  "nixpkgs": {
+    "expr": "import (builtins.getFlake (toString ./.)).inputs.nixpkgs { }"
+  },
+  "options": {
+    "nixos": {
+      "expr": "(builtins.getFlake (toString ./.)).nixosConfigurations.desktop-ares.options"
+    },
+    "home-manager": {
+      "expr": "(builtins.getFlake (toString ./.)).homeConfigurations.sphoono.options"
+    }
+  },
+  "formatting": {
+    "command": "alejandra"
+  }
+}

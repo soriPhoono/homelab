@@ -1,213 +1,77 @@
-# AGENTS.md
+# Homelab agent instructions
 
-## Project Overview
+Nix flake for sphoono's NixOS homelab and personal devices. It builds NixOS systems, standalone Home Manager profiles, shared modules, overlays, generated GitHub Actions, treefmt formatting, and sops-nix/agenix-shell secret workflows.
 
-NixOS homelab configuration flake managing 4 machines (ares, zephyrus, lg-laptop, testbench) across 2 users (sphoono, spookyskelly). Built with flakes, home-manager (NixOS-integrated), sops-nix secrets, and a modular auto-discovery pattern.
+## Scope and guardrails
 
-**Key technologies:** NixOS, Home Manager, flakes, sops-nix, disko, treefmt, git-hooks.nix, Stylix, Hyprland/KDE/COSMIC, k0s, Docker, Traefik, Tailscale, AI coding agents (opencode, pi, hermes-agent, github-copilot).
+- **Do not deploy.** Write config and verify evaluation/builds; hand off `nh os switch`, `nh home switch`, `nixos-rebuild`, and `home-manager switch` to the user.
+- Keep changes focused to the smallest file or module that owns the option/config; no drive-by refactors or mass formatting.
+- Prefer nixpkgs, Home Manager, NixOS modules, and existing repo helpers before adding custom code.
+- Use one logical commit per change with Conventional Commit prefixes (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`) if committing.
 
-## Architecture
+## Layout
 
-### Flake structure
+- `flake.nix` uses `flake-parts`; `mkSystem` builds `nix/systems/<hostname>` and `mkHome` builds standalone homes from `nix/homes/<user>` / `nix/homes/<user>@<name>`.
+- `nix/lib.nix` extends nixpkgs lib with `homelab.helpers.core.discover`, `homelab.development.*`, and `homelab.containers.*` helpers.
+- `nix/modules/nixos/` is system-level modules: `core`, `desktop`, `hosting`, `themes`.
+- `nix/modules/home/` is Home Manager modules: `core`, `desktop`, `apps`, `programs`.
+- `nix/homes/AGENTS.md` and user-local AGENTS files contain extra rules for Home Manager layering.
+- `nix/overlays/default.nix` auto-loads every sibling `.nix` overlay except `default.nix`.
 
-The flake (`flake.nix`) uses `flake-parts` with these builder functions:
+## Current targets
 
-| Builder | Purpose |
-|---------|---------|
-| `mkSystem` | Builds a NixOS configuration from `nix/systems/<hostname>/` |
-| `mkHome` | Builds a Home Manager configuration from `nix/homes/<user>/` or `nix/homes/<user>@<hostname>/` |
+- NixOS systems exported by `self.nixosConfigurations`: `desktop-ares`, `laptop-ares`, `laptop-vesper`.
+- Standalone homes exported by `self.homeConfigurations`: `sphoono`, `spookyskelly`.
+- Host-specific homes whose host exists under `nix/systems/` are consumed by the NixOS system build, not exported standalone.
+- Systems declare architecture in `nix/systems/<hostname>/meta.json`; current hosts are `x86_64-linux`.
 
-### Module auto-discovery
+## Dev environment
 
-Modules in `nix/modules/nixos/` and `nix/modules/home/` are auto-imported via `lib.homelab.core.discover`. Dropping a `.nix` file (or directory with `default.nix`) into the tree is enough to register it — no manual `imports` edits.
+- Enter the dev shell with `nix develop`.
+- Dev shell packages include `gh`, `nixd`, `nil`, `alejandra`, `vulnix`, `age`, `agenix-cli`, `sops`, `ssh-to-age`, `secretspec`; Linux also gets `disko` and `nixos-facter`.
+- `shell.nix` runs the pre-commit hook setup and regenerates `.github/workflows/*.yml` from `actions.nix`.
 
-### NixOS module groups
+## Build, check, format
 
-| Group | Path | Purpose |
-|-------|------|---------|
-| `core` | `nix/modules/nixos/core/` | Boot, hardware, networking, users, secrets, security |
-| `desktop` | `nix/modules/nixos/desktop/` | DEs (Hyprland, KDE, COSMIC), services, gaming |
-| `hosting` | `nix/modules/nixos/hosting/` | Media stack, Docker/k0s, Traefik proxy |
-| `themes` | `nix/modules/nixos/themes/` | Stylix with base16 scheme support |
+- Full evaluation gate: `nix flake check --all-systems`.
+- Default-system evaluation: `nix flake check`.
+- Format/lint through treefmt: `nix fmt`.
+- Build a NixOS system: `nix build .#nixosConfigurations.desktop-ares.config.system.build.toplevel`.
+- Build another system by replacing the hostname with `laptop-ares` or `laptop-vesper`.
+- Build standalone homes:
+  - `nix build .#homeConfigurations.sphoono.activationPackage`
+  - `nix build .#homeConfigurations.spookyskelly.activationPackage`
 
-### Home Manager module groups
+## CI and generated files
 
-| Group | Path | Purpose |
-|-------|------|---------|
-| `core` | `nix/modules/home/core/` | Shells, git, SSH, secrets, email |
-| `desktop` | `nix/modules/home/desktop/` | Window managers (Hyprland), Wayland env |
-| `apps` | `nix/modules/home/apps/` | Browsers, editors, agents, media, office |
+- `actions.nix` is the source for `.github/workflows/ci.yml`; do not hand-edit `ci.yml` except to inspect generated output.
+- CI runs on pull requests and gates on `nix flake check --all-systems`, then builds each exported NixOS system and standalone home activation package.
+- `.github/workflows/update-flake-lock.yml` is hand-written and opens weekly `chore(deps): update flake.lock` PRs.
 
-### Home config layering
+## Formatting and hooks
 
-```
-nix/homes/<user>/default.nix              # Base config (shared across all hosts)
-nix/homes/<user>@<hostname>/default.nix   # Host-specific overrides
-```
+- `treefmt.nix` enables `alejandra`, `deadnix`, `statix`, `actionlint`, `yamlfmt`, and `mdformat`.
+- `pre-commit.nix` enables `nil`, `treefmt`, and `gitleaks protect --verbose --redact --staged`.
+- Treefmt excludes `.agents/skills/*`, `.cursor/rules/*`, `.gemini/agents/*`; `yamlfmt` excludes generated `.github/workflows/ci.yml`.
 
-Both layers are merged. Host-specific configs for NixOS-managed hosts are consumed by the system build (not exported standalone).
+## Nix conventions observed here
 
-### Package overlays
+- Modules commonly use `{ lib, config, pkgs, ... }: with lib; { ... }` or a `let cfg = ...; in with lib; { ... }` shape.
+- Define options with `mkEnableOption` / `mkOption`, explicit `type`, `default`, `description`, and `example` where helpful.
+- Compose conditionally with `mkIf`, `mkMerge`, `mkDefault`, `mkForce`, `optional`, `optionalAttrs`, and `mkBefore`.
+- Add NixOS modules by creating `nix/modules/nixos/<area>/<name>.nix` or `<name>/default.nix`; auto-discovery imports it through the nearest `default.nix`.
+- Add Home Manager modules the same way under `nix/modules/home/`.
+- Add overlays as `nix/overlays/<name>.nix`; `nix/overlays/default.nix` imports them automatically.
 
-Custom packages are defined in `nix/overlays/` and auto-discovered by `overlays/default.nix`. External overlays: `nur.overlays.default`, `nix-skills.overlays.default`.
+## Secrets
 
-### Systems
+- Secret rules live in `.sops.yaml`; user secrets live under `nix/homes/<user>/secrets.yml`; system secrets live under `nix/systems/<hostname>/secrets.yml`.
+- Edit secrets with exact paths, e.g. `sops nix/systems/desktop-ares/secrets.yml` or `sops nix/homes/sphoono/secrets.yml`.
+- Do not put secrets in module `environment` attrs; `lib.homelab.development.mkAgent` explicitly treats environment variables as non-secret.
 
-| Hostname | User(s) | Desktop | Purpose |
-|----------|---------|---------|---------|
-| ares | sphoono | Hyprland + SDDM | Workstation, gaming + VR |
-| zephyrus | sphoono | Hyprland + ReGreet | Laptop, media server |
-| lg-laptop | spookyskelly | KDE Plasma | Laptop |
-| testbench | sphoono | Hyprland + SDDM | VM/testing |
+## Pitfalls
 
-## Setup Commands
-
-```bash
-# Enter dev shell (or use direnv)
-nix develop
-
-# Evaluate the full flake
-nix flake check
-nix flake check --all-systems
-```
-
-## Development Workflow
-
-### Quick iteration (single system)
-
-```bash
-# Build a NixOS system
-nix build .#nixosConfigurations.zephyrus.config.system.build.toplevel
-
-# Build a home configuration
-nix build .#homeConfigurations.sphoono.activationPackage
-
-# Deploy (requires target machine)
-nh os switch . -- --flake .#zephyrus
-nh home switch . -- --flake .#sphoono@zephyrus
-```
-
-### Formatting
-
-All formatting, linting, and secret scanning runs automatically via pre-commit hooks on `git commit`:
-
-- `alejandra` (Nix formatter)
-- `deadnix` (Nix dead code)
-- `statix` (Nix linter)
-- `actionlint` (GitHub Actions)
-- `yamlfmt` (YAML)
-- `mdformat` (Markdown)
-- `gitleaks` (secret scanning)
-- `nil` (Nix LSP linting)
-
-To run manually: `nix fmt` (format all) or `treefmt` (if in dev shell).
-
-### Full validation before push
-
-```bash
-nix flake check --all-systems
-```
-
-This evaluates all NixOS configurations, home configurations, dev shells, and flake checks (pre-commit, treefmt).
-
-## Code Style Guidelines
-
-### Nix conventions
-
-- **Indentation**: 2 spaces
-- **Encoding**: UTF-8, LF line endings
-- **Format**: `alejandra` (auto-formats on save in VS Code, runs in pre-commit)
-- **Pattern**: Modules use `{ lib, config, pkgs, ... }: with lib; { ... }` style
-- **Options**: Always use `mkEnableOption`, `mkOption` with explicit `type`, `default`, `description`
-- **Configs**: Use `mkIf`, `mkMerge`, `mkDefault`, `mkForce` for conditional composition
-- **Guarding**: Guard cross-module dependencies with `options ? "depName"` checks
-- **Descriptions**: Multiline strings, accurate descriptions, include `example` where useful
-
-### File organization
-
-```
-nix/
-  homes/       - Home Manager user configs
-  lib.nix      - Custom library (homelab.core.discover, homelab.development, homelab.types)
-  modules/
-    nixos/     - System-level modules (core, desktop, hosting, themes)
-    home/      - User-level modules (core, desktop, apps)
-  overlays/    - Package overlays (auto-discovered)
-  systems/     - Per-host NixOS configs (each with meta.json, disko.nix, secrets.yml, facter.json)
-```
-
-### Naming conventions
-
-- **Options**: `camelCase.moduleName.optionName`
-- **Types**: `types.attrOf`, `types.submodule`, `types.oneOf`, `types.coercedTo`
-- **Secrets**: sops-nix with age keys, per-system and per-user `secrets.yml`
-
-## AI Agent Configuration
-
-This repo manages AI agent config for OpenCode, pi, Hermes Agent, and GitHub Copilot.
-
-Each agent has its own set of options defined via `homelab.development.mkAgent` in `lib.nix`, including MCP servers, skills, subagents, commands, and context. Per-agent configs live at `nix/homes/<user>/configs/<agent>/`. There is no shared development layer — each agent is fully self-contained.
-
-## Secrets Management
-
-Secrets use **sops-nix** with age encryption. Key files:
-
-- `.sops.yaml` — creation rules mapping paths to allowed age keys
-- `nix/systems/<hostname>/secrets.yml` — system-level secrets
-- `nix/homes/<user>/secrets.yml` — user-level secrets
-
-To edit a secret file:
-
-```bash
-sops nix/systems/zephyrus/secrets.yml
-```
-
-## Build and Deployment
-
-### CI/CD
-
-GitHub Actions CI (auto-generated from `actions.nix`):
-
-- Trigger: `pull_request` to `main`
-- Gate: `nix flake check --all-systems` (evaluate)
-- Builds: each NixOS system toplevel + standalone home activation packages
-- Cache: Cachix (`homelab`), Magic Nix Cache
-- Weekly: `update-flake-lock.yml` auto-creates PRs for dependency updates
-
-### Disk provisioning
-
-```bash
-nix run .#writeDisks -- --flake .#<hostname>
-nix run .#install -- --flake .#<hostname>
-```
-
-## Pull Request Guidelines
-
-- Branch format: `<type>/<issue-number>-<name>` (e.g. `feat/42-add-sunshine-module`)
-- Commit format: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `style:`, `refactor:`)
-- Pre-commit hooks must pass (nil, treefmt, gitleaks)
-- Run `nix flake check --all-systems` before pushing
-- One logical change per commit
-
-## Testing
-
-Testing is done via flake evaluation. There are no runtime test suites:
-
-```bash
-# Validate all configs evaluate
-nix flake check --all-systems
-
-# Validate a single system
-nix flake check
-
-# Build a specific config to catch eval + build errors
-nix build .#nixosConfigurations.zephyrus.config.system.build.toplevel
-```
-
-## Troubleshooting
-
-- **Stale flake lock**: `nix flake update` (or specific input: `nix flake update nixpkgs`)
-- **Pre-commit failures**: Check `git diff` — treefmt may have auto-fixed formatting. Stage changes and retry.
-- **sops decryption errors**: Ensure age key is available (`ssh-to-age` or `age-keygen`). Check `.sops.yaml` rules match the file path.
-- **NixOS eval errors**: Use `nix eval --show-trace` for detailed trace. Check for missing `lib.mkIf` guards on cross-module option reads.
-- **Home-manager + NixOS version mismatch**: The config uses `nixpkgs` unstable; HM warnings about version mismatch are expected and safe.
+- Existing older host names like `zephyrus`, `ares`, `lg-laptop`, and `testbench` are stale for current flake outputs; use `desktop-ares`, `laptop-ares`, and `laptop-vesper`.
+- `nix build .#homeConfigurations.sphoono@desktop-ares.activationPackage` is not a valid exported target for NixOS-managed hosts.
+- Editing `actions.nix` requires entering `nix develop` or otherwise regenerating/validating the generated workflow before committing.
+- `nix flake check --all-systems` evaluates all checks and can be slower than a targeted `nix build` during iteration.
