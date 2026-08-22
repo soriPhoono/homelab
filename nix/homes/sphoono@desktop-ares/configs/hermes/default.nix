@@ -22,24 +22,18 @@
     };
 
     skills = {
-      hyperframes-cli = pkgs.skills.heygen-com.hyperframes.hyperframes-cli;
-      hyperframes = pkgs.skills.heygen-com.hyperframes.hyperframes;
-      hyperframes-core = pkgs.skills.heygen-com.hyperframes.hyperframes-core;
-      hyperframes-animation = pkgs.skills.heygen-com.hyperframes.hyperframes-animation;
-      hyperframes-keyframes = pkgs.skills.heygen-com.hyperframes.hyperframes-keyframes;
-      hyperframes-creative = pkgs.skills.heygen-com.hyperframes.hyperframes-creative;
-      hyperframes-media-use = pkgs.skills.heygen-com.hyperframes.media-use;
-      hyperframes-registry = pkgs.skills.heygen-com.hyperframes.hyperframes-registry;
-      hyperframes-figma = pkgs.skills.heygen-com.hyperframes.figma;
-      hyperframes-product-launch-video = pkgs.skills.heygen-com.hyperframes.product-launch-video;
-      hyperframes-faceless-explainer = pkgs.skills.heygen-com.hyperframes.faceless-explainer;
-      hyperframes-pr-to-video = pkgs.skills.heygen-com.hyperframes.pr-to-video;
-      hyperframes-embedded-captions = pkgs.skills.heygen-com.hyperframes.embedded-captions;
-      hyperframes-talking-head-recut = pkgs.skills.heygen-com.hyperframes.talking-head-recut;
-      hyperframes-motion-graphics = pkgs.skills.heygen-com.hyperframes.motion-graphics;
-      hyperframes-music-to-video = pkgs.skills.heygen-com.hyperframes.music-to-video;
-      hyperframes-slideshow = pkgs.skills.heygen-com.hyperframes.slideshow;
-      hyperframes-general-video = pkgs.skills.heygen-com.hyperframes.general-video;
+      remotion-best-practices = pkgs.skills.remotion-dev.skills.remotion-best-practices;
+      remotion-create = pkgs.skills.remotion-dev.skills.remotion-create;
+      remotion-markup = pkgs.skills.remotion-dev.skills.remotion-markup;
+      remotion-render = pkgs.skills.remotion-dev.skills.remotion-render;
+      remotion-studio = pkgs.skills.remotion-dev.skills.remotion-studio;
+      remotion-captions = pkgs.skills.remotion-dev.skills.remotion-captions;
+      remotion-maps = pkgs.skills.remotion-dev.skills.remotion-maps;
+      remotion-interactivity = pkgs.skills.remotion-dev.skills.remotion-interactivity;
+      remotion-multimedia = pkgs.skills.remotion-dev.skills.remotion-multimedia;
+      remotion-saas = pkgs.skills.remotion-dev.skills.remotion-saas;
+      remotion-docs = pkgs.skills.remotion-dev.skills.remotion-docs;
+      remotion-upgrade = pkgs.skills.remotion-dev.skills.remotion-upgrade;
     };
 
     mcpServers = {
