@@ -1,5 +1,5 @@
 _: _final: prev: {
   moonlight-qt = prev.moonlight-qt.override {
-    ffmpeg = prev.ffmpeg_6;
+    ffmpeg_8 = prev.ffmpeg_6;
   };
 }
