@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  options,
   nixosConfig ? null,
   ...
 }:
@@ -136,6 +137,16 @@ with lib; let
     };
   };
 
+  # Collect extra packages from top-level and all enabled profiles
+  allExtraPackages =
+    cfg.extraPackages
+    ++ concatLists (mapAttrsToList
+      (_name: profileCfg:
+        if profileCfg.enable
+        then profileCfg.extraPackages
+        else [])
+      cfg.profiles);
+
   # Wrap the hermes binary to set default environment variables for foreground agents
   hermesPackage = pkgs.symlinkJoin {
     name = "${cfg.package.name or "hermes"}-wrapped";
@@ -149,8 +160,8 @@ with lib; let
             --set HERMES_MANAGED true
             --set-default HERMES_DOCKER_BINARY "podman"
           )
-          ${optionalString (cfg.extraPackages != []) ''
-        wrapArgs+=(--prefix PATH : "${lib.makeBinPath cfg.extraPackages}")
+          ${optionalString (allExtraPackages != []) ''
+        wrapArgs+=(--prefix PATH : "${lib.makeBinPath allExtraPackages}")
       ''}
           wrapProgram "$bin" "''${wrapArgs[@]}"
         fi
@@ -249,12 +260,134 @@ with lib; let
       (name: skill:
         optionalString (skill != null) ''
           mkdir -p "${targetDir}/skills"
+          rm -rf "${targetDir}/skills/${name}"
           cp -rL ${skill} "${targetDir}/skills/${name}"
           chmod -R u+w "${targetDir}/skills/${name}"
           find "${targetDir}/skills/${name}" -type d -exec chmod 0750 {} +
           find "${targetDir}/skills/${name}" -type f -exec chmod 0640 {} +
         '')
       skills);
+
+  # Generate a Hermes desktop theme plugin from the active Stylix color scheme.
+  # The plugin registers a DesktopTheme via THEMES_AREA using base16 colors
+  # mapped to the Hermes DesktopThemeColors interface.
+  stylixThemePluginJs = let
+    c = config.lib.stylix.colors;
+    # Build the DesktopThemeColors object from stylix base16 slots.
+    # base00 = bg, base05 = foreground, base08 = red, base0A = yellow/warn, etc.
+    # withHashtag gives "#rrggbb" format required by the desktop theme system.
+    w = c.withHashtag;
+    themeJs = {
+      name = "stylix";
+      label = "Stylix";
+      description = "Theme generated from the active Stylix color scheme";
+      colors = {
+        background = w.base00;
+        foreground = w.base05;
+        card = w.base01;
+        cardForeground = w.base05;
+        muted = w.base02;
+        mutedForeground = w.base03;
+        popover = w.base01;
+        popoverForeground = w.base05;
+        primary = w.base0D;
+        primaryForeground = w.base00;
+        secondary = w.base0E;
+        secondaryForeground = w.base05;
+        accent = w.base0C;
+        accentForeground = w.base00;
+        border = w.base02;
+        input = w.base02;
+        ring = w.base0D;
+        midground = w.base0D;
+        destructive = w.base08;
+        destructiveForeground = w.base00;
+        sidebarBackground = w.base01;
+        sidebarBorder = w.base02;
+        userBubble = w.base02;
+        userBubbleBorder = w.base03;
+      };
+      terminal = {
+        foreground = w.base05;
+        cursor = w.base05;
+        black = w.base00;
+        red = w.base08;
+        green = w.base0B;
+        yellow = w.base0A;
+        blue = w.base0D;
+        magenta = w.base0E;
+        cyan = w.base0C;
+        white = w.base05;
+        brightBlack = w.base03;
+        brightRed = w.base08;
+        brightGreen = w.base0B;
+        brightYellow = w.base0A;
+        brightBlue = w.base0D;
+        brightMagenta = w.base0E;
+        brightCyan = w.base0C;
+        brightWhite = w.base07;
+      };
+    };
+  in
+    pkgs.writeText "hermes-stylix-theme-plugin.js"
+    (builtins.toJSON themeJs);
+
+  # Create desktop plugin directories for a profile
+  mkDesktopPlugins = profileName: let
+    targetDir = profileDir profileName;
+    profileCfg = cfg.profiles.${profileName};
+    # Merge top-level and profile-level desktopPlugins
+    allPlugins = cfg.desktopPlugins // profileCfg.desktopPlugins;
+    # Determine effective stylixTheme.enable for this profile
+    stylixEnabled =
+      if profileCfg.stylixTheme.enable != null
+      then profileCfg.stylixTheme.enable
+      else cfg.stylixTheme.enable;
+    # Only generate stylix plugin if stylix is available and enabled
+    stylixAvailable = options ? stylix && config.stylix.enable;
+    stylixPluginJs =
+      if stylixAvailable
+      then stylixThemePluginJs
+      else null;
+  in ''
+    # Install desktop plugins
+    ${concatStringsSep "\n"
+      (mapAttrsToList
+        (pluginId: pluginPath:
+          optionalString (pluginPath != null) ''
+            mkdir -p "${targetDir}/desktop-plugins"
+            rm -rf "${targetDir}/desktop-plugins/${pluginId}"
+            cp -rL ${pluginPath} "${targetDir}/desktop-plugins/${pluginId}"
+            chmod -R u+w "${targetDir}/desktop-plugins/${pluginId}"
+            find "${targetDir}/desktop-plugins/${pluginId}" -type d -exec chmod 0750 {} +
+            find "${targetDir}/desktop-plugins/${pluginId}" -type f -exec chmod 0640 {} +
+          '')
+        allPlugins)}
+
+    # Generate stylix theme plugin
+    ${optionalString (stylixEnabled && stylixAvailable) ''
+      mkdir -p "${targetDir}/desktop-plugins/stylix-theme"
+      cat > "${targetDir}/desktop-plugins/stylix-theme/plugin.js" <<'HERMES_STYLIX_PLUGIN_EOF'
+      import { THEMES_AREA } from '@hermes/plugin-sdk'
+
+      const themeData = ${builtins.toJSON (builtins.fromJSON (builtins.readFile stylixPluginJs))}
+
+      export default {
+        id: 'stylix-theme',
+        name: 'Stylix Theme',
+        defaultEnabled: true,
+        register(ctx) {
+          ctx.register({
+            id: 'stylix-theme',
+            area: THEMES_AREA,
+            data: themeData
+          })
+        }
+      }
+      HERMES_STYLIX_PLUGIN_EOF
+      chmod 0640 "${targetDir}/desktop-plugins/stylix-theme/plugin.js"
+    ''}
+  '';
 
   # Create supporting configuration for a profile
   mkSupportingConfig = profileName: let
@@ -344,6 +477,26 @@ with lib; let
               default = [];
               description = ''
                 A list of directories that the hermes agent should have read-write access to.
+              '';
+            };
+          };
+
+          desktopPlugins = mkOption {
+            type = types.attrsOf types.path;
+            default = {};
+            description = ''
+              Desktop plugins to install for this profile, merged with the
+              top-level desktopPlugins.
+            '';
+          };
+
+          stylixTheme = {
+            enable = mkOption {
+              type = types.nullOr types.bool;
+              default = null;
+              description = ''
+                Override the top-level stylixTheme.enable for this profile.
+                When null, inherits the top-level setting.
               '';
             };
           };
@@ -509,6 +662,12 @@ with lib; let
               in "http://${host}:${toString port}/v1";
             };
           })
+          (mkIf (
+              (config.stylixTheme.enable != null && config.stylixTheme.enable)
+              || (config.stylixTheme.enable == null && cfg.stylixTheme.enable)
+            ) {
+              display.skin = mkDefault "stylix";
+            })
         ];
       })
     ];
@@ -534,6 +693,29 @@ in {
             '';
           };
 
+          desktopPlugins = mkOption {
+            type = types.attrsOf types.path;
+            default = {};
+            description = ''
+              Desktop plugins to install for the hermes agent.
+              Each attribute maps a plugin id to a directory containing plugin.js.
+              These are copied into the desktop-plugins directory for every profile.
+            '';
+          };
+
+          stylixTheme = {
+            enable = mkOption {
+              type = types.bool;
+              default = false;
+              description = ''
+                Generate a Hermes desktop theme from the active Stylix color scheme.
+                When enabled, a desktop plugin is created that registers a theme
+                derived from config.lib.stylix.colors, and the default skin is
+                set to "stylix" for all profiles.
+              '';
+            };
+          };
+
           providers = providerOptions;
 
           profiles = mkOption {
@@ -553,8 +735,57 @@ in {
     })
 
     (mkIf cfg.enableDesktop {
-      # Install hermes-desktop
-      home.packages = [cfg.desktopPackage];
+      # Wrap hermes-desktop to point at the wrapped hermes binary (which has
+      # extraPackages on PATH) instead of the unwrapped one the desktop package
+      # ships with. Without this, the agent spawned by the desktop app can't
+      # see composio, gh, or any other extraPackages tools.
+      #
+      # The inner .hermes-desktop-wrapped script from the upstream package
+      # unconditionally exports HERMES_DESKTOP_HERMES with the unwrapped hermes
+      # path, which clobbers the --set-default from wrapProgram. The symlink
+      # must be replaced with a patched copy that points at the wrapped binary.
+      #
+      # The .desktop file's Exec= line must also be rewritten to point at the
+      # wrapped binary, otherwise the desktop launcher (Hyprland/systemd) runs
+      # the unwrapped binary directly, bypassing the wrapper entirely.
+      home.packages = [
+        (pkgs.symlinkJoin {
+          name = "${cfg.desktopPackage.name or "hermes-desktop"}-wrapped";
+          paths = [cfg.desktopPackage];
+          buildInputs = [pkgs.makeWrapper];
+          postBuild = ''
+            wrapProgram $out/bin/hermes-desktop \
+              --set-default HERMES_DESKTOP_HERMES "${hermesPackage}/bin/hermes"
+
+            # Patch the inner .hermes-desktop-wrapped script to replace the
+            # hardcoded unwrapped hermes path with the wrapped one. Without
+            # this, the inner script's unconditional export clobbers the
+            # --set-default above and the agent runs without extraPackages.
+            innerBin="$out/bin/.hermes-desktop-wrapped"
+            if [ -L "$innerBin" ]; then
+              original="$(readlink -f "$innerBin")"
+              rm -f "$innerBin"
+              substitute "$original" "$innerBin" \
+                --replace-fail \
+                  "${cfg.package}/bin/hermes" \
+                  "${hermesPackage}/bin/hermes"
+              chmod +x "$innerBin"
+            fi
+
+            # Rewrite Exec= in the .desktop file to point at the wrapped binary.
+            # symlinkJoin leaves symlinks to the read-only source store path, so
+            # we must replace the symlink with a writable copy before editing.
+            desktopFile="$out/share/applications/hermes.desktop"
+            if [ -L "$desktopFile" ] || [ -f "$desktopFile" ]; then
+              rm -f "$desktopFile"
+              substitute "${cfg.desktopPackage}/share/applications/hermes.desktop" "$desktopFile" \
+                --replace-fail \
+                  "${cfg.desktopPackage}/bin/hermes-desktop" \
+                  "$out/bin/hermes-desktop"
+            fi
+          '';
+        })
+      ];
     })
 
     {
@@ -622,6 +853,9 @@ in {
 
                 # Copy skill files
                 ${mkSkills profileName}
+
+                # Install desktop plugins
+                ${mkDesktopPlugins profileName}
 
                 # Configure memory providers
                 ${mkSupportingConfig profileName}
