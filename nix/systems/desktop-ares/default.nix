@@ -143,6 +143,16 @@ with lib; {
         cardDevice = "/dev/dri/card1";
       };
     };
+
+    inference = {
+      ollama = {
+        enable = true;
+        acceleration = "rocm";
+        loadModels = [
+          "gemma4:e4b"
+        ];
+      };
+    };
   };
 
   themes = {
