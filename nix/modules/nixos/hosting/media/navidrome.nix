@@ -24,7 +24,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "deluan/navidrome:0.63.2";
+            image = "deluan/navidrome:latest";
             serviceName = "jukebox";
             servicePort = 4533;
           })

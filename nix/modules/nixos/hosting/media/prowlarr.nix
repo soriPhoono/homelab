@@ -25,7 +25,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/prowlarr:2.4.0";
+            image = "linuxserver/prowlarr:latest";
             serviceName = "indexers";
             servicePort = 9696;
           })

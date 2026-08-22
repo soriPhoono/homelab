@@ -25,7 +25,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/radarr:6.3.0";
+            image = "linuxserver/radarr:latest";
             serviceName = "movies";
             servicePort = 7878;
           })

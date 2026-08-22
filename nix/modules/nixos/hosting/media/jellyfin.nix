@@ -47,7 +47,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/jellyfin:10.11.11";
+            image = "linuxserver/jellyfin:latest";
             serviceName = "media";
             servicePort = 8096;
           })
