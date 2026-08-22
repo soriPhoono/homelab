@@ -19,7 +19,7 @@ in various projects, usually within nix devshells.
 
 ## My environment
 
-- Linux zen, NixOS unstable
+- Linux, NixOS unstable
 - Desktop: Hyprland (ares workstation), Hyprland (zephyrus laptop)
 - Secrets: sops-nix with age keys
 - AI agents: Hermes, OpenCode, Antigravity
