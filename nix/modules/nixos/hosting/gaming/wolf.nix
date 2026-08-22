@@ -22,7 +22,7 @@
     else if cfg.gpu == "mesa-compatible"
     then {
       render = "/dev/dri/renderD129";
-      card = "/dev/dri/card1";
+      card = "/dev/dri/card2";
     }
     else if cfg.gpu == "NVIDIA"
     then throw "TODO: Create nvidia gpu module support"
