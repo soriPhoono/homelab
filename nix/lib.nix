@@ -132,11 +132,12 @@ with prev; {
           };
 
           skills = mkOption {
-            type = with types; attrsOf types.package;
+            type = with types; attrsOf (either types.path types.package);
             default = {};
             description = ''
-              The packages to symlink into the skills directory for the ${name} agent.
-              Each package should contain a SKILL.md at its root.
+              The skills to symlink into the skills directory for the ${name} agent.
+              Each value must contain a SKILL.md at its root.
+              Accepts either a path (relative local file) or a package (from nix-skills).
             '';
           };
 

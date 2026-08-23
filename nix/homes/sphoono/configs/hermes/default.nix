@@ -41,6 +41,9 @@
 
       # General 3rd party services
       composio = pkgs.skills.composio-community.skills.composio;
+
+      # Video pipeline inter-agent manifest contract
+      video-pipeline-manifest = ../assets/skills/video-pipeline-manifest;
     };
 
     profiles = {
@@ -56,12 +59,21 @@
 
         permissions = {
           accessDirectories = [
+            "${config.home.homeDirectory}/Shared"
             "${config.home.homeDirectory}/Downloads"
             "${config.home.homeDirectory}/Documents"
             "${config.home.homeDirectory}/Pictures"
             "${config.home.homeDirectory}/Music"
             "${config.home.homeDirectory}/Videos"
+            "${config.home.homeDirectory}/GoogleDrive"
           ];
+        };
+
+        skills = {
+          # On-demand domain skills (loaded when task matches)
+          content-distribution = ../assets/skills/content-distribution;
+          research-assist = ../assets/skills/research-assist;
+          document-workflow = ../assets/skills/document-workflow;
         };
 
         mcpServers = {

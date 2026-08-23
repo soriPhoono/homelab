@@ -5,5 +5,6 @@
     ./hypr
     ./hermes
     ./fastfetch
+    ./antigravity
   ];
 }

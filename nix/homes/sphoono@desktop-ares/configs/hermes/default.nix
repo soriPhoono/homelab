@@ -22,6 +22,8 @@
     };
 
     skills = {
+      video-pipeline-manifest = ../../../sphoono/configs/assets/skills/video-pipeline-manifest;
+
       remotion-best-practices = pkgs.skills.remotion-dev.skills.remotion-best-practices;
       remotion-create = pkgs.skills.remotion-dev.skills.remotion-create;
       remotion-markup = pkgs.skills.remotion-dev.skills.remotion-markup;
@@ -37,6 +39,25 @@
     };
 
     mcpServers = {
+      "personal/sequential-thinking" = {
+        # Multi-step reasoning for composition planning and timing calculations
+        command = "${pkgs.nodejs}/bin/npx";
+        args = [
+          "-y"
+          "@modelcontextprotocol/server-sequential-thinking"
+        ];
+      };
+
+      "personal/obsidian" = {
+        # Read/write the obsidian vault for inter-agent handoff notes
+        command = "${pkgs.nodejs}/bin/npx";
+        args = [
+          "-y"
+          "@bitbonsai/mcpvault@latest"
+          "${config.home.homeDirectory}/Shared/Vault"
+        ];
+      };
+
       "music/starsinger" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [

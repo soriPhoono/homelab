@@ -257,11 +257,15 @@ with lib; let
   in
     concatStringsSep "\n"
     (mapAttrsToList
-      (name: skill:
+      (name: skill: let
+        # Accept both types.path and types.package — both stringify to a
+        # store path with the file contents.
+        skillPath = "${skill}";
+      in
         optionalString (skill != null) ''
           mkdir -p "${targetDir}/skills"
           rm -rf "${targetDir}/skills/${name}"
-          cp -rL ${skill} "${targetDir}/skills/${name}"
+          cp -rL --no-preserve=mode ${skillPath} "${targetDir}/skills/${name}"
           chmod -R u+w "${targetDir}/skills/${name}"
           find "${targetDir}/skills/${name}" -type d -exec chmod 0750 {} +
           find "${targetDir}/skills/${name}" -type f -exec chmod 0640 {} +

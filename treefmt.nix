@@ -2,9 +2,9 @@ _: {
   projectRootFile = "flake.nix";
 
   settings.global.excludes = [
-    ".agents/skills/*"
     ".cursor/rules/*"
     ".gemini/agents/*"
+    "*/skills/*"
   ];
 
   programs = {
