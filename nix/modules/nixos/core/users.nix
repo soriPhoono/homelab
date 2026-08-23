@@ -23,8 +23,21 @@ in
             shell = mkOption {
               type = with types; nullOr package;
               default = pkgs.bashInteractive;
-              description = "The shell for the user.";
+              description = "The login shell for the user. SSH non-interactive commands run through this shell.";
               example = pkgs.zsh;
+            };
+
+            interactiveShell = mkOption {
+              type = with types; nullOr package;
+              default = null;
+              description = ''
+                Interactive shell to auto-execute from the login shell for
+                interactive sessions. When set, the login shell (shell) handles
+                non-interactive commands (e.g. SSH remote commands) while this
+                shell is launched for interactive terminals. Set to null to
+                use the login shell for both.
+              '';
+              example = pkgs.fish;
             };
 
             secrets = mkOption {
@@ -88,7 +101,9 @@ in
         })
         cfg.users;
 
-      programs.fish.enable = any (user: user.shell == pkgs.fish) (attrValues cfg.users);
+      programs.fish.enable =
+        any (user: user.shell == pkgs.fish || user.interactiveShell == pkgs.fish)
+        (attrValues cfg.users);
 
       services.logind.settings.Login = {
         RuntimeDirectorySize = "25%";
@@ -127,7 +142,14 @@ in
 
           core = {
             ssh.publicKeys = mkIf (user.publicKeys != {}) user.publicKeys;
-            shells.fish.enable = user.shell == pkgs.fish;
+            shells.fish.enable = user.shell == pkgs.fish || user.interactiveShell == pkgs.fish;
+            shells.bash = {
+              enable = user.shell == pkgs.bashInteractive;
+              interactiveShell =
+                if user.interactiveShell != null
+                then user.interactiveShell
+                else null;
+            };
           };
         })
         cfg.users;

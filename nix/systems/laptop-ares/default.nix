@@ -64,7 +64,8 @@ with lib; {
         hashedPassword = "$6$x7n.SUTMtInzs2l4$Ew3Zu3Mkc4zvuH8STaVpwIv59UX9rmUV7I7bmWyTRjomM7QRn0Jt/Pl/JN./IqTrXqEe8nIYB43m1nLI2Un211";
         secrets = true;
         admin = true;
-        shell = pkgs.fish;
+        shell = pkgs.bashInteractive;
+        interactiveShell = pkgs.fish;
         publicKeys = {
           primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT Personal Key";
         };
