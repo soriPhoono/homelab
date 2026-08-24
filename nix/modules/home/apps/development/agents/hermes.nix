@@ -20,28 +20,6 @@ with lib; let
     };
 
     models = {
-      oauth = {
-        enable = mkEnableOption "OAuth support for different AI providers";
-        default = mkEnableOption "Enable OAuth provider as the default for hermes agents.";
-        base_url = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          example = "https://chatgpt.com/backend-api/codex";
-          description = "The base url to use for inference";
-        };
-        provider = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          example = "chatgpt";
-          description = "The provider to use for the OAuth AI provider integration.";
-        };
-        model = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          example = "gpt-5.5";
-          description = "The model to use from the given provider";
-        };
-      };
       openrouter = {
         enable = mkEnableOption "Enable OpenRouter AI provider integration";
         default = mkEnableOption ''
@@ -52,32 +30,6 @@ with lib; let
           default = null;
           example = "gemini-3.5-flash";
           description = "The model to use for the OpenRouter AI provider.";
-        };
-      };
-      opencode = {
-        zen = {
-          enable = mkEnableOption "Enable OpenCode Zen AI provider integration";
-          default = mkEnableOption ''
-            Set this to true to enable OpenCode Zen AI provider integration as the default provider for hermes agents.
-          '';
-          model = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            example = "gemini-3.5-flash";
-            description = "The model to use for the OpenCode Zen AI provider.";
-          };
-        };
-        go = {
-          enable = mkEnableOption "Enable OpenCode Go AI provider integration";
-          default = mkEnableOption ''
-            Set this to true to enable OpenCode Go AI provider integration as the default provider for hermes agents.
-          '';
-          model = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            example = "glm-5.2";
-            description = "The model to use for the OpenCode Go AI provider.";
-          };
         };
       };
       ollama = {
@@ -422,15 +374,6 @@ with lib; let
       )}
       HERMES_NIX_HONCHO_${toUpper profileName}_EOF
     ''}
-
-    # Configure OAuth secret file for hermes profiles
-    ${optionalString (cfg.providers.models.oauth.enable || profileCfg.providers.models.oauth.enable) ''
-      if [[ ! -f ${profileDir profileName}/auth.json ]]; then
-        cp ${config.sops.secrets."hermes/${profileName}/core/auth.json".path} \
-          ${profileDir profileName}/auth.json
-        chmod 0600 ${profileDir profileName}/auth.json
-      fi
-    ''}
   '';
 
   # Get secrets for a profile
@@ -535,8 +478,6 @@ with lib; let
             mcpServers);
           providerSecrets =
             optional (cfg.providers.models.openrouter.enable || config.providers.models.openrouter.enable) "hermes/${name}/api/OPENROUTER_API_KEY"
-            ++ optional (cfg.providers.models.opencode.zen.enable || config.providers.models.opencode.zen.enable) "hermes/${name}/api/OPENCODE_ZEN_API_KEY"
-            ++ optional (cfg.providers.models.opencode.go.enable || config.providers.models.opencode.go.enable) "hermes/${name}/api/OPENCODE_GO_API_KEY"
             ++ optional (cfg.providers.models.ollama.enableCloud || config.providers.models.ollama.enableCloud) "hermes/${name}/api/OLLAMA_API_KEY"
             ++ optional (cfg.providers.memory.variant == "honcho" || config.providers.memory.variant == "honcho") "hermes/${name}/api/HONCHO_API_KEY"
             ++ optional (cfg.providers.search.firecrawl.enable || config.providers.search.firecrawl.enable) "hermes/${name}/api/FIRECRAWL_API_KEY"
@@ -607,18 +548,6 @@ with lib; let
               then config.providers.search.variant
               else cfg.providers.search.variant;
           })
-          (mkIf (config.providers.models.oauth.default || cfg.providers.models.oauth.default) {
-            model = {
-              provider =
-                if config.providers.models.oauth.provider != null
-                then config.providers.models.oauth.provider
-                else cfg.providers.models.oauth.provider;
-              model =
-                if config.providers.models.oauth.model != null
-                then config.providers.models.oauth.model
-                else cfg.providers.models.oauth.model;
-            };
-          })
           (mkIf (config.providers.models.openrouter.default || cfg.providers.models.openrouter.default) {
             model = {
               provider = "openrouter";
@@ -626,24 +555,6 @@ with lib; let
                 if config.providers.models.openrouter.model != null
                 then config.providers.models.openrouter.model
                 else cfg.providers.models.openrouter.model;
-            };
-          })
-          (mkIf (config.providers.models.opencode.go.default || cfg.providers.models.opencode.go.default) {
-            model = {
-              provider = "opencode-go";
-              model =
-                if config.providers.models.opencode.go.model != null
-                then config.providers.models.opencode.go.model
-                else cfg.providers.models.opencode.go.model;
-            };
-          })
-          (mkIf (config.providers.models.opencode.zen.default || cfg.providers.models.opencode.zen.default) {
-            model = {
-              provider = "opencode-zen";
-              model =
-                if config.providers.models.opencode.zen.model != null
-                then config.providers.models.opencode.zen.model
-                else cfg.providers.models.opencode.zen.model;
             };
           })
           (mkIf (config.providers.models.ollama.default || cfg.providers.models.ollama.default) {
@@ -759,7 +670,8 @@ in {
           buildInputs = [pkgs.makeWrapper];
           postBuild = ''
             wrapProgram $out/bin/hermes-desktop \
-              --set-default HERMES_DESKTOP_HERMES "${hermesPackage}/bin/hermes"
+              --set-default HERMES_DESKTOP_HERMES "${hermesPackage}/bin/hermes" \
+              --set-default HERMES_HOME "${foregroundStateDir}"
 
             # Patch the inner .hermes-desktop-wrapped script to replace the
             # hardcoded unwrapped hermes path with the wrapped one. Without
@@ -798,12 +710,7 @@ in {
         allSecrets = unique (
           cfg.secrets
           ++ (concatLists (map (
-              profile:
-                (getProfileSecrets profile)
-                ++ (optional (
-                  cfg.providers.models.oauth.enable
-                  || cfg.profiles.${profile}.providers.models.oauth.enable
-                ) "hermes/${profile}/core/auth.json")
+              profile: (getProfileSecrets profile)
             )
             (attrNames cfg.profiles)))
         );

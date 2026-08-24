@@ -10,6 +10,10 @@ with lib; {
 
   networking.hostId = "f0470582";
 
+  environment.systemPackages = with pkgs; [
+    radeon-profile
+  ];
+
   core = {
     enable = true;
     stateVersion = "26.11";

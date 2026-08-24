@@ -11,11 +11,6 @@
     providers = {
       memory.variant = "honcho";
       models = {
-        oauth = {
-          enable = true;
-          provider = "codex";
-          base_url = "https://chatgpt.com/backend-api/codex";
-        };
         ollama = {
           enable = true;
           enableCloud = true;
