@@ -49,5 +49,10 @@
       popups = 0.9;
       terminal = 0.9;
     };
+
+    targets.nvf = {
+      enable = true;
+      transparentBackground = true;
+    };
   };
 }

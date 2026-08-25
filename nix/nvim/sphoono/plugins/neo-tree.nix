@@ -3,6 +3,11 @@ _: {
     enable = true;
 
     setupOpts = {
+      # Use rounded borders for Neo-tree floats and its input popups.
+      popup_border_style = "rounded";
+      window.popup.border = "rounded";
+      filesystem.window.popup.border = "rounded";
+
       # Replace default netrw behavior
       filesystem.hijack_netrw_behavior = "open_default";
 

@@ -153,6 +153,7 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       stylix.homeModules.stylix
+      nvf.homeManagerModules.default
       noctalia.homeModules.default
     ];
 

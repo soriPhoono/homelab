@@ -1,6 +1,8 @@
 _: {
   vim = {
     # Floating-window chrome
+    opts.winborder = "rounded";
+
     ui = {
       borders = {
         enable = true;
