@@ -8,6 +8,7 @@ _: {
     ./plugins/blink-cmp.nix
     ./plugins/neo-tree.nix
     ./plugins/toggleterm-keymaps.nix
+    ./plugins/dashboard.nix
     ./ui.nix
     ./languages.nix
   ];
