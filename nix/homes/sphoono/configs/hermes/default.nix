@@ -29,6 +29,7 @@
     skills = {
       stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
 
+      grilling = pkgs.skills.mattpocock.skills.grilling;
       grill-me = pkgs.skills.mattpocock.skills.grill-me;
       grill-with-docs = pkgs.skills.mattpocock.skills.grill-with-docs;
       wayfinder = pkgs.skills.mattpocock.skills.wayfinder;
