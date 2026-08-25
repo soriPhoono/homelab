@@ -6,21 +6,15 @@
   cfg = config.apps.development.editors.neovim;
 in
   with lib; {
+    imports = [
+      (import ../../../../../nvim/sphoono/default.nix)
+    ];
+
     options.apps.development.editors.neovim = {
       enable = mkEnableOption "The modular text editor";
     };
 
-    config = mkIf cfg.enable (mkMerge [
-      {
-        # home.packages = [
-        #   editorPackage.neovim
-        # ];
-
-        programs.nvf = {
-          enable = true;
-
-          settings = import ../../../../../nvim/${config.home.username}/default.nix;
-        };
-      }
-    ]);
+    config = mkIf cfg.enable {
+      programs.nvf.enable = true;
+    };
   }

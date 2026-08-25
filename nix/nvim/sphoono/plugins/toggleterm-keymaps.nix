@@ -8,7 +8,7 @@ _: {
 
     after = ''
       local opts = { noremap = true, silent = true }
-      local Terminal = require("toggleterm").Terminal
+      local Terminal = require("toggleterm.terminal").Terminal
 
       vim.keymap.set("n", "<leader>tt", function()
         local term = Terminal:new({ direction = "float" })

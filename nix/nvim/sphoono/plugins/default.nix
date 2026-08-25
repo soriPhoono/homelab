@@ -11,7 +11,6 @@ _: {
       register = {
         "?" = "Cheatsheet";
         e = "Neo-tree";
-        t = "Terminal";
       };
     };
 

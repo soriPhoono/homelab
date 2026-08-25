@@ -23,4 +23,13 @@ _: {
       open_files_in_last_window = false;
     };
   };
+
+  vim.keymaps = [
+    {
+      mode = "n";
+      key = "<leader>e";
+      action = "<cmd>Neotree filesystem reveal position=left toggle<CR>";
+      desc = "Neo-tree";
+    }
+  ];
 }
