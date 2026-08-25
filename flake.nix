@@ -11,10 +11,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    agenix-shell = {
-      url = "github:aciceri/agenix-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -260,7 +256,6 @@
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = with inputs; [
-        agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
         github-actions-nix.flakeModule
@@ -268,14 +263,6 @@
 
       # Supported systems for devShells/checks
       systems = ["x86_64-linux"];
-
-      agenix-shell = {
-        identityPaths = [
-          "$HOME/.ssh/id_ed25519"
-        ];
-        secrets = {
-        };
-      };
 
       perSystem = {
         pkgs,
@@ -303,7 +290,6 @@
             inherit
               (config)
               pre-commit
-              agenix-shell
               githubActions
               ;
           };
