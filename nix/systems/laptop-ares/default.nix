@@ -33,10 +33,6 @@ with lib; {
           enable = true;
           integrated.enable = true;
         };
-        nvidia = {
-          enable = true;
-          mode = "laptop";
-        };
       };
 
       hid = {
@@ -135,17 +131,7 @@ with lib; {
       jellyfin.acceleration = {
         enable = true;
         renderDevice = "/dev/dri/renderD128";
-        cardDevice = "/dev/dri/card0";
-      };
-    };
-
-    inference = {
-      ollama = {
-        enable = true;
-        acceleration = "cuda";
-        loadModels = [
-          "gemma4:e4b"
-        ];
+        cardDevice = "/dev/dri/card1";
       };
     };
   };
