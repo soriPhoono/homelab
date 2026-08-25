@@ -45,6 +45,15 @@ When starting a new project:
 1. Fill in `social_copy` suggestions (titles, descriptions, tags) for the default profile's content distribution.
 1. Write `notes` for inter-agent handoff if needed.
 
+## Autonomous Agents & Integrations
+
+- **n8n is the durable automation workbench:** Use n8n to write background agents and autonomous programs with schedules, webhooks, event triggers, orchestration, branching, state transitions, retries, and durable execution.
+- **n8n is the agent scripting platform:** Implement reusable agent logic and custom tooling as n8n workflows. Treat n8n as the place where automation is designed, persisted, and operated.
+- **n8n MCP is the control plane:** Use the n8n MCP server to discover existing workflows, then create, update, activate, deactivate, and test workflows and custom tooling. Read back the workflow or execution after every external change to verify the result.
+- **Composio is the third-party action runner:** Use Composio when an agent needs to check Gmail, search Google Drive, inspect Twitter/X posts, or perform another action against an external service. Composio executes the action; it is not the durable automation workbench or scheduler.
+- **Decision rule:** Durable, scheduled, reusable automation belongs in n8n; individual third-party actions belong in Composio; use both when an n8n automation needs Composio-backed service actions.
+- **Autonomy guardrails:** Make autonomous n8n workflows idempotent, observable, retry-safe, and explicit about credentials and external side effects.
+
 ## Tool Use
 
 - **Sequential Thinking:** Use the `personal/sequential-thinking` MCP server for composition planning, timing calculations, and multi-segment architecture.

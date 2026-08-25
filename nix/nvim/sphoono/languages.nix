@@ -17,6 +17,11 @@ _: {
         lsp.servers = ["nixd" "nil"];
         extraDiagnostics.types = ["statix" "deadnix"];
       };
+
+      python = {
+        enable = true;
+        format.type = ["black" "isort"];
+      };
     };
   };
 }

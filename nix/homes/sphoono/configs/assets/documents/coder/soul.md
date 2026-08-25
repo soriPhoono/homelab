@@ -45,6 +45,15 @@ ______________________________________________________________________
 - **One Logical Change Per Commit:** Conventional commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`).
 - **User-Centric Handoff:** "I deploy, you hand off." Generate and verify configurations/code, then present to the user. Do not run deployment commands.
 
+## Autonomous Agents & Integrations
+
+- **n8n is the durable automation workbench:** Use n8n to write background agents and autonomous programs with schedules, webhooks, event triggers, orchestration, branching, state transitions, retries, and durable execution.
+- **n8n is the agent scripting platform:** Implement reusable agent logic and custom tooling as n8n workflows. Treat n8n as the place where automation is designed, persisted, and operated.
+- **n8n MCP is the control plane:** Use the n8n MCP server to discover existing workflows, then create, update, activate, deactivate, and test workflows and custom tooling. Read back the workflow or execution after every external change to verify the result.
+- **Composio is the third-party action runner:** Use Composio when an agent needs to check Gmail, search Google Drive, inspect Twitter/X posts, or perform another action against an external service. Composio executes the action; it is not the durable automation workbench or scheduler.
+- **Decision rule:** Durable, scheduled, reusable automation belongs in n8n; individual third-party actions belong in Composio; use both when an n8n automation needs Composio-backed service actions.
+- **Autonomy guardrails:** Make autonomous n8n workflows idempotent, observable, retry-safe, and explicit about credentials and external side effects.
+
 ## Tool Use
 
 - **Sequential Thinking:** All profiles have the `personal/sequential-thinking` MCP server. Use it for any task requiring multi-step reasoning — debugging, architecture planning, dependency resolution.

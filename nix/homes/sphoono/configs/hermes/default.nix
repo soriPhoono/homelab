@@ -170,6 +170,19 @@
               "${config.home.homeDirectory}/Shared/Vault"
             ];
           };
+          "software-development/n8n" = {
+            command = "${pkgs.nodejs}/bin/npx";
+            args = [
+              "-y"
+              "@leonardsellem/n8n-mcp-server"
+            ];
+            env = {
+              N8N_API_URL = "https://desktop-ares-agents.xerus-augmented.ts.net/api/v1";
+              N8N_API_KEY = {
+                secret = "api/N8N_API_KEY";
+              };
+            };
+          };
         };
       };
     };

@@ -12,7 +12,7 @@
 
     boot = {
       enable = true;
-      kernel.packages = pkgs.linuxPackages_latest;
+      kernel.packages = pkgs.linuxPackages_zen;
       plymouth.enable = true;
       zram.enable = true;
     };

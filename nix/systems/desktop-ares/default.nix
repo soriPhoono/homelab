@@ -139,6 +139,8 @@ with lib; {
       tailscale.enable = true;
     };
 
+    services.n8n.enable = true;
+
     media = {
       enable = true;
 
