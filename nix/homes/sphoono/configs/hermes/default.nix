@@ -26,6 +26,7 @@
       grilling = pkgs.skills.mattpocock.skills.grilling;
       grill-me = pkgs.skills.mattpocock.skills.grill-me;
       grill-with-docs = pkgs.skills.mattpocock.skills.grill-with-docs;
+      domain-modeling = pkgs.skills.mattpocock.skills.domain-modeling;
       wayfinder = pkgs.skills.mattpocock.skills.wayfinder;
       # to-issues = pkgs.skills.mattpocock.skills.to-issues;
 

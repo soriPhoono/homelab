@@ -19,6 +19,10 @@ in {
     ./plugins/lualine.nix
     ./plugins/bufferline.nix
     ./plugins/project.nix
+    ./plugins/gitsigns.nix
+    ./plugins/diffview.nix
+    ./plugins/trouble.nix
+    ./plugins/todo-comments.nix
     ./plugins/treesitter.nix
     ./plugins/blink-cmp.nix
     ./plugins/neo-tree.nix
