@@ -11,12 +11,6 @@
     providers = {
       memory.variant = "honcho";
       models = {
-        ollama = {
-          enable = true;
-          enableCloud = true;
-          model = "glm-5.2:cloud";
-          default = true;
-        };
         openrouter.enable = true;
       };
       search.exa.enable = true;

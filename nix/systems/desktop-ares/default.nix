@@ -139,8 +139,6 @@ with lib; {
       tailscale.enable = true;
     };
 
-    services.n8n.enable = true;
-
     media = {
       enable = true;
 
@@ -151,15 +149,7 @@ with lib; {
       };
     };
 
-    inference = {
-      ollama = {
-        enable = true;
-        acceleration = "rocm";
-        loadModels = [
-          "gemma4:e4b"
-        ];
-      };
-    };
+    services.n8n.enable = true;
   };
 
   themes = {
