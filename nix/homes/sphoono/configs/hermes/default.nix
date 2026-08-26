@@ -36,6 +36,26 @@
       video-pipeline-manifest = ../assets/skills/video-pipeline-manifest;
     };
 
+    mcpServers = {
+      "personal/sequential-thinking" = {
+        # Complex thinking and reasoning using the sequential-thinking MCP server
+        command = "${pkgs.nodejs}/bin/npx";
+        args = [
+          "-y"
+          "@modelcontextprotocol/server-sequential-thinking"
+        ];
+      };
+      "personal/obsidian" = {
+        # Read/write the obsidian vault
+        command = "${pkgs.nodejs}/bin/npx";
+        args = [
+          "-y"
+          "@bitbonsai/mcpvault@latest"
+          "${config.home.homeDirectory}/Shared/Vault"
+        ];
+      };
+    };
+
     profiles = {
       default = {
         providers.memory.honcho = {
@@ -49,41 +69,24 @@
 
         permissions = {
           accessDirectories = [
-            "${config.home.homeDirectory}/Shared"
             "${config.home.homeDirectory}/Downloads"
             "${config.home.homeDirectory}/Documents"
             "${config.home.homeDirectory}/Pictures"
             "${config.home.homeDirectory}/Music"
             "${config.home.homeDirectory}/Videos"
+            "${config.home.homeDirectory}/Shared"
             "${config.home.homeDirectory}/GoogleDrive"
           ];
         };
 
         skills = {
           # On-demand domain skills (loaded when task matches)
-          content-distribution = ../assets/skills/content-distribution;
           research-assist = ../assets/skills/research-assist;
           document-workflow = ../assets/skills/document-workflow;
+          content-distribution = ../assets/skills/content-distribution;
         };
 
         mcpServers = {
-          "personal/sequential-thinking" = {
-            # Complex thinking and reasoning using the sequential-thinking MCP server
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@modelcontextprotocol/server-sequential-thinking"
-            ];
-          };
-          "personal/obsidian" = {
-            # Read/write the obsidian vault
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@bitbonsai/mcpvault@latest"
-              "${config.home.homeDirectory}/Shared/Vault"
-            ];
-          };
           "personal/arxiv" = {
             # Query arXiv using the arXiv MCP server for scientific papers
             command = "${pkgs.nodejs}/bin/npx";
@@ -109,7 +112,7 @@
           };
           "personal/pandoc" = {
             # Convert from markdown to other formats using pandoc
-            "command" = "uvx";
+            "command" = "${pkgs.uv}/bin/uvx";
             "args" = ["mcp-pandoc"];
           };
         };
@@ -150,21 +153,6 @@
         };
 
         mcpServers = {
-          "personal/sequential-thinking" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@modelcontextprotocol/server-sequential-thinking"
-            ];
-          };
-          "personal/obsidian" = {
-            command = "${pkgs.nodejs}/bin/npx";
-            args = [
-              "-y"
-              "@bitbonsai/mcpvault@latest"
-              "${config.home.homeDirectory}/Shared/Vault"
-            ];
-          };
           "software-development/n8n" = {
             command = "${pkgs.nodejs}/bin/npx";
             args = [

@@ -39,25 +39,6 @@
     };
 
     mcpServers = {
-      "personal/sequential-thinking" = {
-        # Multi-step reasoning for composition planning and timing calculations
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@modelcontextprotocol/server-sequential-thinking"
-        ];
-      };
-
-      "personal/obsidian" = {
-        # Read/write the obsidian vault for inter-agent handoff notes
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@bitbonsai/mcpvault@latest"
-          "${config.home.homeDirectory}/Shared/Vault"
-        ];
-      };
-
       "music/starsinger" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
