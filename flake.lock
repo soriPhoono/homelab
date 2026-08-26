@@ -1438,11 +1438,11 @@
         "treefmt-nix": "treefmt-nix_3"
       },
       "locked": {
-        "lastModified": 1785619749,
-        "narHash": "sha256-+wKolV+cST7w3nWD6UvE78SJQjNUZb+GvOxj7AkRMaQ=",
+        "lastModified": 1787771262,
+        "narHash": "sha256-fjcex7ESLMT7zoxuP9WKNd+ywkLUuAgpNKyWygjFCVY=",
         "owner": "soriPhoono",
         "repo": "templates",
-        "rev": "5373030e34b3ac8a2817a78b9cfeb06d1dcd27c1",
+        "rev": "005c39a9bedb47fe2b4d14a39bb85902cf92e523",
         "type": "github"
       },
       "original": {
