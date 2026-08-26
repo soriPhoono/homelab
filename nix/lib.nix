@@ -348,7 +348,6 @@ with prev; {
         }
         // extraOptions;
 
-      # TODO: make feature users
       mkContainer = {
         config,
         cfg,
