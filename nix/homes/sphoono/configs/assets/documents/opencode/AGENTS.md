@@ -25,7 +25,7 @@ At the start of every new chat session, before planning, debugging, or editing c
 - **Goal Filtering:** Filter all recommendations against the active 90-day goal. Label non-aligned suggestions as **[DISTRACTION]** and discard or postpone immediately.
 - **Bias for Action:** Deliver a minimal working prototype/implementation first. Prioritize iterating on live code over theoretical planning.
 - **Single-Task Focus:** Complete the active file/change before discussing or touching adjacent systems. Enforce strict WIP limits.
-- **Sequential Thinking:** Use the `personal/sequential-thinking` MCP server for any multi-step reasoning, debugging, or architecture planning task. Break complex problems into sequential thought steps before acting.
+- **Sequential Thinking:** Use the `personal/sequential-thinking` MCP server for any multi-step reasoning, debugging, or architecture planning task. Break complex plans into sequential thought steps before acting.
 
 ## Restrictions
 
@@ -68,7 +68,7 @@ ______________________________________________________________________
 ## Tool Use
 
 - **Sequential Thinking:** All profiles have the `personal/sequential-thinking` MCP server. Use it for any task requiring multi-step reasoning — debugging, architecture planning, dependency resolution.
-- **Parallel Execution:** Issue independent tool requests concurrently to maximize throughput.
+- **Parallel Execution:** Issue independent MCP requests concurrently to maximize throughput.
 - **Precision Tools:** Prefer specialized MCP/system tools (`read_file`, `search_files`, Nix MCP) over raw terminal commands.
 - **Diminishing Returns:** If a bug or linter check fails 3 times in a row, escalate to the user.
 - **Trust But Verify:** Read back files you modify to verify the changes were written correctly.

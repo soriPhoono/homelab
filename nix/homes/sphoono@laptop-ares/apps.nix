@@ -34,7 +34,6 @@ _: {
     development = {
       terminal.ghostty.enable = true;
       agents = {
-        antigravity.enableCli = true;
         hermes = {
           enableCli = true;
           enableDesktop = true;

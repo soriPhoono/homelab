@@ -100,12 +100,12 @@
     }
   '';
 
-  contextFile = pkgs.writeText "opencode-context.md" (
+  contextFile = builtins.toPath (toString (pkgs.writeText "opencode-context.md" (
     concatStringsSep "\n" (
       map (name: renderDocument name cfg.documents.${name})
       (builtins.sort builtins.lessThan (builtins.attrNames cfg.documents))
     )
-  );
+  )));
 
   runtimeEnvironment = concatStringsSep "\n" (
     (mapAttrsToList (name: value: "${name}=${value}") cfg.environment)
@@ -193,16 +193,20 @@ in
         programs.opencode = {
           enable = true;
           package = opencodePackage;
+
           inherit (cfg) extraPackages tui commands agents tools themes skills;
+
           context =
             if cfg.documents == {}
             then ""
             else contextFile;
+
           settings =
             (removeAttrs cfg.userSettings ["mcp"])
             // optionalAttrs (mergedMcpServers != {}) {
               mcp = mergedMcpServers;
             };
+
           web =
             {
               enable = cfg.web.enable;

@@ -72,12 +72,6 @@ in
               default = pkgs.google-antigravity;
               description = "The package to use for the antigravity desktop interface.";
             };
-
-            instructions = mkOption {
-              type = types.nullOr (types.oneOf [types.path types.lines]);
-              default = null;
-              description = "Documents to be made available to the agent.";
-            };
           };
         };
       });
@@ -115,10 +109,10 @@ in
         # global skills.
         home.file =
           {
-            ".gemini/GEMINI.md" = mkIf (cfg.instructions != null) (
-              if builtins.isPath cfg.instructions
-              then {source = cfg.instructions;}
-              else {text = cfg.instructions;}
+            ".gemini/GEMINI.md" = mkIf (cfg.documents."AGENTS.md" != null) (
+              if builtins.isPath cfg.documents."AGENTS.md"
+              then {source = cfg.documents."AGENTS.md";}
+              else {text = cfg.documents."AGENTS.md";}
             );
           }
           # Agent skills — each is a package containing SKILL.md,

@@ -22,5 +22,5 @@ in various projects, usually within nix devshells.
 - Linux, NixOS unstable
 - Desktop: Hyprland (ares workstation), Hyprland (zephyrus laptop)
 - Secrets: sops-nix with age keys
-- AI agents: Hermes, OpenCode, Antigravity
+- AI agents: Hermes and OpenCode
 - Obsidian vault at `~/Nextcloud/Vault` for notes
