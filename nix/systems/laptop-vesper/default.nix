@@ -66,6 +66,7 @@
       };
     };
   };
+
   desktop = {
     environments.kde.enable = true;
     services = {
