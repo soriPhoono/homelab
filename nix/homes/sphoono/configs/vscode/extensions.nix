@@ -92,17 +92,6 @@ in {
         # CI/CD
         github.vscode-github-actions
       ];
-
-      # Common language snippets
-      languageSnippets = {
-        nix = {
-          "Nix flake check" = {
-            prefix = ["flakecheck" "nfc"];
-            body = ''nix flake check --all-systems'';
-            description = "Full flake validation command";
-          };
-        };
-      };
     };
 
     # Named extension profiles — switch between them in VS Code via
@@ -152,9 +141,15 @@ in {
           "vs-kubernetes.suppress-kubectl-not-found-alerts" = true;
 
           # HCL / OpenTofu / Terraform
-          "[terraform]".editor.tabSize = 2;
-          "[terraform-vars]".editor.tabSize = 2;
-          "[hcl]".editor.tabSize = 2;
+          "[terraform]" = {
+            "editor.tabSize" = 2;
+          };
+          "[terraform-vars]" = {
+            "editor.tabSize" = 2;
+          };
+          "[hcl]" = {
+            "editor.tabSize" = 2;
+          };
 
           # Prefer OpenTofu while maintaining compatibility with official Terraform registry
           "terraform.languageServer.enable" = true;
@@ -258,21 +253,31 @@ in {
 
         userSettings = {
           # C / C++ formatting and flags
-          "[c]".editor.defaultFormatter = "llvm-vs-code-extensions.vscode-clangd";
-          "[cpp]".editor.defaultFormatter = "llvm-vs-code-extensions.vscode-clangd";
+          "[c]" = {
+            "editor.defaultFormatter" = "llvm-vs-code-extensions.vscode-clangd";
+          };
+          "[cpp]" = {
+            "editor.defaultFormatter" = "llvm-vs-code-extensions.vscode-clangd";
+          };
           "clangd.fallbackFlags" = ["-std=c++20"];
 
           # Rust
-          "[rust]".editor.defaultFormatter = "rust-lang.rust-analyzer";
+          "[rust]" = {
+            "editor.defaultFormatter" = "rust-lang.rust-analyzer";
+          };
           "rust-analyzer.check.command" = "clippy";
           "rust-analyzer.inlayHints.enable" = true;
 
           # Zig
-          "[zig]".editor.defaultFormatter = "ziglang.vscode-zig";
+          "[zig]" = {
+            "editor.defaultFormatter" = "ziglang.vscode-zig";
+          };
           "zig.zigPath" = "zig";
 
           # Firmware (Devicetree / Kconfig)
-          "[devicetree]".editor.defaultFormatter = "trond-snekvik.devicetree";
+          "[devicetree]" = {
+            "editor.defaultFormatter" = "trond-snekvik.devicetree";
+          };
         };
       };
     };

@@ -2,7 +2,6 @@ _: {
   apps.development.editors.vscode = {
     userSettings = {
       # Editor appearance — font and theme managed by Stylix
-
       "editor.minimap.enabled" = true;
       "editor.renderWhitespace" = "trailing";
       "editor.cursorBlinking" = "smooth";
@@ -87,7 +86,7 @@ _: {
 
       # Disable extension updates
       "extensions.autoCheckUpdates" = false;
-      "extensions.autoUpdate" = false;
+      "extensions.autoUpdate" = "off";
       "accessibility.signals.terminalBell" = {
         "sound" = "off";
       };
