@@ -93,6 +93,8 @@ with lib; {
       asusd.enable = true;
       printing.enable = true;
       pipewire.enable = true;
+      flatpak.enable = true;
+      virtualization.enable = true;
     };
     features.gaming = {
       desktop = {
@@ -110,7 +112,6 @@ with lib; {
     };
     tools = {
       partition-manager.enable = true;
-      virtualbox.enable = true;
     };
   };
 

@@ -66,14 +66,30 @@
       };
     };
   };
-
   desktop = {
     environments.kde.enable = true;
     services = {
       printing.enable = true;
       pipewire.enable = true;
+      flatpak.enable = true;
     };
-    features.gaming.desktop.enable = true;
+    features.gaming = {
+      desktop = {
+        enable = true;
+        clients = [
+          "steam"
+          "lutris"
+          "prismlauncher"
+          "gzdoom"
+          "ygo-omega"
+        ];
+      };
+      console.enable = true;
+      streaming.enable = true;
+    };
+    tools = {
+      partition-manager.enable = true;
+    };
   };
 
   hosting = {
