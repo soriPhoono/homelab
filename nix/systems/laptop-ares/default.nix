@@ -106,13 +106,12 @@ with lib; {
           "gzdoom"
           "ygo-omega"
         ];
+        modSupport = true;
       };
       console.enable = true;
       streaming.enable = true;
     };
-    tools = {
-      partition-manager.enable = true;
-    };
+    tools.partition-manager.enable = true;
   };
 
   hosting = {

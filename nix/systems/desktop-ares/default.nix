@@ -79,7 +79,9 @@ with lib; {
         admin = true;
         shell = pkgs.bashInteractive;
         interactiveShell = pkgs.fish;
-        publicKeys = {primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT Personal Key";};
+        publicKeys = {
+          primary = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT Personal Key";
+        };
         linger = true;
       };
     };
@@ -96,25 +98,24 @@ with lib; {
     services = {
       printing.enable = true;
       pipewire.enable = true;
+      flatpak.enable = true;
       virtualization.enable = true;
     };
-    features = {
-      gaming = {
-        desktop = {
-          enable = true;
-          clients = [
-            "steam"
-            "lutris"
-            "prismlauncher"
-            "gzdoom"
-            "ygo-omega"
-          ];
-          modSupport = true;
-        };
-        console.enable = true;
-        vr.enable = true;
-        streaming.enable = true;
+    features.gaming = {
+      desktop = {
+        enable = true;
+        clients = [
+          "steam"
+          "lutris"
+          "prismlauncher"
+          "gzdoom"
+          "ygo-omega"
+        ];
+        modSupport = true;
       };
+      console.enable = true;
+      vr.enable = true;
+      streaming.enable = true;
     };
     tools.partition-manager.enable = true;
   };
@@ -134,10 +135,7 @@ with lib; {
       };
     };
 
-    proxy = {
-      enable = true;
-      tailscale.enable = true;
-    };
+    services.n8n.enable = true;
 
     media = {
       enable = true;
@@ -149,7 +147,10 @@ with lib; {
       };
     };
 
-    services.n8n.enable = true;
+    proxy = {
+      enable = true;
+      tailscale.enable = true;
+    };
   };
 
   themes = {

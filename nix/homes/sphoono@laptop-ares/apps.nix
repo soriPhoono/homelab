@@ -34,9 +34,9 @@ _: {
     development = {
       terminal.ghostty.enable = true;
       agents = {
-        hermes = {
-          enableCli = true;
-          enableDesktop = true;
+        opencode = {
+          enable = true;
+          desktop = true;
         };
       };
       editors = {

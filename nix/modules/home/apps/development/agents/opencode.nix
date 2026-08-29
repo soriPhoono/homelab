@@ -137,6 +137,8 @@ in
           name = "opencode";
           package = pkgs.opencode;
           extraOptions = {
+            desktop = mkEnableOption "Enable opencode desktop application";
+
             tui = mkOption {
               type = options.programs.opencode.tui.type;
               default = {};
@@ -183,6 +185,11 @@ in
     };
 
     config = mkIf cfg.enable (mkMerge [
+      (mkIf cfg.desktop {
+        home.packages = with pkgs; [
+          opencode-desktop
+        ];
+      })
       {
         sops.secrets = genAttrs allSecrets (_: {});
 

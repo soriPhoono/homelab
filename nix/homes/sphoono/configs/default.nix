@@ -5,6 +5,6 @@
     ./zen
     ./vscode
     ./opencode
-    ./hermes
+    # ./hermes
   ];
 }

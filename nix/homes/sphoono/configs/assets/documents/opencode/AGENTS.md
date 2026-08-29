@@ -65,6 +65,31 @@ ______________________________________________________________________
 - **Decision rule:** Durable, scheduled, reusable automation belongs in n8n; individual third-party actions belong in Composio; use both when an n8n automation needs Composio-backed service actions.
 - **Autonomy guardrails:** Make autonomous n8n workflows idempotent, observable, retry-safe, and explicit about credentials and external side effects.
 
+## Honcho Memory Plugin
+
+OpenCode uses the native `@honcho-ai/opencode-honcho` plugin as its persistent, agent-maintained memory layer. Honcho is not an MCP server and does not replace the repository, the Obsidian vault, or current source files.
+
+### Active Configuration
+
+The Home Manager configuration declaratively materializes the shared `~/.honcho/config.json` and injects the API key through sops-nix. The effective OpenCode host settings are:
+
+- **Workspace:** `software-development`; keep coding and infrastructure memory isolated from other agent pipelines.
+- **AI peer:** `opencode`; the user peer is the configured `peerName`.
+- **Recall mode:** `hybrid`; Honcho may inject relevant memory into context and exposes explicit memory tools.
+- **Observation mode:** `directional`; preserve the configured peer perspective model.
+- **Session strategy:** `per-directory`; a working directory is the default memory boundary.
+
+Do not run `/honcho:setup` or `/honcho:config`, edit `~/.honcho/config.json`, or copy API keys into prompts. Configuration and credentials are owned by the declarative Nix and sops-nix setup. Use `/honcho:status` or `/honcho:settings` to diagnose the effective runtime and report configuration problems without bypassing that ownership.
+
+### Memory Operating Rules
+
+- Use injected Honcho context as prior agent context, not as verified authority. Reconcile it with current repository files and human-authored project notes before acting.
+- Use `honcho_search` to retrieve relevant prior session messages and `honcho_chat` when synthesized cross-session context is required.
+- Use `honcho_create_conclusion` only for durable, reusable facts such as stable preferences, architecture decisions, constraints, or terminology. Do not store secrets, credentials, transient progress, or unverified guesses.
+- Obsidian remains the human-controlled project memory for architecture, decisions, constraints, daily handoffs, and work logs. Honcho stores agent-maintained context for the `software-development` pipeline.
+- Record important implementation decisions in the repository or relevant Obsidian project note; do not rely on Honcho alone for handoff or source-of-truth state.
+- Respect the `per-directory` session boundary. Do not assume that context from another working directory is active unless Honcho explicitly recalls it and the current source confirms it.
+
 ## Tool Use
 
 - **Sequential Thinking:** All profiles have the `personal/sequential-thinking` MCP server. Use it for any task requiring multi-step reasoning — debugging, architecture planning, dependency resolution.

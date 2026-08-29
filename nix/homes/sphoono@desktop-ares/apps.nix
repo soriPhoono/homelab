@@ -34,17 +34,15 @@ _: {
     development = {
       terminal.ghostty.enable = true;
       agents = {
-        hermes = {
-          enableCli = true;
-          enableDesktop = true;
+        opencode = {
+          enable = true;
+          desktop = true;
         };
       };
       editors = {
         neovim.enable = true;
         vscode.enable = true;
       };
-      design.freecad.enable = true;
-      appliances.bambu-studio.enable = true;
     };
     data-fortress = {
       p2p.qbittorrent.enable = true;

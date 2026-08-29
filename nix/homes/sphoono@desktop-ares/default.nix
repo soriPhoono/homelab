@@ -2,7 +2,7 @@
   imports = [
     ./hypr.nix
     ./apps.nix
-    ./configs
+    # ./configs
   ];
 
   core = {
