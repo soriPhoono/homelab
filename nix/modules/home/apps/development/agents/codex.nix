@@ -108,11 +108,11 @@
     )
   )));
 
-  # Resolve effective context: documents take precedence if provided
+  # Resolve effective context: documents take precedence; else empty context
   effectiveContext =
     if cfg.documents != {}
     then contextFile
-    else cfg.context;
+    else "";
 
   runtimeEnvironment = concatStringsSep "\n" (
     (mapAttrsToList (name: value: "${name}=${value}") cfg.environment)
@@ -141,9 +141,8 @@
       }
     else cfg.package;
 
-  mergedSettings = lib.recursiveUpdate cfg.settings (
-    lib.recursiveUpdate cfg.userSettings mcpServersSettings
-  );
+  mergedSettings =
+    lib.recursiveUpdate cfg.userSettings mcpServersSettings;
 in
   with lib; {
     options.apps.development.agents.codex = mkOption {
@@ -152,28 +151,10 @@ in
           name = "codex";
           package = pkgs.codex or pkgs.codex-cli or null;
           extraOptions = {
-            settings = mkOption {
-              type = options.programs.codex.settings.type;
-              default = {};
-              description = "Settings forwarded to programs.codex.settings (CODEX_HOME/config.toml).";
-            };
-
             profiles = mkOption {
               type = options.programs.codex.profiles.type;
               default = {};
               description = "Named profiles forwarded to programs.codex.profiles.";
-            };
-
-            context = mkOption {
-              type = options.programs.codex.context.type;
-              default = "";
-              description = "Global context forwarded to programs.codex.context (AGENTS.md). Overridden by documents if set.";
-            };
-
-            contextOverride = mkOption {
-              type = options.programs.codex.contextOverride.type;
-              default = null;
-              description = "Override context forwarded to programs.codex.contextOverride.";
             };
 
             hooks = mkOption {
@@ -193,27 +174,6 @@ in
               default = {};
               description = "Marketplaces forwarded to programs.codex.marketplaces.";
             };
-
-            rules = mkOption {
-              type = options.programs.codex.rules.type;
-              default = {};
-              description = "Rules forwarded to programs.codex.rules.";
-            };
-
-            enableMcpIntegration = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether to integrate programs.mcp.servers into codex via programs.codex.enableMcpIntegration.";
-            };
-
-            # Override mkAgent's skills type to match upstream codex shape
-            # Base mkAgent exposes skills as attrsOf (either path package); codex needs attrsOf (either lines path) or path.
-            # We keep the base but allow both by overriding here.
-            skills = mkOption {
-              type = options.programs.codex.skills.type;
-              default = {};
-              description = "Skills forwarded to programs.codex.skills. Overrides generic mkAgent skills type to match Codex upstream.";
-            };
           };
         };
       });
@@ -228,30 +188,23 @@ in
           content = runtimeEnvironment;
         };
 
-        programs.codex =
-          {
-            enable = true;
-            package = codexPackage;
+        programs.codex = {
+          enable = true;
+          package = codexPackage;
 
-            inherit
-              (cfg)
-              plugins
-              marketplaces
-              rules
-              hooks
-              profiles
-              skills
-              ;
+          inherit
+            (cfg)
+            plugins
+            marketplaces
+            hooks
+            profiles
+            skills
+            ;
 
-            settings = mergedSettings;
+          settings = mergedSettings;
 
-            context = effectiveContext;
-
-            inherit (cfg) enableMcpIntegration;
-          }
-          // optionalAttrs (cfg.contextOverride != null) {
-            inherit (cfg) contextOverride;
-          };
+          context = effectiveContext;
+        };
       }
     ]);
   }
