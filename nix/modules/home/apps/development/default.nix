@@ -4,8 +4,6 @@
     ./appliances
     ./design
     ./editors
-    ./inference
-    ./infrastructure
     ./terminal
   ];
 

@@ -74,8 +74,12 @@ Do not run `/honcho:setup` or `/honcho:config`, edit `~/.honcho/config.json`, or
 
 ## Tool Use
 
-- **Sequential Thinking:** All profiles have the `personal/sequential-thinking` MCP server. Use it for any task requiring multi-step reasoning — debugging, architecture planning, dependency resolution.
-- **Parallel Execution:** Issue independent MCP requests concurrently to maximize throughput.
-- **Precision Tools:** Prefer specialized MCP/system tools (`read_file`, `search_files`, Nix MCP) over raw terminal commands.
+- **Use configured MCP tools deliberately:** MCP servers are the preferred interface when a configured server provides the capability. Make a tool call when it improves freshness, accuracy, context, persistence, or safe interaction with an external system; do not avoid a call merely to save tokens or because a task could be completed from memory.
+- **`search/brave` is the default web-research path:** Use the Brave Search MCP server freely for web searches, current information, source discovery, documentation lookup, comparisons, fact-checking, and research requiring multiple perspectives. Run multiple focused or parallel searches, vary queries when useful, and perform follow-up searches to verify important claims. Prefer it over unaided model knowledge and raw shell-based web requests. Use direct URL fetching only when the exact page is already known or Brave cannot provide the needed content.
+- **`personal/obsidian` is the project-memory path:** Use its tools to read daily and project notes before relevant work, and to record durable handoffs or session summaries when instructed. Reconcile notes with the repository; source files win for implementation facts.
+- **`personal/sequential-thinking` is the reasoning path:** Use it for debugging, architecture planning, dependency resolution, and any other task requiring multiple dependent decisions. Break the work into explicit steps before acting.
+- **`software-development/n8n` is the automation path:** Use it to discover, inspect, test, and modify durable n8n workflows. Read back workflows or executions after every external change.
+- **Parallel execution:** Issue independent MCP requests concurrently to reduce latency and improve research coverage.
+- **Precision tools:** Prefer specialized MCP/system tools over raw terminal commands when they provide the same operation.
 - **Diminishing Returns:** If a bug or linter check fails 3 times in a row, escalate to the user.
 - **Trust But Verify:** Read back files you modify to verify the changes were written correctly.

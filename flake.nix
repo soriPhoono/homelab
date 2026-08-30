@@ -79,18 +79,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    antigravity-nix = {
-      url = "github:jacopone/antigravity-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-vscode-extensions = {
       url = "github:nix-community/nix-vscode-extensions";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -270,7 +260,18 @@
         config,
         system,
         ...
-      }: {
+      }: let
+        inherit
+          ((inputs.nvf.lib.neovimConfiguration {
+            pkgs = pkgsBatch.${system};
+            modules = import ./nix/homes/sphoono/configs/nvim/modules.nix {
+              inherit lib;
+              pkgs = pkgsBatch.${system};
+            };
+          }))
+          neovim
+          ;
+      in {
         # --- Package Cache --- #
         _module.args.pkgs = import nixpkgs {
           inherit system;
@@ -283,6 +284,8 @@
         githubActions = import ./actions.nix {inherit self lib;};
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
+
+        packages.neovim = neovim;
 
         # --- Development Shells & Checks --- #
         devShells.default = import ./shell.nix {

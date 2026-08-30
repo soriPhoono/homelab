@@ -3,7 +3,7 @@
 
   logo =
     lib.splitString "\n"
-    (lib.removeSuffix "\n" (builtins.readFile ../../../homes/sphoono/configs/assets/logo.txt));
+    (lib.removeSuffix "\n" (builtins.readFile ../../assets/logo.txt));
 
   button = key: label: command: {
     type = "button";

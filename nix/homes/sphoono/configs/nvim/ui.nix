@@ -15,13 +15,6 @@ _: {
         setupOpts.lsp.signature.enabled = true;
       };
 
-      # Code-context breadcrumbs (navic) rendered in the winbar
-      breadcrumbs = {
-        enable = true;
-        lualine.winbar.enable = true;
-        navbuddy.enable = true;
-      };
-
       # Highlight the word under the cursor
       illuminate.enable = true;
 
@@ -30,6 +23,13 @@ _: {
 
       # Code-action popup, better than the default menu
       fastaction.enable = true;
+    };
+
+    # Code-context breadcrumbs (navic) rendered in the winbar
+    statusline.lualine.integrations.breadcrumbs = {
+      location = "winbar";
+      nvim-navic.enable = true;
+      navbuddy.enable = true;
     };
 
     # Notifications routed through nvim-notify (picked up by noice)

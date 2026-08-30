@@ -1,13 +1,8 @@
 {
   lib,
   pkgs,
-  ...
 }: let
-  mkSettingsModule = path: {
-    programs.nvf.settings = import path {inherit lib pkgs;};
-  };
-in {
-  imports = map mkSettingsModule [
+  paths = [
     ./core/appearance.nix
     ./core/editing.nix
     ./core/backups.nix
@@ -27,8 +22,10 @@ in {
     ./plugins/blink-cmp.nix
     ./plugins/neo-tree.nix
     ./plugins/toggleterm-keymaps.nix
+    ./plugins/toggleterm.nix
     ./plugins/dashboard.nix
     ./ui.nix
     ./languages.nix
   ];
-}
+in
+  map (path: import path {inherit lib pkgs;}) paths

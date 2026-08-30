@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## mode: primary description: Primary agent profile for writing systems engineering code temperature: 0.4
+---
+mode: primary
+description: Primary agent profile for writing systems engineering code
+temperature: 0.4
+---
 
 # Soul
 
