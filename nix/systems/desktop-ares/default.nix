@@ -140,7 +140,14 @@ with lib; {
       };
     };
 
-    services.n8n.enable = true;
+    services = {
+      grocy.enable = true;
+      homebox.enable = true;
+      mealie.enable = true;
+      memos.enable = true;
+      n8n.enable = true;
+      vikunja.enable = true;
+    };
 
     media = {
       enable = true;

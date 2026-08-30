@@ -260,18 +260,7 @@
         config,
         system,
         ...
-      }: let
-        inherit
-          ((inputs.nvf.lib.neovimConfiguration {
-            pkgs = pkgsBatch.${system};
-            modules = import ./nix/homes/sphoono/configs/nvim/modules.nix {
-              inherit lib;
-              pkgs = pkgsBatch.${system};
-            };
-          }))
-          neovim
-          ;
-      in {
+      }: {
         # --- Package Cache --- #
         _module.args.pkgs = import nixpkgs {
           inherit system;
@@ -284,8 +273,6 @@
         githubActions = import ./actions.nix {inherit self lib;};
         treefmt = import ./treefmt.nix {inherit lib pkgs;};
         pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
-
-        packages.neovim = neovim;
 
         # --- Development Shells & Checks --- #
         devShells.default = import ./shell.nix {
@@ -346,6 +333,10 @@
           builtins.listToAttrs (
             builtins.filter (x: x != null) (lib.mapAttrsToList processHomeDir homesContent)
           );
+
+        nvimConfigurations = lib.mapAttrs (_: home: home.config.programs.nvf.finalPackage) (
+          lib.filterAttrs (_: home: home.config.programs.nvf.enable) self.homeConfigurations
+        );
       };
     };
 }
