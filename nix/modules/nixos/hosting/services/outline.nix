@@ -53,6 +53,7 @@ in
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0750 1000 1000 -"
           "d ${configurationDirectory}/postgres 0700 999 999 -"
+          "d ${configurationDirectory}/postgres-18 0700 999 999 -"
           "d ${configurationDirectory}/redis 0750 999 999 -"
           "d ${configurationDirectory}/data 0750 1000 1000 -"
         ];
@@ -69,7 +70,7 @@ in
             ];
             networks = [privateNetwork];
             volumes = [
-              "${configurationDirectory}/postgres:/var/lib/postgresql/data"
+              "${configurationDirectory}/postgres-18:/var/lib/postgresql"
             ];
           };
 
@@ -94,7 +95,7 @@ in
               environment = {
                 NODE_ENV = "production";
                 PORT = "3000";
-                URL = "https://${serviceHostname}";
+                URL = "https://${serviceHostname}.xerus-augmented.ts.net";
                 PGSSLMODE = "disable";
                 FILE_STORAGE = "local";
                 FILE_STORAGE_LOCAL_ROOT_DIR = "/var/lib/outline/data";
