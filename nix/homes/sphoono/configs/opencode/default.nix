@@ -6,6 +6,19 @@
   apps.development.agents.opencode = {
     enable = true;
 
+    extraPackages = with pkgs; [
+      # 3rd party service access
+      composio
+
+      # Software engineering
+      gh
+    ];
+
+    # Honcho persistent memory for the software-development pipeline.
+    secrets = [
+      "api/HONCHO_API_KEY"
+    ];
+
     documents."AGENTS.md" = ''
       # OpenCode instructions:
 
@@ -16,10 +29,34 @@
       ${builtins.readFile ../assets/documents/opencode/AGENTS.md}
     '';
 
-    # Honcho persistent memory for the software-development pipeline.
-    secrets = [
-      "api/HONCHO_API_KEY"
-    ];
+    agents = {
+      systems-engineer = ../assets/documents/opencode/systems-engineer.md;
+      research-partner = ../assets/documents/opencode/research-agent.md;
+    };
+
+    skills = {
+      stop-slop = pkgs.skills.hardikpandya.stop-slop.stop-slop;
+
+      grilling = pkgs.skills.mattpocock.skills.grilling;
+      grill-me = pkgs.skills.mattpocock.skills.grill-me;
+      grill-with-docs = pkgs.skills.mattpocock.skills.grill-with-docs;
+      domain-modeling = pkgs.skills.mattpocock.skills.domain-modeling;
+      wayfinder = pkgs.skills.mattpocock.skills.wayfinder;
+      # to-issues = pkgs.skills.mattpocock.skills.to-issues;
+
+      # Create agentic integrations
+      create-agentsmd = pkgs.skills.github.awesome-copilot.create-agentsmd;
+      create-readme = pkgs.skills.github.awesome-copilot.create-readme;
+
+      # Work with git repos
+      git-commit = pkgs.skills.github.awesome-copilot.git-commit;
+
+      # General 3rd party services
+      composio = pkgs.skills.composio-community.skills.composio;
+
+      # Video pipeline inter-agent manifest contract
+      video-pipeline-manifest = ../assets/skills/video-pipeline-manifest;
+    };
 
     mcpServers = {
       "personal/sequential-thinking" = {
@@ -37,6 +74,18 @@
           "@bitbonsai/mcpvault@latest"
           "${config.home.homeDirectory}/Shared/Vault"
         ];
+      };
+      "search/brave" = {
+        command = "${pkgs.nodejs}/bin/npx";
+        args = [
+          "-y"
+          "@brave/brave-search-mcp-server"
+        ];
+        env = {
+          BRAVE_API_KEY = {
+            secret = "api/BRAVE_API_KEY";
+          };
+        };
       };
       "software-development/n8n" = {
         command = "${pkgs.nodejs}/bin/npx";

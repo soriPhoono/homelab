@@ -122,6 +122,11 @@
       pkgs.symlinkJoin {
         name = "${cfg.package.name or "opencode"}-managed";
         paths = [cfg.package];
+        meta =
+          (cfg.package.meta or {})
+          // {
+            mainProgram = cfg.package.meta.mainProgram or "opencode";
+          };
         nativeBuildInputs = [pkgs.makeWrapper];
         postBuild = ''
           wrapProgram "$out/bin/${cfg.package.meta.mainProgram or "opencode"}" \

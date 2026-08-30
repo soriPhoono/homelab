@@ -126,6 +126,11 @@ with lib; {
       podman.enable = true;
     };
 
+    inference.ollama = {
+      enable = true;
+      acceleration = "rocm";
+    };
+
     gaming = {
       enable = true;
 
