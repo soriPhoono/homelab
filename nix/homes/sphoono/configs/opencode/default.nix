@@ -9,9 +9,6 @@
     extraPackages = with pkgs; [
       # 3rd party service access
       composio
-
-      # Software engineering
-      gh
     ];
 
     ollama = {

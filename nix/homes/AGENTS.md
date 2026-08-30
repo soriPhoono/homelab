@@ -15,7 +15,6 @@ Home manager top-level configs are organized as follows.
 ### WIP
 
 - `username@droid` — nix-on-droid config, pulled in automatically.
-- `username@wsl` — WSL config, pulled in automatically by the WSL module.
 
 ## Design conventions
 
