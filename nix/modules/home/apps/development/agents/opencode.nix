@@ -2,10 +2,16 @@
   lib,
   pkgs,
   config,
+  nixosConfig ? null,
   options,
   ...
 }: let
   cfg = config.apps.development.agents.opencode;
+
+  nixosOllamaEnabled =
+    nixosConfig
+    != null
+    && (nixosConfig.hosting.inference.ollama.enable or false);
 
   inherit
     (lib)
@@ -89,6 +95,15 @@
     cfg.mcpServers;
 
   mergedMcpServers = (cfg.userSettings.mcp or {}) // renderedMcpServers;
+
+  ollamaProviderSettings = optionalAttrs cfg.ollama.enable {
+    provider.ollama = {
+      npm = cfg.ollama.package;
+      name = cfg.ollama.name;
+      options.baseURL = cfg.ollama.baseUrl;
+      models = cfg.ollama.models;
+    };
+  };
 
   renderDocument = name: document: ''
     # ${name}
@@ -174,6 +189,39 @@ in
               description = "Custom themes forwarded to programs.opencode.themes.";
             };
 
+            ollama = {
+              enable = mkOption {
+                type = types.bool;
+                default = nixosOllamaEnabled;
+                defaultText = "config.hosting.inference.ollama.enable";
+                description = "Whether to configure Ollama as an OpenCode provider.";
+              };
+
+              baseUrl = mkOption {
+                type = types.str;
+                default = "http://127.0.0.1:11434/v1";
+                description = "The OpenAI-compatible base URL for the Ollama server.";
+              };
+
+              package = mkOption {
+                type = types.str;
+                default = "@ai-sdk/openai-compatible";
+                description = "The npm package OpenCode uses to connect to Ollama.";
+              };
+
+              name = mkOption {
+                type = types.str;
+                default = "Ollama (local)";
+                description = "The display name for the Ollama OpenCode provider.";
+              };
+
+              models = mkOption {
+                type = types.attrs;
+                default = {};
+                description = "Models to expose through the Ollama OpenCode provider.";
+              };
+            };
+
             web = {
               enable = mkEnableOption "the OpenCode web service";
 
@@ -214,7 +262,7 @@ in
             else contextFile;
 
           settings =
-            (removeAttrs cfg.userSettings ["mcp"])
+            (recursiveUpdate ollamaProviderSettings (removeAttrs cfg.userSettings ["mcp"]))
             // optionalAttrs (mergedMcpServers != {}) {
               mcp = mergedMcpServers;
             };

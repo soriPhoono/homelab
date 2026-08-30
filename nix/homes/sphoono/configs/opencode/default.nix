@@ -14,6 +14,14 @@
       gh
     ];
 
+    ollama = {
+      models = {
+        "qwen3.8" = {
+          name = "qwen-3.8";
+        };
+      };
+    };
+
     # Honcho persistent memory for the software-development pipeline.
     secrets = [
       "api/HONCHO_API_KEY"
