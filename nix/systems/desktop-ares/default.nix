@@ -144,8 +144,8 @@ with lib; {
       grocy.enable = true;
       homebox.enable = true;
       mealie.enable = true;
-      memos.enable = true;
       n8n.enable = true;
+      outline.enable = true;
       vikunja.enable = true;
     };
 
