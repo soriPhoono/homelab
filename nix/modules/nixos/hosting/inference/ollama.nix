@@ -10,8 +10,8 @@
   configurationDirectory = "/var/lib/${name}";
   image =
     if cfg.acceleration == "rocm"
-    then "ollama/ollama:0.15.2-rocm"
-    else "ollama/ollama:0.15.2";
+    then "ollama/ollama:0.33.2-rocm"
+    else "ollama/ollama:0.33.2";
 in
   with lib; {
     options.hosting.inference.ollama = mkContainerOption {
