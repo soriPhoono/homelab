@@ -131,6 +131,8 @@ with lib; {
       acceleration = "rocm";
     };
 
+    monitoring.wud.enable = true;
+
     gaming = {
       enable = true;
 
@@ -141,12 +143,10 @@ with lib; {
     };
 
     services = {
-      grocy.enable = true;
       homebox.enable = true;
       mealie.enable = true;
       n8n.enable = true;
       outline.enable = true;
-      vikunja.enable = true;
     };
 
     media = {

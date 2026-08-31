@@ -54,7 +54,7 @@ in
 
         virtualisation.oci-containers.containers = {
           tailscale-sidecar = {
-            image = "tailscale/tailscale:stable";
+            image = "tailscale/tailscale:v1.102.3";
             capabilities = {
               NET_ADMIN = true;
             };
@@ -83,7 +83,7 @@ in
             (mkContainer {
               inherit name config;
               cfg = cfg // {container = cfg.container // {publication = [];};};
-              image = "ghcr.io/marvinvr/docktail:latest";
+              image = "ghcr.io/marvinvr/docktail:1.3.0";
             })
             {
               dependsOn = [

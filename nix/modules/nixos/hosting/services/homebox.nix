@@ -33,7 +33,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "ghcr.io/sysadminsmedia/homebox:latest";
+            image = "sysadminsmedia/homebox:0.26.2";
             serviceName = "inventory";
             servicePort = 7745;
           })

@@ -26,11 +26,16 @@ in
         virtualisation.oci-containers.containers.bookshelf = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "ghcr.io/pennydreadful/bookshelf:hardcover";
+            image = "ghcr.io/pennydreadful/bookshelf:hardcover-v0.4.20.129";
             serviceName = "books";
             servicePort = 8787;
           })
           {
+            labels = {
+              "wud.tag.include" = ''^hardcover-v\d+\.\d+\.\d+\.\d+$'';
+              "wud.tag.transform" = ''^hardcover-v(\d+\.\d+\.\d+)\.(\d+)$ => $1-$2'';
+            };
+
             volumes = [
               "${configurationDirectory}:/config"
               "/mnt/local/media/books:/books"

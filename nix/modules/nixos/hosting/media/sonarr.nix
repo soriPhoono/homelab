@@ -25,7 +25,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/sonarr:latest";
+            image = "linuxserver/sonarr:4.0.19";
             serviceName = "shows";
             servicePort = 8989;
           })

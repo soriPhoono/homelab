@@ -11,6 +11,7 @@ in
       ./gaming
       ./proxy
       ./media
+      ./monitoring
       ./services
       ./inference
     ];

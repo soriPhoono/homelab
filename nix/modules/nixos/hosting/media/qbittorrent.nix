@@ -25,7 +25,7 @@ in
         virtualisation.oci-containers.containers.qbittorrent = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/qbittorrent:latest";
+            image = "linuxserver/qbittorrent:5.2.3";
             serviceName = "downloads";
             servicePort = 8080;
           })

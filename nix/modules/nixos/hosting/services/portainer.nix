@@ -64,7 +64,7 @@ in
           ${name} = mkMerge [
             (mkContainer {
               inherit name cfg config;
-              image = "docker.io/portainer/portainer-ee:lts";
+              image = "portainer/portainer-ee:2.45.0";
               serviceName = "admin";
               servicePort = 9000;
             })

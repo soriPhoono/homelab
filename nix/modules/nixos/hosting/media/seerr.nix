@@ -25,7 +25,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "seerr/seerr:latest";
+            image = "seerr/seerr:v3.4.1";
             serviceName = "pvr";
             servicePort = 5055;
           })

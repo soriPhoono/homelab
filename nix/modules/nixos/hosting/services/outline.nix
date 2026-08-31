@@ -32,8 +32,8 @@ in
           "api/outline-secret-key" = {};
           "api/outline-utils-secret" = {};
           "api/outline-postgres-password" = {};
-          "api/outline-smtp-password" = {};
-          "api/outline-smtp-from-email" = {};
+          "api/smtp-password" = {};
+          "api/smtp-from-email" = {};
         };
 
         sops.templates = {
@@ -45,8 +45,8 @@ in
             SMTP_HOST=smtp.resend.com
             SMTP_PORT=465
             SMTP_USERNAME=resend
-            SMTP_PASSWORD=${config.sops.placeholder."api/outline-smtp-password"}
-            SMTP_FROM_EMAIL=${config.sops.placeholder."api/outline-smtp-from-email"}
+            SMTP_PASSWORD=${config.sops.placeholder."api/smtp-password"}
+            SMTP_FROM_EMAIL=${config.sops.placeholder."api/smtp-from-email"}
             SMTP_SECURE=true
           '';
           "hosting/services/outline-postgres.env".content = ''
@@ -64,7 +64,11 @@ in
 
         virtualisation.oci-containers.containers = {
           ${postgresName} = {
-            image = "postgres:18-alpine";
+            image = "postgres:18.6-alpine";
+            labels = {
+              "wud.tag.include" = ''^\d+\.\d+-alpine$'';
+              "wud.tag.transform" = ''^(\d+\.\d+)-alpine$ => $1.0'';
+            };
             environment = {
               POSTGRES_DB = "outline";
               POSTGRES_USER = "outline";
@@ -79,7 +83,11 @@ in
           };
 
           ${redisName} = {
-            image = "redis:8-alpine";
+            image = "redis:8.8.2-alpine";
+            labels = {
+              "wud.tag.include" = ''^\d+\.\d+\.\d+-alpine$'';
+              "wud.tag.transform" = ''^(\d+\.\d+\.\d+)-alpine$ => $1'';
+            };
             networks = [privateNetwork];
             volumes = [
               "${configurationDirectory}/redis:/data"
@@ -90,7 +98,7 @@ in
           ${name} = mkMerge [
             (mkContainer {
               inherit name cfg config;
-              image = "docker.getoutline.com/outlinewiki/outline:latest";
+              image = "outlinewiki/outline:1.9.2";
               serviceName = "wiki";
               servicePort = 3000;
             })

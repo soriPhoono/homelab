@@ -49,7 +49,7 @@ in
 
         virtualisation.oci-containers.containers = {
           ${postgresName} = {
-            image = "postgres:16-alpine";
+            image = "postgres:16.15-alpine";
             environment = {
               POSTGRES_DB = "n8n";
               POSTGRES_USER = "n8n";
@@ -66,7 +66,7 @@ in
           ${name} = mkMerge [
             (mkContainer {
               inherit name cfg config;
-              image = "docker.n8n.io/n8nio/n8n:latest";
+              image = "n8nio/n8n:2.37.6";
               serviceName = "agents";
               servicePort = 5678;
             })

@@ -46,6 +46,18 @@ in
             servicePort = 11434;
           })
           {
+            labels =
+              {
+                "wud.tag.include" =
+                  if cfg.acceleration == "rocm"
+                  then ''^\d+\.\d+\.\d+-rocm$''
+                  else ''^\d+\.\d+\.\d+$'';
+                "wud.link.template" = ''https://github.com/ollama/ollama/releases/tag/v''${major}.''${minor}.''${patch}'';
+              }
+              // optionalAttrs (cfg.acceleration == "rocm") {
+                "wud.tag.transform" = ''^(\d+\.\d+\.\d+)-rocm$ => $1'';
+              };
+
             environment = {
               OLLAMA_HOST = "0.0.0.0:11434";
             };

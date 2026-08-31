@@ -24,7 +24,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "ghcr.io/mealie-recipes/mealie:latest";
+            image = "hkotel/mealie:v3.24.0";
             serviceName = "cookbook";
             servicePort = 9000;
           })
