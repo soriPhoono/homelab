@@ -2,16 +2,10 @@
   lib,
   pkgs,
   config,
-  nixosConfig ? null,
   options,
   ...
 }: let
   cfg = config.apps.development.agents.opencode;
-
-  nixosOllamaEnabled =
-    nixosConfig
-    != null
-    && (nixosConfig.hosting.inference.ollama.enable or false);
 
   inherit
     (lib)
@@ -192,9 +186,8 @@ in
             ollama = {
               enable = mkOption {
                 type = types.bool;
-                default = nixosOllamaEnabled;
-                defaultText = "config.hosting.inference.ollama.enable";
-                description = "Whether to configure Ollama as an OpenCode provider.";
+                default = false;
+                description = "Whether to configure Ollama as an OpenCode provider. Requires user-level opt-in.";
               };
 
               baseUrl = mkOption {
@@ -211,7 +204,7 @@ in
 
               name = mkOption {
                 type = types.str;
-                default = "Ollama (local)";
+                default = "Ollama (Tailscale)";
                 description = "The display name for the Ollama OpenCode provider.";
               };
 

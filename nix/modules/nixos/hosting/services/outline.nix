@@ -32,8 +32,8 @@ in
           "api/outline-secret-key" = {};
           "api/outline-utils-secret" = {};
           "api/outline-postgres-password" = {};
-          "api/outline-google-client-id" = {};
-          "api/outline-google-client-secret" = {};
+          "api/outline-smtp-password" = {};
+          "api/outline-smtp-from-email" = {};
         };
 
         sops.templates = {
@@ -42,8 +42,12 @@ in
             UTILS_SECRET=${config.sops.placeholder."api/outline-utils-secret"}
             DATABASE_URL=postgres://outline:${config.sops.placeholder."api/outline-postgres-password"}@${postgresName}:5432/outline?sslmode=disable
             REDIS_URL=redis://${redisName}:6379
-            GOOGLE_CLIENT_ID=${config.sops.placeholder."api/outline-google-client-id"}
-            GOOGLE_CLIENT_SECRET=${config.sops.placeholder."api/outline-google-client-secret"}
+            SMTP_HOST=smtp.resend.com
+            SMTP_PORT=465
+            SMTP_USERNAME=resend
+            SMTP_PASSWORD=${config.sops.placeholder."api/outline-smtp-password"}
+            SMTP_FROM_EMAIL=${config.sops.placeholder."api/outline-smtp-from-email"}
+            SMTP_SECURE=true
           '';
           "hosting/services/outline-postgres.env".content = ''
             POSTGRES_PASSWORD=${config.sops.placeholder."api/outline-postgres-password"}
@@ -53,7 +57,7 @@ in
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0750 1000 1000 -"
           "d ${configurationDirectory}/postgres 0700 999 999 -"
-          "d ${configurationDirectory}/postgres-18 0700 999 999 -"
+          "d ${configurationDirectory}/postgres-18 0700 70 70 -"
           "d ${configurationDirectory}/redis 0750 999 999 -"
           "d ${configurationDirectory}/data 0750 1000 1000 -"
         ];

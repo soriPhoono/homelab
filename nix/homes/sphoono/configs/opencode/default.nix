@@ -12,6 +12,8 @@
     ];
 
     ollama = {
+      enable = true;
+      baseUrl = "https://desktop-ares-inference.xerus-augmented.ts.net/v1";
       models = {
         "qwen3.8" = {
           name = "qwen-3.8";
@@ -79,6 +81,9 @@
           "@bitbonsai/mcpvault@latest"
           "${config.home.homeDirectory}/Shared/Vault"
         ];
+      };
+      "personal/outline" = {
+        url = "https://desktop-ares-wiki.xerus-augmented.ts.net/mcp";
       };
       "search/brave" = {
         command = "${pkgs.nodejs}/bin/npx";
