@@ -52,7 +52,15 @@
 
   renderMcpHeaders = mapAttrs (_: value:
     if builtins.isAttrs value && value ? "secret"
-    then "${value.prefix or ""}{env:${baseNameOf value.secret}}${value.suffix or ""}"
+    then "${
+      if value.prefix != null
+      then value.prefix
+      else ""
+    }{env:${baseNameOf value.secret}}${
+      if value.suffix != null
+      then value.suffix
+      else ""
+    }"
     else value);
 
   renderedMcpServers =
