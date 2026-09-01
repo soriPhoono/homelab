@@ -23,6 +23,12 @@ in
           default = "cpu";
           description = "Whether to use CPU or GPU acceleration for Ollama.";
         };
+
+        contextLength = mkOption {
+          type = types.nullOr types.ints.positive;
+          default = null;
+          description = "Default context length for Ollama model runners.";
+        };
       };
     };
 
@@ -58,9 +64,13 @@ in
                 "wud.tag.transform" = ''^(\d+\.\d+\.\d+)-rocm$ => $1'';
               };
 
-            environment = {
-              OLLAMA_HOST = "0.0.0.0:11434";
-            };
+            environment =
+              {
+                OLLAMA_HOST = "0.0.0.0:11434";
+              }
+              // optionalAttrs (cfg.contextLength != null) {
+                OLLAMA_CONTEXT_LENGTH = toString cfg.contextLength;
+              };
 
             volumes = [
               "${configurationDirectory}:/root/.ollama"

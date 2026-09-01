@@ -136,6 +136,8 @@ with lib; {
     inference.ollama = {
       enable = true;
       acceleration = "rocm";
+      # Qwen3.8 tool loops can overflow the automatic 32K context window.
+      contextLength = 65536;
     };
 
     development = {

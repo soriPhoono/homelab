@@ -57,10 +57,9 @@ in
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
-            inherit name cfg config;
+            inherit name config;
+            cfg = cfg // {container = cfg.container // {publication = [];};};
             image = "getwud/wud:8.3.1";
-            serviceName = "updates";
-            servicePort = 3000;
           })
           {
             environment = {

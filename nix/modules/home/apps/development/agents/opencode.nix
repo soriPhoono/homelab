@@ -151,6 +151,20 @@
         '';
       }
     else cfg.package;
+
+  opencodeDesktopPackage =
+    if hasRuntimeEnvironment
+    then
+      pkgs.symlinkJoin {
+        name = "opencode-desktop-managed";
+        paths = [pkgs.opencode-desktop];
+        nativeBuildInputs = [pkgs.makeWrapper];
+        postBuild = ''
+          wrapProgram "$out/bin/opencode-desktop" \
+            --run 'set -a; . ${runtimeEnvironmentFile}; set +a'
+        '';
+      }
+    else pkgs.opencode-desktop;
 in
   with lib; {
     options.apps.development.agents.opencode = mkOption {
@@ -241,7 +255,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       (mkIf cfg.desktop {
         home.packages = with pkgs; [
-          opencode-desktop
+          opencodeDesktopPackage
         ];
       })
       {
