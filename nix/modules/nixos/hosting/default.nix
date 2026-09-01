@@ -13,11 +13,14 @@ in
       ./media
       ./monitoring
       ./services
+      ./development
       ./inference
     ];
 
     options.hosting.enable = mkEnableOption "Enable hardware level features that respond to hosting module's presence";
 
-    config =
-      mkIf cfg.enable (mkMerge [{}]);
+    config = mkIf cfg.enable (mkMerge [
+      {
+      }
+    ]);
   }

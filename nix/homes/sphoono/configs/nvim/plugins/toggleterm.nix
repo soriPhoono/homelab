@@ -2,6 +2,7 @@
 with lib; {
   vim.terminal.toggleterm = {
     enable = true;
+    mappings.open = "<leader>tt";
 
     # LazyGit integration (lazygit keybind is wired via luaConfigRC
     # in plugins/toggleterm-keymaps.nix)

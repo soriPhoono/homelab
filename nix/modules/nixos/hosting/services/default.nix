@@ -1,9 +1,9 @@
 {
   imports = [
-    ./homebox.nix
-    ./mealie.nix
-    ./n8n.nix
-    ./outline.nix
     ./portainer.nix
+    ./outline.nix
+    ./forgejo.nix
+    ./n8n.nix
+    ./mealie.nix
   ];
 }

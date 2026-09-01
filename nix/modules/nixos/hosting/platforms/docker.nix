@@ -32,7 +32,7 @@ in
               };
               image = mkOption {
                 type = types.str;
-                description = "The container image of the plugin (e.g., grafana/loki-docker-driver:latest)";
+                description = "The container image of the plugin (e.g., grafana/loki-docker-driver:1.0.0)";
               };
               grantAllPermissions = mkOption {
                 type = types.bool;

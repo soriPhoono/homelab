@@ -126,12 +126,17 @@ with lib; {
       podman.enable = true;
     };
 
+    monitoring.wud.enable = true;
+
+    proxy = {
+      enable = true;
+      tailscale.enable = true;
+    };
+
     inference.ollama = {
       enable = true;
       acceleration = "rocm";
     };
-
-    monitoring.wud.enable = true;
 
     gaming = {
       enable = true;
@@ -140,13 +145,6 @@ with lib; {
         gpu = "mesa-compatible";
         internalMac = "c2:d8:de:57:c6:7c";
       };
-    };
-
-    services = {
-      homebox.enable = true;
-      mealie.enable = true;
-      n8n.enable = true;
-      outline.enable = true;
     };
 
     media = {
@@ -159,9 +157,10 @@ with lib; {
       };
     };
 
-    proxy = {
-      enable = true;
-      tailscale.enable = true;
+    services = {
+      mealie.enable = true; # Cookbook
+      n8n.enable = true; # Automation workbench
+      outline.enable = true; # Notation software
     };
   };
 

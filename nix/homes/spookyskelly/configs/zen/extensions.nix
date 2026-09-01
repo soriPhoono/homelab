@@ -20,6 +20,7 @@
         privacy-badger
         decentraleyes
         metamask
+        dark-mode-webextension
       ];
     };
   };

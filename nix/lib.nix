@@ -369,6 +369,7 @@ with prev; {
             (mkIf (elem "tailscale" (cfg.container.publication or [])) (
               {
                 "docktail.service.enable" = "true";
+                "docktail.service.network" = "tailscale";
                 "docktail.service.service-port" = "80";
                 "docktail.service.service-protocol" = "http";
                 "docktail.service.1.enable" = "true";
