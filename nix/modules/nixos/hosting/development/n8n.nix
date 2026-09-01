@@ -6,14 +6,14 @@
   inherit (lib.homelab.containers) mkContainer mkContainerOption;
 
   name = "n8n";
-  cfg = config.hosting.services.${name};
+  cfg = config.hosting.development.${name};
   configurationDirectory = "/var/lib/${name}";
   privateNetwork = "${name}-internal";
   postgresName = "${name}-postgres";
   serviceHostname = "${config.networking.hostName}-agents";
 in
   with lib; {
-    options.hosting.services.${name} = mkContainerOption {
+    options.hosting.development.${name} = mkContainerOption {
       inherit name;
       description = "Workflow automation platform";
     };

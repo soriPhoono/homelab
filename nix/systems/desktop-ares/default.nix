@@ -138,6 +138,10 @@ with lib; {
       acceleration = "rocm";
     };
 
+    development = {
+      n8n.enable = true; # Automation workbench
+    };
+
     gaming = {
       enable = true;
 
@@ -159,7 +163,6 @@ with lib; {
 
     services = {
       mealie.enable = true; # Cookbook
-      n8n.enable = true; # Automation workbench
       outline.enable = true; # Notation software
     };
   };

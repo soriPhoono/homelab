@@ -63,7 +63,7 @@ in
               TS_SOCKET = "/var/run/tailscale/tailscaled.sock";
               TS_STATE_DIR = "/var/lib/tailscale";
               TS_EXTRA_ARGS = "--advertise-tags=tag:microserver";
-              TS_USERSPACE = "true";
+              TS_USERSPACE = "false";
             };
             environmentFiles = [
               config.sops.templates."docktail/tailscale-sidecar-authkey".path
@@ -74,6 +74,9 @@ in
             ];
             networks = [
               "tailscale"
+            ];
+            extraOptions = [
+              "--device=/dev/net/tun:/dev/net/tun"
             ];
             ports = [
               "41642:41641/udp"

@@ -6,11 +6,11 @@
   inherit (lib.homelab.containers) mkContainer mkContainerOption;
 
   name = "forgejo";
-  cfg = config.hosting.services.${name};
+  cfg = config.hosting.development.${name};
   configurationDirectory = "/var/lib/${name}";
 in
   with lib; {
-    options.hosting.services.${name} =
+    options.hosting.development.${name} =
       (mkContainerOption {
         inherit name;
         description = "Self-hosted Git forge with Forgejo Actions support";
