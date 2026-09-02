@@ -20,6 +20,7 @@
   '';
   configuration = pkgs.runCommand "homepage-config" {} ''
     mkdir -p "$out"
+    mkdir "$out/logs"
     cp ${dockerConfiguration} "$out/docker.yaml"
     cp ${servicesConfiguration} "$out/services.yaml"
     cp ${settingsConfiguration} "$out/settings.yaml"
@@ -46,6 +47,7 @@ in
           user = "0:0";
           volumes = [
             "${configuration}:/app/config:ro"
+            "homepage-logs:/app/config/logs"
             "/var/run/docker.sock:/var/run/docker.sock:ro"
           ];
         }
