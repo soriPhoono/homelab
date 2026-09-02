@@ -384,7 +384,7 @@ in
           }
           {
             _args = [
-              "SUPER + C"
+              "SUPER + E"
               (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"noctalia msg panel-toggle launcher /emo\")")
             ];
           }

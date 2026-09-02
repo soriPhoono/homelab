@@ -127,7 +127,7 @@ in
             }
             {
               _args = [
-                "${wmCfg.common.mod} + E"
+                "${wmCfg.common.mod} + F"
                 (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.FILE_BROWSER}\")")
               ];
             }
