@@ -18,6 +18,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -28,6 +30,13 @@ in
             image = "linuxserver/prowlarr:2.5.2";
             serviceName = "indexers";
             servicePort = 9696;
+            homepage = {
+              group = "Media";
+              name = "Prowlarr";
+              icon = "prowlarr.png";
+              description = "Indexer aggregator";
+              serviceName = "indexers";
+            };
           })
           {
             volumes = [

@@ -17,6 +17,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -27,6 +29,13 @@ in
             image = "deluan/navidrome:0.63.2";
             serviceName = "jukebox";
             servicePort = 4533;
+            homepage = {
+              group = "Media";
+              name = "Navidrome";
+              icon = "navidrome.png";
+              description = "Music streaming server";
+              serviceName = "jukebox";
+            };
           })
           {
             user = "0:0";

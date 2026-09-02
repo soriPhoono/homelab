@@ -170,6 +170,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         assertions = [
           {
             assertion = config.hosting.platforms.docker.enable;
@@ -202,6 +204,13 @@ in
               image = "grafana/grafana:13.0.8";
               serviceName = "monitoring";
               servicePort = 3000;
+              homepage = {
+                group = "Monitoring";
+                name = "Grafana";
+                icon = "grafana.png";
+                description = "Metrics and log monitoring";
+                serviceName = "monitoring";
+              };
             })
             {
               user = "472:472";

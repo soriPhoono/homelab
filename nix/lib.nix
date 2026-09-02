@@ -352,6 +352,7 @@ with prev; {
         config,
         cfg,
         image,
+        homepage ? null,
         serviceName ? null,
         servicePort ? null,
         ...
@@ -385,6 +386,14 @@ with prev; {
                 "docktail.service.1.port" = toString servicePort;
               }
             ))
+            (mkIf (homepage != null && elem "tailscale" (cfg.container.publication or [])) {
+              "homepage.group" = homepage.group;
+              "homepage.name" = homepage.name;
+              "homepage.icon" = homepage.icon;
+              "homepage.href" = "https://${hostname}-${homepage.serviceName}.xerus-augmented.ts.net";
+              "homepage.description" = homepage.description;
+              "homepage.showStats" = "true";
+            })
           ];
       };
     };

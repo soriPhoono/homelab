@@ -17,10 +17,9 @@ in
       ./inference
     ];
 
-    options.hosting.enable = mkEnableOption "Enable hardware level features that respond to hosting module's presence";
+    options.hosting.enable = mkEnableOption "Enable shared hosting services and hardware-level hosting features";
 
-    config = mkIf cfg.enable (mkMerge [
-      {
-      }
-    ]);
+    config = mkIf cfg.enable {
+      hosting.services.homepage.enable = true;
+    };
   }

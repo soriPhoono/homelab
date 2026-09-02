@@ -24,6 +24,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         assertions = [
           {
             assertion = config.hosting.platforms.docker.enable;

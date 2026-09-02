@@ -17,6 +17,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -27,6 +29,13 @@ in
             image = "linuxserver/kavita:0.9.1";
             serviceName = "library";
             servicePort = 5000;
+            homepage = {
+              group = "Media";
+              name = "Kavita";
+              icon = "kavita.png";
+              description = "Digital library reader";
+              serviceName = "library";
+            };
           })
           {
             environment = {

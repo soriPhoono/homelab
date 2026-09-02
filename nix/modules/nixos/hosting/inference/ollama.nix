@@ -34,6 +34,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         assertions = [
           {
             assertion = config.hosting.platforms.docker.enable;
@@ -50,6 +52,13 @@ in
             inherit name cfg config image;
             serviceName = "inference";
             servicePort = 11434;
+            homepage = {
+              group = "Inference";
+              name = "Ollama";
+              icon = "ollama.png";
+              description = "Local inference server";
+              serviceName = "inference";
+            };
           })
           {
             labels =

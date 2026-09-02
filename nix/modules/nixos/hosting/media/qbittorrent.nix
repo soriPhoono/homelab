@@ -18,6 +18,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -28,6 +30,13 @@ in
             image = "linuxserver/qbittorrent:5.2.3";
             serviceName = "downloads";
             servicePort = 8080;
+            homepage = {
+              group = "Media";
+              name = "qBittorrent";
+              icon = "qbittorrent.png";
+              description = "Torrent download manager";
+              serviceName = "downloads";
+            };
           })
           {
             environment = {

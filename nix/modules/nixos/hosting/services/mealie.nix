@@ -17,6 +17,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0750 1000 1000 -"
         ];
@@ -27,6 +29,13 @@ in
             image = "hkotel/mealie:v3.24.0";
             serviceName = "cookbook";
             servicePort = 9000;
+            homepage = {
+              group = "Services";
+              name = "Mealie";
+              icon = "mealie.png";
+              description = "Recipe and meal planning";
+              serviceName = "cookbook";
+            };
           })
           {
             environment = {

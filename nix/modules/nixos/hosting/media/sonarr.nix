@@ -18,6 +18,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -28,6 +30,13 @@ in
             image = "linuxserver/sonarr:4.0.19";
             serviceName = "shows";
             servicePort = 8989;
+            homepage = {
+              group = "Media";
+              name = "Sonarr";
+              icon = "sonarr.png";
+              description = "TV show manager";
+              serviceName = "shows";
+            };
           })
           {
             environment = {

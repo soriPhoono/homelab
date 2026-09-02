@@ -18,6 +18,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -28,6 +30,13 @@ in
             image = "seerr/seerr:v3.4.1";
             serviceName = "pvr";
             servicePort = 5055;
+            homepage = {
+              group = "Media";
+              name = "Seerr";
+              icon = "seerr.png";
+              description = "Media request manager";
+              serviceName = "pvr";
+            };
           })
           {
             user = "0:0";

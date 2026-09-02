@@ -20,6 +20,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         assertions = [
           {
             assertion = config.hosting.platforms.docker.enable;
@@ -69,6 +71,13 @@ in
               image = "n8nio/n8n:2.37.6";
               serviceName = "agents";
               servicePort = 5678;
+              homepage = {
+                group = "Development";
+                name = "n8n";
+                icon = "n8n.png";
+                description = "Workflow automation";
+                serviceName = "agents";
+              };
             })
             {
               dependsOn = [postgresName];

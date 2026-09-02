@@ -17,6 +17,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -27,6 +29,13 @@ in
             image = "linuxserver/lidarr:3.1.0";
             serviceName = "music";
             servicePort = 8686;
+            homepage = {
+              group = "Media";
+              name = "Lidarr";
+              icon = "lidarr.png";
+              description = "Music manager";
+              serviceName = "music";
+            };
           })
           {
             environment = {

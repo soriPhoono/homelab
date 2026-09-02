@@ -26,6 +26,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         sops = {
           secrets = {
             portainer-edge-key = {};
@@ -67,6 +69,13 @@ in
               image = "portainer/portainer-ee:2.45.0";
               serviceName = "admin";
               servicePort = 9000;
+              homepage = {
+                group = "Services";
+                name = "Portainer";
+                icon = "portainer.png";
+                description = "Container management";
+                serviceName = "admin";
+              };
             })
             {
               volumes = [

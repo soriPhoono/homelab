@@ -21,6 +21,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         assertions = [
           {
             assertion = config.hosting.platforms.docker.enable;
@@ -101,6 +103,13 @@ in
               image = "outlinewiki/outline:1.9.2";
               serviceName = "wiki";
               servicePort = 3000;
+              homepage = {
+                group = "Services";
+                name = "Outline";
+                icon = "outline.png";
+                description = "Team knowledge base";
+                serviceName = "wiki";
+              };
             })
             {
               dependsOn = [postgresName redisName];

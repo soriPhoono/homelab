@@ -24,6 +24,8 @@ in
         }
       ];
 
+      hosting.enable = true;
+
       systemd.tmpfiles.rules = [
         "d ${configurationDirectory} 0750 1000 1000 -"
       ];
@@ -35,6 +37,13 @@ in
           image = "louislam/uptime-kuma:2.0.0";
           serviceName = "uptime";
           servicePort = 3001;
+          homepage = {
+            group = "Monitoring";
+            name = "Uptime Kuma";
+            icon = "uptime-kuma.png";
+            description = "Website and service uptime";
+            serviceName = "uptime";
+          };
         })
         {
           environment = {

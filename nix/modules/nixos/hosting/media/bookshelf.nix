@@ -18,6 +18,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         # Ensure config directory exists
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
@@ -29,6 +31,13 @@ in
             image = "ghcr.io/pennydreadful/bookshelf:hardcover-v0.4.20.129";
             serviceName = "books";
             servicePort = 8787;
+            homepage = {
+              group = "Media";
+              name = "Bookshelf";
+              icon = "mdi-bookshelf";
+              description = "E-book request manager";
+              serviceName = "books";
+            };
           })
           {
             labels = {

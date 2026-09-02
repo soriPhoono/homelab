@@ -40,6 +40,8 @@ in
 
     config = mkIf mediaCfg.enable (mkMerge [
       {
+        hosting.enable = true;
+
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];
@@ -50,6 +52,13 @@ in
             image = "linuxserver/jellyfin:10.11.11";
             serviceName = "media";
             servicePort = 8096;
+            homepage = {
+              group = "Media";
+              name = "Jellyfin";
+              icon = "jellyfin.png";
+              description = "Media streaming server";
+              serviceName = "media";
+            };
           })
           {
             volumes = [
