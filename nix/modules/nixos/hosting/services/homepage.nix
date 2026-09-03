@@ -31,13 +31,9 @@
   '';
   servicesConfiguration = pkgs.writeText "homepage-services.yaml" "[]\n";
   widgetsConfiguration = pkgs.writeText "homepage-widgets.yaml" "[]\n";
-  kubernetesConfiguration = pkgs.writeText "homepage-kubernetes.yaml" ''
-    mode: disabled
-  '';
   settingsConfiguration = pkgs.writeText "homepage-settings.yaml" ''
     title: Homelab
   '';
-  widgetsConfiguration = pkgs.writeText "homepage-widgets.yaml" "[]\n";
   configuration = pkgs.runCommand "homepage-config" {} ''
     mkdir -p "$out"
     mkdir "$out/logs"
