@@ -233,9 +233,25 @@ in
                 notifier:
                   filesystem:
                     filename: /var/lib/authelia/notifications.txt
+
+                ntp:
+                  address: udp://time.cloudflare.com:123
               '';
             };
           };
+        };
+
+        services.chrony = mkIf autheliaCfg.enable {
+          enable = true;
+          servers = ["time.cloudflare.com"];
+        };
+
+        systemd.services.docker-authelia = mkIf autheliaCfg.enable {
+          after = ["chronyd.service"];
+          requires = ["chronyd.service"];
+          preStart = ''
+            ${pkgs.chrony}/bin/chronyc waitsync 0 0.1 0 1
+          '';
         };
 
         hosting.proxy.caddy.routes = mkIf autheliaCfg.enable {
