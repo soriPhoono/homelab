@@ -123,7 +123,11 @@ with lib; {
     proxy = {
       enable = true;
       tailscale.enable = true;
+      authelia.enable = true;
+      caddy.enable = true;
     };
+
+    services.homepage.container.publication = ["caddy"];
 
     media = {
       enable = true;

@@ -131,6 +131,8 @@ with lib; {
     proxy = {
       enable = true;
       tailscale.enable = true;
+      authelia.enable = true;
+      caddy.enable = true;
     };
 
     inference.ollama = {
@@ -165,6 +167,7 @@ with lib; {
     };
 
     services = {
+      homepage.container.publication = ["caddy"];
       mealie.enable = true; # Cookbook
       outline.enable = true; # Notation software
     };
