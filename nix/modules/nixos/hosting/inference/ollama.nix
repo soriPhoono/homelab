@@ -52,13 +52,6 @@ in
             inherit name cfg config image;
             serviceName = "inference";
             servicePort = 11434;
-            homepage = {
-              group = "Inference";
-              name = "Ollama";
-              icon = "ollama.png";
-              description = "Local inference server";
-              serviceName = "inference";
-            };
           })
           {
             labels =

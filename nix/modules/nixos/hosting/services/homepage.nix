@@ -14,16 +14,32 @@
     local:
       socket: /var/run/docker.sock
   '';
+  bookmarksConfiguration = pkgs.writeText "homepage-bookmarks.yaml" "[]\n";
+  customCssConfiguration = pkgs.writeText "homepage-custom.css" "";
+  customJsConfiguration = pkgs.writeText "homepage-custom.js" "";
+  kubernetesConfiguration = pkgs.writeText "homepage-kubernetes.yaml" ''
+    # Kubernetes integration disabled.
+  '';
+  proxmoxConfiguration = pkgs.writeText "homepage-proxmox.yaml" ''
+    # Proxmox integration disabled.
+  '';
   servicesConfiguration = pkgs.writeText "homepage-services.yaml" "[]\n";
   settingsConfiguration = pkgs.writeText "homepage-settings.yaml" ''
     title: Homelab
   '';
+  widgetsConfiguration = pkgs.writeText "homepage-widgets.yaml" "[]\n";
   configuration = pkgs.runCommand "homepage-config" {} ''
     mkdir -p "$out"
     mkdir "$out/logs"
+    cp ${bookmarksConfiguration} "$out/bookmarks.yaml"
+    cp ${customCssConfiguration} "$out/custom.css"
+    cp ${customJsConfiguration} "$out/custom.js"
     cp ${dockerConfiguration} "$out/docker.yaml"
+    cp ${kubernetesConfiguration} "$out/kubernetes.yaml"
+    cp ${proxmoxConfiguration} "$out/proxmox.yaml"
     cp ${servicesConfiguration} "$out/services.yaml"
     cp ${settingsConfiguration} "$out/settings.yaml"
+    cp ${widgetsConfiguration} "$out/widgets.yaml"
   '';
 in
   with lib; {

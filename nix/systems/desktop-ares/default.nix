@@ -139,6 +139,7 @@ with lib; {
       # Qwen3.8 tool loops can overflow the automatic 32K context window.
       contextLength = 65536;
     };
+    inference.openwebui.enable = true;
 
     development = {
       n8n.enable = true; # Automation workbench
