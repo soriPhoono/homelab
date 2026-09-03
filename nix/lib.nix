@@ -327,32 +327,6 @@ with prev; {
     };
 
     containers = {
-      mkDockerImage = {
-        name,
-        pkgs,
-        package,
-        tag ? "latest",
-        config ? {},
-        extraContents ? [],
-      }:
-        pkgs.dockerTools.buildImage {
-          inherit name tag config;
-
-          copyToRoot = pkgs.buildEnv {
-            name = "${name}-root";
-            paths =
-              [
-                package
-                pkgs.dockerTools.caCertificates
-              ]
-              ++ extraContents;
-            pathsToLink = [
-              "/bin"
-              "/etc"
-            ];
-          };
-        };
-
       # NixOS
       mkContainerOption = {
         name,
@@ -364,12 +338,11 @@ with prev; {
           enable = mkEnableOption "Enable ${name}: ${description}";
 
           container.publication = mkOption {
-            type = types.listOf (types.enum ["tailscale" "caddy"]);
+            type = types.listOf (types.enum ["tailscale"]);
             default = ["tailscale"];
             description = ''
-              Determines where the container is published to. "caddy" routes the
-              service through the authenticated Caddy gateway, while "tailscale"
-              publishes it directly through Docktail.
+              Determines where the container is published to. "local" for the local
+              loopback via a reverse proxy, "tailscale" for the tailscale network via docktail
             '';
           };
         }
@@ -382,59 +355,46 @@ with prev; {
         homepage ? null,
         serviceName ? null,
         servicePort ? null,
-        caddy ? null,
         ...
-      }: let
-        hostname = config.networking.hostName;
-        publication = cfg.container.publication or [];
-        isPublished = elem "tailscale" publication || elem "caddy" publication;
-      in {
+      }: {
         inherit image;
 
-        networks =
-          (optional (elem "tailscale" publication) "tailscale")
-          ++ (optional (elem "caddy" publication) "caddy");
-
-        labels = mkMerge [
-          (mkIf (elem "tailscale" publication) (
-            {
-              "docktail.service.enable" = "true";
-              "docktail.service.network" = "tailscale";
-              "docktail.service.service-port" = "80";
-              "docktail.service.service-protocol" = "http";
-              "docktail.service.1.enable" = "true";
-              "docktail.service.1.network" = "tailscale";
-              "docktail.service.1.service-port" = "443";
-              "docktail.service.1.service-protocol" = "https";
-            }
-            // optionalAttrs (serviceName != null) {
-              "docktail.service.name" = "${hostname}-${serviceName}";
-              "docktail.service.1.name" = "${hostname}-${serviceName}";
-            }
-            // optionalAttrs (servicePort != null) {
-              "docktail.service.port" = toString servicePort;
-              "docktail.service.1.port" = toString servicePort;
-            }
-          ))
-          (mkIf (elem "caddy" publication && caddy != null) (
-            {
-              "caddy" = "http://${caddy.host}";
-              "caddy.reverse_proxy.header_up" = "X-Forwarded-Proto https";
-              "caddy.reverse_proxy" = "{{upstreams ${toString caddy.port}}}";
-            }
-            // optionalAttrs (caddy.policy != "bypass") {
-              "caddy.import" = "authelia-auth";
-            }
-          ))
-          (mkIf (homepage != null && isPublished) {
-            "homepage.group" = homepage.group;
-            "homepage.name" = homepage.name;
-            "homepage.icon" = homepage.icon;
-            "homepage.href" = "https://${hostname}-${homepage.serviceName}.xerus-augmented.ts.net";
-            "homepage.description" = homepage.description;
-            "homepage.showStats" = "true";
-          })
+        networks = mkIf (elem "tailscale" (cfg.container.publication or [])) [
+          "tailscale"
         ];
+
+        labels = let
+          hostname = config.networking.hostName;
+        in
+          mkMerge [
+            (mkIf (elem "tailscale" (cfg.container.publication or [])) (
+              {
+                "docktail.service.enable" = "true";
+                "docktail.service.network" = "tailscale";
+                "docktail.service.service-port" = "80";
+                "docktail.service.service-protocol" = "http";
+                "docktail.service.1.enable" = "true";
+                "docktail.service.1.service-port" = "443";
+                "docktail.service.1.service-protocol" = "https";
+              }
+              // optionalAttrs (serviceName != null) {
+                "docktail.service.name" = "${hostname}-${serviceName}";
+                "docktail.service.1.name" = "${hostname}-${serviceName}";
+              }
+              // optionalAttrs (servicePort != null) {
+                "docktail.service.port" = toString servicePort;
+                "docktail.service.1.port" = toString servicePort;
+              }
+            ))
+            (mkIf (homepage != null && elem "tailscale" (cfg.container.publication or [])) {
+              "homepage.group" = homepage.group;
+              "homepage.name" = homepage.name;
+              "homepage.icon" = homepage.icon;
+              "homepage.href" = "https://${hostname}-${homepage.serviceName}.xerus-augmented.ts.net";
+              "homepage.description" = homepage.description;
+              "homepage.showStats" = "true";
+            })
+          ];
       };
     };
   };

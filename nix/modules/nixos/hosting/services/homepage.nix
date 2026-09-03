@@ -9,12 +9,6 @@
   name = "homepage";
   cfg = config.hosting.services.${name};
   serviceHostname = "${config.networking.hostName}-${name}";
-  caddyRoute = {
-    name = serviceHostname;
-    host = "${serviceHostname}.xerus-augmented.ts.net";
-    port = 3000;
-    policy = "one_factor";
-  };
 
   dockerConfiguration = pkgs.writeText "homepage-docker.yaml" ''
     local:
@@ -61,7 +55,6 @@ in
           image = "ghcr.io/gethomepage/homepage:v2.2.0";
           serviceName = name;
           servicePort = 3000;
-          caddy = caddyRoute;
         })
         {
           environment = {
@@ -75,7 +68,5 @@ in
           ];
         }
       ];
-
-      hosting.proxy.caddy.routes.${name} = caddyRoute;
     };
   }
