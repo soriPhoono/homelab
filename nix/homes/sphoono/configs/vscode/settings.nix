@@ -21,9 +21,11 @@ _: {
       "editor.formatOnSave" = true;
       "editor.formatOnPaste" = true;
       "editor.defaultFormatter" = "esbenp.prettier-vscode";
+      # "explicit" (not boolean true) — VS Code migrates booleans on launch,
+      # which fails on the read-only nix store symlink and retries every launch.
       "editor.codeActionsOnSave" = {
-        "source.fixAll" = true;
-        "source.organizeImports" = true;
+        "source.fixAll" = "explicit";
+        "source.organizeImports" = "explicit";
       };
 
       # Files
@@ -41,9 +43,11 @@ _: {
         "**/.git" = true;
       };
 
-      # Terminal — font managed by Stylix
+      # Terminal — font managed by Stylix; bell silenced via
+      # accessibility.signals.terminalBell below (terminal.integrated.enableBell
+      # is deprecated — VS Code migrates it away on launch, which fails on the
+      # read-only nix store symlink and retries every launch).
       "terminal.integrated.cursorBlinking" = true;
-      "terminal.integrated.enableBell" = false;
 
       # Git
       "git.autofetch" = true;
