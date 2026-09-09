@@ -111,7 +111,10 @@ with lib; {
       console.enable = true;
       streaming.enable = true;
     };
-    tools.partition-manager.enable = true;
+    tools = {
+      partition-manager.enable = true;
+      virtualbox.enable = true;
+    };
   };
 
   hosting = {

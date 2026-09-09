@@ -280,6 +280,21 @@ in {
           };
         };
       };
+
+      data-science = {
+        extensions = with pkgs.vscode-extensions; [
+          # Python
+          ms-python.python
+          ms-python.vscode-pylance
+
+          # Jupyter notebooks
+          ms-toolsai.jupyter
+          ms-toolsai.jupyter-keymap
+          ms-toolsai.jupyter-renderers
+        ];
+
+        userSettings = {};
+      };
     };
   };
 }
