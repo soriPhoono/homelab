@@ -63,6 +63,14 @@ _: {
         "editor.tabSize" = 2;
       };
       "yaml.format.enable" = true;
+      "yaml.disableSchemaDetection" = [
+        "**/.github/workflows/*.yml"
+        "**/.github/workflows/*.yaml"
+        "**/.gitea/workflows/*.yml"
+        "**/.gitea/workflows/*.yaml"
+        "**/.forgejo/workflows/*.yml"
+        "**/.forgejo/workflows/*.yaml"
+      ];
 
       # Markdown settings
       "[markdown]" = {
