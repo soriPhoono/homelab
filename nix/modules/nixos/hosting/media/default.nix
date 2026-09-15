@@ -14,9 +14,7 @@ in
       ./jellyfin.nix
       ./seerr.nix
       ./lidarr.nix
-      ./navidrome.nix
       ./bookshelf.nix
-      ./kavita.nix
     ];
 
     options.hosting.media = {
