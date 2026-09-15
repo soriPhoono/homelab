@@ -27,14 +27,10 @@ in
         prowlarr.enable = true;
         radarr.enable = true;
         sonarr.enable = true;
+        lidarr.enable = true;
+        bookshelf.enable = true;
         jellyfin.enable = true;
         seerr.enable = true;
-
-        lidarr.enable = true;
-        navidrome.enable = true;
-
-        bookshelf.enable = true;
-        kavita.enable = true;
       };
 
       systemd.tmpfiles.rules = [
