@@ -69,9 +69,14 @@ in
             ];
 
             environment = {
-              PUID = "0";
-              PGID = "0";
               TZ = config.core.timeZone;
+
+              # Preserve the LinuxServer volume layout while migrating to the
+              # official image.
+              JELLYFIN_CONFIG_DIR = "/config";
+              JELLYFIN_DATA_DIR = "/config/data";
+              JELLYFIN_CACHE_DIR = "/config/cache";
+              JELLYFIN_LOG_DIR = "/config/log";
             };
           }
         ];
