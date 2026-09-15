@@ -129,23 +129,9 @@ with lib; {
       podman.enable = true;
     };
 
-    monitoring.wud.enable = true;
-
     proxy = {
       enable = true;
       tailscale.enable = true;
-    };
-
-    inference.ollama = {
-      enable = true;
-      acceleration = "rocm";
-      # Qwen3.8 tool loops can overflow the automatic 32K context window.
-      contextLength = 65536;
-    };
-    inference.openwebui.enable = true;
-
-    development = {
-      n8n.enable = true; # Automation workbench
     };
 
     gaming = {
@@ -165,11 +151,6 @@ with lib; {
         renderDevice = "/dev/dri/renderD128";
         cardDevice = "/dev/dri/card1";
       };
-    };
-
-    services = {
-      mealie.enable = true; # Cookbook
-      outline.enable = true; # Notation software
     };
   };
 
