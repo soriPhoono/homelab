@@ -34,7 +34,6 @@ in
               name = "Lidarr";
               icon = "lidarr.png";
               description = "Music manager";
-              serviceName = "music";
             };
           })
           {

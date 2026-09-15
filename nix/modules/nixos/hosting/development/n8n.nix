@@ -76,7 +76,6 @@ in
                 name = "n8n";
                 icon = "n8n.png";
                 description = "Workflow automation";
-                serviceName = "agents";
               };
             })
             {

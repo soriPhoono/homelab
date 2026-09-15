@@ -390,7 +390,7 @@ with prev; {
               "homepage.group" = homepage.group;
               "homepage.name" = homepage.name;
               "homepage.icon" = homepage.icon;
-              "homepage.href" = "https://${hostname}-${homepage.serviceName}.xerus-augmented.ts.net";
+              "homepage.href" = "https://${hostname}-${serviceName}.xerus-augmented.ts.net";
               "homepage.description" = homepage.description;
               "homepage.showStats" = "true";
             })

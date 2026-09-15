@@ -108,7 +108,6 @@ in
                 name = "Outline";
                 icon = "outline.png";
                 description = "Team knowledge base";
-                serviceName = "wiki";
               };
             })
             {

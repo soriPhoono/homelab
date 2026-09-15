@@ -74,7 +74,6 @@ in
                 name = "Portainer";
                 icon = "portainer.png";
                 description = "Container management";
-                serviceName = "admin";
               };
             })
             {

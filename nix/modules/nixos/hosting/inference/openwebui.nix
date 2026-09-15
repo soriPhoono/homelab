@@ -44,7 +44,6 @@ in
               name = "Open WebUI";
               icon = "open-webui.png";
               description = "Local AI chat";
-              serviceName = "chat";
             };
           })
           {

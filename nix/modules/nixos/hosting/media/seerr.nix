@@ -35,7 +35,6 @@ in
               name = "Seerr";
               icon = "seerr.png";
               description = "Media request manager";
-              serviceName = "pvr";
             };
           })
           {

@@ -34,7 +34,6 @@ in
               name = "Mealie";
               icon = "mealie.png";
               description = "Recipe and meal planning";
-              serviceName = "cookbook";
             };
           })
           {

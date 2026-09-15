@@ -36,7 +36,6 @@ in
               name = "Bookshelf";
               icon = "mdi-bookshelf";
               description = "E-book request manager";
-              serviceName = "books";
             };
           })
           {

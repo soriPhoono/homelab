@@ -49,7 +49,7 @@ in
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/jellyfin:10.11.11";
+            image = "jellyfin/jellyfin:12";
             serviceName = "media";
             servicePort = 8096;
             homepage = {
@@ -57,7 +57,6 @@ in
               name = "Jellyfin";
               icon = "jellyfin.png";
               description = "Media streaming server";
-              serviceName = "media";
             };
           })
           {
@@ -66,6 +65,7 @@ in
               "/mnt/local/media/shows:/data/tvshows"
               "/mnt/local/media/movies:/data/movies"
               "/mnt/local/media/music:/data/music"
+              "/mnt/local/media/books:/data/books"
             ];
 
             environment = {

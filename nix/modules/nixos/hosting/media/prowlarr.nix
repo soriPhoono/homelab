@@ -35,7 +35,6 @@ in
               name = "Prowlarr";
               icon = "prowlarr.png";
               description = "Indexer aggregator";
-              serviceName = "indexers";
             };
           })
           {

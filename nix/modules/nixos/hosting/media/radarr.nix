@@ -35,7 +35,6 @@ in
               name = "Radarr";
               icon = "radarr.png";
               description = "Movie manager";
-              serviceName = "movies";
             };
           })
           {

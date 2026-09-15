@@ -35,7 +35,6 @@ in
               name = "Sonarr";
               icon = "sonarr.png";
               description = "TV show manager";
-              serviceName = "shows";
             };
           })
           {

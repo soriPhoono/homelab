@@ -42,7 +42,6 @@ in
             name = "Uptime Kuma";
             icon = "uptime-kuma.png";
             description = "Website and service uptime";
-            serviceName = "uptime";
           };
         })
         {

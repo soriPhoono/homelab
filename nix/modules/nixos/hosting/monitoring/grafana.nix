@@ -209,7 +209,6 @@ in
                 name = "Grafana";
                 icon = "grafana.png";
                 description = "Metrics and log monitoring";
-                serviceName = "monitoring";
               };
             })
             {

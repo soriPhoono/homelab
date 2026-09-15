@@ -35,7 +35,6 @@ in
               name = "qBittorrent";
               icon = "qbittorrent.png";
               description = "Torrent download manager";
-              serviceName = "downloads";
             };
           })
           {
