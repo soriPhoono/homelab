@@ -15,8 +15,9 @@ Nix flake for sphoono's NixOS homelab and personal devices. It builds NixOS syst
 - `nix/lib.nix` extends nixpkgs lib with `homelab.helpers.core.discover`, `homelab.development.*`, and `homelab.containers.*` helpers.
 - `nix/modules/nixos/` is system-level modules: `core`, `desktop`, `hosting`, `themes`.
 - `nix/modules/home/` is Home Manager modules: `core`, `desktop`, `apps`, `programs`.
-- `nix/homes/AGENTS.md` and user-local AGENTS files contain extra rules for Home Manager layering.
-- `nix/overlays/default.nix` auto-loads every sibling `.nix` overlay except `default.nix`.
+- `nix/homes/` are the Home Manager configurations consisting of a top level user configuration and system specific overrides
+- `nix/systems` are the relevant build targets configured in this repo
+- `nix/overlays` are per package overrides to inject code into build processes
 
 ## Current targets
 
@@ -46,7 +47,6 @@ Nix flake for sphoono's NixOS homelab and personal devices. It builds NixOS syst
 
 - `actions.nix` is the source for `.github/workflows/ci.yml`; do not hand-edit `ci.yml` except to inspect generated output.
 - CI runs on pull requests and gates on `nix flake check --all-systems`, then builds each exported NixOS system and standalone home activation package.
-- `.github/workflows/update-flake-lock.yml` is hand-written and opens weekly `chore(deps): update flake.lock` PRs.
 
 ## Formatting and hooks
 
@@ -68,10 +68,3 @@ Nix flake for sphoono's NixOS homelab and personal devices. It builds NixOS syst
 - Secret rules live in `.sops.yaml`; user secrets live under `nix/homes/<user>/secrets.yml`; system secrets live under `nix/systems/<hostname>/secrets.yml`.
 - Edit secrets with exact paths, e.g. `sops nix/systems/desktop-ares/secrets.yml` or `sops nix/homes/sphoono/secrets.yml`.
 - Do not put secrets in module `environment` attrs; `lib.homelab.development.mkAgent` explicitly treats environment variables as non-secret.
-
-## Pitfalls
-
-- Existing older host names like `zephyrus`, `ares`, `lg-laptop`, and `testbench` are stale for current flake outputs; use `desktop-ares`, `laptop-ares`, and `laptop-vesper`.
-- `nix build .#homeConfigurations.sphoono@desktop-ares.activationPackage` is not a valid exported target for NixOS-managed hosts.
-- Editing `actions.nix` requires entering `nix develop` or otherwise regenerating/validating the generated workflow before committing.
-- `nix flake check --all-systems` evaluates all checks and can be slower than a targeted `nix build` during iteration.

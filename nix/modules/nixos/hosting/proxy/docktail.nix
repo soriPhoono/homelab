@@ -24,8 +24,6 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        hosting.enable = true;
-
         assertions = [
           {
             message = "Docktail requires Tailscale to be enabled.";

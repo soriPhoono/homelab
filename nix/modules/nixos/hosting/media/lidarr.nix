@@ -17,8 +17,6 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        hosting.enable = true;
-
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];

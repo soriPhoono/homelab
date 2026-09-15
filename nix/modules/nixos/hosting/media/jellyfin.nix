@@ -40,8 +40,6 @@ in
 
     config = mkIf mediaCfg.enable (mkMerge [
       {
-        hosting.enable = true;
-
         systemd.tmpfiles.rules = [
           "d ${configurationDirectory} 0755 root root -"
         ];

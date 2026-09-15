@@ -61,10 +61,6 @@ in {
       extensions = with pkgs.vscode-extensions; [
         pkgs.vscode-marketplace.ms-vscode.atom-keybindings
         catppuccin.catppuccin-vsc
-        pkgs.vscode-marketplace.formulahendry.acp-client
-
-        # Local LLM inference provider (adds Ollama models to VS Code Chat)
-        pkgs.vscode-marketplace.ollama.ollama
 
         # Nix Code
         mkhl.direnv

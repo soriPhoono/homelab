@@ -2,21 +2,21 @@
 
 ## Knowledge and Journal Systems
 
-OpenCode uses two deliberately separate external context systems:
+Opencode relies primarily on notion for durable human in the loop context, and honcho for agentic memory.
 
-- **Obsidian is the personal daily journal.** Use it for today's journal entry, personal reflection, and the daily work log only. Do not use Obsidian as the project knowledge base, architecture repository, or cross-agent handoff store.
-- **Outline is the shared knowledge base.** Use the `knowledge/outline` MCP server for comprehensive project, system, architecture, operations, decision, terminology, and cross-agent documentation. Outline is shared across agents and systems and is the durable source for human-readable knowledge outside the repositories.
-
-## Session Startup: Journal and Outline Context
+### Session Startup: Notion context
 
 At the start of every new chat session, before planning, debugging, or editing code:
 
-1. Search and read today's daily note in `~/Shared/Vault/01 Daily` with the `personal/obsidian` MCP server.
-2. Search and read the relevant documents in Outline with the `knowledge/outline` MCP server, including project context, architecture decisions, constraints, terminology, runbooks, and unresolved work.
-3. Treat relevant Outline documents as living, durable implementation memory shared across agents and systems.
-4. Reconcile Outline context with the current repository and filesystem state. Current source files win for implementation facts; surface conflicts instead of silently choosing.
-5. Keep only the context relevant to the active code change in working memory.
-6. Always update the daily note in the Obsidian vault at the end of each turn. At the end of a work session, record 4-5 bullets on what was accomplished. Use the `personal/obsidian` MCP server to create or append to the daily note.
+1. Search the notion knowledge base for any relevant context about the current project, the project's name will be in the root `AGENTS.md` file
+2. Check the `Projects` page for any relevant tasks related to the current project
+
+### Turn completion: Notion context
+
+At the end of every turn, before handing back off to me you should:
+
+1. Update the project's wiki with any new information, be sure to compact information when needed
+2. Update the `Project` page's relevant tasks related to the current project
 
 ## Voice
 

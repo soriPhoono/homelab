@@ -11,16 +11,6 @@
       composio
     ];
 
-    ollama = {
-      enable = true;
-      baseUrl = "https://desktop-ares-inference.xerus-augmented.ts.net/v1";
-      models = {
-        "qwen3.8" = {
-          name = "qwen-3.8";
-        };
-      };
-    };
-
     # Honcho persistent memory for the software-development pipeline.
     secrets = [
       "api/HONCHO_API_KEY"
@@ -60,9 +50,6 @@
 
       # General 3rd party services
       composio = pkgs.skills.composio-community.skills.composio;
-
-      # Video pipeline inter-agent manifest contract
-      video-pipeline-manifest = ../assets/skills/video-pipeline-manifest;
     };
 
     mcpServers = {
@@ -73,17 +60,8 @@
           "@modelcontextprotocol/server-sequential-thinking"
         ];
       };
-      "personal/obsidian" = {
-        # Read/write the shared Obsidian vault for project context and handoff.
-        command = "${pkgs.nodejs}/bin/npx";
-        args = [
-          "-y"
-          "@bitbonsai/mcpvault@latest"
-          "${config.home.homeDirectory}/Shared/Vault"
-        ];
-      };
-      "personal/outline" = {
-        url = "https://desktop-ares-wiki.xerus-augmented.ts.net/mcp";
+      "personal/notion" = {
+        url = "https://mcp.notion.com/mcp";
       };
       "search/brave" = {
         command = "${pkgs.nodejs}/bin/npx";
