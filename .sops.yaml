@@ -29,3 +29,7 @@ creation_rules:
       - age:
           - *admin_soriphoono
           - *system_lg_laptop
+  - path_regex: docker/stacks/n8n/secrets/(cloudflared-tunnel-token|n8n-runners-auth-token)$
+    key_groups:
+      - age:
+          - *admin_soriphoono
