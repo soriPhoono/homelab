@@ -23,14 +23,54 @@ in
 
     config = mkIf cfg.enable {
       hosting.media = {
-        qbittorrent.enable = true;
-        prowlarr.enable = true;
-        radarr.enable = true;
-        sonarr.enable = true;
-        lidarr.enable = true;
-        bookshelf.enable = true;
-        jellyfin.enable = true;
-        seerr.enable = true;
+        qbittorrent = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        prowlarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        radarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        sonarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        lidarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        bookshelf = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        jellyfin = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        seerr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
       };
 
       systemd.tmpfiles.rules = [

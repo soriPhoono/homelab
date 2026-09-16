@@ -338,11 +338,13 @@ with prev; {
           enable = mkEnableOption "Enable ${name}: ${description}";
 
           container.publication = mkOption {
-            type = types.listOf (types.enum ["tailscale"]);
-            default = ["tailscale"];
+            type = types.listOf (types.enum ["tailscale" "cloudflare"]);
+            default = [];
             description = ''
               Determines where the container is published to. "local" for the local
-              loopback via a reverse proxy, "tailscale" for the tailscale network via docktail
+              loopback via a reverse proxy, "tailscale" for the tailscale network via docktail,
+              "cloudflare" for the cloudflare network via dockflare.
+              If multiple are specified, the container will be published to all of them.
             '';
           };
         }
@@ -352,50 +354,45 @@ with prev; {
         config,
         cfg,
         image,
-        homepage ? null,
         serviceName ? null,
-        servicePort ? null,
+        containerPort ? null,
         ...
-      }: {
-        inherit image;
+      }:
+        mkMerge [
+          {
+            inherit image;
 
-        networks = mkIf (elem "tailscale" (cfg.container.publication or [])) [
-          "tailscale"
+            labels = let
+              hostname = config.networking.hostName;
+            in
+              mkMerge [
+                (mkIf (elem "tailscale" (cfg.container.publication or [])) (
+                  {
+                    "docktail.service.enable" = "true";
+                    "docktail.service.network" = "tailscale";
+                    "docktail.service.service-port" = "80";
+                    "docktail.service.service-protocol" = "http";
+                    "docktail.service.1.enable" = "true";
+                    "docktail.service.1.service-port" = "443";
+                    "docktail.service.1.service-protocol" = "https";
+                  }
+                  // optionalAttrs (serviceName != null) {
+                    "docktail.service.name" = "${hostname}-${serviceName}";
+                    "docktail.service.1.name" = "${hostname}-${serviceName}";
+                  }
+                  // optionalAttrs (containerPort != null) {
+                    "docktail.service.port" = toString containerPort;
+                    "docktail.service.1.port" = toString containerPort;
+                  }
+                ))
+              ];
+          }
+          (mkIf (elem "tailscale" (cfg.container.publication or [])) {
+            networks = [
+              "tailscale"
+            ];
+          })
         ];
-
-        labels = let
-          hostname = config.networking.hostName;
-        in
-          mkMerge [
-            (mkIf (elem "tailscale" (cfg.container.publication or [])) (
-              {
-                "docktail.service.enable" = "true";
-                "docktail.service.network" = "tailscale";
-                "docktail.service.service-port" = "80";
-                "docktail.service.service-protocol" = "http";
-                "docktail.service.1.enable" = "true";
-                "docktail.service.1.service-port" = "443";
-                "docktail.service.1.service-protocol" = "https";
-              }
-              // optionalAttrs (serviceName != null) {
-                "docktail.service.name" = "${hostname}-${serviceName}";
-                "docktail.service.1.name" = "${hostname}-${serviceName}";
-              }
-              // optionalAttrs (servicePort != null) {
-                "docktail.service.port" = toString servicePort;
-                "docktail.service.1.port" = toString servicePort;
-              }
-            ))
-            (mkIf (homepage != null && elem "tailscale" (cfg.container.publication or [])) {
-              "homepage.group" = homepage.group;
-              "homepage.name" = homepage.name;
-              "homepage.icon" = homepage.icon;
-              "homepage.href" = "https://${hostname}-${serviceName}.xerus-augmented.ts.net";
-              "homepage.description" = homepage.description;
-              "homepage.showStats" = "true";
-            })
-          ];
-      };
     };
   };
 }

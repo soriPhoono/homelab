@@ -4,8 +4,6 @@
   options,
   ...
 }: let
-  inherit (lib.homelab.containers) mkContainerOption mkContainer;
-
   proxyCfg = config.hosting.proxy;
   cfg = proxyCfg.docktail;
 
@@ -17,17 +15,16 @@
     else "/var/run/docker.sock";
 in
   with lib; {
-    options.hosting.proxy.${name} = mkContainerOption {
-      inherit name;
-      description = "Docktail, used for reverse proxying over tailscale.";
+    options.hosting.proxy.${name} = {
+      enable = mkEnableOption "Docktail microserver proxy system";
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
         assertions = [
           {
-            message = "Docktail requires Tailscale to be enabled.";
-            assertion = config.services.tailscale.enable;
+            message = "Docktail requires docker to be enabled.";
+            assertion = config.hosting.platforms.docker.enable;
           }
         ];
 
@@ -83,12 +80,9 @@ in
             ];
           };
           ${name} = mkMerge [
-            (mkContainer {
-              inherit name config;
-              cfg = cfg // {container = cfg.container // {publication = [];};};
-              image = "ghcr.io/marvinvr/docktail:1.3.0";
-            })
             {
+              image = "ghcr.io/marvinvr/docktail:1.3.0";
+
               dependsOn = [
                 "tailscale-sidecar"
               ];
