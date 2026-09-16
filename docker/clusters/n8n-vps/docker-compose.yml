@@ -19,4 +19,4 @@ services:
       - ./config.yml:/app/config.yaml:ro
 secrets:
   age:
-    file: age.key
+    file: secrets/keys.txt
