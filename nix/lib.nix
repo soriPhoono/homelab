@@ -122,12 +122,22 @@ with prev; {
             description = "";
           };
 
-          skills = mkOption {
-            type = with types; attrsOf types.package;
+          documents = mkOption {
+            type = with types; attrsOf (either path str);
             default = {};
             description = ''
-              The packages to symlink into the skills directory for the ${name} agent.
-              Each package should contain a SKILL.md at its root.
+              Context documents to make available to the ${name} agent.
+              Map of document relative path/name to file path or string content.
+            '';
+          };
+
+          skills = mkOption {
+            type = with types; attrsOf (either types.path types.package);
+            default = {};
+            description = ''
+              The skills to symlink into the skills directory for the ${name} agent.
+              Each value must contain a SKILL.md at its root.
+              Accepts either a path (relative local file) or a package (from nix-skills).
             '';
           };
 
@@ -181,6 +191,13 @@ with prev; {
                             default = null;
                             description = ''
                               The prefix to include before the secret (e.g. "Bearer ")
+                            '';
+                          };
+                          suffix = mkOption {
+                            type = nullOr str;
+                            default = null;
+                            description = ''
+                              The suffix to include after the secret
                             '';
                           };
                           secret = mkOption {
@@ -321,61 +338,61 @@ with prev; {
           enable = mkEnableOption "Enable ${name}: ${description}";
 
           container.publication = mkOption {
-            type = types.listOf (types.enum ["tailscale"]);
-            default = ["tailscale"];
+            type = types.listOf (types.enum ["tailscale" "cloudflare"]);
+            default = [];
             description = ''
               Determines where the container is published to. "local" for the local
-              loopback via a reverse proxy, "tailscale" for the tailscale network via docktail
+              loopback via a reverse proxy, "tailscale" for the tailscale network via docktail,
+              "cloudflare" for the cloudflare network via dockflare.
+              If multiple are specified, the container will be published to all of them.
             '';
           };
         }
         // extraOptions;
 
-      # TODO: make feature users
       mkContainer = {
         config,
         cfg,
         image,
-        root ? false,
         serviceName ? null,
-        servicePort ? null,
+        containerPort ? null,
         ...
-      }: {
-        inherit image;
+      }:
+        mkMerge [
+          {
+            inherit image;
 
-        networks = mkIf (elem "tailscale" (cfg.container.publication or [])) [
-          "tailscale"
+            labels = let
+              hostname = config.networking.hostName;
+            in
+              mkMerge [
+                (mkIf (elem "tailscale" (cfg.container.publication or [])) (
+                  {
+                    "docktail.service.enable" = "true";
+                    "docktail.service.network" = "tailscale";
+                    "docktail.service.service-port" = "80";
+                    "docktail.service.service-protocol" = "http";
+                    "docktail.service.1.enable" = "true";
+                    "docktail.service.1.service-port" = "443";
+                    "docktail.service.1.service-protocol" = "https";
+                  }
+                  // optionalAttrs (serviceName != null) {
+                    "docktail.service.name" = "${hostname}-${serviceName}";
+                    "docktail.service.1.name" = "${hostname}-${serviceName}";
+                  }
+                  // optionalAttrs (containerPort != null) {
+                    "docktail.service.port" = toString containerPort;
+                    "docktail.service.1.port" = toString containerPort;
+                  }
+                ))
+              ];
+          }
+          (mkIf (elem "tailscale" (cfg.container.publication or [])) {
+            networks = [
+              "tailscale"
+            ];
+          })
         ];
-
-        podman = mkIf (!root) {
-          sdnotify = "conmon";
-          user = "microserver";
-        };
-
-        labels = let
-          hostname = config.networking.hostName;
-        in
-          mkMerge [
-            (mkIf (elem "tailscale" (cfg.container.publication or [])) (
-              {
-                "docktail.service.enable" = "true";
-                "docktail.service.service-port" = "80";
-                "docktail.service.service-protocol" = "http";
-                "docktail.service.1.enable" = "true";
-                "docktail.service.1.service-port" = "443";
-                "docktail.service.1.service-protocol" = "https";
-              }
-              // optionalAttrs (serviceName != null) {
-                "docktail.service.name" = "${hostname}-${serviceName}";
-                "docktail.service.1.name" = "${hostname}-${serviceName}";
-              }
-              // optionalAttrs (servicePort != null) {
-                "docktail.service.port" = toString servicePort;
-                "docktail.service.1.port" = toString servicePort;
-              }
-            ))
-          ];
-      };
     };
   };
 }

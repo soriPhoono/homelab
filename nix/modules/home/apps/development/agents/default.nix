@@ -1,6 +1,7 @@
 {
   imports = [
+    ./codex.nix
     ./opencode.nix
-    ./hermes.nix
+    ./pi-coding-agent.nix
   ];
 }

@@ -40,7 +40,6 @@ in
         virtualisation.podman = {
           enable = true;
           autoPrune.enable = true;
-          dockerSocket.enable = true;
         };
 
         systemd.user.sockets.podman = {
@@ -143,69 +142,57 @@ in
                 }/bin/podman-tailscale-bypass-stop";
               };
             };
-
-            podman-create-networks = let
-              networks = unique (
-                flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
-              );
-            in {
-              after = ["podman.service"];
-              wantedBy = ["multi-user.target"];
-              path = ["/run/wrappers"];
-              serviceConfig = {
-                Type = "oneshot";
-                RemainAfterExit = true;
-                ExecStart = "${
-                  pkgs.writeShellApplication {
-                    name = "podman-create-networks";
-                    runtimeInputs = with pkgs; [
-                      podman
-                      util-linux
-                    ];
-                    text = optionalString (networks != []) ''
-                      # Rootful networks
-                      EXISTING_NETWORKS=$(podman network ls --format '{{.Name}}')
-                      ${concatStringsSep "\n" (
-                        map (network: ''
-                          if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${network}"; then
-                            podman network create "${network}"
-                          fi
-                        '')
-                        networks
-                      )}
-
-                      # Rootless networks for microserver user
-                      if id -u microserver >/dev/null 2>&1; then
-                        EXISTING_MICROSERVER_NETWORKS=$(runuser -u microserver -- env XDG_RUNTIME_DIR=/run/user/${toString config.users.users.microserver.uid} podman network ls --format '{{.Name}}' 2>/dev/null || true)
-                        ${concatStringsSep "\n" (
-                        map (network: ''
-                          if ! echo "$EXISTING_MICROSERVER_NETWORKS" | grep -Fxq "${network}"; then
-                            runuser -u microserver -- env XDG_RUNTIME_DIR=/run/user/${toString config.users.users.microserver.uid} podman network create "${network}"
-                          fi
-                        '')
-                        networks
-                      )}
-                      fi
-                    '';
-                  }
-                }/bin/podman-create-networks";
-              };
-            };
           }
-          // (listToAttrs (
-            mapAttrsToList (name: _: {
-              name = "podman-${name}";
-              value = {
-                after = [
-                  "podman-create-networks.service"
-                ];
-                bindsTo = [
-                  "podman-create-networks.service"
-                ];
+          // (optionalAttrs (config.virtualisation.oci-containers.backend == "podman") ({
+              podman-create-networks = let
+                networks = unique (
+                  flatten (mapAttrsToList (_: c: c.networks or []) config.virtualisation.oci-containers.containers)
+                );
+              in {
+                after = ["podman.service"];
+                wantedBy = ["multi-user.target"];
+                path = ["/run/wrappers"];
+                serviceConfig = {
+                  Type = "oneshot";
+                  RemainAfterExit = true;
+                  ExecStart = "${
+                    pkgs.writeShellApplication {
+                      name = "podman-create-networks";
+                      runtimeInputs = with pkgs; [
+                        podman
+                        util-linux
+                      ];
+                      text = optionalString (networks != []) ''
+                        # Rootful networks
+                        EXISTING_NETWORKS=$(podman network ls --format '{{.Name}}')
+                        ${concatStringsSep "\n" (
+                          map (network: ''
+                            if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${network}"; then
+                              podman network create "${network}"
+                            fi
+                          '')
+                          networks
+                        )}
+                      '';
+                    }
+                  }/bin/podman-create-networks";
+                };
               };
-            })
-            config.virtualisation.oci-containers.containers
-          ));
+            }
+            // (listToAttrs (
+              mapAttrsToList (name: _: {
+                name = "podman-${name}";
+                value = {
+                  after = [
+                    "podman-create-networks.service"
+                  ];
+                  bindsTo = [
+                    "podman-create-networks.service"
+                  ];
+                };
+              })
+              config.virtualisation.oci-containers.containers
+            ))));
       }
     ]);
   }

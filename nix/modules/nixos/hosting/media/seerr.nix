@@ -19,15 +19,21 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "seerr/seerr";
+            image = "seerr/seerr:v3.4.1";
             serviceName = "pvr";
             servicePort = 5055;
+            homepage = {
+              group = "Media";
+              name = "Seerr";
+              icon = "seerr.png";
+              description = "Media request manager";
+            };
           })
           {
             user = "0:0";

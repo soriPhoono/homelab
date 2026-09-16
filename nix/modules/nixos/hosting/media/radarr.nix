@@ -19,7 +19,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
@@ -28,6 +28,12 @@ in
             image = "linuxserver/radarr:6.3.0";
             serviceName = "movies";
             servicePort = 7878;
+            homepage = {
+              group = "Media";
+              name = "Radarr";
+              icon = "radarr.png";
+              description = "Movie manager";
+            };
           })
           {
             environment = {

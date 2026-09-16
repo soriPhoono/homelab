@@ -1,11 +1,10 @@
 {
   imports = [
-    ./antigravity
-    ./zen
-    ./hypr
-    ./helix
-    ./hermes
-    ./opencode
     ./fastfetch
+    ./hypr
+    ./zen
+    ./nvim
+    ./vscode
+    ./opencode
   ];
 }

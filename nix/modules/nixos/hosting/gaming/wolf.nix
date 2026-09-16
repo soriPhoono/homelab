@@ -17,12 +17,12 @@
     if cfg.gpu == "integrated"
     then {
       render = "/dev/dri/renderD128";
-      card = "/dev/dri/card0";
+      card = "/dev/dri/card1";
     }
     else if cfg.gpu == "mesa-compatible"
     then {
       render = "/dev/dri/renderD129";
-      card = "/dev/dri/card1";
+      card = "/dev/dri/card2";
     }
     else if cfg.gpu == "NVIDIA"
     then throw "TODO: Create nvidia gpu module support"
@@ -74,22 +74,15 @@ in
           KERNEL=="uhid", MODE="0660", GROUP="input"
         '';
 
-        users.users.microserver.extraGroups = [
-          "input"
-          "render"
-          "video"
-        ];
-
-        systemd.services.podman-wolf.preStart = ''
-          ${pkgs.podman}/bin/podman rm --force WolfPulseAudio
+        systemd.services."${config.virtualisation.oci-containers.backend}-wolf".preStart = ''
+          ${pkgs.docker}/bin/docker rm --force WolfPulseAudio
         '';
 
         # Wolf container via OCI module
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "ghcr.io/games-on-whales/wolf:stable";
-            root = true;
+            image = "gameonwhales/wolf:stable@sha256:0d901e766e6ed288712ff994dd3b877aea7c9f22ff6e5b0efbb16bc7bb4ae9a4";
           })
           {
             volumes = [
@@ -104,6 +97,12 @@ in
               WOLF_STOP_CONTAINER_ON_EXIT = "TRUE";
               WOLF_INTERNAL_MAC = cfg.internalMac;
               WOLF_RENDER_NODE = gpuDevices.render;
+            };
+
+            labels = {
+              # Docker Hub currently publishes Wolf only as the mutable stable tag.
+              # Track its digest so stable image rebuilds still produce notifications.
+              "wud.watch.digest" = "true";
             };
 
             extraOptions = [

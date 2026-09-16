@@ -11,10 +11,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    agenix-shell = {
-      url = "github:aciceri/agenix-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -58,6 +54,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nvf = {
+      url = "github:notashelf/nvf";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     stylix = {
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -78,23 +79,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    antigravity-nix = {
-      url = "github:jacopone/antigravity-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-vscode-extensions = {
       url = "github:nix-community/nix-vscode-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hermes-agent = {
-      url = "github:NousResearch/hermes-agent/pull/61824/head";
+    nix-skills = {
+      url = "github:sudosubin/nix-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-skills = {
-      url = "github:sudosubin/nix-skills";
+    ygo-nix = {
+      url = "github:digiboid/ygo-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -147,6 +143,7 @@
       self.homeModules.default
       sops-nix.homeManagerModules.sops
       stylix.homeModules.stylix
+      nvf.homeManagerModules.default
       noctalia.homeModules.default
     ];
 
@@ -250,7 +247,6 @@
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = with inputs; [
-        agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
         github-actions-nix.flakeModule
@@ -258,14 +254,6 @@
 
       # Supported systems for devShells/checks
       systems = ["x86_64-linux"];
-
-      agenix-shell = {
-        identityPaths = [
-          "$HOME/.ssh/id_ed25519"
-        ];
-        secrets = {
-        };
-      };
 
       perSystem = {
         pkgs,
@@ -293,68 +281,10 @@
             inherit
               (config)
               pre-commit
-              agenix-shell
               githubActions
               ;
           };
         };
-
-        # --- Packages and applications --- #
-        apps = rec {
-          install = {
-            type = "app";
-            program = pkgs.writeShellApplication {
-              name = "install.sh";
-              runtimeInputs = with pkgs; [
-                disko
-              ];
-              text = ''
-                target=$1
-
-                nix run .#writeDisks -- $target
-
-                sudo nixos-install --flake .#$target --option max-jobs 1 --option cores 4
-              '';
-            };
-            meta.description = "Install NixOS to a target machine (disko + nixos-install)";
-          };
-          writeDisks = {
-            type = "app";
-            program = pkgs.writeShellApplication {
-              name = "write-disk-config.sh";
-              runtimeInputs = with pkgs; [
-                disko
-              ];
-              text = ''
-                target=$1
-
-                sudo disko -m destroy,format,mount --flake .#$target
-              '';
-            };
-            meta.description = "Partition and format disks for a target machine using disko";
-          };
-          default = install;
-        };
-
-        # --- QCOW2 VM images (auto-generated per system) ---
-        packages = builtins.listToAttrs (
-          map (hostName: {
-            name = "${hostName}-qcow";
-            value =
-              (self.nixosConfigurations.${hostName}.extendModules {
-                modules = [
-                  {
-                    core.vm-image.enable = true;
-                  }
-                  (import ./nix/modules/nixos/core/vm-image.nix)
-                ];
-              })
-              .config
-              .system
-              .build
-              .image;
-          }) (builtins.attrNames self.nixosConfigurations)
-        );
       };
 
       flake = {
@@ -403,6 +333,10 @@
           builtins.listToAttrs (
             builtins.filter (x: x != null) (lib.mapAttrsToList processHomeDir homesContent)
           );
+
+        nvimConfigurations = lib.mapAttrs (_: home: home.config.programs.nvf.finalPackage) (
+          lib.filterAttrs (_: home: home.config.programs.nvf.enable) self.homeConfigurations
+        );
       };
     };
 }

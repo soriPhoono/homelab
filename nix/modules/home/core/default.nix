@@ -12,6 +12,7 @@
     ./secrets.nix
     ./ssh.nix
     ./gpg.nix
+    ./syncthing.nix
   ];
 
   home.packages = with pkgs; [

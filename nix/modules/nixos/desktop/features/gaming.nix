@@ -18,6 +18,7 @@ in
             "lutris"
             "prismlauncher"
             "gzdoom"
+            "ygo-omega"
           ]);
           default = [
             "steam"
@@ -27,6 +28,8 @@ in
             List of game clients to install on the system. Select from a list of known gaming applications.
           '';
         };
+
+        modSupport = mkEnableOption "Enable mod manager support via steamtinkerlaunch";
       };
 
       console = {
@@ -60,6 +63,8 @@ in
           (mkIf (elem "lutris" cfg.desktop.clients) lutris)
           (mkIf (elem "prismlauncher" cfg.desktop.clients) prismlauncher)
           (mkIf (elem "gzdoom" cfg.desktop.clients) gzdoom)
+          (mkIf (elem "ygo-omega" cfg.desktop.clients) ygo-omega)
+          (mkIf cfg.desktop.modSupport steamtinkerlaunch)
         ];
 
         programs = {
@@ -70,6 +75,13 @@ in
 
             extest.enable = true;
             protontricks.enable = true;
+
+            extraPackages = with pkgs; [
+              freetype
+              pkgsi686Linux.freetype
+              fontconfig
+              pkgsi686Linux.fontconfig
+            ];
 
             extraCompatPackages = with pkgs; [
               proton-ge-bin

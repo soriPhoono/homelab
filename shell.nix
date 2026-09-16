@@ -18,10 +18,10 @@ with pkgs;
         vulnix
 
         # Secrets
-        age
-        agenix-cli
-        sops
         ssh-to-age
+        age
+        sops
+        secretspec
       ]
       ++ lib.optional stdenv.isLinux [
         disko
@@ -30,7 +30,6 @@ with pkgs;
 
     shellHook = ''
       ${config.pre-commit.shellHook}
-      source ${config.agenix-shell.installationScript}/bin/install-agenix-shell
 
       # Deploy GitHub Actions from actions.nix when that file is modified to create reactive checks in GitHub CI
       mkdir -p .github/workflows

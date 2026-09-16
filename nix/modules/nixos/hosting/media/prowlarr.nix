@@ -19,15 +19,21 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/prowlarr:2.4.0";
+            image = "linuxserver/prowlarr:2.5.2";
             serviceName = "indexers";
             servicePort = 9696;
+            homepage = {
+              group = "Media";
+              name = "Prowlarr";
+              icon = "prowlarr.png";
+              description = "Indexer aggregator";
+            };
           })
           {
             volumes = [

@@ -81,5 +81,11 @@ in
           };
         };
       })
+      # Enable nvidia container toolkit for nvidia compatible devices
+      (mkIf config.hosting.enable {
+        hardware.nvidia-container-toolkit = {
+          enable = true;
+        };
+      })
     ]);
   }

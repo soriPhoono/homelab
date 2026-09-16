@@ -41,15 +41,21 @@ in
     config = mkIf mediaCfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/jellyfin:10.11.11";
+            image = "jellyfin/jellyfin:12";
             serviceName = "media";
             servicePort = 8096;
+            homepage = {
+              group = "Media";
+              name = "Jellyfin";
+              icon = "jellyfin.png";
+              description = "Media streaming server";
+            };
           })
           {
             volumes = [
@@ -57,19 +63,24 @@ in
               "/mnt/local/media/shows:/data/tvshows"
               "/mnt/local/media/movies:/data/movies"
               "/mnt/local/media/music:/data/music"
+              "/mnt/local/media/books:/data/books"
             ];
 
             environment = {
-              PUID = "0";
-              PGID = "0";
               TZ = config.core.timeZone;
+
+              # Preserve the LinuxServer volume layout while migrating to the
+              # official image.
+              JELLYFIN_CONFIG_DIR = "/config";
+              JELLYFIN_DATA_DIR = "/config/data";
+              JELLYFIN_CACHE_DIR = "/config/cache";
+              JELLYFIN_LOG_DIR = "/config/log";
             };
           }
         ];
       }
       # ── Hardware acceleration (VAAPI/QSV) ────────────────
       (mkIf cfg.acceleration.enable {
-        users.users.microserver.extraGroups = ["render" "video"];
         # Use mkBefore so this is prepended to (not override) any user-set extraOptions
         virtualisation.oci-containers.containers.${name}.extraOptions = mkBefore [
           # Pass the integrated GPU device for VAAPI (AMD/Intel) or QSV (Intel)

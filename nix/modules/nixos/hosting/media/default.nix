@@ -14,9 +14,7 @@ in
       ./jellyfin.nix
       ./seerr.nix
       ./lidarr.nix
-      ./navidrome.nix
       ./bookshelf.nix
-      ./kavita.nix
     ];
 
     options.hosting.media = {
@@ -24,31 +22,64 @@ in
     };
 
     config = mkIf cfg.enable {
-      hosting = {
-        enable = true;
-        media = {
-          qbittorrent.enable = true;
-          prowlarr.enable = true;
-          radarr.enable = true;
-          sonarr.enable = true;
-          jellyfin.enable = true;
-          seerr.enable = true;
-
-          lidarr.enable = true;
-          navidrome.enable = true;
-
-          bookshelf.enable = true;
-          kavita.enable = true;
+      hosting.media = {
+        qbittorrent = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        prowlarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        radarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        sonarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        lidarr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        bookshelf = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        jellyfin = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
+        };
+        seerr = {
+          enable = true;
+          container.publication = [
+            "tailscale"
+          ];
         };
       };
 
       systemd.tmpfiles.rules = [
-        "d /mnt/local/media 0755 microserver microserver -"
-        "d /mnt/local/media/downloads 0755 microserver microserver -"
-        "d /mnt/local/media/movies 0755 microserver microserver -"
-        "d /mnt/local/media/shows 0755 microserver microserver -"
-        "d /mnt/local/media/music 0755 microserver microserver -"
-        "d /mnt/local/media/books 0755 microserver microserver -"
+        "d /mnt/local/media 0755 root root -"
+        "d /mnt/local/media/downloads 0755 root root -"
+        "d /mnt/local/media/movies 0755 root root -"
+        "d /mnt/local/media/shows 0755 root root -"
+        "d /mnt/local/media/music 0755 root root -"
+        "d /mnt/local/media/books 0755 root root -"
       ];
     };
   }

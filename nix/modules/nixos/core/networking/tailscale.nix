@@ -72,6 +72,12 @@ in
           openFirewall = true;
           disableUpstreamLogging = true;
         };
+
+        networking.firewall = {
+          trustedInterfaces = ["tailscale0"];
+          allowedTCPPorts = [22000];
+          allowedUDPPorts = [22000 21027];
+        };
       }
       (mkIf (cfg.serve.enable && cfg.serve.services != {}) {
         services.tailscale.serve = {

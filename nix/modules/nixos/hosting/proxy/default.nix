@@ -20,15 +20,8 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        boot.kernel.sysctl = {
-          "net.ipv4.ip_unprivileged_port_start" = 80;
-        };
-
-        hosting = {
-          enable = true;
-          proxy = {
-            docktail.enable = cfg.tailscale.enable;
-          };
+        hosting.proxy = {
+          docktail.enable = cfg.tailscale.enable;
         };
       }
     ]);

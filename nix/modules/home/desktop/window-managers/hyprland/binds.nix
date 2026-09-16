@@ -127,7 +127,7 @@ in
             }
             {
               _args = [
-                "${wmCfg.common.mod} + E"
+                "${wmCfg.common.mod} + F"
                 (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.FILE_BROWSER}\")")
               ];
             }
@@ -135,6 +135,12 @@ in
               _args = [
                 "${wmCfg.common.mod} + B"
                 (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- ${config.home.sessionVariables.BROWSER}\")")
+              ];
+            }
+            {
+              _args = mkIf config.apps.development.editors.vscode.enable [
+                "${wmCfg.common.mod} + C"
+                (lib.generators.mkLuaInline "hl.dsp.exec_cmd(\"${pkgs.runapp}/bin/runapp -- code\")")
               ];
             }
 

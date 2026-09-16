@@ -1,31 +1,34 @@
 {
   lib,
   config,
+  options,
   ...
 }: let
-  inherit (lib.homelab.containers) mkContainerOption mkContainer;
-
   proxyCfg = config.hosting.proxy;
   cfg = proxyCfg.docktail;
 
   name = "docktail";
+
+  dockerSocket =
+    if config.virtualisation.oci-containers.backend == "podman"
+    then "/run/podman/podman.sock"
+    else "/var/run/docker.sock";
 in
   with lib; {
-    options.hosting.proxy.${name} = mkContainerOption {
-      inherit name;
-      description = "Docktail, used for reverse proxying over tailscale.";
+    options.hosting.proxy.${name} = {
+      enable = mkEnableOption "Docktail microserver proxy system";
     };
 
     config = mkIf cfg.enable (mkMerge [
       {
         assertions = [
           {
-            message = "Docktail requires Tailscale to be enabled.";
-            assertion = config.services.tailscale.enable;
+            message = "Docktail requires docker to be enabled.";
+            assertion = config.hosting.platforms.docker.enable;
           }
         ];
 
-        sops = {
+        sops = mkIf (options ? sops) {
           secrets = {
             "api/tailscale-sidecar-authkey" = {};
             "api/tailscale-oauth-client-id" = {};
@@ -33,14 +36,12 @@ in
           };
           templates = {
             "docktail/tailscale-oauth" = {
-              owner = "microserver";
               content = ''
                 TAILSCALE_OAUTH_CLIENT_ID=${config.sops.placeholder."api/tailscale-oauth-client-id"}
                 TAILSCALE_OAUTH_CLIENT_SECRET=${config.sops.placeholder."api/tailscale-oauth-client-secret"}
               '';
             };
             "docktail/tailscale-sidecar-authkey" = {
-              owner = "microserver";
               content = ''
                 TS_AUTHKEY=${config.sops.placeholder."api/tailscale-sidecar-authkey"}
               '';
@@ -50,7 +51,7 @@ in
 
         virtualisation.oci-containers.containers = {
           tailscale-sidecar = {
-            image = "tailscale/tailscale:latest";
+            image = "tailscale/tailscale:v1.102.3";
             capabilities = {
               NET_ADMIN = true;
             };
@@ -59,7 +60,7 @@ in
               TS_SOCKET = "/var/run/tailscale/tailscaled.sock";
               TS_STATE_DIR = "/var/lib/tailscale";
               TS_EXTRA_ARGS = "--advertise-tags=tag:microserver";
-              TS_USERSPACE = "true";
+              TS_USERSPACE = "false";
             };
             environmentFiles = [
               config.sops.templates."docktail/tailscale-sidecar-authkey".path
@@ -68,24 +69,20 @@ in
               "tailscale-state:/var/lib/tailscale"
               "tailscale-socket:/var/run/tailscale"
             ];
+            networks = [
+              "tailscale"
+            ];
             extraOptions = [
-              "--network=tailscale"
+              "--device=/dev/net/tun:/dev/net/tun"
             ];
             ports = [
               "41642:41641/udp"
             ];
-            podman = {
-              sdnotify = "conmon";
-              user = "microserver";
-            };
           };
           ${name} = mkMerge [
-            (mkContainer {
-              inherit name config;
-              cfg = cfg // {container = cfg.container // {publication = [];};};
-              image = "ghcr.io/marvinvr/docktail:1.5";
-            })
             {
+              image = "ghcr.io/marvinvr/docktail:1.3.0";
+
               dependsOn = [
                 "tailscale-sidecar"
               ];
@@ -95,11 +92,7 @@ in
               ];
 
               volumes = [
-                (
-                  if config.virtualisation.oci-containers.backend == "podman"
-                  then "/run/user/${toString config.users.users.microserver.uid}/podman/podman.sock:/var/run/docker.sock:ro"
-                  else "/var/run/docker.sock:/var/run/docker.sock:ro"
-                )
+                "${dockerSocket}:/var/run/docker.sock:ro"
                 "tailscale-socket:/var/run/tailscale"
               ];
 

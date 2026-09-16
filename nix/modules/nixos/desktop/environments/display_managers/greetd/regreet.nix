@@ -173,7 +173,7 @@ in
       {
         desktop.environments.display_managers.greetd.variant = "regreet";
 
-        programs.regreet = {
+        services.displayManager.regreet = {
           enable = true;
           inherit (cfg) settings;
         };
@@ -182,7 +182,7 @@ in
       (mkIf (stylixEnabled && cfg.stylix.enable) {
         desktop.environments.display_managers.greetd.regreet.background.path = mkDefault config.stylix.image;
 
-        programs.regreet = {
+        services.displayManager.regreet = {
           theme.name = mkDefault "Adwaita";
 
           font = {

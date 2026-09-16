@@ -18,15 +18,21 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
           (mkContainer {
             inherit name cfg config;
-            image = "linuxserver/lidarr:latest";
+            image = "linuxserver/lidarr:3.1.0";
             serviceName = "music";
             servicePort = 8686;
+            homepage = {
+              group = "Media";
+              name = "Lidarr";
+              icon = "lidarr.png";
+              description = "Music manager";
+            };
           })
           {
             environment = {

@@ -1,18 +1,3 @@
-# OpenCode home-manager module.
-#
-# Bridges our homelab agent config (homelab.development.mkAgent) to the
-# upstream programs.opencode home-manager module.
-#
-# What the upstream handles:
-#   settings (opencode.json), tui, context (AGENTS.md), commands,
-#   agents, skills, themes, tools, web service, extraPackages
-#
-# What we keep custom:
-#   translateMcpServer — generates writeShellScriptBin wrappers for
-#     MCP servers with sops secret env/headers, resolving at runtime
-#   enableDesktop — installs opencode-desktop alongside the CLI
-#   Secret injection — wraps the opencode binary via symlinkJoin +
-#     makeWrapper --run to export sops secrets into the environment
 {
   lib,
   pkgs,
@@ -22,269 +7,290 @@
 }: let
   cfg = config.apps.development.agents.opencode;
 
-  # ---- Gather all secret names from MCP servers ----
-  mcpSecrets = let
-    extractSecretNames = attrs:
-      if attrs == null
-      then []
-      else
-        lib.filter (v: v != null) (
-          lib.mapAttrsToList (
-            _: val:
-              if builtins.isAttrs val && val ? "secret"
-              then val.secret
-              else null
-          )
-          attrs
-        );
-  in
-    lib.flatten (
-      lib.mapAttrsToList (
-        _name: srv:
-          extractSecretNames srv.env
-          ++ extractSecretNames srv.headers
-      )
-      cfg.mcpServers
-    );
+  inherit
+    (lib)
+    concatStringsSep
+    filterAttrs
+    flatten
+    genAttrs
+    mapAttrs
+    mapAttrsToList
+    mkEnableOption
+    mkIf
+    mkMerge
+    mkOption
+    optional
+    optionalAttrs
+    unique
+    ;
 
-  allSecrets = lib.unique (cfg.secrets ++ mcpSecrets);
+  mcpSecretNames = flatten (mapAttrsToList (_name: server:
+    mapAttrsToList (_: value: value.secret)
+    (filterAttrs
+      (_: value: builtins.isAttrs value && value ? "secret")
+      (
+        if server.env != null
+        then server.env
+        else if server.headers != null
+        then server.headers
+        else {}
+      )))
+  cfg.mcpServers);
 
-  # ---- Predicates for secret detection ----
-  hasEnvSecret = srv:
-    srv.env != null && lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues srv.env);
+  allSecrets = unique (
+    cfg.secrets
+    ++ mcpSecretNames
+    ++ optional cfg.web.enable "opencode/server_password"
+  );
 
-  hasHeaderSecret = srv:
-    srv.headers != null && lib.any (v: builtins.isAttrs v && v ? "secret") (lib.attrValues srv.headers);
+  hasRuntimeEnvironment = cfg.environment != {} || allSecrets != [];
 
-  # ---- MCP server translation ----
-  #
-  # Converts homelab's MCP server config format to the format expected
-  # by programs.opencode.settings.mcp.
-  #
-  # Servers with secrets in env/headers get wrapper scripts that resolve
-  # at runtime from the environment (set by makeWrapper on the opencode
-  # binary).
-  translateMcpServer = name: rawSrv: let
-    srv =
-      rawSrv
-      // {
-        env =
-          if rawSrv.env != null
-          then rawSrv.env
-          else {};
-        headers =
-          if rawSrv.headers != null
-          then rawSrv.headers
-          else {};
-        args =
-          if rawSrv.args != null
-          then rawSrv.args
-          else [];
-      };
-  in
-    if (srv.url != null)
+  renderMcpEnvironment = mapAttrs (_: value:
+    if builtins.isAttrs value && value ? "secret"
+    then "{file:${config.sops.secrets.${value.secret}.path}}"
+    else value);
+
+  renderMcpHeaders = mapAttrs (_: value:
+    if builtins.isAttrs value && value ? "secret"
+    then "${
+      if value.prefix != null
+      then value.prefix
+      else ""
+    }{env:${baseNameOf value.secret}}${
+      if value.suffix != null
+      then value.suffix
+      else ""
+    }"
+    else value);
+
+  renderedMcpServers =
+    mapAttrs (
+      name: server:
+        if server.url != null && server.command == null
+        then {
+          type = "remote";
+          inherit (server) url;
+          headers = renderMcpHeaders (
+            if server.headers != null
+            then server.headers
+            else {}
+          );
+        }
+        else if server.command != null && server.url == null
+        then {
+          type = "local";
+          command =
+            [server.command]
+            ++ (
+              if server.args != null
+              then server.args
+              else []
+            );
+          environment = renderMcpEnvironment (
+            if server.env != null
+            then server.env
+            else {}
+          );
+        }
+        else throw "OpenCode MCP server ${name} must have either url or command"
+    )
+    cfg.mcpServers;
+
+  mergedMcpServers = (cfg.userSettings.mcp or {}) // renderedMcpServers;
+
+  ollamaProviderSettings = optionalAttrs cfg.ollama.enable {
+    provider.ollama = {
+      npm = cfg.ollama.package;
+      name = cfg.ollama.name;
+      options.baseURL = cfg.ollama.baseUrl;
+      models = cfg.ollama.models;
+    };
+  };
+
+  renderDocument = name: document: ''
+    # ${name}
+
+    ${
+      if builtins.isPath document
+      then builtins.readFile document
+      else document
+    }
+  '';
+
+  contextFile = builtins.toPath (toString (pkgs.writeText "opencode-context.md" (
+    concatStringsSep "\n" (
+      map (name: renderDocument name cfg.documents.${name})
+      (builtins.sort builtins.lessThan (builtins.attrNames cfg.documents))
+    )
+  )));
+
+  runtimeEnvironment = concatStringsSep "\n" (
+    (mapAttrsToList (name: value: "${name}=${value}") cfg.environment)
+    ++ (map (secret: "${baseNameOf secret}=${config.sops.placeholder.${secret}}") cfg.secrets)
+    ++ (map (secret: "${baseNameOf secret}=${config.sops.placeholder.${secret}}") mcpSecretNames)
+    ++ optional cfg.web.enable "OPENCODE_SERVER_PASSWORD=${config.sops.placeholder."opencode/server_password"}"
+  );
+
+  runtimeEnvironmentFile = config.sops.templates."opencode/environment".path;
+
+  opencodePackage =
+    if hasRuntimeEnvironment
     then
-      # ── HTTP / SSE transport ──
-      if hasHeaderSecret srv
-      then
-        # Headers contain secrets → wrap via mcp-proxy with runtime expansion
-        let
-          wrapperName = "opencode-mcp-proxy-${name}";
-          mkHeaderFlag = hname: val:
-            if val ? "secret"
-            then "--headers '${hname}' \"\${${baseNameOf val.secret}}\""
-            else "--headers '${hname}' '${lib.escapeShellArg val}'";
-          headerFlags = lib.concatStringsSep " \\\n                " (
-            lib.mapAttrsToList mkHeaderFlag srv.headers
-          );
-          transportFlag =
-            if srv.transport or "http" == "sse"
-            then ""
-            else "--transport streamablehttp";
-          wrapper = pkgs.writeShellScriptBin wrapperName ''
-            exec ${pkgs.mcp-proxy}/bin/mcp-proxy \
-              ${transportFlag} \
-              ${headerFlags} \
-              '${srv.url}'
-          '';
-        in {
-          type = "local";
-          command = ["${wrapper}/bin/${wrapperName}"];
-          enabled = true;
-        }
-      else
-        ({
-            type = "remote";
-            inherit (srv) url;
-            enabled = true;
-          }
-          // (lib.optionalAttrs (rawSrv.headers != null) {
-            inherit (srv) headers;
-          }))
-    else
-      # ── Stdio transport ──
-      if hasEnvSecret srv
-      then
-        # Env contains secrets → wrap via shell script that re-exports
-        # the env vars (set by makeWrapper on opencode binary) before
-        # exec-ing the actual MCP command.
-        let
-          wrapperName = "opencode-mcp-stdio-${name}";
-          envExports = lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (
-              envName: value:
-                if value ? "secret"
-                then "export ${baseNameOf value.secret}=\"\$${baseNameOf value.secret}\""
-                else "export ${envName}=${lib.escapeShellArg value}"
-            )
-            srv.env
-          );
-          argsStr = lib.concatStringsSep " " (map lib.escapeShellArg srv.args);
-          wrapper = pkgs.writeShellScriptBin wrapperName ''
-            ${envExports}
-            exec ${lib.escapeShellArg srv.command} ${argsStr}
-          '';
-        in {
-          type = "local";
-          command = ["${wrapper}/bin/${wrapperName}"];
-          enabled = true;
-        }
-      else
-        ({
-            type = "local";
-            command = [srv.command] ++ srv.args;
-            enabled = true;
-          }
-          // (lib.optionalAttrs (rawSrv.env != null) {
-            inherit (srv) env;
-          }));
+      pkgs.symlinkJoin {
+        name = "${cfg.package.name or "opencode"}-managed";
+        paths = [cfg.package];
+        meta =
+          (cfg.package.meta or {})
+          // {
+            mainProgram = cfg.package.meta.mainProgram or "opencode";
+          };
+        nativeBuildInputs = [pkgs.makeWrapper];
+        postBuild = ''
+          wrapProgram "$out/bin/${cfg.package.meta.mainProgram or "opencode"}" \
+            --run 'set -a; . ${runtimeEnvironmentFile}; set +a'
+        '';
+      }
+    else cfg.package;
+
+  opencodeDesktopPackage =
+    if hasRuntimeEnvironment
+    then
+      pkgs.symlinkJoin {
+        name = "opencode-desktop-managed";
+        paths = [pkgs.opencode-desktop];
+        nativeBuildInputs = [pkgs.makeWrapper];
+        postBuild = ''
+          wrapProgram "$out/bin/opencode-desktop" \
+            --run 'set -a; . ${runtimeEnvironmentFile}; set +a'
+        '';
+      }
+    else pkgs.opencode-desktop;
 in
   with lib; {
-    options.apps.development.agents.opencode = homelab.development.mkAgent {
-      name = "opencode";
-      package = pkgs.opencode;
-      extraOptions = {
-        enableDesktop = mkEnableOption "Enable the OpenCode desktop application (opencode-desktop)";
+    options.apps.development.agents.opencode = mkOption {
+      type = types.submodule (_: {
+        options = lib.homelab.development.mkAgent {
+          name = "opencode";
+          package = pkgs.opencode;
+          extraOptions = {
+            desktop = mkEnableOption "Enable opencode desktop application";
 
-        providers = {
-          ollama = {
-            enable = mkEnableOption "Use local Ollama instance as an LLM provider in OpenCode";
+            tui = mkOption {
+              type = options.programs.opencode.tui.type;
+              default = {};
+              description = "TUI configuration forwarded to programs.opencode.tui.";
+            };
 
-            models = mkOption {
-              type = types.listOf types.str;
-              default = ["ornith:9b"];
-              description = ''
-                Ollama model tag to use as the default model. Set to any model
-                you have pulled locally, e.g. "llama3.2:3b" or "codellama:13b-instruct".
-                OpenCode formats this as "ollama/<model>" in its config.
-              '';
+            commands = mkOption {
+              type = options.programs.opencode.commands.type;
+              default = {};
+              description = "Custom commands forwarded to programs.opencode.commands.";
+            };
+
+            agents = mkOption {
+              type = options.programs.opencode.agents.type;
+              default = {};
+              description = "Custom subagents forwarded to programs.opencode.agents.";
+            };
+
+            tools = mkOption {
+              type = options.programs.opencode.tools.type;
+              default = {};
+              description = "Custom tools forwarded to programs.opencode.tools.";
+            };
+
+            themes = mkOption {
+              type = options.programs.opencode.themes.type;
+              default = {};
+              description = "Custom themes forwarded to programs.opencode.themes.";
+            };
+
+            ollama = {
+              enable = mkOption {
+                type = types.bool;
+                default = false;
+                description = "Whether to configure Ollama as an OpenCode provider. Requires user-level opt-in.";
+              };
+
+              baseUrl = mkOption {
+                type = types.str;
+                default = "http://127.0.0.1:11434/v1";
+                description = "The OpenAI-compatible base URL for the Ollama server.";
+              };
+
+              package = mkOption {
+                type = types.str;
+                default = "@ai-sdk/openai-compatible";
+                description = "The npm package OpenCode uses to connect to Ollama.";
+              };
+
+              name = mkOption {
+                type = types.str;
+                default = "Ollama (Tailscale)";
+                description = "The display name for the Ollama OpenCode provider.";
+              };
+
+              models = mkOption {
+                type = types.attrs;
+                default = {};
+                description = "Models to expose through the Ollama OpenCode provider.";
+              };
+            };
+
+            web = {
+              enable = mkEnableOption "the OpenCode web service";
+
+              extraArgs = mkOption {
+                type = options.programs.opencode.web.extraArgs.type;
+                default = [];
+                description = "Arguments forwarded to opencode serve.";
+              };
             };
           };
         };
-
-        plugins = mkOption {
-          type = with types; listOf str;
-          default = [];
-          description = ''
-            npm package names to register as OpenCode plugins. Each name is added
-            to the `plugin` array in opencode.json, causing OpenCode to
-            auto-install and load them from npm at startup.
-
-            e.g.: [ "opencode-swarm-plugin" ]
-          '';
-          example = ["opencode-swarm-plugin"];
-        };
-
-        settings = mkOption {
-          type = with types; attrs;
-          default = {};
-          description = ''
-            Extra settings to merge into the OpenCode JSON config.
-            Merged on top of base defaults, userSettings, MCP servers,
-            and plugins. Keys here override everything.
-
-            See https://opencode.ai/docs/config/ for the full schema.
-          '';
-          example = {
-            model = "anthropic/claude-sonnet-4-5";
-            autoupdate = true;
-          };
-        };
-      };
+      });
+      description = "Declarative OpenCode agent configuration.";
     };
 
     config = mkIf cfg.enable (mkMerge [
-      # ── Base config: delegate to upstream HM module ──
+      (mkIf cfg.desktop {
+        home.packages = with pkgs; [
+          opencodeDesktopPackage
+        ];
+      })
       {
-        home.packages = mkIf cfg.enableDesktop [pkgs.opencode-desktop];
+        sops.secrets = genAttrs allSecrets (_: {});
+
+        sops.templates."opencode/environment" = mkIf hasRuntimeEnvironment {
+          content = runtimeEnvironment;
+        };
 
         programs.opencode = {
           enable = true;
-          package = mkDefault cfg.package;
+          package = opencodePackage;
+
+          inherit (cfg) extraPackages tui commands agents tools themes skills;
 
           context =
-            cfg.documents."AGENTS.md" or "";
+            if cfg.documents == {}
+            then ""
+            else contextFile;
 
-          settings = mkMerge [
+          settings =
+            (recursiveUpdate ollamaProviderSettings (removeAttrs cfg.userSettings ["mcp"]))
+            // optionalAttrs (mergedMcpServers != {}) {
+              mcp = mergedMcpServers;
+            };
+
+          web =
             {
-              autoupdate = mkDefault false;
+              enable = cfg.web.enable;
+              inherit (cfg.web) extraArgs;
             }
-            (cfg.userSettings or {})
-            (optionalAttrs (cfg.mcpServers != {}) {
-              mcp = builtins.mapAttrs translateMcpServer cfg.mcpServers;
-            })
-            (optionalAttrs (cfg.plugins != []) {
-              plugin = cfg.plugins;
-            })
-            (mkIf cfg.providers.ollama.enable {
-              provider = {
-                ollama = {
-                  npm = "@ai-sdk/openai-compatible";
-                  name = "Ollama (local)";
-                  options = {
-                    baseURL = "http://localhost:11434/v1";
-                  };
-                  models = genAttrs cfg.providers.ollama.models (model: {
-                    name = model;
-                  });
-                };
-              };
-            })
-            cfg.settings
-          ];
-
-          skills = mapAttrs (_name: pkg: pkg) cfg.skills;
+            // optionalAttrs cfg.web.enable {
+              environmentFile = runtimeEnvironmentFile;
+            };
         };
       }
-
-      # ── Secrets variant (sops + wrapped opencode binary) ──
-      (mkIf (options ? sops && allSecrets != []) {
-        sops.secrets = genAttrs allSecrets (_: {});
-
-        programs.opencode.package = let
-          pkg = cfg.package;
-        in
-          with pkgs;
-            symlinkJoin {
-              name = "${pkg.name}-wrapped";
-              paths = [pkg] ++ optional cfg.enableDesktop pkgs.opencode-desktop;
-              buildInputs = [makeWrapper];
-              postBuild = ''
-                for bin in $out/bin/*; do
-                  if [ -f "$bin" ] && [ -x "$bin" ]; then
-                    wrapProgram "$bin" \
-                      ${concatStringsSep " \\\n                  " (
-                  map (
-                    secret: "--run '[ -f ${config.sops.secrets.${secret}.path} ] && export ${baseNameOf secret}=\"$(cat ${
-                      config.sops.secrets.${secret}.path
-                    })\"'"
-                  )
-                  allSecrets
-                )}
-                  fi
-                done
-              '';
-            };
-      })
     ]);
   }

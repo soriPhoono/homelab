@@ -19,7 +19,7 @@ in
     config = mkIf cfg.enable (mkMerge [
       {
         systemd.tmpfiles.rules = [
-          "d ${configurationDirectory} 0755 microserver microserver -"
+          "d ${configurationDirectory} 0755 root root -"
         ];
 
         virtualisation.oci-containers.containers.${name} = mkMerge [
@@ -28,6 +28,12 @@ in
             image = "linuxserver/sonarr:4.0.19";
             serviceName = "shows";
             servicePort = 8989;
+            homepage = {
+              group = "Media";
+              name = "Sonarr";
+              icon = "sonarr.png";
+              description = "TV show manager";
+            };
           })
           {
             environment = {
