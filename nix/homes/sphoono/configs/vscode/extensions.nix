@@ -84,6 +84,7 @@ in {
 
         # Tooling
         christian-kohler.path-intellisense
+        pkgs.vscode-marketplace.ms-vscode-remote.remote-ssh
 
         # CI/CD
         github.vscode-github-actions
