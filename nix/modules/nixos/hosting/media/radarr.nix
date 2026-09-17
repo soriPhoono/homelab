@@ -27,7 +27,7 @@ in
             inherit name cfg config;
             image = "linuxserver/radarr:6.3.0";
             serviceName = "movies";
-            servicePort = 7878;
+            containerPort = 7878;
             homepage = {
               group = "Media";
               name = "Radarr";

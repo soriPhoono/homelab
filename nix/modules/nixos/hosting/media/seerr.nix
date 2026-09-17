@@ -27,7 +27,7 @@ in
             inherit name cfg config;
             image = "seerr/seerr:v3.4.1";
             serviceName = "pvr";
-            servicePort = 5055;
+            containerPort = 5055;
             homepage = {
               group = "Media";
               name = "Seerr";

@@ -27,7 +27,7 @@ in
             inherit name cfg config;
             image = "linuxserver/prowlarr:2.5.2";
             serviceName = "indexers";
-            servicePort = 9696;
+            containerPort = 9696;
             homepage = {
               group = "Media";
               name = "Prowlarr";

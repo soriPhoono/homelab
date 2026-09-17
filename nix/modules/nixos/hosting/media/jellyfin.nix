@@ -49,7 +49,7 @@ in
             inherit name cfg config;
             image = "jellyfin/jellyfin:12";
             serviceName = "media";
-            servicePort = 8096;
+            containerPort = 8096;
             homepage = {
               group = "Media";
               name = "Jellyfin";

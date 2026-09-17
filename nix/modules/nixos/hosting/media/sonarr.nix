@@ -27,7 +27,7 @@ in
             inherit name cfg config;
             image = "linuxserver/sonarr:4.0.19";
             serviceName = "shows";
-            servicePort = 8989;
+            containerPort = 8989;
             homepage = {
               group = "Media";
               name = "Sonarr";

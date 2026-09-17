@@ -26,7 +26,7 @@ in
             inherit name cfg config;
             image = "linuxserver/lidarr:3.1.0";
             serviceName = "music";
-            servicePort = 8686;
+            containerPort = 8686;
             homepage = {
               group = "Media";
               name = "Lidarr";

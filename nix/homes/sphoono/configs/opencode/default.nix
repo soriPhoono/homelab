@@ -60,9 +60,6 @@
           "@modelcontextprotocol/server-sequential-thinking"
         ];
       };
-      "personal/notion" = {
-        url = "https://mcp.notion.com/mcp";
-      };
       "search/brave" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
@@ -74,6 +71,9 @@
             secret = "api/BRAVE_API_KEY";
           };
         };
+      };
+      "personal/notion" = {
+        url = "https://mcp.notion.com/mcp";
       };
       "software-development/n8n" = {
         url = "https://agents.cryptic-coders.net/mcp-server/http";

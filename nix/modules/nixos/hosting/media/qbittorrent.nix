@@ -27,7 +27,7 @@ in
             inherit name cfg config;
             image = "linuxserver/qbittorrent:5.2.3";
             serviceName = "downloads";
-            servicePort = 8080;
+            containerPort = 8080;
             homepage = {
               group = "Media";
               name = "qBittorrent";
