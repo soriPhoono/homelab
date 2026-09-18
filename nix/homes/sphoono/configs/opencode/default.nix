@@ -72,6 +72,9 @@
           };
         };
       };
+      "search/exa" = {
+        url = "https://mcp.exa.ai/mcp";
+      };
       "personal/notion" = {
         url = "https://mcp.notion.com/mcp";
       };
