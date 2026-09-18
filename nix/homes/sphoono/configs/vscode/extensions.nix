@@ -1,59 +1,4 @@
-{pkgs, ...}: let
-  # Nix IDE v0.5.5 — pinned to a version compatible with Antigravity IDE's
-  # bundled VS Code engine (v1.107.0).  The nixpkgs version (v0.5.9) requires
-  # VS Code >= 1.112.0, which postdates the engine shipped inside Antigravity.
-  nix-ide = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "jnoortheen";
-      name = "nix-ide";
-      version = "0.5.5";
-      sha256 = "sha256-epdEMPAkSo0IXsd+ozicI8bjPPquDKIzB3ONRUYWwn8=";
-    };
-  };
-
-  # Kubernetes Tools v1.3.0 — pinned to a version compatible with Antigravity
-  # IDE's bundled VS Code engine (v1.107.0).  The nixpkgs version (v1.4.0)
-  # requires VS Code >= 1.110.0, which postdates the engine shipped inside
-  # Antigravity.
-  k8s-tools = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "ms-kubernetes-tools";
-      name = "vscode-kubernetes-tools";
-      version = "1.3.0";
-      sha256 = "sha256-mXM9mA6oJ/qQgS/NgctpkvUNfouMBD30ayLs25H3sH0=";
-    };
-  };
-
-  # Devicetree support for ZMK / Zephyr
-  devicetree = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "trond-snekvik";
-      name = "devicetree";
-      version = "2.3.1";
-      sha256 = "sha256-xzKxRO3Iz2VzNMMFcX3gdK6VcKdP7JbGp2rhlWme4Xs=";
-    };
-  };
-
-  # Kconfig language support for ZMK / Zephyr
-  kconfig = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "trond-snekvik";
-      name = "kconfig-lang";
-      version = "1.2.0";
-      sha256 = "sha256-uX8CJh7EuwNwmXc3GX2MXPQ9/Xm2PElVD7o8SY0FUqA=";
-    };
-  };
-
-  # ZMK Tools
-  zmk-tools = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      publisher = "spadin";
-      name = "zmk-tools";
-      version = "1.5.0";
-      sha256 = "sha256-ov2vQXXc4WhAY8NWFzIkMJMeeGutahggpyuJztGXDIs=";
-    };
-  };
-in {
+{pkgs, ...}: {
   apps.development.editors.vscode = {
     # Common extensions added to EVERY profile — keep this minimal.
     # Language-specific tools belong in profile extensions instead.
@@ -64,9 +9,7 @@ in {
 
         # Nix Code
         mkhl.direnv
-        # Pinned to v0.5.5 — newer versions require VS Code >= 1.112 which
-        # Antigravity IDE's bundled engine (v1.107.0) doesn't meet.
-        nix-ide
+        jnoortheen.nix-ide
 
         # Shell script
         foxundermoon.shell-format
@@ -83,8 +26,8 @@ in {
         tamasfe.even-better-toml
 
         # Tooling
-        christian-kohler.path-intellisense
         pkgs.vscode-marketplace.ms-vscode-remote.remote-ssh
+        christian-kohler.path-intellisense
 
         # CI/CD
         github.vscode-github-actions
@@ -102,17 +45,19 @@ in {
 
           # Python
           ms-python.python
+          ms-python.vscode-python-envs
           ms-python.vscode-pylance
+
+          # Ansible infra automation
+          redhat.ansible
 
           # Container ops
           ms-azuretools.vscode-containers
-          # Pinned to v1.3.0 — newer versions require VS Code >= 1.110 which
-          # Antigravity IDE's bundled engine (v1.107.0) doesn't meet.
-          k8s-tools
+          ms-kubernetes-tools.vscode-kubernetes-tools
 
           # Terraform / OpenTofu
           hashicorp.hcl
-          pkgs.vscode-marketplace.hashicorp.terraform
+          hashicorp.terraform
           pkgs.vscode-marketplace.gruntwork.terragrunt-ls
           pkgs.vscode-marketplace.nandovdk.tflint-vscode
           pkgs.vscode-marketplace.tfsec.tfsec
@@ -127,6 +72,9 @@ in {
         ];
 
         userSettings = {
+          # Python
+          "python.useEnvironmentsExtension" = false;
+
           # Container Tools — Docker client
           "containers.containerClient" = "com.microsoft.visualstudio.containers.docker";
           "containers.orchestratorClient" = "com.microsoft.visualstudio.orchestrators.dockercompose";
@@ -243,9 +191,9 @@ in {
           # Firmware & Build tooling (ZMK / QMK)
           ms-vscode.cmake-tools
           ms-vscode.hexeditor
-          devicetree
-          kconfig
-          zmk-tools
+          pkgs.vscode-marketplace.trond-snekvik.devicetree
+          pkgs.vscode-marketplace.trond-snekvik.kconfig-lang
+          pkgs.vscode-marketplace.spadin.zmk-tools
         ];
 
         userSettings = {
