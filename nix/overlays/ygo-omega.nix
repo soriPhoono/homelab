@@ -1,5 +1,4 @@
 {inputs, ...}: _final: prev: let
-  version = "2026-08-03";
   basePkg = inputs.ygo-nix.packages.${prev.stdenv.hostPlatform.system}.default;
   gameFiles = prev.fetchurl {
     url = "https://github.com/duelists-unite/omega-releases/releases/download/Latest/linux-x64.zip";
@@ -11,9 +10,6 @@
   };
 in {
   ygo-omega = basePkg.overrideAttrs (_old: {
-    inherit version;
-    __intentionallyOverridingVersion = true;
-
     unpackPhase = ''
       runHook preUnpack
       unzip -q ${gameFiles}

@@ -28,7 +28,7 @@ in
           download-buffer-size = 1073741824;
 
           # Enable flakes and new 'nix' command
-          experimental-features = "nix-command flakes";
+          experimental-features = ["nix-command" "flakes"];
           # Opinionated: disable global registry
           flake-registry = "";
 

@@ -19,7 +19,7 @@ in
 
     config = mkIf cfg.enable {
       home.packages = [
-        pkgs.libreoffice-fresh
+        pkgs.libreoffice-stable
         pkgs.hunspell
         pkgs.hunspellDicts.en_US
       ];
