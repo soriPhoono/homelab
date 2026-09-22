@@ -17,12 +17,12 @@
     if cfg.gpu == "integrated"
     then {
       render = "/dev/dri/renderD128";
-      card = "/dev/dri/card1";
+      card = "/dev/dri/card0";
     }
     else if cfg.gpu == "mesa-compatible"
     then {
       render = "/dev/dri/renderD129";
-      card = "/dev/dri/card2";
+      card = "/dev/dri/card1";
     }
     else if cfg.gpu == "NVIDIA"
     then throw "TODO: Create nvidia gpu module support"

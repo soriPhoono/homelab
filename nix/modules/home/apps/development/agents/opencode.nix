@@ -254,7 +254,7 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       (mkIf cfg.desktop {
-        home.packages = with pkgs; [
+        home.packages = [
           opencodeDesktopPackage
         ];
       })
