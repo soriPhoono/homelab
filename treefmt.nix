@@ -13,6 +13,7 @@ _: {
       # github-actions-nix manages formatting for generated workflows.
       excludes = [
         ".github/workflows/ci.yml"
+        ".github/workflows/update-flake-lock.yml"
       ];
     };
   };
