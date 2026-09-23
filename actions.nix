@@ -98,5 +98,53 @@ in {
           })
           self.homeConfigurations);
     };
+
+    # ── Scheduled flake.lock updates ──────────────────────
+    # Mirrors the previous hand-written update-flake-lock.yml
+    # workflow, now driven from actions.nix like everything else.
+    "update-flake-lock" = {
+      name = "Update flake.lock";
+      on = {
+        schedule = [
+          {cron = "0 0 * * 0";}
+        ];
+        workflowDispatch = {};
+      };
+      permissions = {
+        contents = "write";
+        id-token = "write";
+        issues = "write";
+        pull-requests = "write";
+      };
+      concurrency = {
+        group = "update-flake-lock";
+        cancelInProgress = true;
+      };
+
+      jobs = {
+        "update-flake-lock" = {
+          runsOn = "ubuntu-24.04";
+          steps = [
+            {
+              name = "Checkout code";
+              uses = "actions/checkout@v6";
+            }
+            {
+              name = "Setup Nix";
+              uses = "DeterminateSystems/determinate-nix-action@v3.17.3";
+            }
+            {
+              name = "Update flake.lock";
+              uses = "DeterminateSystems/update-flake-lock@v28";
+              with_ = {
+                token = "\${{ github.token }}";
+                pr-title = "chore(deps): update flake.lock";
+                pr-labels = "dependencies\nautomated";
+              };
+            }
+          ];
+        };
+      };
+    };
   };
 }
