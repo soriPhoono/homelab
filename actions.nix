@@ -2,36 +2,7 @@
   self,
   lib,
   ...
-}: let
-  # Common setup steps shared across all build jobs
-  setupSteps = [
-    {
-      name = "Checkout code";
-      uses = "actions/checkout@v4";
-    }
-    {
-      name = "Setup Nix";
-      uses = "DeterminateSystems/nix-installer-action@v14";
-    }
-    {
-      name = "Cachix cache";
-      uses = "cachix/cachix-action@v17";
-      with_ = {
-        name = "homelab";
-        # Falls back to pull-only if secrets are not configured
-        authToken = "\${{ secrets.CACHIX_AUTH_TOKEN }}";
-        signingKey = "\${{ secrets.CACHIX_SIGNING_KEY }}";
-      };
-    }
-    {
-      name = "Magic Nix Cache";
-      uses = "DeterminateSystems/magic-nix-cache-action@v8";
-      with_ = {
-        use-flakehub = false;
-      };
-    }
-  ];
-in {
+}: {
   enable = true;
 
   workflows = {
@@ -45,7 +16,26 @@ in {
         id-token = "write";
       };
 
-      jobs =
+      jobs = let
+        # Common setup steps shared across all build jobs
+        setupSteps = [
+          {
+            name = "Checkout code";
+            uses = "actions/checkout@v4";
+          }
+          {
+            name = "Setup Nix";
+            uses = "DeterminateSystems/nix-installer-action@v14";
+          }
+          {
+            name = "Magic Nix Cache";
+            uses = "DeterminateSystems/magic-nix-cache-action@v8";
+            with_ = {
+              use-flakehub = false;
+            };
+          }
+        ];
+      in
         # ── Evaluation check (fast gate) ────────────────────
         # Runs first; all build jobs wait for this to pass.
         # Catches evaluation errors in seconds before spending
@@ -102,7 +92,7 @@ in {
     # ── Scheduled flake.lock updates ──────────────────────
     # Mirrors the previous hand-written update-flake-lock.yml
     # workflow, now driven from actions.nix like everything else.
-    "update-flake-lock" = {
+    update-flake-lock = {
       name = "Update flake.lock";
       on = {
         schedule = [
@@ -122,7 +112,7 @@ in {
       };
 
       jobs = {
-        "update-flake-lock" = {
+        update-flake-lock = {
           runsOn = "ubuntu-24.04";
           steps = [
             {
