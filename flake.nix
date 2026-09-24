@@ -262,12 +262,7 @@
         ...
       }: {
         # --- Package Cache --- #
-        _module.args.pkgs = import nixpkgs {
-          inherit system;
-          config = {
-            allowUnfree = true;
-          };
-        };
+        _module.args.pkgs = pkgsBatch.${system};
 
         # --- Configuration Builders --- #
         githubActions = import ./actions.nix {inherit self lib;};

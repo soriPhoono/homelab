@@ -6,5 +6,6 @@
     ./nvim
     ./vscode
     ./opencode
+    ./claude
   ];
 }

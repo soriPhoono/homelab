@@ -3,6 +3,4 @@
 result
 .pre-commit-config.yaml
 
-.hermes/*
-!.hermes/skills/
-.worktrees/
+docker/

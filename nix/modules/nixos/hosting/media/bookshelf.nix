@@ -28,7 +28,7 @@ in
             inherit name cfg config;
             image = "ghcr.io/pennydreadful/bookshelf:hardcover-v0.4.20.129";
             serviceName = "books";
-            servicePort = 8787;
+            containerPort = 8787;
             homepage = {
               group = "Media";
               name = "Bookshelf";

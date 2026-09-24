@@ -25,13 +25,13 @@
         alsa-lib
         libpulseaudio
         vulkan-loader
-        xorg.libX11
-        xorg.libXext
-        xorg.libXcursor
-        xorg.libXrandr
-        xorg.libXi
-        xorg.libXcomposite
-        xorg.libXinerama
+        libX11
+        libXext
+        libXcursor
+        libXrandr
+        libXi
+        libXcomposite
+        libXinerama
       ];
   };
 in

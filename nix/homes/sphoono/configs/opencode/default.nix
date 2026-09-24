@@ -60,9 +60,6 @@
           "@modelcontextprotocol/server-sequential-thinking"
         ];
       };
-      "personal/notion" = {
-        url = "https://mcp.notion.com/mcp";
-      };
       "search/brave" = {
         command = "${pkgs.nodejs}/bin/npx";
         args = [
@@ -75,14 +72,14 @@
           };
         };
       };
+      "search/exa" = {
+        url = "https://mcp.exa.ai/mcp";
+      };
+      "personal/notion" = {
+        url = "https://mcp.notion.com/mcp";
+      };
       "software-development/n8n" = {
-        url = "https://desktop-ares-agents.xerus-augmented.ts.net/mcp-server/http";
-        headers = {
-          Authorization = {
-            prefix = "Bearer ";
-            secret = "api/N8N_API_KEY";
-          };
-        };
+        url = "https://agents.cryptic-coders.net/mcp-server/http";
       };
     };
 
