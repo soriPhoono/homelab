@@ -10,9 +10,6 @@
 
       permissions.defaultMode = "auto";
 
-      # mem0: agent-maintained memory layer, installed via `/plugin marketplace add`
-      # and `/plugin install` rather than the module's plugins/marketplaces options,
-      # because it ships from mem0ai/mem0's own marketplace manifest.
       extraKnownMarketplaces."mem0-plugins" = {
         source = {
           source = "github";
@@ -60,6 +57,9 @@
       };
       "personal/notion" = {
         url = "https://mcp.notion.com/mcp";
+      };
+      "search/exa" = {
+        url = "https://mcp.exa.ai/mcp";
       };
     };
   };

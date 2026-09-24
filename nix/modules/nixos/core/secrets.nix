@@ -24,7 +24,6 @@ in
 
     config = mkIf cfg.enable (mkMerge [
       {
-        # TODO: Make this section ONLY delete sops key when something breaks, this crash and delete everything strategy is dumb
         systemd.tmpfiles.rules = concatMap (username: [
           "d /home/${username}/.config/ 0755 ${username} ${username} -"
           "d /home/${username}/.config/sops/ 0700 ${username} ${username} -"

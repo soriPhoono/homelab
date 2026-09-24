@@ -270,14 +270,6 @@ in
               temperature_night = 4000;
             };
 
-            # ── Theme ───────────────────────────────────────────────
-            theme = {
-              mode = "dark";
-              source = "builtin";
-              builtin = "Catppuccin";
-              templates.enable_builtin_templates = true;
-            };
-
             # ── Location ────────────────────────────────────────────
             location = optionalAttrs (cfg.location != null) {
               address = cfg.location.name;
@@ -322,18 +314,6 @@ in
               // optionalAttrs (cfg.plugins.sources != []) {
                 source = cfg.plugins.sources;
               };
-          }
-          // optionalAttrs (config.stylix.enable or false) {
-            theme = {
-              mode = config.stylix.polarity;
-              source = "custom";
-              custom_palette = "stylix";
-            };
-            shell = {
-              font = config.stylix.fonts.sansSerif.name;
-            };
-            theme.templates.enable_builtin_templates = false;
-            theme.templates.enable_community_templates = false;
           }
           // cfg.settings;
       };

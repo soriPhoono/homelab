@@ -24,6 +24,7 @@ with pkgs;
         secretspec
       ]
       ++ lib.optional stdenv.isLinux [
+        # Installation tools for linux clients
         disko
         nixos-facter
       ];

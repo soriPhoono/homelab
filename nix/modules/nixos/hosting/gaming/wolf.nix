@@ -1,5 +1,4 @@
 # TODO: Add NVIDIA support
-# TODO: Refactor this into a rootful container for cgroup support, will require expanding the mkContainer function to support rootful containers
 {
   lib,
   config,
