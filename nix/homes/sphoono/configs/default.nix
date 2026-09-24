@@ -5,7 +5,7 @@
     ./zen
     ./nvim
     ./vscode
-    ./opencode
+    # ./opencode
     ./claude
   ];
 }

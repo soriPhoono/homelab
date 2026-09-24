@@ -2,13 +2,11 @@
   apps.development.agents.claude = {
     enable = true;
 
-    extraPackages = with pkgs; [
-      # 3rd party service access
-      composio
-    ];
-
     userSettings = {
       theme = "dark";
+
+      model = "claude-sonnet-5";
+      effortLevel = "medium";
 
       permissions.defaultMode = "auto";
 
@@ -50,9 +48,6 @@
 
       # Work with git repos
       git-commit = pkgs.skills.github.awesome-copilot.git-commit;
-
-      # General 3rd party services
-      composio = pkgs.skills.composio-community.skills.composio;
     };
 
     mcpServers = {
@@ -63,14 +58,8 @@
           "@modelcontextprotocol/server-sequential-thinking"
         ];
       };
-      "search/exa" = {
-        url = "https://mcp.exa.ai/mcp";
-      };
       "personal/notion" = {
         url = "https://mcp.notion.com/mcp";
-      };
-      "software-development/n8n" = {
-        url = "https://agents.cryptic-coders.net/mcp-server/http";
       };
     };
   };

@@ -3,9 +3,10 @@
     # Common extensions added to EVERY profile — keep this minimal.
     # Language-specific tools belong in profile extensions instead.
     common = {
-      extensions = with pkgs.vscode-extensions; [
-        pkgs.vscode-marketplace.ms-vscode.atom-keybindings
+      extensions = with pkgs.vscode-marketplace; [
+        ms-vscode.atom-keybindings
         catppuccin.catppuccin-vsc
+        anthropic.claude-code
 
         # Nix Code
         mkhl.direnv
@@ -26,7 +27,7 @@
         tamasfe.even-better-toml
 
         # Tooling
-        pkgs.vscode-marketplace.ms-vscode-remote.remote-ssh
+        ms-vscode-remote.remote-ssh
         christian-kohler.path-intellisense
 
         # CI/CD
@@ -39,7 +40,7 @@
     extensionProfiles = {
       # ── DevOps profile — infra / ops ──────────────────────────────────────
       devops = {
-        extensions = with pkgs.vscode-extensions; [
+        extensions = with pkgs.vscode-marketplace; [
           # Golang
           golang.go
 
@@ -58,17 +59,17 @@
           # Terraform / OpenTofu
           hashicorp.hcl
           hashicorp.terraform
-          pkgs.vscode-marketplace.gruntwork.terragrunt-ls
-          pkgs.vscode-marketplace.nandovdk.tflint-vscode
-          pkgs.vscode-marketplace.tfsec.tfsec
-          pkgs.vscode-marketplace.derekcashmore.terraform-docs
-          pkgs.vscode-marketplace.saramorillon.terraform-graph
+          gruntwork.terragrunt-ls
+          nandovdk.tflint-vscode
+          tfsec.tfsec
+          derekcashmore.terraform-docs
+          saramorillon.terraform-graph
 
           # GitLab
           gitlab.gitlab-workflow
 
           # Grafana
-          pkgs.vscode-marketplace.grafana.grafana-vscode
+          grafana.grafana-vscode
         ];
 
         userSettings = {
@@ -112,7 +113,7 @@
       # Languages: Go, Rust (Rocket), Python (Django), Ruby (Rails),
       #            JavaScript/TypeScript (Svelte, Next.js, Vue)
       fullstack = {
-        extensions = with pkgs.vscode-extensions; [
+        extensions = with pkgs.vscode-marketplace; [
           # Go
           golang.go
 
@@ -125,7 +126,7 @@
 
           # Ruby — Shopify LSP + Sorbet type checker
           shopify.ruby-lsp
-          pkgs.vscode-marketplace.sorbet.sorbet-vscode-extension
+          sorbet.sorbet-vscode-extension
 
           # JavaScript / TypeScript
           dbaeumer.vscode-eslint
@@ -135,7 +136,6 @@
 
           # Vue
           vue.volar
-          vue.vscode-typescript-vue-plugin
 
           # Formatting
           esbenp.prettier-vscode
@@ -143,6 +143,9 @@
           # Tooling
           christian-kohler.npm-intellisense
           mikestead.dotenv
+
+          # Shopify platform for e-commerce
+          shopify.theme-check-vscode
         ];
 
         userSettings = {
@@ -176,10 +179,10 @@
 
       # ── Systems profile — C/C++, Rust, Zig, ZMK/QMK firmware ────────────────
       systems = {
-        extensions = with pkgs.vscode-extensions; [
+        extensions = with pkgs.vscode-marketplace; [
           # C / C++
           llvm-vs-code-extensions.vscode-clangd
-          vadimcn.vscode-lldb
+          pkgs.vscode-extensions.vadimcn.vscode-lldb
 
           # Zig
           ziglang.vscode-zig
@@ -191,9 +194,9 @@
           # Firmware & Build tooling (ZMK / QMK)
           ms-vscode.cmake-tools
           ms-vscode.hexeditor
-          pkgs.vscode-marketplace.trond-snekvik.devicetree
-          pkgs.vscode-marketplace.trond-snekvik.kconfig-lang
-          pkgs.vscode-marketplace.spadin.zmk-tools
+          trond-snekvik.devicetree
+          trond-snekvik.kconfig-lang
+          spadin.zmk-tools
         ];
 
         userSettings = {
@@ -227,7 +230,7 @@
       };
 
       data-science = {
-        extensions = with pkgs.vscode-extensions; [
+        extensions = with pkgs.vscode-marketplace; [
           # Python
           ms-python.python
           ms-python.vscode-pylance
