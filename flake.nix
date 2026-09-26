@@ -15,6 +15,9 @@
   };
 
   inputs = {
+    den = {
+      url = "github:denful/den/latest";
+    };
     flake-file = {
       url = "github:denful/flake-file";
     };

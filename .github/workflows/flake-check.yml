@@ -1,0 +1,55 @@
+# --- Run `nix flake check`
+name: nix flake check
+
+on:
+  workflow_dispatch: # allows manual triggering from the Actions UI
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, reopened, synchronize]
+  repository_dispatch:
+    types: [create-pull-request]
+
+jobs:
+  flake-check:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checking out repository..."
+        uses: actions/checkout@v4
+
+      - name: "Installing and configuring the nix package manager..."
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+
+      # NOTE: Alternatively you can use the DeterminateSystems nix installer
+      # - name: "Installing and configuring the nix package manager..."
+      #   uses: DeterminateSystems/nix-installer-action@main
+      #   with:
+      #     extra-conf: |
+      #       accept-flake-config = true
+
+      # NOTE Install any necessary packages here
+      - name: "Setting up packages..."
+        run: |
+          nix profile install nixpkgs#nix-fast-build # parallel nix builder
+
+      - name: "Running `nix flake check`..."
+        run: nix-fast-build --skip-cached --no-nom
+        # NOTE: You can also limit the build only to the currentSystem if needed
+        # run: nix-fast-build --skip-cached --no-nom --flake ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem)"
+
+      - name: "Running `nix build ...`..."
+        run: nix-fast-build --skip-cached --no-nom --flake ".#packages"
+        # NOTE: You can also limit the build only to the currentSystem if needed
+        # run: nix-fast-build --skip-cached --no-nom --flake ".#packages.$(nix eval --raw --impure --expr builtins.currentSystem)"
+
+      - name: "Running `nix develop...`..."
+        run: nix-fast-build --skip-cached --no-nom --flake ".#devShells"
+        # NOTE: You can also limit the build only to the currentSystem if needed
+        # run: nix-fast-build --skip-cached --no-nom --flake ".#devShells.$(nix eval --raw --impure --expr builtins.currentSystem)"
+
+      - name: "Checking flake inputs for stale & insecure nixpkgs versions..."
+        uses: DeterminateSystems/flake-checker-action@main
