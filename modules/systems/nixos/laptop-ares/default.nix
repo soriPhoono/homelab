@@ -27,6 +27,7 @@
     includes = [
       den.batteries.primary-user
       den.aspects.systemd-boot
+      den.aspects.zram-swap
     ];
     nixos =
       { config, ... }:
