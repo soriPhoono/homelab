@@ -1,4 +1,18 @@
-{ lib, ... }:
 {
-  den.schema.user.classes = lib.mkDefault [ "homeManager" ];
+  den,
+  lib,
+  ...
+}:
+{
+  den = {
+    default = {
+      includes = [
+        den.batteries.define-user
+        den.batteries.hostname
+      ];
+      nixos.system.stateVersion = lib.mkDefault "26.11";
+      homeManager.home.stateVersion = lib.mkDefault "26.11";
+    };
+    schema.user.classes = lib.mkDefault [ "homeManager" ];
+  };
 }

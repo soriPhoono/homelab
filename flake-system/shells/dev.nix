@@ -1,19 +1,7 @@
 # --- flake-parts/shells/dev.nix
 {
   lib,
-  mkShell,
-  nil,
-  nixfmt,
-  statix,
-  deadnix,
-  vulnix,
-  nix-output-monitor,
-  commitizen,
-  cz-cli,
-  gh,
-  gh-dash,
-  prettier,
-  markdownlint-cli,
+  pkgs,
   treefmt-wrapper ? null,
   dev-process ? null,
   pre-commit ? null,
@@ -24,6 +12,7 @@ let
     # MY_OTHER_ENV_VAR = "Goodbye, World!";
   };
 in
+with pkgs;
 mkShell {
   packages =
     (lib.optional (treefmt-wrapper != null) treefmt-wrapper)
@@ -50,6 +39,12 @@ mkShell {
       # typos # Source code spell checker
 
       # -- (YOUR) EXTRA PKGS --
+
+      # -- Secrets handling tools --
+      ssh-to-age
+      age
+      sops
+      secretspec
     ];
 
   shellHook = ''

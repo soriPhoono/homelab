@@ -22,6 +22,7 @@
         settings = {
           global.excludes = [
             "*.age" # Age encrypted files
+            "secrets/*" # sops-managed; sops owns the formatting
             "LICENSE.md"
           ];
           shellcheck.includes = [
