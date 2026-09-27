@@ -34,6 +34,12 @@
 
                   boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
 
+                  # QEMU's default display is Bochs-compatible VGA ("-vga
+                  # std"); without its KMS driver in the initrd there's no
+                  # framebuffer for plymouth to render on, so it silently
+                  # falls back to plain systemd status text.
+                  boot.initrd.availableKernelModules = [ "bochs" ];
+
                   # The guest generates its own SSH host key, which is not a
                   # sops recipient, so the real secrets can't be decrypted.
                   # Use a throwaway password instead.
@@ -47,6 +53,20 @@
                     memorySize = lib.mkDefault 4096;
                     cores = lib.mkDefault 4;
                     diskSize = lib.mkDefault 20480;
+                  };
+
+                  # Home Manager's activation only waits on nix-daemon.socket,
+                  # not the daemon actually being ready. On real hardware the
+                  # daemon wins that race easily; over this VM's slower
+                  # overlayfs-on-virtiofs writable store it sometimes doesn't,
+                  # and `nix-env -i` fails opening a `.drv` it just
+                  # instantiated. Wait on the real service and retry once.
+                  systemd.services.home-manager-sphoono = {
+                    after = [ "nix-daemon.service" ];
+                    serviceConfig = {
+                      Restart = "on-failure";
+                      RestartSec = 2;
+                    };
                   };
                 }
               )

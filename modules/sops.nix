@@ -6,17 +6,20 @@
 # Encrypted files live in ./secrets and are governed by ./.sops.yaml.
 { inputs, ... }:
 {
-  den.default = {
-    nixos = {
-      imports = [ inputs.sops-nix.nixosModules.sops ];
-      # Hosts decrypt with their SSH host key (converted to age by sops-nix).
-      sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-    };
-    homeManager =
-      { config, ... }:
-      {
-        imports = [ inputs.sops-nix.homeManagerModules.sops ];
-        sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
+  config = {
+    flake-file.inputs.sops-nix.url = "github:Mic92/sops-nix";
+    den.default = {
+      nixos = {
+        imports = [ inputs.sops-nix.nixosModules.sops ];
+        # Hosts decrypt with their SSH host key (converted to age by sops-nix).
+        sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       };
+      homeManager =
+        { config, ... }:
+        {
+          imports = [ inputs.sops-nix.homeManagerModules.sops ];
+          sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
+        };
+    };
   };
 }
