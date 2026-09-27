@@ -8,18 +8,39 @@
 {
   config = {
     flake-file.inputs.sops-nix.url = "github:Mic92/sops-nix";
-    den.default = {
-      nixos = {
-        imports = [ inputs.sops-nix.nixosModules.sops ];
-        # Hosts decrypt with their SSH host key (converted to age by sops-nix).
-        sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-      };
-      homeManager =
-        { config, ... }:
-        {
-          imports = [ inputs.sops-nix.homeManagerModules.sops ];
-          sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
+    den = {
+      default = {
+        nixos = {
+          imports = [ inputs.sops-nix.nixosModules.sops ];
+          # Hosts decrypt with their SSH host key (converted to age by sops-nix).
+          sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
         };
+        homeManager =
+          { config, ... }:
+          {
+            imports = [ inputs.sops-nix.homeManagerModules.sops ];
+            sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
+          };
+      };
+      schema.user.includes = [
+        (
+          { host, user, ... }:
+          {
+            nixos =
+              { config, ... }:
+              {
+                sops.secrets."users/${user.userName}/password" = {
+                  sopsFile = ../secrets/${host.name}.yaml;
+                  # Decrypted early enough for user creation.
+                  neededForUsers = true;
+                };
+                # `or null` lets vm.nix drop the secret without breaking evaluation.
+                users.users.${user.userName}.hashedPasswordFile =
+                  config.sops.secrets."users/${user.userName}/password".path or null;
+              };
+          }
+        )
+      ];
     };
   };
 }
