@@ -7,8 +7,12 @@
 
   den.aspects.laptop-ares = {
     includes = [
-      den.aspects.systemd-boot
-      den.aspects.zram-swap
+      den.aspects.core.hardware.cpu.amd
+      den.aspects.core.hardware.bluetooth
+      den.aspects.core.systemd-boot
+      den.aspects.core.zram-swap
+      den.aspects.core.hardware.hid.mice.logitech
+      den.aspects.core.hardware.android
     ];
     nixos = { pkgs, ... }: {
       hardware.facter.reportPath = ./facter.json;

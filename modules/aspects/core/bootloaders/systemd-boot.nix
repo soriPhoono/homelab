@@ -1,6 +1,6 @@
 {
   den = {
-    aspects.systemd-boot = _: {
+    aspects.core.bootloaders.systemd-boot = _: {
       includes = [ ];
       nixos = _: {
         boot = {
