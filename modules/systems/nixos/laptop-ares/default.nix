@@ -7,14 +7,17 @@
 
   den.aspects.laptop-ares = {
     includes = [
+      den.aspects.core.hardware.firmware
       den.aspects.core.hardware.cpu.amd
       den.aspects.core.hardware.gpu.amd
+      den.aspects.core.hardware.gpu.nvidia.laptop
       den.aspects.core.hardware.bluetooth
 
       den.aspects.core.bootloaders.systemd-boot
       den.aspects.core.swap.zram-swap
 
       den.aspects.core.hardware.hid.mice.logitech
+      den.aspects.core.hardware.hid.controllers.xbox
       den.aspects.core.hardware.android
     ];
     nixos = { pkgs, ... }: {
