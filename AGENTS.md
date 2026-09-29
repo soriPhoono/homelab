@@ -58,10 +58,14 @@ Configuration is expressed as _aspects_: composable units declared under
 
 Each of these fails with a message that points somewhere unhelpful.
 
-- **An aspect must be a plain set, not a function.** Writing
-  `den.aspects.x = { host, ... }: { ... }` fails with
-  `expected a set but found a function`. Take `host` from the `nixos`
-  module arguments instead: `nixos = { host, ... }: { ... }`.
+- **A functor aspect cannot carry sub-aspects.** Writing
+  `den.aspects.x = { host, user, ... }: { ... }` is supported, and is how
+  an aspect takes `host` or `user` parametrically. Sub-aspects declared
+  inside a functor body are unreachable, though: including
+  `den.aspects.x.sub` fails with `expected a set but found a function`
+  at a nested path, or `attribute 'sub' missing` at the top level. Use a
+  plain set when an aspect needs sub-aspects, taking `host` from the
+  `nixos` module arguments there instead.
 - **An aspect with only `includes` is not registered.** Referencing it
   then fails with `attribute '<name>' missing`, indistinguishable from a
   typo. Give it `nixos = _: { };` if it configures nothing.
