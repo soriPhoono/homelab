@@ -39,6 +39,9 @@ mkShell {
       # typos # Source code spell checker
 
       # -- (YOUR) EXTRA PKGS --
+      # Converts fetched HTML into markdown for .agents/wikis/*/raw/.
+      # Temporary: drop this once the agentic workflow moves to host level.
+      pandoc
 
       # -- Secrets handling tools --
       ssh-to-age
