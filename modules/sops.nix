@@ -22,25 +22,47 @@
             sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
           };
       };
-      schema.user.includes = [
-        (
-          { host, user, ... }:
-          {
-            nixos =
-              { config, ... }:
-              {
-                sops.secrets."users/${user.userName}/password" = {
-                  sopsFile = ../secrets/${host.name}.yaml;
-                  # Decrypted early enough for user creation.
-                  neededForUsers = true;
-                };
-                # `or null` lets vm.nix drop the secret without breaking evaluation.
-                users.users.${user.userName}.hashedPasswordFile =
-                  config.sops.secrets."users/${user.userName}/password".path or null;
+      schema = {
+        host.includes = [
+          (
+            { host, ... }:
+            {
+              nixos = _: {
+                sops.defaultSopsFile = ../secrets/${host.name}.yaml;
               };
-          }
-        )
-      ];
+            }
+          )
+        ];
+        user.includes = [
+          (
+            { user, ... }:
+            {
+              nixos =
+                { config, ... }:
+                {
+                  systemd.tmpfiles.rules = [
+                    "d /home/${user.userName}/.config/ 0755 ${user.userName} ${user.userName} -"
+                    "d /home/${user.userName}/.config/sops/ 0700 ${user.userName} ${user.userName} -"
+                    "d /home/${user.userName}/.config/sops/age/ 0700 ${user.userName} ${user.userName} -"
+                  ];
+
+                  sops.secrets = {
+                    "users/${user.userName}/password".neededForUsers = true;
+                    "users/${user.userName}/age-keys" = {
+                      path = "/home/${user.userName}/.config/sops/age/keys.txt";
+                      mode = "0400";
+                      owner = user.userName;
+                      group = user.userName;
+                    };
+                  };
+                  # `or null` lets vm.nix drop the secret without breaking evaluation.
+                  users.users.${user.userName}.hashedPasswordFile =
+                    config.sops.secrets."users/${user.userName}/password".path or null;
+                };
+            }
+          )
+        ];
+      };
     };
   };
 }

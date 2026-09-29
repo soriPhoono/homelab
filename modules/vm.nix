@@ -68,6 +68,11 @@
                       RestartSec = 2;
                     };
                   };
+
+                  services = {
+                    qemuGuest.enable = true;
+                    spice-vdagentd.enable = true;
+                  };
                 }
               )
             ];
