@@ -5,6 +5,22 @@
   };
 
   den.aspects.desktop.domains.gaming = {
+    __functor =
+      _self:
+      { host, ... }:
+      {
+        nixos = {
+          assertions = [
+            {
+              assertion = !(host.hasAspect den.aspects.desktop.domains.gaming);
+              message = ''
+                `den.aspects.desktop.domains.gaming` is a top level grouping aspect,
+                not meant to be included in a host, user, or home.
+              '';
+            }
+          ];
+        };
+      };
     desktop = {
       # programs.steam pulls in the unfree steam package.
       includes = [
@@ -62,6 +78,25 @@
             ];
           };
         };
+      };
+    };
+    console = {
+
+    };
+    vr = {
+
+    };
+    streaming = {
+      nixos = { host, ... }: {
+        assertions = [
+          {
+            assertion = !(host.hasAspect den.aspects.desktop.domains.gaming.streaming);
+            message = ''
+              `den.aspects.desktop.domains.gaming.streaming` is a top level grouping aspect,
+              not meant to be included in a host, user, or home.
+            '';
+          }
+        ];
       };
     };
   };
