@@ -27,9 +27,7 @@
           (
             { host, ... }:
             {
-              nixos = _: {
-                sops.defaultSopsFile = ../secrets/${host.name}.yaml;
-              };
+              nixos.sops.defaultSopsFile = ../secrets/${host.name}.yaml;
             }
           )
         ];
@@ -45,7 +43,6 @@
                     "d /home/${user.userName}/.config/sops/ 0700 ${user.userName} ${user.userName} -"
                     "d /home/${user.userName}/.config/sops/age/ 0700 ${user.userName} ${user.userName} -"
                   ];
-
                   sops.secrets = {
                     "users/${user.userName}/password".neededForUsers = true;
                     "users/${user.userName}/age-keys" = {
@@ -56,8 +53,13 @@
                     };
                   };
                   # `or null` lets vm.nix drop the secret without breaking evaluation.
-                  users.users.${user.userName}.hashedPasswordFile =
-                    config.sops.secrets."users/${user.userName}/password".path or null;
+                  users = {
+                    users.${user.userName}.hashedPasswordFile =
+                      config.sops.secrets."users/${user.userName}/password".path or null;
+                    groups.${user.userName}.members = [
+                      user.userName
+                    ];
+                  };
                 };
             }
           )
