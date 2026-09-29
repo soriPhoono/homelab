@@ -1,4 +1,4 @@
-{ den, lib, ... }: {
+{ lib, ... }: {
   den = {
     aspects.desktop.tools.virt-manager = {
       nixos = { pkgs, ... }: {
@@ -41,15 +41,17 @@
       };
     };
     schema.host.includes = [
-      ({ host, user, ... }: {
-        nixos.users.groups =
-          let
-            userName = [ user.userName ];
-          in
-          lib.mkIf (host.hasAspect den.aspects.desktop.tools.virt-manager) {
-            libvirtd.members = userName;
-            kvm.members = userName;
-          };
+      ({ user, ... }: {
+        nixos = { config, ... }: {
+          users.groups =
+            let
+              userName = [ user.userName ];
+            in
+            lib.mkIf config.virtualisaton.libvirtd.enable {
+              libvirtd.members = userName;
+              kvm.members = userName;
+            };
+        };
       })
     ];
   };

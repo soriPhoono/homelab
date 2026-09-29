@@ -1,5 +1,5 @@
-{ den, lib, ... }: {
-  den.aspects.core.networking.tailscale = { host, ... }: {
+{ lib, ... }: {
+  den.aspects.core.networking.tailscale = {
     nixos =
       { config, ... }:
       (lib.mkMerge [
@@ -11,7 +11,7 @@
             disableUpstreamLogging = true;
           };
         }
-        (lib.mkIf (host.hasAspect den.aspects.core.networking.network-manager) {
+        (lib.mkIf config.networking.networkmanager.enable {
           networking.networkmanager.unmanaged = [ config.services.tailscale.interfaceName ];
         })
       ]);

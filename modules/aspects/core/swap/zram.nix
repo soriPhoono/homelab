@@ -1,11 +1,7 @@
 {
-  den.aspects.core.swap.zram = _: {
-    nixos = _: {
-      zramSwap = {
-        enable = true;
-        algorithm = "zstd";
-        priority = 5;
-      };
-    };
+  den.aspects.core.swap.zram.nixos.zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    priority = 5;
   };
 }

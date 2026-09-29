@@ -1,7 +1,6 @@
-_: {
+{
   den.aspects.core.networking.network-manager = {
     nixos = { pkgs, ... }: {
-      # systemd.network.wait-online.enable = lib.mkForce false;
       networking = {
         networkmanager = {
           enable = true;

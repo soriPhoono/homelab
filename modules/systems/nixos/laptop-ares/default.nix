@@ -14,7 +14,6 @@
       den.aspects.core.hardware.cpu.amd
       den.aspects.core.hardware.gpu.amd
       den.aspects.core.hardware.gpu.nvidia.laptop
-      den.aspects.core.hardware.bluetooth
       # -- Core OS modules --
       den.aspects.core.bootloaders.systemd-boot
       den.aspects.core.swap.zram
@@ -23,6 +22,7 @@
       # -- Core desktop features --
       den.aspects.desktop.components.audio
       den.aspects.desktop.components.location
+      den.aspects.desktop.components.bluetooth
       # -- Desktop application runtimes --
       den.aspects.desktop.platforms.appimage
       # flatpak needs a portal backend (xdg.portal.extraPortals); wire it up
@@ -56,6 +56,7 @@
             })
           ];
         };
+      services.asusd.enable = true;
     };
   };
 

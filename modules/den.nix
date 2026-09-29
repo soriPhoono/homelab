@@ -12,12 +12,6 @@
         (den.batteries.unfree [ "rar" ])
       ];
       nixos = { pkgs, ... }: {
-        environment.systemPackages = with pkgs; [
-          wget
-          git
-          p7zip
-          rar
-        ];
         console = {
           keyMap = lib.mkDefault "us";
           packages = with pkgs; [
@@ -36,13 +30,7 @@
         users.mutableUsers = lib.mkDefault false;
         system.stateVersion = lib.mkDefault "26.11";
       };
-      homeManager = { pkgs, ... }: {
-        home.packages = with pkgs; [
-          wget
-          git
-          p7zip
-          rar
-        ];
+      homeManager = {
         xdg = {
           enable = true;
           mimeApps.enable = true;

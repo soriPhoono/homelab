@@ -1,27 +1,20 @@
 { inputs, den, ... }: {
-  flake-file.inputs = {
-    ygo-nix.url = "github:digiboid/ygo-nix";
-    jovian.url = "github:Jovian-Experiments/Jovian-NixOS"; # Look into this if I ever build a steamOS console
-  };
+  flake-file.inputs.ygo-nix.url = "github:digiboid/ygo-nix";
 
   den.aspects.desktop.domains.gaming = {
-    __functor =
-      _self:
-      { host, ... }:
-      {
-        nixos = {
-          assertions = [
-            {
-              assertion = !(host.hasAspect den.aspects.desktop.domains.gaming);
-              message = ''
-                `den.aspects.desktop.domains.gaming` is a top level grouping aspect,
-                not meant to be included in a host, user, or home.
-              '';
-            }
-          ];
-        };
-      };
     desktop = {
+      /**
+        Gaming stores:
+        - Steam (requires root for mods) (NX+HM)
+        - Lutris (primary) (HM)
+        - Prismlauncher (minecraft) (HM)
+
+        Dependencies for gaming:
+        - Gamemode (NX+HM)
+        - Gamescope (NX+HM)
+        - Mangohud (HM)
+      */
+
       # programs.steam pulls in the unfree steam package.
       includes = [
         (den.batteries.unfree [
@@ -30,74 +23,118 @@
         ])
       ];
       nixos = { pkgs, ... }: {
-        environment.systemPackages = with pkgs; [
-          # Core gaming tools (perf mon, mod launcher)
-          mangohud
-          steamtinkerlaunch
-          # Gaming stores
-          lutris # Epic, steam, gog, etc...
-          prismlauncher # Minecraft w/ mods
-          gzdoom # Doom w/ mods
-          # ygo-nix fetches game files from a "Latest" GitHub release tag
-          # that duelists-unite overwrites in place, so the hash it pins
-          # goes stale between releases. Refetch with the current hash
-          # until upstream repins it.
-          (inputs.ygo-nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (_old: {
-            unpackPhase = ''
-              runHook preUnpack
-              unzip -q ${
-                pkgs.fetchurl {
-                  url = "https://github.com/duelists-unite/omega-releases/releases/download/Latest/linux-x64.zip";
-                  hash = "sha256-k9QGnU1PMm5YGcFy9RR0Tdhe9mPXdp18AvTJp7a7U14=";
-                }
-              }
-              unzip -q ${
-                pkgs.fetchurl {
-                  url = "https://github.com/duelists-unite/omega-releases/releases/download/Latest/Omega_Launcher-Linux.zip";
-                  hash = "sha256-e7RHLRp/LGae4Z912oBlsTpPQrMCjXlsd18zQIxZVfo=";
-                }
-              }
-              runHook postUnpack
-            '';
-          })) # YGO omega (Yu-gi-oh)
-        ];
         programs = {
-          gamemode.enable = true; # Performance optimization project for linux kernel
+          gamemode = {
+            # Install and configure gamemode
+            enable = true;
+            enableRenice = true;
+          };
+          gamescope = {
+            # Install and configure gamescope
+            enable = true;
+            enableWsi = true;
+            capSysNice = true;
+          };
           steam = {
             enable = true;
-            extest.enable = true; # Wayland input system
-            protontricks.enable = true; # Bug fixes and support
-            extraPackages = with pkgs; [
-              freetype
-              pkgsi686Linux.freetype
-              fontconfig
-              pkgsi686Linux.fontconfig
-            ];
+            extest.enable = true;
             extraCompatPackages = with pkgs; [
+              # Launcher compatibility for mods and shaders
               proton-ge-bin
+              steamtinkerlaunch
             ];
           };
         };
       };
-    };
-    console = {
-
+      homeManager =
+        {
+          pkgs,
+          nixosConfig ? null,
+          ...
+        }:
+        {
+          home.packages = with pkgs; [
+            # Runtime tools
+            gamescope
+            gamemode
+            # Troubleshooting tools
+            winetricks
+            protontricks
+            # Game clients
+            gzdoom # Doom with mods
+            # ygo-nix fetches game files from a "Latest" GitHub release tag
+            # that duelists-unite overwrites in place, so the hash it pins
+            # goes stale between releases. Refetch with the current hash
+            # until upstream repins it.
+            (inputs.ygo-nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (_old: {
+              unpackPhase = ''
+                runHook preUnpack
+                unzip -q ${
+                  pkgs.fetchurl {
+                    url = "https://github.com/duelists-unite/omega-releases/releases/download/Latest/linux-x64.zip";
+                    hash = "sha256-k9QGnU1PMm5YGcFy9RR0Tdhe9mPXdp18AvTJp7a7U14=";
+                  }
+                }
+                unzip -q ${
+                  pkgs.fetchurl {
+                    url = "https://github.com/duelists-unite/omega-releases/releases/download/Latest/Omega_Launcher-Linux.zip";
+                    hash = "sha256-e7RHLRp/LGae4Z912oBlsTpPQrMCjXlsd18zQIxZVfo=";
+                  }
+                }
+                runHook postUnpack
+              '';
+            })) # YGO omega (Yu-gi-oh)
+          ];
+          programs = {
+            mangohud = {
+              enable = true;
+              settings.full = true;
+            };
+            lutris = {
+              enable = true;
+              defaultWinePackage = pkgs.proton-ge-bin;
+              steamPackage = nixosConfig.programs.steam.package or pkgs.steam;
+              extraPackages = with pkgs; [
+                # Launcher compatibility for proton
+                umu-launcher
+              ];
+              winePackages = with pkgs; [
+                wineWow64Packages.full
+              ];
+              protonPackages = with pkgs; [
+                proton-ge-bin
+              ];
+            };
+            prismlauncher = {
+              enable = true;
+              extraPackages = with pkgs; [
+                zulu8
+                zulu11
+                zulu17
+                zulu
+              ];
+            };
+          };
+        };
     };
     vr = {
-
-    };
-    streaming = {
-      nixos = { host, ... }: {
-        assertions = [
-          {
-            assertion = !(host.hasAspect den.aspects.desktop.domains.gaming.streaming);
-            message = ''
-              `den.aspects.desktop.domains.gaming.streaming` is a top level grouping aspect,
-              not meant to be included in a host, user, or home.
-            '';
-          }
+      includes = [
+        den.aspects.core.hardware.android
+      ];
+      nixos = {
+        services.wivrn = {
+          enable = true;
+          openFirewall = true;
+          autoStart = true;
+          highPriority = true;
+          steam.implementOXRRuntimes = true;
+        };
+      };
+      homeManager = { pkgs, ... }: {
+        home.packages = with pkgs; [
+          sidequest
         ];
       };
-    };
+    }; # TODO: Complete this
   };
 }

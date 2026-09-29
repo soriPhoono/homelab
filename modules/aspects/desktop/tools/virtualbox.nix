@@ -9,12 +9,12 @@
       };
     };
     schema.host.includes = [
-      ({ host, user, ... }: {
-        nixos.users.groups.vboxusers.members =
-          lib.mkIf (host.hasAspect den.aspects.desktop.tools.virtualbox)
-            [
-              user.userName
-            ];
+      ({ user, ... }: {
+        nixos = { config, ... }: {
+          users.groups.vboxusers.members = lib.mkIf config.virtualisation.virtualbox.host.enable [
+            user.userName
+          ];
+        };
       })
     ];
   };

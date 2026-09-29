@@ -4,8 +4,6 @@
       # hardware.xone pulls in xone-dongle-firmware, which is unfree.
       (den.batteries.unfree [ "xone-dongle-firmware" ])
     ];
-    nixos = _: {
-      hardware.xone.enable = true;
-    };
+    nixos.hardware.xone.enable = true;
   };
 }

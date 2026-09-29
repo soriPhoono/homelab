@@ -1,11 +1,12 @@
 {
   den.aspects.core.hardware.android = {
-    nixos = { pkgs, config, ... }: {
-      environment.systemPackages = with pkgs; [
+    nixos = { config, ... }: {
+      users.groups.adbusers.members = config.users.groups.wheel.members;
+    };
+    homeManager = { pkgs, ... }: {
+      home.packages = with pkgs; [
         android-tools
       ];
-
-      users.groups.adbusers.members = config.users.groups.wheel.members;
     };
   };
 }

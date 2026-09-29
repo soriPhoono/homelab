@@ -1,10 +1,12 @@
 { den, ... }: {
   den.aspects.core.hardware.gpu.amd = {
-    nixos = { pkgs, ... }: {
+    nixos = { ... }: {
       imports = [
         ./_private
       ];
-      environment.systemPackages = with pkgs; [
+    };
+    homeManager = { pkgs, ... }: {
+      home.packages = with pkgs; [
         nvtopPackages.amd
       ];
     };

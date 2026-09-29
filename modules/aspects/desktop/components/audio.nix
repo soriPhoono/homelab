@@ -1,6 +1,6 @@
-{ den, lib, ... }: {
-  den.aspects.desktop.components.audio = { host, ... }: {
-    nixos = {
+{ lib, ... }: {
+  den.aspects.desktop.components.audio = {
+    nixos = { config, ... }: {
       security.rtkit.enable = true;
       services.pipewire = {
         enable = true;
@@ -10,7 +10,7 @@
           enable = true;
           support32Bit = true;
         };
-        wireplumber.extraConfig = lib.mkIf (host.hasAspect den.aspects.core.hardware.bluetooth) {
+        wireplumber.extraConfig = lib.mkIf config.hardware.bluetooth.enable {
           "10-bluetooth-auto-switch" = {
             "wireplumber.settings"."bluetooth.autoswitch-to-headset-profile" = true;
             "monitor.bluez.rules" = [

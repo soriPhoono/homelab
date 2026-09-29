@@ -9,7 +9,7 @@
         "nvidia-settings"
       ])
     ];
-    nixos = { pkgs, ... }: {
+    nixos = { ... }: {
       imports = [
         ./_private
       ];
@@ -26,12 +26,12 @@
         # so it lives in the laptop aspect, not here.
         powerManagement.enable = true;
       };
-
-      environment.systemPackages = with pkgs; [
-        nvtopPackages.nvidia # NVIDIA gpu monitoring tool
+    };
+    homeManager = { pkgs, ... }: {
+      home.packages = with pkgs; [
+        nvtopPackages.nvidia
       ];
     };
-
     gpgpu = {
       includes = [
         den.aspects.core.hardware.gpu.nvidia
@@ -49,33 +49,29 @@
         ];
       };
     };
-
     desktop = {
       includes = [
         den.aspects.core.hardware.gpu.nvidia
       ];
-      nixos = _: {
-        # PRIME sync and reverse sync are mutually exclusive upstream; sync
-        # also precludes powerManagement.finegrained. Enabling any PRIME mode
-        # additionally requires per-host bus IDs, which cannot live here.
-        hardware.nvidia.prime = {
-          sync.enable = true;
-          allowExternalGpu = true;
-        };
+      # PRIME sync and reverse sync are mutually exclusive upstream; sync
+      # also precludes powerManagement.finegrained. Enabling any PRIME mode
+      # additionally requires per-host bus IDs, which cannot live here.
+      nixos.hardware.nvidia.prime = {
+        sync.enable = true;
+        allowExternalGpu = true;
       };
     };
-
     laptop = {
       includes = [
         den.aspects.core.hardware.gpu.nvidia
       ];
-      nixos = { host, ... }: {
+      nixos = { config, ... }: {
         hardware.nvidia = {
           dynamicBoost.enable = true;
           powerManagement.finegrained = true;
           prime = {
-            intelBusId = lib.mkIf (host.hasAspect den.aspects.core.hardware.gpu.intel) "PCI:0@0:2:0";
-            amdgpuBusId = lib.mkIf (host.hasAspect den.aspects.core.hardware.gpu.amd) "PCI:4@0:0:0";
+            intelBusId = lib.mkIf config.hardware.cpu.intel.updateMicrocode "PCI:0@0:2:0";
+            amdgpuBusId = lib.mkIf config.hardware.cpu.amd.updateMicrocode "PCI:4@0:0:0";
             nvidiaBusId = "PCI:1@0:0:0";
             offload = {
               enable = true;
