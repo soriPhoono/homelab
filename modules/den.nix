@@ -9,7 +9,6 @@
       includes = [
         den.batteries.define-user
         den.batteries.hostname
-        (den.batteries.unfree [ "rar" ])
       ];
       nixos = { pkgs, ... }: {
         console = {
