@@ -31,14 +31,6 @@
         system.stateVersion = lib.mkDefault "26.11";
       };
       homeManager = {
-        xdg = {
-          enable = true;
-          mimeApps.enable = true;
-          userDirs = {
-            enable = true;
-            createDirectories = true;
-          };
-        };
         programs.home-manager.enable = true;
         home.stateVersion = lib.mkDefault "26.11";
       };

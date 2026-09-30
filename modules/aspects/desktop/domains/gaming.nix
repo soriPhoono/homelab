@@ -49,7 +49,7 @@
       homeManager =
         {
           pkgs,
-          nixosConfig ? null,
+          osConfig ? null,
           ...
         }:
         {
@@ -60,6 +60,10 @@
             # Troubleshooting tools
             winetricks
             protontricks
+            # Prismlauncher Java runtimes (auto-detected on PATH)
+            zulu8
+            zulu11
+            zulu17
             # Game clients
             gzdoom # Doom with mods
             # ygo-nix fetches game files from a "Latest" GitHub release tag
@@ -93,7 +97,7 @@
             lutris = {
               enable = true;
               defaultWinePackage = pkgs.proton-ge-bin;
-              steamPackage = nixosConfig.programs.steam.package or pkgs.steam;
+              steamPackage = osConfig.programs.steam.package or pkgs.steam;
               extraPackages = with pkgs; [
                 # Launcher compatibility for proton
                 umu-launcher
@@ -105,15 +109,7 @@
                 proton-ge-bin
               ];
             };
-            prismlauncher = {
-              enable = true;
-              extraPackages = with pkgs; [
-                zulu8
-                zulu11
-                zulu17
-                zulu
-              ];
-            };
+            prismlauncher.enable = true;
           };
         };
     };

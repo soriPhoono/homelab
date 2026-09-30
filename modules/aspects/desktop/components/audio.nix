@@ -1,6 +1,6 @@
 { lib, ... }: {
   den.aspects.desktop.components.audio = {
-    nixos = { config, ... }: {
+    nixos = {
       security.rtkit.enable = true;
       services.pipewire = {
         enable = true;
@@ -10,26 +10,39 @@
           enable = true;
           support32Bit = true;
         };
-        wireplumber.extraConfig = lib.mkIf config.hardware.bluetooth.enable {
-          "10-bluetooth-auto-switch" = {
-            "wireplumber.settings"."bluetooth.autoswitch-to-headset-profile" = true;
-            "monitor.bluez.rules" = [
-              {
-                matches = [
+      };
+    };
+    homeManager =
+      {
+        osConfig ? { },
+        ...
+      }:
+      {
+        services.pipewire = {
+          enable = true;
+          wireplumber = {
+            enable = true;
+            configs = lib.mkIf (osConfig.hardware.bluetooth.enable or false) {
+              "10-bluetooth-auto-switch" = {
+                "wireplumber.settings"."bluetooth.autoswitch-to-headset-profile" = true;
+                "monitor.bluez.rules" = [
                   {
-                    "device.name" = "~bluez_card.*";
+                    matches = [
+                      {
+                        "device.name" = "~bluez_card.*";
+                      }
+                    ];
+                    actions."update-props"."bluez5.auto-connect" = [
+                      "hfp_hf"
+                      "hsp_hs"
+                      "a2dp_sink"
+                    ];
                   }
                 ];
-                actions."update-props"."bluez5.auto-connect" = [
-                  "hfp_hf"
-                  "hsp_hs"
-                  "a2dp_sink"
-                ];
-              }
-            ];
+              };
+            };
           };
         };
       };
-    };
   };
 }

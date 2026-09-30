@@ -9,10 +9,16 @@
       enable = true;
       withUWSM = true;
     };
-    homeManager = { config, nixosConfig, ... }: {
-      xdg.configFile."uwsm/env".source =
-        lib.mkIf nixosConfig.programs.uwsm.enable "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
-      desktop.window-managers.hyprland.enable = true;
-    };
+    homeManager =
+      {
+        config,
+        osConfig ? { },
+        ...
+      }:
+      {
+        xdg.configFile."uwsm/env".source = lib.mkIf (osConfig.programs.uwsm.enable or false
+        ) "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
+        desktop.window-managers.hyprland.enable = true;
+      };
   };
 }
