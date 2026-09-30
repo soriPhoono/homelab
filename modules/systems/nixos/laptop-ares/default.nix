@@ -19,19 +19,16 @@
       den.aspects.core.swap.zram
       den.aspects.core.networking.network-manager
       den.aspects.core.networking.tailscale
+      # -- Desktop environment --
+      den.aspects.desktop.environments.kde
       # -- Core desktop features --
       den.aspects.desktop.components.audio
-      den.aspects.desktop.components.location
       den.aspects.desktop.components.bluetooth
       # -- Desktop application runtimes --
       den.aspects.desktop.platforms.appimage
-      # flatpak needs a portal backend (xdg.portal.extraPortals); wire it up
-      # once hyprland (and its own portal) lands on this host.
-      # den.aspects.desktop.platforms.flatpak
       # -- Domains of desktop activity (scoped) --
       den.aspects.desktop.domains.gaming.desktop
       # -- Desktop applications (scoped) --
-      den.aspects.desktop.tools.asusd
       den.aspects.desktop.tools.virt-manager
       den.aspects.desktop.tools.partition-manager
       den.aspects.desktop.tools.virtualbox

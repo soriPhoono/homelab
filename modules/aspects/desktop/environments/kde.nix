@@ -4,6 +4,8 @@
       den.aspects.desktop
 
       den.aspects.desktop.greeters.sddm
+
+      den.aspects.desktop.platforms.flatpak
     ];
     nixos = { pkgs, ... }: {
       environment.systemPackages =

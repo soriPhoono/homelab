@@ -1,5 +1,8 @@
-{
-  den.aspects.desktop.platforms.flatpak.nixos = {
-    services.flatpak.enable = true;
+{ den, ... }: {
+  den.aspects.desktop.platforms.flatpak = {
+    includes = [
+      den.aspects.desktop
+    ];
+    nixos.services.flatpak.enable = true;
   };
 }

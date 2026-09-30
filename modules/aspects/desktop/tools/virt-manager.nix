@@ -47,7 +47,7 @@
             let
               userName = [ user.userName ];
             in
-            lib.mkIf config.virtualisaton.libvirtd.enable {
+            lib.mkIf config.virtualisation.libvirtd.enable {
               libvirtd.members = userName;
               kvm.members = userName;
             };

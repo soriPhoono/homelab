@@ -47,10 +47,6 @@
     import-tree = {
       url = "github:denful/import-tree";
     };
-    jovian = {
-      url = "github:Jovian-Experiments/Jovian-NixOS";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nixpkgs = {
       url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.zst";
     };
@@ -71,8 +67,10 @@
     };
     ygo-nix = {
       url = "github:digiboid/ygo-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.inputs.systems.follows = "systems";
+      inputs = {
+        flake-utils.inputs.systems.follows = "systems";
+        nixpkgs.follows = "nixpkgs";
+      };
     };
   };
 }
