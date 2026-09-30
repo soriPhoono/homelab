@@ -60,10 +60,6 @@
             # Troubleshooting tools
             winetricks
             protontricks
-            # Prismlauncher Java runtimes (auto-detected on PATH)
-            zulu8
-            zulu11
-            zulu17
             # Game clients
             gzdoom # Doom with mods
             # ygo-nix fetches game files from a "Latest" GitHub release tag
@@ -109,7 +105,25 @@
                 proton-ge-bin
               ];
             };
-            prismlauncher.enable = true;
+            prismlauncher = {
+              enable = true;
+              # Prism finds its runtimes through PRISMLAUNCHER_JAVA_PATHS,
+              # which the nixpkgs wrapper sets from this list -- not by
+              # scanning PATH. Putting the JDKs in home.packages instead
+              # collides in buildEnv, since every one of them ships bin/java
+              # and none carry a meta.priority to break the tie. The wrapper
+              # default is [ jdk25 jdk21 jdk17 jdk8 ]; 11 is added for older
+              # modpacks.
+              package = pkgs.prismlauncher.override {
+                jdks = with pkgs; [
+                  jdk25
+                  jdk21
+                  jdk17
+                  jdk11
+                  jdk8
+                ];
+              };
+            };
           };
         };
     };

@@ -57,7 +57,11 @@
     };
   };
 
+  # host-aspects projects each host aspect's `homeManager` half onto this user.
+  # It is applied here rather than on den.aspects.sphoono so that aspect stays
+  # shell-only and remains portable to a standalone home.
   den.aspects."sphoono@laptop-ares".includes = [
     den.batteries.primary-user
+    den.batteries.host-aspects
   ];
 }

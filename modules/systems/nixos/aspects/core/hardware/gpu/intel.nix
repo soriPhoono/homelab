@@ -1,13 +1,11 @@
 { den, ... }: {
   den.aspects.core.hardware.gpu.intel = {
-    nixos = { ... }: {
+    nixos = { pkgs, ... }: {
       imports = [
         ./_private
       ];
-    };
-    homeManager = { pkgs, ... }: {
-      home.packages = with pkgs; [
-        nvtopPackages.intel
+      environment.systemPackages = with pkgs; [
+        nvtopPackages.full
       ];
     };
     gpgpu = {

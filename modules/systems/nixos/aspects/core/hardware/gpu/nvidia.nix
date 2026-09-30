@@ -9,9 +9,13 @@
         "nvidia-settings"
       ])
     ];
-    nixos = { ... }: {
+    nixos = { pkgs, ... }: {
       imports = [
         ./_private
+      ];
+
+      environment.systemPackages = with pkgs; [
+        nvtopPackages.full
       ];
 
       # Unlike amd/intel, this is not just an Xorg DDX choice: the upstream
@@ -26,11 +30,6 @@
         # so it lives in the laptop aspect, not here.
         powerManagement.enable = true;
       };
-    };
-    homeManager = { pkgs, ... }: {
-      home.packages = with pkgs; [
-        nvtopPackages.nvidia
-      ];
     };
     gpgpu = {
       includes = [
