@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono = {
+  den.aspects.sphoono-gpg = {
     homeManager =
       {
         lib,

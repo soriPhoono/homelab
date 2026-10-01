@@ -71,5 +71,10 @@
   den.aspects."sphoono@laptop-ares".includes = [
     den.batteries.primary-user
     den.batteries.host-aspects
+
+    den.aspects.sphoono-gpg # Signing/encryption
+    den.aspects.sphoono-ssh # Authentication
+    den.aspects.sphoono-zen-browser # Web browsing
+    den.aspects.sphoono-vscode # Personal IDE settings
   ];
 }

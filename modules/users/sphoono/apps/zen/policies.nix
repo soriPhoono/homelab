@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono.homeManager = {
+  den.aspects.sphoono-zen-browser.homeManager = {
     programs.zen-browser = {
       policies =
         let

@@ -1,6 +1,6 @@
 { inputs, ... }: {
   flake-file.inputs.zen-browser.url = "github:0xc000022070/zen-browser-flake";
-  den.aspects.sphoono.homeManager = { pkgs, ... }: {
+  den.aspects.sphoono-zen-browser.homeManager = { pkgs, ... }: {
     imports = [
       inputs.zen-browser.homeModules.twilight
     ];
@@ -17,14 +17,13 @@
         "x-scheme-handler/unknown" = browser;
       };
     programs.zen-browser = {
-      enable = true;
       nativeMessagingHosts = [ pkgs.firefoxpwa ];
       setAsDefaultBrowser = true;
       enablePrivateDesktopEntry = false;
       profiles.default = {
         id = 0;
         isDefault = true;
-        # keyboardShortcutsVersion = 20;
+        keyboardShortcutsVersion = 20;
         keyboardShortcuts = [
           {
             id = "zen-compact-mode-toggle";

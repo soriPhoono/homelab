@@ -1,5 +1,5 @@
 { den, ... }: {
-  den.aspects.sphoono = {
+  den.aspects.sphoono-zen-browser = {
     includes = [
       den.aspects.nur
     ];

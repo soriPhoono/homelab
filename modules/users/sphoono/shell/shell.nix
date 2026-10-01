@@ -1,8 +1,8 @@
 {
   den.aspects.sphoono = {
-    homeManager = { pkgs, config, ... }: {
+    homeManager = { pkgs, ... }: {
       home.shellAliases = {
-        ls = "${config.programs.eza.package}/bin/eza";
+        ls = "${pkgs.eza}/bin/eza --git --icons auto --group-directories-first";
         l = "ls -l";
         la = "ls -a";
         ll = "ls -l";
@@ -10,17 +10,18 @@
         lt = "ls -TL 3";
         lta = "ls -aTL 3";
 
-        cat = "${config.programs.bat.package}/bin/bat";
+        cat = "${pkgs.bat}/bin/bat";
 
         cd = "z";
         ".." = "cd ..";
         "..." = "cd ../..";
 
         du = "${pkgs.dust}/bin/dust";
-        find = "${config.programs.fzf.package}/bin/fzf";
-        grep = "${config.programs.ripgrep.package}/bin/rg";
+        find = "${pkgs.fzf}/bin/fzf";
+        grep = "${pkgs.ripgrep}/bin/rg";
 
         df = "${pkgs.duf}/bin/duf";
+        top = "${pkgs.btop}/bin/btop";
 
         gs = "git status";
         ga = "git add";
@@ -49,19 +50,8 @@
           enable = true;
           nix-direnv.enable = true;
         };
-        eza = {
-          enable = true;
-          git = true;
-          icons = "auto";
-          extraOptions = [
-            "--group-directories-first"
-          ];
-        };
         zoxide.enable = true;
-        bat.enable = true;
-        fzf.enable = true;
-        ripgrep.enable = true;
-        btop.enable = true;
+        zellij.enable = true;
       };
     };
   };

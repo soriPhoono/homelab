@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono.homeManager = { pkgs, ... }: {
+  den.aspects.sphoono-zen-browser.homeManager = { pkgs, ... }: {
     programs.zen-browser.profiles.default.search = {
       force = true;
       default = "ddg";
