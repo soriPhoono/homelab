@@ -1,5 +1,9 @@
-{ lib, ... }: {
+{ inputs, lib, ... }: {
+  flake-file.inputs.nix-index-database.url = "github:nix-community/nix-index-database";
   den.default.nixos = { pkgs, ... }: {
+    imports = [
+      inputs.nix-index-database.nixosModules.nix-index
+    ];
     console = {
       keyMap = lib.mkDefault "us";
       packages = with pkgs; [

@@ -8,7 +8,7 @@
 }:
 {
   flake-file.inputs.nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
-  den.aspects.sphoono-vscode = {
+  den.aspects.sphoono.configs.vscode = {
     # vscode itself and some marketplace extensions are unfree. VSCodium
     # would avoid the vscode license, but ms-vscode-remote.remote-ssh
     # deliberately refuses to run on non-Microsoft builds, so this uses
@@ -58,19 +58,10 @@
                   tamasfe.even-better-toml
                 ];
                 userSettings = {
+                  "yaml.format.enable" = true;
                   "[yaml]" = {
                     "editor.defaultFormatter" = "redhat.vscode-yaml";
-                    "editor.tabSize" = 2;
                   };
-                  "yaml.format.enable" = true;
-                  "yaml.disableSchemaDetection" = [
-                    "**/.github/workflows/*.yml"
-                    "**/.github/workflows/*.yaml"
-                    "**/.gitea/workflows/*.yml"
-                    "**/.gitea/workflows/*.yaml"
-                    "**/.forgejo/workflows/*.yml"
-                    "**/.forgejo/workflows/*.yaml"
-                  ];
                 };
               };
               nix = {
@@ -81,8 +72,7 @@
                 userSettings = {
                   # Nix
                   "[nix]" = {
-                    "editor.tabSize" = 2;
-                    "editor.formatOnSave" = true;
+                    "editor.defaultFormatter" = "jnoortheen.nix-ide";
                   };
                 };
               };
@@ -104,6 +94,12 @@
                   llvm-vs-code-extensions.vscode-clangd
                   vscodeLldb
                 ];
+                userSettings = {
+                  # C/C++
+                  "[cpp]" = {
+                    "editor.defaultFormatter" = "llvm-vs-code-extensions.vscode-clangd";
+                  };
+                };
               };
               zig = {
                 extensions = [
@@ -113,6 +109,9 @@
                 userSettings = {
                   # Zig
                   "zig.zigPath" = "${pkgs.zig}/bin/zig";
+                  "[zig]" = {
+                    "editor.defaultFormatter" = "ziglang.vscode-zig";
+                  };
                 };
               };
               rust = {
@@ -152,6 +151,9 @@
                 ];
                 userSettings = {
                   "python.languageServer" = "Pylance";
+                  "[python]" = {
+                    "editor.defaultFormatter" = "ms-python.python";
+                  };
                 };
               };
               javaScript = {
@@ -159,12 +161,25 @@
                   dbaeumer.vscode-eslint
                   esbenp.prettier-vscode
                 ];
+                userSettings = {
+                  "[javascript]" = {
+                    "editor.defaultFormatter" = "esbenp.prettier-vscode";
+                  };
+                  "[typescript]" = {
+                    "editor.defaultFormatter" = "esbenp.prettier-vscode";
+                  };
+                };
               };
               ruby = {
                 extensions = [
                   shopify.ruby-lsp
                   sorbet.sorbet-vscode-extension
                 ];
+                userSettings = {
+                  "[ruby]" = {
+                    "editor.defaultFormatter" = "shopify.ruby-lsp";
+                  };
+                };
               };
               terraform = {
                 extensions = [
@@ -177,6 +192,9 @@
                   "terraform.languageServer.enable" = true;
                   "terraform.languageServer.args" = [ "serve" ];
                   "terraform.validation.enableEnhancedValidation" = true;
+                  "[terraform]" = {
+                    "editor.defaultFormatter" = "hashicorp.terraform";
+                  };
                 };
               };
             };
@@ -279,6 +297,7 @@
                   "workbench.editor.closeOnFileDelete" = false;
 
                   # Formatting
+                  "editor.tabSize" = 2;
                   "editor.formatOnSave" = true;
                   "editor.formatOnPaste" = true;
                   "editor.codeActionsOnSave" = {

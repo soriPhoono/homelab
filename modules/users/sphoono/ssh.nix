@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono-ssh = _: {
+  den.aspects.sphoono.ssh = _: {
     nixos.users.users.sphoono.openssh.authorizedKeys.keyFiles = [ ./assets/id_primary.pub ];
     homeManager = { config, ... }: {
       home.file.".ssh/id_primary.pub".source = ./assets/id_primary.pub;
