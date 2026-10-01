@@ -21,6 +21,13 @@
         grep = "${config.programs.ripgrep.package}/bin/rg";
 
         df = "${pkgs.duf}/bin/duf";
+
+        gs = "git status";
+        ga = "git add";
+        gc = "git commit -m";
+        gch = "git checkout -b";
+        gp = "git push";
+        gpl = "git pull";
       };
       programs = {
         starship = {

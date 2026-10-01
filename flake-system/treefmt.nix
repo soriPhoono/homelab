@@ -2,7 +2,6 @@
 { inputs, ... }:
 {
   imports = with inputs; [ treefmt-nix.flakeModule ];
-
   perSystem =
     { pkgs, ... }:
     {

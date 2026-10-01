@@ -19,5 +19,8 @@
         ];
       services.desktopManager.plasma6.enable = true;
     };
+    homeManager = { pkgs, ... }: {
+      services.gpg-agent.pinentry.package = pkgs.pinentry-qt;
+    };
   };
 }

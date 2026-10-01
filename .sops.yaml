@@ -2,11 +2,11 @@
 # (ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub) as an anchor and list it
 # under the relevant creation rule, then run `sops updatekeys <file>`.
 keys:
-  - &sphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
+  - &user-sphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
   - &laptop-ares age1ldzusjw28wzed8y6q9ynn9d7se7qxpsapxxys00jgrsfdw88eeasnt795x
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
-          - *sphoono
+          - *user-sphoono
           - *laptop-ares

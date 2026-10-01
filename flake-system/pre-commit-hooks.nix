@@ -2,7 +2,6 @@
 { inputs, lib, ... }:
 {
   imports = with inputs; [ pre-commit-hooks.flakeModule ];
-
   perSystem =
     { config, pkgs, ... }:
     {

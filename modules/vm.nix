@@ -43,6 +43,11 @@
                     initialPassword = "vm";
                   };
                   virtualisation = {
+                    # The writable store overlay lives on tmpfs but the Nix DB
+                    # lives on the disk image; a persisted image therefore
+                    # lists .drv files that no longer exist on the next boot.
+                    # Boot stateless so every run starts from a clean DB.
+                    diskImage = null;
                     memorySize = lib.mkDefault 4096;
                     cores = lib.mkDefault 4;
                     diskSize = lib.mkDefault 20480;

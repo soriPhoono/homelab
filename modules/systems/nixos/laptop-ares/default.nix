@@ -7,6 +7,8 @@
 
   den.aspects.laptop-ares = {
     includes = [
+      # -- External libraries --
+      den.aspects.stylix
       # -- Gitops updates --
       den.aspects.core.gitops
       # -- Core hardware --
@@ -54,6 +56,12 @@
           ];
         };
       services.asusd.enable = true;
+      stylix = {
+        enable = true;
+        base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+        # The host picks its own plymouth theme above.
+        targets.plymouth.enable = false;
+      };
     };
   };
 

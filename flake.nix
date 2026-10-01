@@ -50,6 +50,13 @@
     nixpkgs = {
       url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.zst";
     };
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -57,6 +64,15 @@
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        nixpkgs.follows = "nixpkgs";
+        nur.follows = "nur";
+        systems.follows = "systems";
+      };
     };
     systems = {
       url = "github:nix-systems/default";
@@ -69,6 +85,13 @@
       url = "github:digiboid/ygo-nix";
       inputs = {
         flake-utils.inputs.systems.follows = "systems";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs = {
+        home-manager.follows = "home-manager";
         nixpkgs.follows = "nixpkgs";
       };
     };
