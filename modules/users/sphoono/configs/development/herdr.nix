@@ -13,6 +13,8 @@
         tomlFormat = pkgs.formats.toml { };
       in
       {
+        imports = [ ./_private/herdr-stylix.nix ];
+
         programs.herdr = {
           enable = true;
           settings.keys.command = [
