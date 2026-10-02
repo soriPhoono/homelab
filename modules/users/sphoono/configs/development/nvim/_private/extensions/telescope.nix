@@ -18,7 +18,8 @@
       lspImplementations = "<leader>li";
       lspReferences = "<leader>lr";
       lspTypeDefinitions = "<leader>lt";
-      lspWorkspaceSymbols = "<leader>lw";
+      # <leader>lw is the workspace-folder group, <leader>lt the toggle group.
+      lspWorkspaceSymbols = "<leader>lW";
       resume = "<leader>fo";
       treesitter = "<leader>ft";
       open = null;
