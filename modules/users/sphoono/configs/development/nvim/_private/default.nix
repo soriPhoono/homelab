@@ -4,6 +4,7 @@
     ./extensions/bufferline.nix
     ./extensions/colorful-menu.nix
     ./extensions/colorizer.nix
+    ./extensions/dap.nix
     ./extensions/dashboard.nix
     ./extensions/gitsigns.nix
     ./extensions/illuminate.nix
