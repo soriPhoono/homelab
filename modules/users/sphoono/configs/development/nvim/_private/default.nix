@@ -19,7 +19,23 @@
     ./extensions/telescope.nix
     ./extensions/theme.nix
     ./extensions/treesitter.nix
+    ./languages/bash.nix
+    ./languages/clang.nix
+    ./languages/common.nix
+    ./languages/css.nix
+    ./languages/go.nix
+    ./languages/html.nix
+    ./languages/json.nix
     ./languages/nix.nix
+    ./languages/python.nix
+    ./languages/rust.nix
+    ./languages/terraform.nix
+    ./languages/toml.nix
+    ./languages/typescript.nix
+    ./languages/vue.nix
+    ./languages/xml.nix
+    ./languages/yaml.nix
+    ./languages/zig.nix
   ];
   programs.nvf.settings = {
     mnw.extraBinPath = [ pkgs.tree-sitter ];
