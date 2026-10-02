@@ -1,4 +1,24 @@
+{ inputs, ... }:
 {
+  flake-file.inputs = {
+    fish-bass = {
+      url = "github:edc/bass/v1.0";
+      flake = false;
+    };
+    fish-sponge = {
+      url = "github:meaningful-ooo/sponge/1.1.0";
+      flake = false;
+    };
+    fish-done = {
+      url = "github:franciscolourenco/done/1.21.1";
+      flake = false;
+    };
+    fish-pisces = {
+      url = "github:laughedelic/pisces/v0.7.0";
+      flake = false;
+    };
+  };
+
   den.aspects.sphoono = {
     homeManager = { pkgs, ... }: {
       programs.fish = {
@@ -10,12 +30,7 @@
               pname = "fish-bass";
               version = "1.0-7-20-18";
 
-              src = fetchFromGitHub {
-                owner = "edc";
-                repo = "bass";
-                rev = "v1.0";
-                hash = "sha256-XpB8u2CcX7jkd+FT3AYJtGwBtmNcLXtfMyT/z7gfyQw=";
-              };
+              src = inputs.fish-bass;
 
               buildPhase = ''
                 substituteInPlace functions/bass.fish \
@@ -32,30 +47,15 @@
           }
           {
             name = "sponge";
-            src = fetchFromGitHub {
-              owner = "meaningful-ooo";
-              repo = "sponge";
-              rev = "v1.1.0";
-              hash = "sha256-MdcZUDRtNJdiyo2l9o5ma7nAX84xEJbGFhAVhK+Zm1w=";
-            };
+            src = inputs.fish-sponge;
           }
           {
             name = "done";
-            src = fetchFromGitHub {
-              owner = "franciscolourenco";
-              repo = "done";
-              rev = "1.21.1";
-              hash = "sha256-GZ1ZpcaEfbcex6XvxOFJDJqoD9C5out0W4bkkn768r0=";
-            };
+            src = inputs.fish-done;
           }
           {
             name = "pisces";
-            src = fetchFromGitHub {
-              owner = "laughedelic";
-              repo = "pisces";
-              rev = "v0.7.0";
-              hash = "sha256-Oou2IeNNAqR00ZT3bss/DbhrJjGeMsn9dBBYhgdafBw=";
-            };
+            src = inputs.fish-pisces;
           }
         ];
         interactiveShellInit = ''

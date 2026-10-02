@@ -15,6 +15,10 @@
   };
 
   inputs = {
+    awesome-copilot = {
+      url = "github:github/awesome-copilot/d6131471b85fbb4799e64175ebc42c9309ecc28a";
+      flake = false;
+    };
     comin = {
       url = "github:nlewo/comin";
       inputs = {
@@ -33,6 +37,22 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    fish-bass = {
+      url = "github:edc/bass/v1.0";
+      flake = false;
+    };
+    fish-done = {
+      url = "github:franciscolourenco/done/1.21.1";
+      flake = false;
+    };
+    fish-pisces = {
+      url = "github:laughedelic/pisces/v0.7.0";
+      flake = false;
+    };
+    fish-sponge = {
+      url = "github:meaningful-ooo/sponge/1.1.0";
+      flake = false;
+    };
     flake-file = {
       url = "github:denful/flake-file";
     };
@@ -50,6 +70,14 @@
     };
     import-tree = {
       url = "github:denful/import-tree";
+    };
+    mattpocock-skills = {
+      url = "github:mattpocock/skills/d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
+      flake = false;
+    };
+    mem0 = {
+      url = "github:mem0ai/mem0/v2.2.1";
+      flake = false;
     };
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
