@@ -3,6 +3,23 @@ _: {
     # <leader>lt is a prefix for telescope type definitions and this toggle.
     lsp.mappings.toggleFormatOnSave = "<leader>lF";
 
+    keymaps = [
+      {
+        mode = "n";
+        key = "<leader>fc";
+        action = "<cmd>Cheatsheet<CR>";
+        desc = "Cheatsheet";
+      }
+      # cheatsheet.nvim maps <leader>? on load unless something already does,
+      # and that fires instead of the native ? backward search.
+      {
+        mode = "n";
+        key = "<leader>?";
+        action = "<Nop>";
+        desc = "which_key_ignore";
+      }
+    ];
+
     binds = {
       whichKey = {
         enable = true;
@@ -11,7 +28,6 @@ _: {
           notify = true;
         };
         register = {
-          "<leader>?" = "Cheatsheet";
           "<leader>b" = "+Buffers";
           "<leader>bm" = "+Move";
           "<leader>bs" = "+Sort";
