@@ -121,6 +121,15 @@
     systems = {
       url = "github:nix-systems/default";
     };
+    templates = {
+      url = "github:soriphoono/templates";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "systems";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+      inputs.agenix-shell.inputs.flake-parts.follows = "flake-parts";
+      inputs.agenix-shell.inputs.treefmt-nix.follows = "treefmt-nix";
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
