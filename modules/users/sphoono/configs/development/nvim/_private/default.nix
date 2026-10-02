@@ -22,6 +22,7 @@
     ./extensions/telescope.nix
     ./extensions/theme.nix
     ./extensions/treesitter.nix
+    ./extensions/trouble.nix
     ./languages/bash.nix
     ./languages/clang.nix
     ./languages/common.nix
