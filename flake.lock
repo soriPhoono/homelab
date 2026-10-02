@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "awesome-copilot": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790818749,
+        "narHash": "sha256-4B7Dg0YcRS0+J7wt8vko1A5FoWOhrEuYIx+e/AIRgss=",
+        "owner": "github",
+        "repo": "awesome-copilot",
+        "rev": "d6131471b85fbb4799e64175ebc42c9309ecc28a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "github",
+        "repo": "awesome-copilot",
+        "rev": "d6131471b85fbb4799e64175ebc42c9309ecc28a",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -164,6 +181,74 @@
         "type": "github"
       }
     },
+    "fish-bass": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1523423952,
+        "narHash": "sha256-XpB8u2CcX7jkd+FT3AYJtGwBtmNcLXtfMyT/z7gfyQw=",
+        "owner": "edc",
+        "repo": "bass",
+        "rev": "7aae6a85c24660422ea3f3f4629bb4a8d30df3ba",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edc",
+        "ref": "v1.0",
+        "repo": "bass",
+        "type": "github"
+      }
+    },
+    "fish-done": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1765757154,
+        "narHash": "sha256-GZ1ZpcaEfbcex6XvxOFJDJqoD9C5out0W4bkkn768r0=",
+        "owner": "franciscolourenco",
+        "repo": "done",
+        "rev": "998ad4f5fc9cee36c09840a7e635b56428e554f9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "franciscolourenco",
+        "ref": "1.21.1",
+        "repo": "done",
+        "type": "github"
+      }
+    },
+    "fish-pisces": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1606703175,
+        "narHash": "sha256-Oou2IeNNAqR00ZT3bss/DbhrJjGeMsn9dBBYhgdafBw=",
+        "owner": "laughedelic",
+        "repo": "pisces",
+        "rev": "e45e0869855d089ba1e628b6248434b2dfa709c4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "laughedelic",
+        "ref": "v0.7.0",
+        "repo": "pisces",
+        "type": "github"
+      }
+    },
+    "fish-sponge": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1664918422,
+        "narHash": "sha256-MdcZUDRtNJdiyo2l9o5ma7nAX84xEJbGFhAVhK+Zm1w=",
+        "owner": "meaningful-ooo",
+        "repo": "sponge",
+        "rev": "384299545104d5256648cee9d8b117aaa9a6d7be",
+        "type": "github"
+      },
+      "original": {
+        "owner": "meaningful-ooo",
+        "ref": "1.1.0",
+        "repo": "sponge",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -302,6 +387,23 @@
         "type": "gitlab"
       }
     },
+    "herdr-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790373349,
+        "narHash": "sha256-q44Qt73XzNNipwF3hHr3Hzg0EReC3tz2bKB/l4ZBqiE=",
+        "owner": "ChmaraX",
+        "repo": "herdr-nvim",
+        "rev": "f35ed6df3cf55919c8d54409d08e8b664d8f0480",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ChmaraX",
+        "ref": "v1.1.0",
+        "repo": "herdr-nvim",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -334,6 +436,40 @@
       "original": {
         "owner": "denful",
         "repo": "import-tree",
+        "type": "github"
+      }
+    },
+    "mattpocock-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790685460,
+        "narHash": "sha256-zQ/wVrcHjIC+UjP4nDw3HARMqZd6LIDFmHKlp8AADYI=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "d81f3a183412e71a5b1e84ca21bc1a35eea03a60",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "d81f3a183412e71a5b1e84ca21bc1a35eea03a60",
+        "type": "github"
+      }
+    },
+    "mem0": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790357652,
+        "narHash": "sha256-C7E7Xd1+7Vy0ZwRIjblihexQTkS2YBPx5Sogz6ACYXs=",
+        "owner": "mem0ai",
+        "repo": "mem0",
+        "rev": "94c3fe9f238f3dbf29c9ce98643bd71eb13077cd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mem0ai",
+        "ref": "v2.2.1",
+        "repo": "mem0",
         "type": "github"
       }
     },
@@ -473,14 +609,22 @@
     },
     "root": {
       "inputs": {
+        "awesome-copilot": "awesome-copilot",
         "comin": "comin",
         "darwin": "darwin",
         "den": "den",
         "disko": "disko",
+        "fish-bass": "fish-bass",
+        "fish-done": "fish-done",
+        "fish-pisces": "fish-pisces",
+        "fish-sponge": "fish-sponge",
         "flake-file": "flake-file",
         "flake-parts": "flake-parts",
+        "herdr-nvim": "herdr-nvim",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
+        "mattpocock-skills": "mattpocock-skills",
+        "mem0": "mem0",
         "nix-index-database": "nix-index-database",
         "nix-skills": "nix-skills",
         "nixpkgs": "nixpkgs",
