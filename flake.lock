@@ -302,6 +302,23 @@
         "type": "gitlab"
       }
     },
+    "herdr-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790373349,
+        "narHash": "sha256-q44Qt73XzNNipwF3hHr3Hzg0EReC3tz2bKB/l4ZBqiE=",
+        "owner": "ChmaraX",
+        "repo": "herdr-nvim",
+        "rev": "f35ed6df3cf55919c8d54409d08e8b664d8f0480",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ChmaraX",
+        "ref": "v1.1.0",
+        "repo": "herdr-nvim",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -479,6 +496,7 @@
         "disko": "disko",
         "flake-file": "flake-file",
         "flake-parts": "flake-parts",
+        "herdr-nvim": "herdr-nvim",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
         "nix-index-database": "nix-index-database",
