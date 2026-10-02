@@ -1,6 +1,23 @@
 { lib, pkgs, ... }:
 let
   inherit (lib.hm.dag) entryAfter;
+  inherit (lib.generators) mkLuaInline;
+
+  # nvf's clang and zig modules only ship lldb-dap configurations, so those
+  # languages use codelldb through configurations declared here.
+  codelldbLaunch = name: dir: {
+    inherit name;
+    type = "codelldb";
+    request = "launch";
+    program = mkLuaInline ''
+      function()
+        return nvf_dap_cached_input("${name}", "Path to executable: ", vim.fn.getcwd() .. "/${dir}", "file")
+      end
+    '';
+    cwd = "\${workspaceFolder}";
+    stopOnEntry = false;
+    args = [ ];
+  };
 in
 {
   programs.nvf.settings.vim = {
@@ -8,14 +25,6 @@ in
       rust.dap = {
         enable = true;
         debugger = [ "codelldb" ];
-      };
-      clang.dap = {
-        enable = true;
-        debugger = [ "lldb" ];
-      };
-      zig.dap = {
-        enable = true;
-        debugger = [ "lldb" ];
       };
       python.dap = {
         enable = true;
@@ -30,9 +39,12 @@ in
     debugger.nvim-dap = {
       enable = true;
       ui.enable = true;
-      # Lets project .vscode/launch.json files that name "codelldb" resolve for
-      # C, C++, Zig and Rust alongside the lldb default configuration.
       presets.codelldb.enable = true;
+      configurations = {
+        c = [ (codelldbLaunch "Launch (codelldb)" "build/") ];
+        cpp = [ (codelldbLaunch "Launch (codelldb)" "build/") ];
+        zig = [ (codelldbLaunch "Launch (codelldb)" "zig-out/bin/") ];
+      };
     };
 
     # Loaded on the first debug session so plain editing never pays for it.
