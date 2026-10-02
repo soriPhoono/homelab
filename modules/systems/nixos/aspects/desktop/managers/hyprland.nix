@@ -3,7 +3,7 @@
     includes = [
       den.aspects.desktop
 
-      den.aspects.desktop.xdg-portal.gtk
+      den.aspects.desktop.xdg.portals.gtk
     ];
     nixos.programs.hyprland = {
       enable = true;
