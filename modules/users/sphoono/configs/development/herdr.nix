@@ -17,6 +17,13 @@
 
         programs.herdr = {
           enable = true;
+          settings.ui = {
+            sidebar_width = 34;
+            sidebar_min_width = 24;
+            sidebar_max_width = 40;
+            agent_panel_sort = "spaces";
+            status_indicators = "symbols";
+          };
           settings.keys.command = [
             {
               key = "prefix+shift+e";
