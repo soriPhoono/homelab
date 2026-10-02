@@ -1,3 +1,4 @@
+{ lib, ... }:
 {
   programs.nvf.settings.vim = {
     autocomplete.blink-cmp = {
@@ -40,6 +41,12 @@
           documentation = {
             auto_show = true;
             auto_show_delay_ms = 200;
+          };
+          # Hands label rendering to colorful-menu-nvim (colorful-menu.nix).
+          # Delete this block if it's too noisy next to blink-cmp's icons.
+          menu.draw.components.label = {
+            text = lib.generators.mkLuaInline "function(ctx) return require('colorful-menu').blink_components_text(ctx) end";
+            highlight = lib.generators.mkLuaInline "function(ctx) return require('colorful-menu').blink_components_highlight(ctx) end";
           };
         };
         fuzzy = {

@@ -1,11 +1,23 @@
 { pkgs, ... }: {
   imports = [
     ./extensions/blink-cmp.nix
+    ./extensions/bufferline.nix
+    ./extensions/colorful-menu.nix
+    ./extensions/colorizer.nix
+    ./extensions/dashboard.nix
     ./extensions/gitsigns.nix
+    ./extensions/illuminate.nix
+    ./extensions/indent-blankline.nix
     ./extensions/keybinds.nix
     ./extensions/lualine.nix
     ./extensions/neo-tree.nix
+    ./extensions/noice.nix
+    ./extensions/notify.nix
+    ./extensions/rainbow-delimiters.nix
+    ./extensions/scrollbar.nix
+    ./extensions/smooth-scroll.nix
     ./extensions/telescope.nix
+    ./extensions/theme.nix
     ./extensions/treesitter.nix
     ./languages/nix.nix
   ];
