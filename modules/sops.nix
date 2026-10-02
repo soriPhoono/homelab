@@ -34,6 +34,15 @@
             }
           )
         ];
+        # Standalone homes have no host user, so den.schema.user never applies.
+        home.includes = [
+          (
+            { home, ... }:
+            {
+              homeManager.sops.defaultSopsFile = ../secrets/user-${home.userName}.yaml;
+            }
+          )
+        ];
         user.includes = [
           ({ user, ... }: {
             homeManager.sops.defaultSopsFile = ../secrets/user-${user.userName}.yaml;
