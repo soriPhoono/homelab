@@ -16,10 +16,6 @@
         ".." = "cd ..";
         "..." = "cd ../..";
 
-        du = "${pkgs.dust}/bin/dust";
-        find = "${pkgs.fzf}/bin/fzf";
-        grep = "${pkgs.ripgrep}/bin/rg";
-
         df = "${pkgs.duf}/bin/duf";
         top = "${pkgs.btop}/bin/btop";
 
@@ -51,7 +47,9 @@
           nix-direnv.enable = true;
         };
         zoxide.enable = true;
-        zellij.enable = true;
+        ripgrep.enable = true;
+        fzf.enable = true;
+        fd.enable = true;
       };
     };
   };
