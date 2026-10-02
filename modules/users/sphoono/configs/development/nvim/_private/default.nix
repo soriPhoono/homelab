@@ -12,8 +12,10 @@
     ./extensions/keybinds.nix
     ./extensions/lualine.nix
     ./extensions/neo-tree.nix
+    ./extensions/neotest.nix
     ./extensions/noice.nix
     ./extensions/notify.nix
+    ./extensions/overseer.nix
     ./extensions/rainbow-delimiters.nix
     ./extensions/scrollbar.nix
     ./extensions/smooth-scroll.nix
