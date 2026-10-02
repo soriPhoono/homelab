@@ -44,12 +44,14 @@
           };
         programs.nix-ld.enable = true;
       };
-      homeManager = _: {
+      homeManager = { pkgs, ... }: {
         nix =
           let
             flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
           in
           {
+            # HM needs a package to generate nix.conf; hosts inherit theirs.
+            package = lib.mkDefault pkgs.nix;
             settings = {
               # download-buffer-size = 1073741824;
 
