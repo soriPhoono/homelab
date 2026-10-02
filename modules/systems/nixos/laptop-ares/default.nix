@@ -72,6 +72,6 @@
     den.batteries.primary-user
     den.batteries.host-aspects
 
-    den.aspects.sphoono.configs.development
+    den.aspects.sphoono.development
   ];
 }

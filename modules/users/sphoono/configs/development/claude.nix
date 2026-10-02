@@ -1,6 +1,12 @@
-{ den, inputs, ... }: {
+{
+  den,
+  inputs,
+  lib,
+  ...
+}:
+{
   flake-file.inputs.nix-skills.url = "github:sudosubin/nix-skills";
-  den.aspects.sphoono.configs.claude = {
+  den.aspects.sphoono.development = {
     # claude-code is unfree.
     includes = [ (den.batteries.unfree [ "claude-code" ]) ];
     homeManager =
@@ -32,6 +38,30 @@
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
           enable = true;
+          package =
+            let
+              agent = pkgs.claude-code;
+            in
+            pkgs.symlinkJoin {
+              inherit (agent) pname;
+              inherit (agent) version;
+              name = "${agent.name}-with-python";
+
+              paths = [ agent ];
+              buildInputs = [ pkgs.makeWrapper ];
+              postBuild = ''
+                for bin in $out/bin/*; do
+                  if [ -f "$bin" ] && [ -x "$bin" ]; then
+                    wrapProgram "$bin" \
+                      --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]}
+                  fi
+                done
+              '';
+            };
+          settings = {
+            model = "opus";
+            effortLevel = "high";
+          };
           context = ''
             ${builtins.readFile ../../assets/documents/user.md}
 
@@ -46,7 +76,9 @@
             mem0 = "${mem0Src}/integrations/claude-code-plugin";
           };
           skills = {
+            # Writing
             stop-slop = pkgs.agent-skills.github.hardikpandya.stop-slop.stop-slop;
+            # Thinking
             grilling = "${mattpocockSkillsSrc}/skills/productivity/grilling";
             grill-me = "${mattpocockSkillsSrc}/skills/productivity/grill-me";
             grill-with-docs = "${mattpocockSkillsSrc}/skills/engineering/grill-with-docs";

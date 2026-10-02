@@ -1,5 +1,5 @@
 { den, ... }: {
-  den.aspects.sphoono.configs.desktop = {
+  den.aspects.sphoono.desktop = {
     includes = [
       den.aspects.sphoono.gpg
       den.aspects.sphoono.ssh

@@ -55,10 +55,6 @@
       url = "github:sudosubin/nix-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-vscode-extensions = {
-      url = "github:nix-community/nix-vscode-extensions";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nixpkgs = {
       url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.zst";
     };
@@ -68,6 +64,10 @@
         flake-parts.follows = "flake-parts";
         nixpkgs.follows = "nixpkgs";
       };
+    };
+    nvf = {
+      url = "github:notashelf/nvf";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";
