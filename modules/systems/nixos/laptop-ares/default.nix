@@ -42,20 +42,23 @@
     ];
     nixos = { pkgs, ... }: {
       hardware.facter.reportPath = ./facter.json;
-      boot.plymouth =
-        let
-          theme = "connect";
-        in
-        {
-          inherit theme;
-          themePackages = [
-            (pkgs.adi1090x-plymouth-themes.override {
-              selected_themes = [
-                theme
-              ];
-            })
-          ];
-        };
+      boot = {
+        kernelPackages = pkgs.linuxPackages_latest;
+        plymouth =
+          let
+            theme = "connect";
+          in
+          {
+            inherit theme;
+            themePackages = [
+              (pkgs.adi1090x-plymouth-themes.override {
+                selected_themes = [
+                  theme
+                ];
+              })
+            ];
+          };
+      };
       services.asusd.enable = true;
       stylix = {
         enable = true;

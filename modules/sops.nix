@@ -7,7 +7,7 @@
 #
 #   secrets/host-<host>.yaml   default for a host's NixOS-level secrets
 #   secrets/user-<name>.yaml   default for that user's Home Manager secrets
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
   config = {
     flake-file.inputs.sops-nix.url = "github:Mic92/sops-nix";
@@ -22,7 +22,7 @@
           { config, ... }:
           {
             imports = [ inputs.sops-nix.homeManagerModules.sops ];
-            sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
+            sops.age.keyFile = lib.mkDefault "${config.xdg.configHome}/sops/age/keys.txt";
           };
       };
       schema = {
@@ -45,7 +45,13 @@
         ];
         user.includes = [
           ({ user, ... }: {
-            homeManager.sops.defaultSopsFile = ../secrets/user-${user.userName}.yaml;
+            homeManager.sops = {
+              defaultSopsFile = ../secrets/user-${user.userName}.yaml;
+              # Read the key from /run/secrets directly: activation runs in the
+              # systemd initrd before /home is mounted, so a symlink placed under
+              # /home lands on the root subvolume and is shadowed at boot.
+              age.keyFile = "/run/secrets/users/${user.userName}/age-keys";
+            };
             nixos = { config, ... }: {
               systemd.tmpfiles.rules = [
                 "d /home/${user.userName}/.config/ 0755 ${user.userName} ${user.userName} -"
@@ -55,7 +61,6 @@
               sops.secrets = {
                 "users/${user.userName}/password".neededForUsers = true;
                 "users/${user.userName}/age-keys" = {
-                  path = "/home/${user.userName}/.config/sops/age/keys.txt";
                   mode = "0400";
                   owner = user.userName;
                   group = user.userName;
