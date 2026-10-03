@@ -47,9 +47,17 @@
       den.aspects.core.hardware.hid.mice.logitech
       den.aspects.core.hardware.hid.controllers.xbox
       den.aspects.core.hardware.android
+      # -- Hosting --
+      den.aspects.hosting.docker
+      den.aspects.hosting.podman
+      den.aspects.hosting.microserver.media
     ];
     nixos = { pkgs, ... }: {
       imports = [ inputs.qylock.nixosModules.default ];
+      hosting.microserver.media.jellyfin = {
+        renderDevice = "/dev/dri/renderD128";
+        cardDevice = "/dev/dri/card1";
+      };
       programs.qylock = {
         enable = true;
         theme = "girl-coffee";
@@ -98,6 +106,7 @@
       den.aspects.sphoono.desktop
       den.aspects.sphoono.development
       den.aspects.sphoono.content-creation
+      den.aspects.hosting.gaming.client
     ];
 
     # Properties of this laptop: its internal panel and the ASUS launch keys.
