@@ -4,9 +4,19 @@
 keys:
   - &user-sphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
   - &laptop-ares age1ldzusjw28wzed8y6q9ynn9d7se7qxpsapxxys00jgrsfdw88eeasnt795x
+  - &desktop-ares age19g0rp5pkc533jlht5w3f5fx30e8tra8du9hy7s323chanyjqeekq4hjyuu
 creation_rules:
-  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+  - path_regex: secrets/user-sphoono.yaml$
+    key_groups:
+      - age:
+          - *user-sphoono
+  - path_regex: secrets/host-laptop-ares.yaml$
     key_groups:
       - age:
           - *user-sphoono
           - *laptop-ares
+  - path_regex: secrets/host-desktop-ares.yaml$
+    key_groups:
+      - age:
+          - *user-sphoono
+          - *desktop-ares
