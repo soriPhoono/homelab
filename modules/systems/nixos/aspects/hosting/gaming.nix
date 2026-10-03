@@ -153,5 +153,14 @@
           ];
         };
     };
+
+    # User aspect: include on `<user>@<host>` for each receiving machine.
+    client = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = [ pkgs.moonlight-qt ];
+        };
+    };
   };
 }
