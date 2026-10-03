@@ -105,6 +105,13 @@
       url = "github:cachix/pre-commit-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    qylock = {
+      url = "github:Darkkal44/qylock";
+      inputs = {
+        flake-utils.inputs.systems.follows = "systems";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -123,12 +130,16 @@
     };
     templates = {
       url = "github:soriphoono/templates";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.systems.follows = "systems";
-      inputs.treefmt-nix.follows = "treefmt-nix";
-      inputs.agenix-shell.inputs.flake-parts.follows = "flake-parts";
-      inputs.agenix-shell.inputs.treefmt-nix.follows = "treefmt-nix";
+      inputs = {
+        agenix-shell.inputs = {
+          flake-parts.follows = "flake-parts";
+          treefmt-nix.follows = "treefmt-nix";
+        };
+        flake-parts.follows = "flake-parts";
+        nixpkgs.follows = "nixpkgs";
+        systems.follows = "systems";
+        treefmt-nix.follows = "treefmt-nix";
+      };
     };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";

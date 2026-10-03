@@ -1,4 +1,14 @@
-{ den, lib, ... }: {
+{
+  den,
+  lib,
+  inputs,
+  ...
+}:
+{
+  flake-file.inputs.qylock = {
+    url = "github:Darkkal44/qylock";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
   imports = [
     ./disko.nix
   ];
@@ -9,8 +19,6 @@
     includes = [
       # -- External libraries --
       den.aspects.stylix
-      # -- Gitops updates --
-      den.aspects.core.gitops
       # -- Core hardware --
       den.aspects.core.hardware.firmware
       den.aspects.core.hardware.cpu.amd
@@ -22,8 +30,8 @@
       den.aspects.core.networking.network-manager
       den.aspects.core.networking.tailscale
       # -- Desktop environment --
+      den.aspects.desktop.greeters.sddm
       den.aspects.desktop.managers.hyprland
-      den.aspects.desktop.greeters.noctalia
       # -- Core desktop features --
       den.aspects.desktop.components.audio
       den.aspects.desktop.components.bluetooth
@@ -41,6 +49,13 @@
       den.aspects.core.hardware.android
     ];
     nixos = { pkgs, ... }: {
+      imports = [ inputs.qylock.nixosModules.default ];
+      programs.qylock = {
+        enable = true;
+        theme = "girl-coffee";
+        # Lockscreen comes from the noctalia shell, not qylock-lock.
+        quickshell.enable = false;
+      };
       hardware.facter.reportPath = ./facter.json;
       boot = {
         kernelPackages = pkgs.linuxPackages_zen;

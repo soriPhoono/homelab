@@ -1,4 +1,8 @@
-{ den, ... }: {
+{ den, inputs, ... }: {
+  flake-file.inputs.qylock = {
+    url = "github:Darkkal44/qylock";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
   imports = [
     ./disko.nix
   ];
@@ -9,8 +13,6 @@
       includes = [
         # -- External libraries --
         den.aspects.stylix
-        # -- Gitops updates --
-        den.aspects.core.gitops
         # -- Core hardware --
         den.aspects.core.hardware.firmware
         den.aspects.core.hardware.cpu.intel
@@ -40,6 +42,13 @@
         den.aspects.core.hardware.android
       ];
       nixos = { pkgs, ... }: {
+        imports = [ inputs.qylock.nixosModules.default ];
+        programs.qylock = {
+          enable = true;
+          theme = "girl-coffee";
+          # Lockscreen comes from the noctalia shell, not qylock-lock.
+          quickshell.enable = false;
+        };
         hardware.facter.reportPath = ./facter.json;
         boot = {
           kernelPackages = pkgs.linuxPackages_zen;
@@ -83,7 +92,7 @@
         wayland.windowManager.hyprland.settings = {
           monitor = [
             {
-              output = "HDMI-A-1";
+              output = "HDMI-A-5";
               mode = "1920x1080@75";
               position = "0x0";
               scale = 1;
