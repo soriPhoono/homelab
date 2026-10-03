@@ -26,10 +26,14 @@ in
       zlib
     ];
     doCheck = false;
+    # The daemon finds its Lua runtime by walking up from current_exe(), which
+    # resolves symlinks. The real binary must therefore live under plugin/,
+    # with bin/ only linking to it.
     postInstall = ''
       mkdir -p $out/plugin/bin
       cp -r lua plugin doc herdr-plugin.toml $out/plugin/
-      ln -s $out/bin/herdr-nvim $out/plugin/bin/herdr-nvim
+      mv $out/bin/herdr-nvim $out/plugin/bin/herdr-nvim
+      ln -s $out/plugin/bin/herdr-nvim $out/bin/herdr-nvim
     '';
   };
 }
