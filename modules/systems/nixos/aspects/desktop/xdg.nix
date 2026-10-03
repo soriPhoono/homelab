@@ -34,12 +34,12 @@
         gtk = {
           nixos = { pkgs, ... }: {
             xdg.portal.extraPortals = with pkgs; [
-              xdg-portal-gtk
+              xdg-desktop-portal-gtk
             ];
           };
           homeManager = { pkgs, ... }: {
             xdg.portal.extraPortals = with pkgs; [
-              xdg-portal-gtk
+              xdg-desktop-portal-gtk
             ];
           };
         };

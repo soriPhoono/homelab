@@ -22,7 +22,7 @@
       den.aspects.core.networking.network-manager
       den.aspects.core.networking.tailscale
       # -- Desktop environment --
-      den.aspects.desktop.environments.kde
+      den.aspects.desktop.managers.hyprland
       # -- Core desktop features --
       den.aspects.desktop.components.audio
       den.aspects.desktop.components.bluetooth
