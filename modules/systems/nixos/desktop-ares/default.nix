@@ -69,7 +69,7 @@
     aspects."sphoono@desktop-ares" = {
       includes = [
         den.batteries.primary-user
-        den.aspects.host-aspects
+        den.batteries.host-aspects
 
         den.aspects.sphoono.desktop.wm.hypr
         den.aspects.sphoono.desktop.wm.shells.noctalia
