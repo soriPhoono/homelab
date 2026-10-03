@@ -1,6 +1,7 @@
 { den, inputs, ... }: {
   flake-file.inputs.qylock = {
-    url = "github:Darkkal44/qylock";
+    # Fork carries girl-coffee themeMode until Darkkal44/qylock#112 merges.
+    url = "github:soriPhoono/qylock/girl-coffee-dark-mode";
     inputs.nixpkgs.follows = "nixpkgs";
   };
   imports = [
@@ -62,6 +63,7 @@
         programs.qylock = {
           enable = true;
           theme = "girl-coffee";
+          themeOptions.girl-coffee.themeMode = "dark";
           # Lockscreen comes from the noctalia shell, not qylock-lock.
           quickshell.enable = false;
         };

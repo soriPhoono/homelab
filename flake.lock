@@ -843,15 +843,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1789360700,
-        "narHash": "sha256-ELHBl+9ueNJhoNYRioSIHb/K7f+SNsesG/+X5ijA+NA=",
-        "owner": "Darkkal44",
+        "lastModified": 1791070130,
+        "narHash": "sha256-6aqMSLWdH+xB/TEEMK/wzuNYZp5BYMz/SHnp9HuzFEA=",
+        "owner": "soriPhoono",
         "repo": "qylock",
-        "rev": "f6561e2ceae33f26e5e660742a5df2f725cbe514",
+        "rev": "b00407d7fc699ba71b5110f7be2ef163bf79ebe1",
         "type": "github"
       },
       "original": {
-        "owner": "Darkkal44",
+        "owner": "soriPhoono",
+        "ref": "girl-coffee-dark-mode",
         "repo": "qylock",
         "type": "github"
       }

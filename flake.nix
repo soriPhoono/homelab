@@ -106,7 +106,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     qylock = {
-      url = "github:Darkkal44/qylock";
+      url = "github:soriPhoono/qylock/girl-coffee-dark-mode";
       inputs = {
         flake-utils.inputs.systems.follows = "systems";
         nixpkgs.follows = "nixpkgs";
