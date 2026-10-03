@@ -1,16 +1,29 @@
-{ lib, ... }: {
+{ den, lib, ... }: {
   den.aspects.sphoono.desktop.wm.hypr = {
+    includes = [
+      den.aspects.sphoono.desktop.wm.supporting
+    ];
     homeManager =
       {
         nixosConfig ? { },
         ...
       }:
+      let
+        hostHyprland = nixosConfig.programs.hyprland or { enable = false; };
+      in
       {
+        imports = [
+          ./_private
+        ];
+
         wayland.windowManager.hyprland = {
           enable = true;
+          configType = "lua";
 
-          portal = lib.mkIf (nixosConfig.programs.hyprland.enable or false) null;
-          portalPackage = lib.mkIf (nixosConfig.programs.hyprland.enable or false) null;
+          # Reuse the NixOS module's packages rather than nulling them: a null
+          # portal package disables the user portal set, which then lacks xdph.
+          package = lib.mkIf hostHyprland.enable hostHyprland.package;
+          portalPackage = lib.mkIf hostHyprland.enable hostHyprland.portalPackage;
 
           systemd.variables = [ "--all" ];
         };

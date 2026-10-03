@@ -1,4 +1,4 @@
-{ den, ... }: {
+{ den, lib, ... }: {
   imports = [
     ./disko.nix
   ];
@@ -23,6 +23,7 @@
       den.aspects.core.networking.tailscale
       # -- Desktop environment --
       den.aspects.desktop.managers.hyprland
+      den.aspects.desktop.greeters.noctalia
       # -- Core desktop features --
       den.aspects.desktop.components.audio
       den.aspects.desktop.components.bluetooth
@@ -68,10 +69,62 @@
   # host-aspects projects each host aspect's `homeManager` half onto this user.
   # It is applied here rather than on den.aspects.sphoono so that aspect stays
   # shell-only and remains portable to a standalone home.
-  den.aspects."sphoono@laptop-ares".includes = [
-    den.batteries.primary-user
-    den.batteries.host-aspects
+  den.aspects."sphoono@laptop-ares" = {
+    includes = [
+      den.batteries.primary-user
+      den.batteries.host-aspects
 
-    den.aspects.sphoono.development
-  ];
+      den.aspects.sphoono.development
+      den.aspects.sphoono.desktop
+      den.aspects.sphoono.desktop.wm.hypr
+      den.aspects.sphoono.desktop.wm.shells.noctalia
+    ];
+
+    # Properties of this laptop: its internal panel and the ASUS launch keys.
+    homeManager =
+      { config, pkgs, ... }:
+      let
+        noctalia = lib.getExe config.programs.noctalia.package;
+        bind = key: command: {
+          _args = [
+            key
+            (lib.generators.mkLuaInline "hl.dsp.exec_cmd(${lib.generators.toLua { } command})")
+          ];
+        };
+
+        # Noctalia has no airplane mode: turn both radios off when either is
+        # on, otherwise turn both back on, so they never drift apart.
+        airplane = pkgs.writeShellApplication {
+          name = "airplane-mode-toggle";
+          runtimeInputs = [ config.programs.noctalia.package ];
+          text = ''
+            if [ "$(noctalia msg wifi-status)" = on ] || [ "$(noctalia msg bluetooth-status)" = on ]; then
+              noctalia msg wifi-disable
+              noctalia msg bluetooth-disable
+            else
+              noctalia msg wifi-enable
+              noctalia msg bluetooth-enable
+            fi
+          '';
+        };
+      in
+      {
+        wayland.windowManager.hyprland.settings = {
+          monitor = [
+            {
+              output = "eDP-1";
+              mode = "1920x1080@144";
+              position = "0x0";
+              scale = 1.25;
+            }
+          ];
+
+          bind = [
+            (bind "XF86Launch1" "${noctalia} msg settings-toggle")
+            (bind "XF86Launch4" "${noctalia} msg power-cycle")
+            (bind "XF86Launch5" (lib.getExe airplane))
+          ];
+        };
+      };
+  };
 }
