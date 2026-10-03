@@ -48,9 +48,9 @@
                     # lists .drv files that no longer exist on the next boot.
                     # Boot stateless so every run starts from a clean DB.
                     diskImage = null;
-                    memorySize = lib.mkDefault 4096;
-                    cores = lib.mkDefault 4;
-                    diskSize = lib.mkDefault 20480;
+                    memorySize = lib.mkDefault (4096 * 2);
+                    cores = lib.mkDefault (4 * 2);
+                    diskSize = lib.mkDefault (20480 * 2);
                   };
                   # Home Manager's activation only waits on nix-daemon.socket,
                   # not the daemon actually being ready. On real hardware the

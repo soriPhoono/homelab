@@ -17,7 +17,6 @@
         "..." = "cd ../..";
 
         df = "${pkgs.duf}/bin/duf";
-        top = "${pkgs.btop}/bin/btop";
 
         gs = "git status";
         ga = "git add";
@@ -50,6 +49,7 @@
         ripgrep.enable = true;
         fzf.enable = true;
         fd.enable = true;
+        btop.enable = true;
       };
     };
   };
