@@ -25,7 +25,10 @@
           package = lib.mkIf hostHyprland.enable hostHyprland.package;
           portalPackage = lib.mkIf hostHyprland.enable hostHyprland.portalPackage;
 
-          systemd.variables = [ "--all" ];
+          # UWSM owns the session: it exports the environment and starts
+          # graphical-session.target, so HM's hyprland-session.target would
+          # only restart it underneath uwsm.
+          systemd.enable = false;
         };
       };
   };
