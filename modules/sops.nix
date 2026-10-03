@@ -45,12 +45,16 @@
         ];
         user.includes = [
           ({ user, ... }: {
-            homeManager.sops = {
-              defaultSopsFile = ../secrets/user-${user.userName}.yaml;
-              # Read the key from /run/secrets directly: activation runs in the
-              # systemd initrd before /home is mounted, so a symlink placed under
-              # /home lands on the root subvolume and is shadowed at boot.
-              age.keyFile = "/run/secrets/users/${user.userName}/age-keys";
+            homeManager = {
+              sops = {
+                defaultSopsFile = ../secrets/user-${user.userName}.yaml;
+                # Read the key from /run/secrets directly: activation runs in the
+                # systemd initrd before /home is mounted, so a symlink placed under
+                # /home lands on the root subvolume and is shadowed at boot.
+                age.keyFile = "/run/secrets/users/${user.userName}/age-keys";
+              };
+              # Point the sops CLI at the same key instead of ~/.config/sops/age/keys.txt.
+              home.sessionVariables.SOPS_AGE_KEY_FILE = "/run/secrets/users/${user.userName}/age-keys";
             };
             nixos = { config, ... }: {
               systemd.tmpfiles.rules = [
