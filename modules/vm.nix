@@ -68,7 +68,22 @@
                   services = {
                     qemuGuest.enable = true;
                     spice-vdagentd.enable = true;
+                    # Debugging access: the host's own compositor swallows
+                    # global shortcuts (SUPER, Ctrl+Alt+Fn) before they ever
+                    # reach the guest window, so there's no reliable way to
+                    # get a shell through the display. SSH in instead.
+                    openssh = {
+                      enable = true;
+                      settings.PasswordAuthentication = lib.mkForce true;
+                    };
                   };
+                  virtualisation.forwardPorts = [
+                    {
+                      from = "host";
+                      host.port = 2222;
+                      guest.port = 22;
+                    }
+                  ];
                 }
               )
             ];

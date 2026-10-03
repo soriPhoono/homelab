@@ -78,6 +78,7 @@
       den.aspects.sphoono.desktop
       den.aspects.sphoono.desktop.wm.hypr
       den.aspects.sphoono.desktop.wm.shells.noctalia
+      den.aspects.sphoono.desktop.wm.supporting
     ];
 
     # Properties of this laptop: its internal panel and the ASUS launch keys.

@@ -57,7 +57,7 @@ in
               launch_apps_as_systemd_services = true;
 
               panel = {
-                transparency_mode = "solid";
+                transparency_mode = "glass";
                 borders = true;
                 launcher_placement = "floating";
                 clipboard_placement = "floating";
