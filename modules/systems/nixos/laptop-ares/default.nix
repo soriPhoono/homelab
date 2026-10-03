@@ -43,7 +43,7 @@
     nixos = { pkgs, ... }: {
       hardware.facter.reportPath = ./facter.json;
       boot = {
-        kernelPackages = pkgs.linuxPackages_latest;
+        kernelPackages = pkgs.linuxPackages_zen;
         plymouth =
           let
             theme = "connect";
