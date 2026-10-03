@@ -74,11 +74,12 @@
       den.batteries.primary-user
       den.batteries.host-aspects
 
-      den.aspects.sphoono.development
-      den.aspects.sphoono.desktop
       den.aspects.sphoono.desktop.wm.hypr
       den.aspects.sphoono.desktop.wm.shells.noctalia
       den.aspects.sphoono.desktop.wm.supporting
+      den.aspects.sphoono.desktop
+      den.aspects.sphoono.development
+      den.aspects.sphoono.content-creation
     ];
 
     # Properties of this laptop: its internal panel and the ASUS launch keys.
