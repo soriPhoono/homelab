@@ -17,7 +17,8 @@
         # -- Core hardware --
         den.aspects.core.hardware.firmware
         den.aspects.core.hardware.cpu.intel
-        den.aspects.core.hardware.gpu.amd
+        den.aspects.core.hardware.gpu.intel
+        den.aspects.core.hardware.gpu.amd.gpgpu
         # -- Core OS modules --
         den.aspects.core.bootloaders.systemd-boot
         den.aspects.core.swap.zram
