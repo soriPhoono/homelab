@@ -17,3 +17,17 @@ that file through Docker secrets.
 
 Configure the tunnel's public hostname as `agents.cryptic-coders.net` with the
 service URL `http://n8n:5678`. Do not expose a service port on the VPS.
+
+## Video pipeline storage
+
+n8n and its runners share `/data/vods`, bind-mounted from `/srv/n8n/vods` on
+the host. Swarm does not create bind sources, so create it once, owned by the
+uid both images run as:
+
+```sh
+sudo install -d -o 1000 -g 1000 /srv/n8n/vods
+```
+
+The runners image is built from `docker/images/n8n-runners` by the
+`n8n-runners image` workflow and published to `ghcr.io/soriphoono/n8n-runners`.
+The package must be public so the VPS can pull it without a registry login.
