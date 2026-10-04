@@ -4,6 +4,11 @@
       imports = [
         ./_private
       ];
+      # VA-API driver (iHD) for hardware video decode/encode. Mesa covers
+      # rendering but ships no VA driver for Intel; libva picks iHD itself.
+      hardware.graphics.extraPackages = with pkgs; [
+        intel-media-driver
+      ];
       environment.systemPackages = with pkgs; [
         nvtopPackages.full
       ];
