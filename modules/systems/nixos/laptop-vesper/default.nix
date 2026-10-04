@@ -44,7 +44,21 @@
       };
       boot = {
         kernelPackages = pkgs.linuxPackages_zen;
-        plymouth.enable = true;
+        plymouth =
+          let
+            theme = "connect";
+          in
+          {
+            enable = true;
+            inherit theme;
+            themePackages = [
+              (pkgs.adi1090x-plymouth-themes.override {
+                selected_themes = [
+                  theme
+                ];
+              })
+            ];
+          };
       };
     };
   };
