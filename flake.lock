@@ -902,6 +902,7 @@
         "qylock": "qylock",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
+        "superpowers": "superpowers",
         "systems": "systems",
         "templates": "templates",
         "treefmt-nix": "treefmt-nix",
@@ -965,6 +966,23 @@
       "original": {
         "owner": "nix-community",
         "repo": "stylix",
+        "type": "github"
+      }
+    },
+    "superpowers": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789777895,
+        "narHash": "sha256-rgeJhjQyABYlhlyFRmgyhbZmmmIPPNkch4CXyTkGEyM=",
+        "owner": "obra",
+        "repo": "superpowers",
+        "rev": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
+        "type": "github"
+      },
+      "original": {
+        "owner": "obra",
+        "repo": "superpowers",
+        "rev": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
         "type": "github"
       }
     },

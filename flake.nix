@@ -129,6 +129,10 @@
         systems.follows = "systems";
       };
     };
+    superpowers = {
+      url = "github:obra/superpowers/5bf4e78011075bcfc0dc295f0724994cd123ee71";
+      flake = false;
+    };
     systems = {
       url = "github:nix-systems/default";
     };

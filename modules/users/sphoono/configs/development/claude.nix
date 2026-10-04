@@ -26,6 +26,11 @@
       url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
       flake = false;
     };
+    # Pinned to the revision claude-plugins-official lists for it.
+    superpowers = {
+      url = "github:obra/superpowers/5bf4e78011075bcfc0dc295f0724994cd123ee71";
+      flake = false;
+    };
   };
   den.aspects.sphoono.development = {
     # claude-code is unfree.
@@ -81,6 +86,9 @@
             # agents.
             feature-dev = "${inputs.claude-plugins-official}/plugins/feature-dev";
             pr-review-toolkit = "${inputs.claude-plugins-official}/plugins/pr-review-toolkit";
+            # Brainstorming, plan-driven subagent development, systematic
+            # debugging and red/green TDD.
+            superpowers = "${inputs.superpowers}";
           };
           skills = {
             # Writing
