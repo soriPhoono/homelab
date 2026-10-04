@@ -1,5 +1,6 @@
-{ lib, ... }: {
+{ den, lib, ... }: {
   den.aspects.core.hardware.hid.tablets.xp-pen = {
+    includes = [ (den.batteries.unfree [ "xp-pen-driver" ]) ];
     nixos = { pkgs, config, ... }: {
       options.core.hardware.xpPen.tablets = lib.mkOption {
         type = lib.types.listOf (
@@ -102,14 +103,14 @@
             };
           };
         in
-        lib.mkIf (config.hardware.xpPen.tablets != [ ]) (
+        lib.mkIf (config.core.hardware.xpPen.tablets != [ ]) (
           lib.mkMerge [
             {
               nixpkgs.overlays = [
                 xp-pen-overlay
               ]; # Apply the overlay
             }
-            (lib.mkIf (builtins.elem "artist-13.3-pro" config.hardware.xpPen.tablets) {
+            (lib.mkIf (builtins.elem "artist-13.3-pro" config.core.hardware.xpPen.tablets) {
               hardware.uinput.enable = true; # Enable uinput for tablet support
               systemd.tmpfiles.rules = [
                 "L+ /usr/lib/pentablet - - - - ${pkgs.xp-pen-13-3-pro}/opt/xp-pen"
