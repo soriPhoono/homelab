@@ -1,0 +1,83 @@
+version: "3.9"
+services:
+  n8n:
+    image: n8nio/n8n:2.39.6
+    environment:
+      GENERIC_TIMEZONE: America/Chicago
+      N8N_EDITOR_BASE_URL: https://agents.cryptic-coders.net/
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_HOST: agents.cryptic-coders.net
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: https
+      N8N_PROXY_HOPS: "1"
+      N8N_RUNNERS_AUTH_TOKEN_FILE: /run/secrets/n8n_runners_auth_token
+      N8N_RUNNERS_BROKER_LISTEN_ADDRESS: 0.0.0.0
+      N8N_RUNNERS_MODE: external
+      N8N_NATIVE_PYTHON_RUNNER: "true"
+      NODE_ENV: production
+      TZ: America/Chicago
+      WEBHOOK_URL: https://agents.cryptic-coders.net/
+    networks:
+      - n8n
+    secrets:
+      - n8n_runners_auth_token
+    volumes:
+      - n8n_data:/home/node/.n8n
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == sphoono-vps
+      resources:
+        limits:
+          memory: 2G
+      restart_policy:
+        condition: any
+        delay: 5s
+  runners:
+    image: n8nio/runners:2.39.6
+    environment:
+      N8N_RUNNERS_AUTH_TOKEN_FILE: /run/secrets/n8n_runners_auth_token
+      N8N_RUNNERS_TASK_BROKER_URI: http://n8n:5679
+    networks:
+      - n8n
+    secrets:
+      - n8n_runners_auth_token
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints:
+          - node.hostname == sphoono-vps
+      resources:
+        limits:
+          memory: 2G
+      restart_policy:
+        condition: any
+        delay: 5s
+  cloudflared:
+    image: cloudflare/cloudflared:2026.9.0
+    command: tunnel --no-autoupdate run --token-file /run/secrets/cloudflared_tunnel_token
+    networks:
+      - n8n
+    secrets:
+      - cloudflared_tunnel_token
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == sphoono-vps
+      resources:
+        limits:
+          memory: 256M
+      restart_policy:
+        condition: any
+        delay: 5s
+networks:
+  n8n:
+    driver: overlay
+volumes:
+  n8n_data:
+secrets:
+  cloudflared_tunnel_token:
+    file: ./secrets/cloudflared-tunnel-token
+  n8n_runners_auth_token:
+    file: ./secrets/n8n-runners-auth-token
