@@ -102,6 +102,19 @@
             create-readme = "${inputs.awesome-copilot}/skills/create-readme";
             # Work with git repos
             git-commit = "${inputs.awesome-copilot}/skills/git-commit";
+            # Build n8n workflows through the n8n MCP server
+            inherit (pkgs.agent-skills.github.czlonkowski.n8n-skills)
+              n8n-mcp-tools-expert
+              n8n-workflow-patterns
+              n8n-expression-syntax
+              n8n-validation-expert
+              n8n-code-javascript
+              ;
+            # Keep the Notion project wiki and tasks current
+            inherit (pkgs.agent-skills.github.makenotion.claude-code-notion-plugin)
+              knowledge-capture
+              spec-to-implementation
+              ;
           };
         };
       };
