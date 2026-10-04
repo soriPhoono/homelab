@@ -22,6 +22,10 @@
       url = "github:mattpocock/skills/d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
       flake = false;
     };
+    claude-plugins-official = {
+      url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
+      flake = false;
+    };
   };
   den.aspects.sphoono.development = {
     # claude-code is unfree.
@@ -68,6 +72,15 @@
             # The marketplace manifest points the "mem0" plugin at this
             # subdirectory of the repo, not the repo root.
             mem0 = "${inputs.mem0}/integrations/claude-code-plugin";
+            # Baseline: keep AGENTS.md/CLAUDE.md current, and turn repeated
+            # corrections into hooks (hookify's hooks run on the python3
+            # the wrapper above puts on PATH).
+            claude-md-management = "${inputs.claude-plugins-official}/plugins/claude-md-management";
+            hookify = "${inputs.claude-plugins-official}/plugins/hookify";
+            # Development: guided feature workflow and specialised PR review
+            # agents.
+            feature-dev = "${inputs.claude-plugins-official}/plugins/feature-dev";
+            pr-review-toolkit = "${inputs.claude-plugins-official}/plugins/pr-review-toolkit";
           };
           skills = {
             # Writing

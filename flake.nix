@@ -19,6 +19,10 @@
       url = "github:github/awesome-copilot/d6131471b85fbb4799e64175ebc42c9309ecc28a";
       flake = false;
     };
+    claude-plugins-official = {
+      url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
+      flake = false;
+    };
     comin = {
       url = "github:nlewo/comin";
       inputs = {

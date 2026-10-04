@@ -115,6 +115,23 @@
         "type": "github"
       }
     },
+    "claude-plugins-official": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790976370,
+        "narHash": "sha256-LQ78jO8fzutmPJSsc3XeA+KqEP8wOrhH8AQaDCr/Pd8=",
+        "owner": "anthropics",
+        "repo": "claude-plugins-official",
+        "rev": "d182ca456ca09d31d139f7d3818d1d333b103cce",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "claude-plugins-official",
+        "rev": "d182ca456ca09d31d139f7d3818d1d333b103cce",
+        "type": "github"
+      }
+    },
     "comin": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -860,6 +877,7 @@
     "root": {
       "inputs": {
         "awesome-copilot": "awesome-copilot",
+        "claude-plugins-official": "claude-plugins-official",
         "comin": "comin",
         "darwin": "darwin",
         "den": "den",
