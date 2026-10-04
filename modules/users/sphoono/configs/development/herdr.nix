@@ -43,9 +43,57 @@
         programs.nvf.settings.vim = {
           extraPlugins.herdr-nvim = {
             package = herdrNvim.vimPlugin;
-            setup = "require('herdr-nvim').setup({})";
+            # The sidebar daemon calls setup() again on VimEnter; with the
+            # plugin's own maps enabled that second call warns once per key.
+            # keymaps = false persists in module state, so bind them here.
+            setup = "require('herdr-nvim').setup({ keymaps = false })";
           };
           binds.whichKey.register."<leader>a" = "+Agent";
+          keymaps = [
+            {
+              mode = "n";
+              key = "<leader>ac";
+              action = "<cmd>Herdr comment<CR>";
+              desc = "Comment line";
+            }
+            {
+              # `:` rather than <cmd> so the selection reaches the command.
+              mode = "x";
+              key = "<leader>ac";
+              action = ":Herdr comment<CR>";
+              desc = "Comment selection";
+            }
+            {
+              mode = "n";
+              key = "<leader>al";
+              action = "<cmd>Herdr list<CR>";
+              desc = "List comments";
+            }
+            {
+              mode = "n";
+              key = "<leader>as";
+              action = "<cmd>Herdr send<CR>";
+              desc = "Paste comments to agent";
+            }
+            {
+              mode = "n";
+              key = "<leader>aS";
+              action = "<cmd>Herdr submit<CR>";
+              desc = "Send comments to agent";
+            }
+            {
+              mode = "n";
+              key = "<leader>ai";
+              action = "<cmd>Herdr ref<CR>";
+              desc = "Reference line at agent cursor";
+            }
+            {
+              mode = "x";
+              key = "<leader>ai";
+              action = ":Herdr ref<CR>";
+              desc = "Reference selection at agent cursor";
+            }
+          ];
         };
 
         # The sidebar daemon spawns a headless nvim; point it at the nvf build
