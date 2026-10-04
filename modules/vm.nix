@@ -16,6 +16,9 @@
       mkVm =
         _name: host:
         let
+          # Users come from the real host, so the overrides below fit
+          # whichever users a host defines.
+          userNames = builtins.attrNames host.config.home-manager.users;
           vm = host.extendModules {
             modules = [
               (
@@ -38,10 +41,10 @@
                   # sops recipient, so the real secrets can't be decrypted.
                   # Use a throwaway password instead.
                   sops.secrets = lib.mkForce { };
-                  users.users.sphoono = {
+                  users.users = lib.genAttrs userNames (_: {
                     hashedPasswordFile = lib.mkForce null;
                     initialPassword = "vm";
-                  };
+                  });
                   virtualisation = {
                     # The writable store overlay lives on tmpfs but the Nix DB
                     # lives on the disk image; a persisted image therefore
@@ -58,13 +61,13 @@
                   # overlayfs-on-virtiofs writable store it sometimes doesn't,
                   # and `nix-env -i` fails opening a `.drv` it just
                   # instantiated. Wait on the real service and retry once.
-                  systemd.services.home-manager-sphoono = {
+                  systemd.services = lib.genAttrs (map (user: "home-manager-${user}") userNames) (_: {
                     after = [ "nix-daemon.service" ];
                     serviceConfig = {
                       Restart = "on-failure";
                       RestartSec = 2;
                     };
-                  };
+                  });
                   services = {
                     qemuGuest.enable = true;
                     spice-vdagentd.enable = true;
