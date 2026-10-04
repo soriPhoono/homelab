@@ -24,6 +24,7 @@
             agent_panel_sort = "spaces";
             status_indicators = "symbols";
           };
+          settings.keys.prefix = "ctrl+space";
           settings.keys.command = [
             {
               key = "prefix+shift+e";
