@@ -5,6 +5,8 @@ keys:
   - &user-sphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
   - &laptop-ares age1ldzusjw28wzed8y6q9ynn9d7se7qxpsapxxys00jgrsfdw88eeasnt795x
   - &desktop-ares age19g0rp5pkc533jlht5w3f5fx30e8tra8du9hy7s323chanyjqeekq4hjyuu
+  - &laptop-vesper age1yqsdglc9s03k6yhefaqpnpyurj0j9nktlccc8rq2uevpuzn0ea2stx0msr
+  - &user-spookyskelly age1kv7f5nyknwhf5lvm7yzhm0jetleceklj7u225uxce5x007hkvgys0fmeey
 creation_rules:
   - path_regex: secrets/user-sphoono.yaml$
     key_groups:
@@ -20,3 +22,13 @@ creation_rules:
       - age:
           - *user-sphoono
           - *desktop-ares
+  - path_regex: secrets/host-laptop-vesper.yaml$
+    key_groups:
+      - age:
+          - *user-sphoono
+          - *laptop-vesper
+  - path_regex: secrets/user-spookyskelly.yaml$
+    key_groups:
+      - age:
+          - *user-sphoono
+          - *user-spookyskelly
