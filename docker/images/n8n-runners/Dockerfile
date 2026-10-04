@@ -19,8 +19,12 @@ RUN apk add --no-cache jq
 COPY --from=runners /etc/n8n-task-runners.json /tmp/upstream.json
 RUN jq --arg allow "${PYTHON_STDLIB_ALLOW}" \
     '(."task-runners"[] | select(."runner-type" == "python") | ."env-overrides".N8N_RUNNERS_STDLIB_ALLOW) = $allow' \
-    /tmp/upstream.json > /tmp/n8n-task-runners.json
+    /tmp/upstream.json > /tmp/n8n-task-runners.json \
+  && mkdir -p /out/data/vods
 
 FROM runners
 COPY --from=ffmpeg /ffmpeg /ffprobe /usr/local/bin/
 COPY --from=config /tmp/n8n-task-runners.json /etc/n8n-task-runners.json
+# Mount point for the shared vods volume. Docker copies this ownership onto
+# the empty volume, so both runners and n8n (uid 1000) can write to it.
+COPY --from=config --chown=1000:1000 /out/data /data

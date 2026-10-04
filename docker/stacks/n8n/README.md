@@ -20,13 +20,10 @@ service URL `http://n8n:5678`. Do not expose a service port on the VPS.
 
 ## Video pipeline storage
 
-n8n and its runners share `/data/vods`, bind-mounted from `/srv/n8n/vods` on
-the host. Swarm does not create bind sources, so create it once, owned by the
-uid both images run as:
-
-```sh
-sudo install -d -o 1000 -g 1000 /srv/n8n/vods
-```
+n8n and its runners share `/data/vods` through the `vods` volume. The runners
+image ships that directory owned by uid 1000, and Docker copies the ownership
+onto the empty volume the first time a runner mounts it, so both services can
+write to it. Until a runner has started, n8n cannot write there.
 
 The runners image is built from `docker/images/n8n-runners` by the
 `n8n-runners image` workflow and published to `ghcr.io/soriphoono/n8n-runners`.
