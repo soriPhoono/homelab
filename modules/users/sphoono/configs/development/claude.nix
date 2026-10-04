@@ -102,6 +102,10 @@
             create-readme = "${inputs.awesome-copilot}/skills/create-readme";
             # Work with git repos
             git-commit = "${inputs.awesome-copilot}/skills/git-commit";
+            # Hand outside research to Antigravity, and implement the plans
+            # it hands back
+            antigravity-research = ../../assets/skills/antigravity-research;
+            plan-watch = ../../assets/skills/plan-watch;
             # Build n8n workflows through the n8n MCP server
             inherit (pkgs.agent-skills.github.czlonkowski.n8n-skills)
               n8n-mcp-tools-expert
