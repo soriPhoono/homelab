@@ -1,0 +1,45 @@
+# --- Build and publish the n8n task runners image (ffmpeg + Python allowlist)
+name: n8n-runners image
+
+on:
+  workflow_dispatch: # allows manual triggering from the Actions UI
+  push:
+    branches:
+      - main
+      - feat/v2
+    paths:
+      - docker/images/n8n-runners/**
+      - .github/workflows/n8n-runners-image.yml
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checking out repository..."
+        uses: actions/checkout@v4
+      - name: "Reading versions from the Dockerfile..."
+        id: version
+        run: |
+          dockerfile=docker/images/n8n-runners/Dockerfile
+          n8n=$(sed -n 's/^ARG N8N_VERSION=//p' "$dockerfile")
+          ffmpeg=$(sed -n 's/^ARG FFMPEG_VERSION=//p' "$dockerfile")
+          echo "tag=${n8n}-ffmpeg${ffmpeg}" >> "$GITHUB_OUTPUT"
+      - name: "Setting up Buildx..."
+        uses: docker/setup-buildx-action@v3
+      - name: "Logging in to GHCR..."
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Building and pushing..."
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/images/n8n-runners
+          push: true
+          tags: ghcr.io/soriphoono/n8n-runners:${{ steps.version.outputs.tag }}
+          labels: org.opencontainers.image.source=https://github.com/soriPhoono/homelab
