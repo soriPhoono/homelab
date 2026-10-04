@@ -55,8 +55,9 @@
             cardDevice = "/dev/dri/card1";
           };
           gaming.wolf = {
+            # Both nodes of the AMD dGPU (pci-0000:03:00.0); card1 is the iGPU.
             renderDevice = "/dev/dri/renderD129";
-            cardDevice = "/dev/dri/card1";
+            cardDevice = "/dev/dri/card2";
             internalMac = "c2:d8:de:57:c6:7c";
           };
         };
