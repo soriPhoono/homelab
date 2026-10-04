@@ -2,5 +2,4 @@
 
 result
 .pre-commit-config.yaml
-
-docker/
+*.qcow2

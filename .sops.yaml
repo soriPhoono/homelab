@@ -1,37 +1,34 @@
+# Public age recipients only; safe to commit. Add each host's age key
+# (ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub) as an anchor and list it
+# under the relevant creation rule, then run `sops updatekeys <file>`.
 keys:
-  - &system_lg_laptop age1yqsdglc9s03k6yhefaqpnpyurj0j9nktlccc8rq2uevpuzn0ea2stx0msr
-  - &system_zephyrus age1ldzusjw28wzed8y6q9ynn9d7se7qxpsapxxys00jgrsfdw88eeasnt795x
-  - &system_ares age19g0rp5pkc533jlht5w3f5fx30e8tra8du9hy7s323chanyjqeekq4hjyuu
-  - &vps_sphoono age1t405nrcjuavjg3u3qk65q2vnwkdm9zrc5j04xdk5kwl39kcucp5sscq8z6
-  - &admin_soriphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
-  - &admin_spookyskelly age1kv7f5nyknwhf5lvm7yzhm0jetleceklj7u225uxce5x007hkvgys0fmeey
+  - &user-sphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
+  - &laptop-ares age1ldzusjw28wzed8y6q9ynn9d7se7qxpsapxxys00jgrsfdw88eeasnt795x
+  - &desktop-ares age19g0rp5pkc533jlht5w3f5fx30e8tra8du9hy7s323chanyjqeekq4hjyuu
+  - &laptop-vesper age1yqsdglc9s03k6yhefaqpnpyurj0j9nktlccc8rq2uevpuzn0ea2stx0msr
+  - &user-spookyskelly age1kv7f5nyknwhf5lvm7yzhm0jetleceklj7u225uxce5x007hkvgys0fmeey
 creation_rules:
-  - path_regex: nix/homes/sphoono(@[^/]+)?/.*\.(yml|json|env|ini)$
+  - path_regex: secrets/user-sphoono.yaml$
     key_groups:
       - age:
-          - *admin_soriphoono
-  - path_regex: nix/homes/spookyskelly(@[^/]+)?/[^/]+\.(yml|json|env|ini)$
+          - *user-sphoono
+  - path_regex: secrets/host-laptop-ares.yaml$
     key_groups:
       - age:
-          - *admin_soriphoono
-          - *admin_spookyskelly
-  - path_regex: nix/systems/laptop-ares/[^/]+\.(yml|json|env|ini)$
+          - *user-sphoono
+          - *laptop-ares
+  - path_regex: secrets/host-desktop-ares.yaml$
     key_groups:
       - age:
-          - *admin_soriphoono
-          - *system_zephyrus
-  - path_regex: nix/systems/desktop-ares/[^/]+\.(yml|json|env|ini)$
+          - *user-sphoono
+          - *desktop-ares
+  - path_regex: secrets/host-laptop-vesper.yaml$
     key_groups:
       - age:
-          - *admin_soriphoono
-          - *system_ares
-  - path_regex: nix/systems/laptop-vesper/[^/]+\.(yml|json|env|ini)$
+          - *user-sphoono
+          - *laptop-vesper
+  - path_regex: secrets/user-spookyskelly.yaml$
     key_groups:
       - age:
-          - *admin_soriphoono
-          - *system_lg_laptop
-  - path_regex: docker/stacks/n8n/secrets/(cloudflared-tunnel-token|n8n-runners-auth-token)$
-    key_groups:
-      - age:
-          - *admin_soriphoono
-          - *vps_sphoono
+          - *user-sphoono
+          - *user-spookyskelly

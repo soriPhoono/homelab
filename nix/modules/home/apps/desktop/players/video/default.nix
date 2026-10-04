@@ -1,5 +1,0 @@
-{
-  imports = [
-    ./vlc.nix
-  ];
-}
