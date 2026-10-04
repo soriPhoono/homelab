@@ -24,6 +24,10 @@
       {
         home.sessionVariables.AGENT_WIKI = "${config.home.homeDirectory}/Shared/AgentWiki";
 
+        # Implementation plans handed to Claude's plan-watch loop are work
+        # items, not project history; their outcome lands as commits.
+        programs.git.ignores = [ ".agents/plans/" ];
+
         programs.antigravity-cli = {
           enable = true;
           # Research only: agy writes the wiki and plan files, never touches
