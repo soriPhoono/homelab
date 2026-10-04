@@ -15,7 +15,9 @@ nix devshells.
 - **Focused changes only.** Fix the one file that needs fixing. Don't touch
   sibling modules, don't drive-by refactor, don't reformat — unless I ask.
 - **One logical change per commit.** Conventional commits (`feat:`, `fix:`,
-  `chore:`, `refactor:`, `docs:`). Always fetch origin main before branching.
+  `chore:`, `refactor:`, `docs:`). Always fetch origin dev before branching:
+  `dev` is the nightly branch, copied to a version branch and merged into
+  `main` on release.
 - **Upstream first.** Check nixpkgs and existing home-manager/NixOS modules
   before writing custom ones.
 
