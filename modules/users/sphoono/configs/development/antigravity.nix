@@ -14,6 +14,11 @@
         # agy never reads, so both are placed here directly.
         skills = {
           inherit (obsidianSkills) obsidian-markdown defuddle;
+          # Research protocol: wiki upkeep, requests from Claude, and plans
+          # handed back to Claude.
+          llm-wiki = ../../assets/skills/llm-wiki;
+          research-intake = ../../assets/skills/research-intake;
+          claude-handoff = ../../assets/skills/claude-handoff;
         };
       in
       {
