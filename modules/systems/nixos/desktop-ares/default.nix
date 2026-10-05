@@ -34,6 +34,7 @@
         den.aspects.desktop.platforms.appimage
         # -- Domains of desktop activity (scoped) --
         den.aspects.desktop.domains.gaming.desktop
+        den.aspects.desktop.domains.trading.desktop
         # -- Desktop applications (scoped) --
         den.aspects.desktop.tools.virt-manager
         den.aspects.desktop.tools.partition-manager
@@ -47,6 +48,7 @@
         den.aspects.hosting.podman
         den.aspects.hosting.microserver.media
         den.aspects.hosting.gaming.host
+        den.aspects.hosting.trading
       ];
       nixos = { pkgs, ... }: {
         imports = [ inputs.qylock.nixosModules.default ];
