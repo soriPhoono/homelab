@@ -56,7 +56,8 @@
                 for bin in $out/bin/*; do
                   if [ -f "$bin" ] && [ -x "$bin" ]; then
                     wrapProgram "$bin" \
-                      --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]}
+                      --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]} \
+                      --set MEM0_TELEMETRY false
                   fi
                 done
               '';
@@ -64,6 +65,9 @@
           settings = {
             model = "opus";
             effortLevel = "high";
+            # Opt the mem0 plugin's hooks, MCP server and flush worker out
+            # of usage telemetry.
+            env.MEM0_TELEMETRY = "false";
           };
           context = ''
             ${builtins.readFile ../../assets/documents/user.md}
