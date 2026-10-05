@@ -23,3 +23,8 @@ verify and record.
   file.
 - `obsidian-markdown` and `defuddle` — writing notes and capturing web
   pages.
+- `mem0-search` — read the decisions and preferences Claude Code has
+  remembered for the repository you run in. Read-only.
+
+Notion (MCP server `notion`) holds the user's project notes and tasks.
+Read it for context; you cannot write to it.
