@@ -102,9 +102,15 @@ nix eval .#nixosConfigurations.<host>.config.assertions \
 nix fmt                    # the treefmt hook fails the commit otherwise
 ```
 
-`nix flake check` is **not** a gate. It runs only `check-flake-file`,
-`pre-commit` and `treefmt`; it never evaluates or builds the systems, and
-passes happily on a completely broken host.
+`nix flake check` is **not** a gate. Besides `check-flake-file`,
+`pre-commit` and `treefmt`, it evaluates every host, so it fails on
+evaluation errors and failed assertions. It builds nothing: a derivation
+that fails to build (a broken wrapper script, say) passes it and surfaces
+only at deploy.
+
+Do not build whole systems to verify a change; that risks running out of
+memory. Building a small package you changed is fine. The user deploys and
+reports build failures.
 
 For changes that need to actually boot, use the VM:
 
