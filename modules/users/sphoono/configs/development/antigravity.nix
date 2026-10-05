@@ -105,6 +105,10 @@
               MEM0_TELEMETRY = "false";
             };
           };
+          # Notion's hosted MCP, so plans are written against the project's
+          # current notes and tasks. OAuth is imperative: run `agy` once per
+          # host. agy reads Notion only; Claude Code is its only writer.
+          mcpServers.notion.serverUrl = "https://mcp.notion.com/mcp";
         };
 
         home.file = {
