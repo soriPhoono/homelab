@@ -30,7 +30,7 @@ Run from `~/Projects` so agy sees every project, and give it the wiki:
 ```sh
 cd ~/Projects && agy -p "$prompt" \
   --sandbox \
-  --add-dir "$AGENT_WIKI" \
+  --add-dir "${AGENT_WIKI:-$HOME/Shared/AgentWiki}" \
   --output-format json \
   --json-schema ~/.claude/skills/antigravity-research/result.schema.json \
   --print-timeout 20m
@@ -45,21 +45,32 @@ Project: <project name, or none>
 Context: <what is already known; do not re-research it>
 ```
 
-Research takes minutes. Run the command in the background and keep working
-on what does not depend on it.
+`AGENT_WIKI` is unset in sessions started before the last Home Manager
+switch, hence the fallback. Research takes about five minutes. Run the
+command in the background and keep working on what does not depend on it.
 
 ## Reading the result
 
-The command prints an envelope; the research result is the `response`
-field, a JSON string matching `result.schema.json`:
+agy may print plain-text warnings before the JSON envelope, so select the
+envelope line. The research result is its `response` field, a JSON string
+matching `result.schema.json`:
 
 ```sh
-jq -r '.response | fromjson' <<<"$output"
+envelope="$(grep '^{' <<<"$output" | tail -n 1)"
+jq '{status, error, denied_actions}' <<<"$envelope"
+jq -r '.response | fromjson' <<<"$envelope"
 ```
 
-- `status` of `"ERROR"`, or a non-empty `error`, means the run failed.
-  `authentication required` means the user must run `agy` once in a
+- **A failed run can report `"status": "SUCCESS"`.** Treat it as failed when
+  `status` is `"ERROR"`, `error` is non-empty, `response` is empty, or
+  `denied_actions` is non-null.
+- `authentication required` means the user must run `agy` once in a
   terminal to log in; tell them and stop retrying.
+- `denied_actions` means a tool needed a permission headless mode cannot
+  grant. Report the action and the warning line above the envelope (it
+  names the permission) to the user. The allow rules are in
+  `~/.gemini/antigravity-cli/settings.json`, managed from Home Manager.
+- The result can carry extra keys beyond the schema; ignore them.
 - `findings[].confidence` is `high`, `medium` or `low`. Treat `low` as a
   lead, not a fact.
 - `wiki_pages` are paths under `$AGENT_WIKI`; read them for detail.
