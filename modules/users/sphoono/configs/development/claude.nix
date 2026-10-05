@@ -36,7 +36,7 @@
     # claude-code is unfree.
     includes = [ (den.batteries.unfree [ "claude-code" ]) ];
     homeManager =
-      { pkgs, ... }:
+      { config, pkgs, ... }:
       {
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
@@ -56,7 +56,8 @@
                 for bin in $out/bin/*; do
                   if [ -f "$bin" ] && [ -x "$bin" ]; then
                     wrapProgram "$bin" \
-                      --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]}
+                      --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]} \
+                      --run 'export MEM0_API_KEY="$(cat ${config.sops.secrets."api/mem0-api-key".path})"'
                   fi
                 done
               '';
