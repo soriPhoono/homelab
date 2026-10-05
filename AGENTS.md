@@ -174,12 +174,14 @@ produces a second, possibly contradictory article. Citations are web URLs,
 wiki pages or nix store code locations.
 
 Implementation work that comes out of research arrives as plan files in
-`~/Projects/.agents/plans/` with `target_repos: [homelab]`, written by
+`~/Projects/.agents/plans/` with `target_repo: homelab`, written by
 Antigravity's `claude-handoff` skill; plans written by hand can also go in
-this repository's `.agents/plans/`. A Claude
-session running `/loop 15m /plan-watch` from `~/Projects` implements each
-one on a `handoff/<slug>` branch from `origin/dev`. Plans are gitignored;
-never commit them.
+this repository's `.agents/plans/`. A Claude session started in this
+repository and running `/loop 15m /plan-watch` implements each one in a
+worktree on a `handoff/<slug>` branch from `origin/dev`, and tracks it in
+the Tasks - Homelab Notion database. The loop must run here, not in
+`~/Projects`: mem0 keys memory by the repository's git remote. Plans are
+gitignored; never commit them.
 
 ## Recipes
 
