@@ -57,7 +57,6 @@
                   if [ -f "$bin" ] && [ -x "$bin" ]; then
                     wrapProgram "$bin" \
                       --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]} \
-                      --set MEM0_TELEMETRY false
                   fi
                 done
               '';
