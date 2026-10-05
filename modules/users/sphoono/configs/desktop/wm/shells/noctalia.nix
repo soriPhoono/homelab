@@ -263,7 +263,7 @@ in
             (bind "ALT + Tab" "window-switcher hold")
 
             # -- Screenshots --
-            (bind "Print" "screenshot-fullscreen monitor")
+            (bind "Print" "screenshot-fullscreen")
             (bind "SUPER + Print" "screenshot-region")
             (bind "SUPER + SHIFT + Print" "screenshot-annotate")
 
