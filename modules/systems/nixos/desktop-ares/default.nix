@@ -34,7 +34,6 @@
         den.aspects.desktop.platforms.appimage
         # -- Domains of desktop activity (scoped) --
         den.aspects.desktop.domains.gaming.desktop
-        den.aspects.desktop.domains.trading.desktop
         # -- Desktop applications (scoped) --
         den.aspects.desktop.tools.virt-manager
         den.aspects.desktop.tools.partition-manager
@@ -107,6 +106,7 @@
         den.aspects.sphoono.desktop.wm.supporting
         den.aspects.sphoono.desktop
         den.aspects.sphoono.desktop.syncthing
+        den.aspects.sphoono.desktop.trading
         den.aspects.sphoono.development
         den.aspects.sphoono.content-creation
         den.aspects.hosting.gaming.client
