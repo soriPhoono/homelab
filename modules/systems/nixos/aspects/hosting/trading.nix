@@ -4,7 +4,7 @@
   - Freqtrade: algorithmic trading bot in dry-run (paper trading) mode, FreqUI
     on http://127.0.0.1:8080. The first start seeds a dry-run config.json with
     generated API credentials (read them from that file) and the upstream
-    sample strategy.
+    sample strategy; every start re-applies the settings declared here.
 */
 { den, ... }:
 {
@@ -33,7 +33,11 @@
           max_open_trades = 3;
           trading_mode = "spot";
           exchange = {
-            name = "binance";
+            # Even dry-run needs live market data, and Binance answers HTTP 451
+            # from restricted locations, so the bot exited before FreqUI came
+            # up. Kraken is officially supported by Freqtrade and serves the
+            # US.
+            name = "kraken";
             key = "";
             secret = "";
             pair_whitelist = [
@@ -77,9 +81,10 @@
                 create-userdir --userdir /freqtrade/user_data
             fi
 
-            if [ ! -e ${freqtrade.userData}/config.json ]; then
+            config=${freqtrade.userData}/config.json
+            umask 077
+            if [ ! -e "$config" ]; then
               secret() { head -c 32 /dev/urandom | base64 | tr -d '/+='; }
-              umask 077
               ${lib.getExe pkgs.jq} \
                 --arg password "$(secret)" \
                 --arg jwt "$(secret)" \
@@ -87,9 +92,16 @@
                 '.api_server.password = $password
                   | .api_server.jwt_secret_key = $jwt
                   | .api_server.ws_token = $ws' \
-                ${freqtradeConfig} > ${freqtrade.userData}/config.json
-              chown ${freqtrade.owner} ${freqtrade.userData}/config.json
+                ${freqtradeConfig} > "$config"
+            else
+              # Re-apply the declared settings over the existing file, keeping
+              # the generated credentials, so changes here reach the bot.
+              ${lib.getExe pkgs.jq} -s \
+                '.[0] * (.[1] | del(.api_server.password, .api_server.jwt_secret_key, .api_server.ws_token))' \
+                "$config" ${freqtradeConfig} > "$config.new"
+              mv "$config.new" "$config"
             fi
+            chown ${freqtrade.owner} "$config"
           '';
         };
 
