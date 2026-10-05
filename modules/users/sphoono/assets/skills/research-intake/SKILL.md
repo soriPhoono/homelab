@@ -33,8 +33,26 @@ the ambiguity in `open_questions`. There is no one to ask mid-run.
    `llm-wiki` skill. Update the indexes and `log.md`.
 5. **Verify claims** one by one when asked to: mark each confirmed,
    contradicted or unverifiable, with the source that decides it.
+   Claims you cannot check yourself are capped at `medium` confidence; see
+   [What you cannot verify](#what-you-cannot-verify).
 6. **Stop** when the question is answered, or after about 15 sources without
    convergence. Report what remains open rather than searching forever.
+
+## What you cannot verify
+
+You cannot run `nix` or `git`, and search results about packaging are often
+stale. These claims are checked by Claude Code after your run, against the
+project's pinned inputs:
+
+- whether nixpkgs packages something, and under which attribute;
+- whether a NixOS or Home Manager option exists;
+- whether a repository is archived, deprecated or unmaintained (a latest
+  release date is not an archival date);
+- what a project currently configures or deploys.
+
+Report them, but give them at most `medium` confidence and end the claim
+with `(unverified)`. Never write what a project uses unless you read it in
+that project's files.
 
 ## The result
 

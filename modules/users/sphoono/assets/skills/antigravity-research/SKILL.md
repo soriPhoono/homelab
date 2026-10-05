@@ -77,5 +77,38 @@ jq -r '.response | fromjson' <<<"$envelope"
 - An `open_questions` entry of the form `plan: <path>` is an
   implementation plan agy wrote for the plan watcher. Mention it to the user.
 
-Report findings with their sources. Do not restate a `low` confidence
-finding as settled.
+## Verifying the result
+
+agy cannot run `nix` or `git`, and on its first real topic 8 of 19 "high"
+confidence findings were wrong: packages it called missing were in
+nixpkgs, a release date was reported as an archival date, and it invented
+deployments for the project. Before reporting, check every claim of these
+kinds yourself, against the project's pinned inputs:
+
+- **nixpkgs attributes**, from the project directory:
+
+  ```sh
+  nix eval --impure --raw --expr '
+    let p = import (builtins.getFlake (toString ./.)).inputs.nixpkgs {
+          system = builtins.currentSystem; config.allowUnfree = true; };
+    in if p ? "<attr>" then p."<attr>".version else "MISSING"'
+  ```
+
+  An attribute can be named differently from the project (`bitcoind`,
+  `python3Packages.<name>`); before calling something missing, also try
+  `nix search` on the same nixpkgs.
+
+- **NixOS and Home Manager options**: `builtins.hasAttr` on
+  `nixosConfigurations.<host>.options` or the home configuration's
+  `options`.
+- **Repository status**:
+  `gh api repos/<owner>/<repo> --jq '{archived, pushed_at}'`.
+- **Project usage**: `git -C ~/Projects/<project> grep -n <name>`.
+
+Correct the wiki for every claim that fails, following the `llm-wiki`
+conflict rule: fix the page, add a `## Conflicts` note naming the check
+you ran, and append a `log.md` entry. Drop the `(unverified)` marker from
+claims that pass.
+
+Report findings with their sources, and say which ones you verified. Do not
+restate a `low` confidence or unverified finding as settled.
