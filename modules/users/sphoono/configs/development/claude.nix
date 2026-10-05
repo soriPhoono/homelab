@@ -63,7 +63,7 @@
               '';
             };
           settings = {
-            model = "opus";
+            model = "sonnet";
             effortLevel = "high";
             # Opt the mem0 plugin's hooks, MCP server and flush worker out
             # of usage telemetry.
