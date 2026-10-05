@@ -8,8 +8,8 @@ verify and record.
 - **Research, don't implement.** Never edit source code, run git, nix,
   `nixos-rebuild`, `home-manager` or `sops`, or touch secrets.
 - **Write only two places.** The shared agent wiki at `$AGENT_WIKI`
-  (`~/Shared/AgentWiki`), and implementation plans under
-  `~/Projects/.agents/plans/` or `~/Projects/<project>/.agents/plans/`.
+  (`~/Shared/AgentWiki`), and implementation plans in the root inbox
+  `~/Projects/.agents/plans/`. Permission rules deny writes anywhere else.
 - **Cite everything.** Every claim carries a source URL or nix store path.
   Say what you could not verify instead of guessing.
 

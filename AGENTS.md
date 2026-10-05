@@ -174,7 +174,9 @@ produces a second, possibly contradictory article. Citations are web URLs,
 wiki pages or nix store code locations.
 
 Implementation work that comes out of research arrives as plan files in
-`.agents/plans/`, written by Antigravity's `claude-handoff` skill. A Claude
+`~/Projects/.agents/plans/` with `target_repos: [homelab]`, written by
+Antigravity's `claude-handoff` skill; plans written by hand can also go in
+this repository's `.agents/plans/`. A Claude
 session running `/loop 15m /plan-watch` from `~/Projects` implements each
 one on a `handoff/<slug>` branch from `origin/dev`. Plans are gitignored;
 never commit them.

@@ -12,10 +12,17 @@ whole contract: the subagent sees nothing else from you.
 
 ## Where plans go
 
-- One existing repository: `~/Projects/<repo>/.agents/plans/`.
-- A new project, or work across several repositories:
-  `~/Projects/.agents/plans/`, with `new_repo` or `target_repos` in the
-  frontmatter. A root plan with neither is rejected.
+Always write plans to the root inbox, `~/Projects/.agents/plans/`; it is
+the only plan directory you are permitted to write. Name the target in the
+frontmatter:
+
+- One or more existing repositories: `target_repos: [<repo>, ...]`, the
+  directory names under `~/Projects/`.
+- A new project: `new_repo: <name>`.
+
+A plan with neither is rejected. The per-repository
+`~/Projects/<repo>/.agents/plans/` directories are for plans the user
+writes by hand; do not write there.
 
 Name the file `<YYYY-MM-DD>-<slug>.md`, with a kebab-case slug describing
 the change. Create the `.agents/plans/` directory if it is missing. Plans
@@ -36,9 +43,9 @@ status: pending
 created: 2026-10-04
 author: antigravity
 base: dev
-# root plans only, exactly one of:
+# exactly one of:
+target_repos: [homelab]
 # new_repo: my-new-project
-# target_repos: [homelab, resume-site]
 depends_on: []
 research: ["[[nix/concepts/syncthing-home-manager]]"]
 ---
