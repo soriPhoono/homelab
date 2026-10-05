@@ -1,21 +1,30 @@
-{ den, ... }:
+{ den, inputs, ... }:
 {
   # Antigravity CLI (agy) does outside research for Claude Code and writes it
   # into the shared agent wiki. Login is imperative: run `agy` once per host.
   den.aspects.sphoono.development = {
     includes = [ (den.batteries.unfree [ "antigravity-cli" ]) ];
     homeManager =
-      { config, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         home = config.home.homeDirectory;
         wiki = "${home}/Shared/AgentWiki";
         obsidianSkills = pkgs.agent-skills.github.kepano.obsidian-skills;
+        mem0Plugin = "${inputs.mem0}/integrations/antigravity-plugin";
         # agy 1.2.9 discovers global skills and rules under ~/.gemini/config/
         # only. The home-manager module's `skills` and `context` options
         # write to ~/.gemini/antigravity-cli/skills and ~/.gemini/*.md, which
         # agy never reads, so both are placed here directly.
         skills = {
           inherit (obsidianSkills) obsidian-markdown defuddle;
+          # mem0's own search skill. Its remember/pause/resume skills describe
+          # the capture hooks, which are not installed.
+          mem0-search = "${mem0Plugin}/skills/search";
           # Research protocol: wiki upkeep, requests from Claude, and plans
           # handed back to Claude.
           llm-wiki = ../../assets/skills/llm-wiki;
@@ -64,6 +73,8 @@
               "command(tail)"
               "command(wc)"
               "command(grep)"
+              # mem0 is read-only context; its server exposes no write tool.
+              "mcp(mem0/search_memories)"
               # Research only writes the wiki and the root plan inbox.
               "write_file(${wiki})"
               "write_file(${home}/Projects/.agents/plans)"
@@ -79,6 +90,21 @@
               "command(sudo)"
             ];
           };
+          # Only the MCP server from mem0's antigravity plugin, without its
+          # capture hooks: agy reads Claude's memories for the repository it
+          # runs in (the pool is keyed by the git remote) and never writes.
+          # The API key is imperative: ~/.mem0/antigravity-plugin/api-key.
+          mcpServers.mem0 = {
+            command = lib.getExe pkgs.python3;
+            args = [ "${mem0Plugin}/core/mcp_server.py" ];
+            env = {
+              # Without the hooks nothing sets the harness, and the server
+              # would fall back to ~/.mem0/mem0-plugin.
+              MEM0_PLUGIN_DATA_DIR = "${home}/.mem0/antigravity-plugin";
+              # Usage events go to PostHog linked to the account email.
+              MEM0_TELEMETRY = "false";
+            };
+          };
         };
 
         home.file = {
@@ -88,6 +114,8 @@
           # next switch backs it up to settings.json.hm-backup and the one
           # after fails because that backup already exists.
           ".gemini/antigravity-cli/settings.json".force = true;
+          # agy creates an empty regular file here on its first run.
+          ".gemini/config/mcp_config.json".force = true;
 
           ".gemini/config/rules/sphoono.md".text = ''
             ---
