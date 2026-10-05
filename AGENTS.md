@@ -83,7 +83,7 @@ Each of these fails with a message that points somewhere unhelpful.
   declare their own without conflicting. Names are exact `lib.getName`
   matches, with no prefix matching.
 
-## Verification gates
+## Verification tests
 
 Run these in order before reporting that a change works. Stopping early
 is not evidence. `<host>` is a directory under `modules/systems/nixos/`.
@@ -102,7 +102,7 @@ nix eval .#nixosConfigurations.<host>.config.assertions \
 nix fmt                    # the treefmt hook fails the commit otherwise
 ```
 
-`nix flake check` is **not** a gate. Besides `check-flake-file`,
+`nix flake check` is **not** a test. Besides `check-flake-file`,
 `pre-commit` and `treefmt`, it evaluates every host, so it fails on
 evaluation errors and failed assertions. It builds nothing: a derivation
 that fails to build (a broken wrapper script, say) passes it and surfaces
@@ -191,7 +191,7 @@ gitignored; never commit them.
 
 ## Recipes
 
-Every recipe ends with the [verification gates](#verification-gates).
+Every recipe ends with the [verification tests](#verification-tests).
 
 ### Add an aspect
 
