@@ -25,10 +25,12 @@ agy.
 
 ## Running it
 
-Run from `~/Projects` so agy sees every project, and give it the wiki:
+Run from the project's repository, so agy's mem0 search reads that
+repository's memories (the pool is keyed by its git remote); use
+`~/Projects` only for research that serves no project. Give it the wiki:
 
 ```sh
-cd ~/Projects && agy -p "$prompt" \
+cd ~/Projects/<project> && agy -p "$prompt" \
   --add-dir "${AGENT_WIKI:-$HOME/Shared/AgentWiki}" \
   --output-format json \
   --json-schema ~/.claude/skills/antigravity-research/result.schema.json \
@@ -42,7 +44,12 @@ Research request from Claude Code (use the research-intake skill).
 Question: <what to find out, or the numbered claims to verify>
 Project: <project name, or none>
 Context: <what is already known; do not re-research it>
+Notion: <the project's Notion page URLs, from session startup>
 ```
+
+Pass the project's Notion page and the task pages relevant to the
+question; agy reads them read-only, which is how its plans follow what the
+user is working towards.
 
 `AGENT_WIKI` is unset in sessions started before the last Home Manager
 switch, hence the fallback. Research takes about five minutes. Run the
@@ -103,6 +110,9 @@ kinds yourself, against the project's pinned inputs:
 - **Repository status**:
   `gh api repos/<owner>/<repo> --jq '{archived, pushed_at}'`.
 - **Project usage**: `git -C ~/Projects/<project> grep -n <name>`.
+- **Claims resting on Notion or mem0** (what the user decided, what the
+  project does): check them against the repository's files too, since
+  notes and memories can be out of date.
 
 Correct the wiki for every claim that fails, following the `llm-wiki`
 conflict rule: fix the page, add a `## Conflicts` note naming the check
