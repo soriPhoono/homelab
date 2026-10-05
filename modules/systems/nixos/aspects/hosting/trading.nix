@@ -1,8 +1,6 @@
 /**
   Local crypto trading services, reachable from the host only.
 
-  - Rotki: local-first portfolio tracker and tax engine, UI on
-    http://127.0.0.1:8084.
   - Freqtrade: algorithmic trading bot in dry-run (paper trading) mode, FreqUI
     on http://127.0.0.1:8080. The first start seeds a dry-run config.json with
     generated API credentials (read them from that file) and the upstream
@@ -66,7 +64,6 @@
       {
         systemd = {
           tmpfiles.rules = [
-            "d /var/lib/rotki 0755 root root -"
             "d ${freqtrade.userData} 0770 ${freqtrade.owner} -"
           ];
 
@@ -97,13 +94,6 @@
         };
 
         virtualisation.oci-containers.containers = {
-          rotki = {
-            image = "rotki/rotki:latest";
-            # The image serves its UI on port 80, not 8084.
-            ports = [ "127.0.0.1:8084:80" ];
-            volumes = [ "/var/lib/rotki:/data" ];
-          };
-
           freqtrade = {
             inherit (freqtrade) image;
             ports = [ "127.0.0.1:8080:8080" ];
