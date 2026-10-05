@@ -126,9 +126,9 @@ sops-nix.
   call when it improves freshness, accuracy, context, persistence, or safe
   interaction with an external system; do not avoid a call merely to save
   tokens or because a task could be completed from memory.
-- **`personal/notion` is the personal knowledge-base:** Use it to read
+- **`Notion` is the personal knowledge-base:** Use it to read
   project notes and handle task management.
-- **`software-development/n8n` is the background automation:** Use it to
+- **`N8n` is the background automation:** Use it to
   discover, inspect, test, and modify durable n8n workflows. Read back
   workflows or executions after every external change.
 - **Parallel execution:** Issue independent MCP requests concurrently to
