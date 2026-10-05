@@ -16,6 +16,46 @@
         wiki = "${home}/Shared/AgentWiki";
         obsidianSkills = pkgs.agent-skills.github.kepano.obsidian-skills;
         mem0Plugin = "${inputs.mem0}/integrations/antigravity-plugin";
+        notionTool = name: "mcp(notion/notion-${name})";
+        # Reading the project's notes and tasks. get-tool-access is required
+        # before searching, and the next-steps tools are called when the
+        # server says so; print mode would deny them and end the run.
+        notionReads = [
+          "search"
+          "ai-search"
+          "fetch"
+          "query-data-sources"
+          "query-multiple-data-sources"
+          "get-comments"
+          "get-tool-access"
+          "check-mcp-next-steps"
+          "show-advanced-analysis-next-steps"
+        ];
+        # Everything that creates, changes, uploads, downloads or drives
+        # Notion agents. Denied explicitly so read-only also holds in the
+        # interactive TUI, where an unlisted tool would only prompt.
+        notionWrites = [
+          "create-pages"
+          "update-page"
+          "duplicate-page"
+          "move-pages"
+          "create-comment"
+          "create-database"
+          "update-data-source"
+          "create-view"
+          "update-view"
+          "create-folder"
+          "update-folder"
+          "create-file-upload"
+          "create-attachment"
+          "download-attachment"
+          "upload-skill"
+          "download-skill"
+          "convert-page-to-skill"
+          "spawn-session"
+          "send-message-to-session"
+          "stop-session"
+        ];
         # agy 1.2.9 discovers global skills and rules under ~/.gemini/config/
         # only. The home-manager module's `skills` and `context` options
         # write to ~/.gemini/antigravity-cli/skills and ~/.gemini/*.md, which
@@ -78,7 +118,8 @@
               # Research only writes the wiki and the root plan inbox.
               "write_file(${wiki})"
               "write_file(${home}/Projects/.agents/plans)"
-            ];
+            ]
+            ++ map notionTool notionReads;
             # Never version control, the nix store or secrets.
             deny = [
               "command(git)"
@@ -88,7 +129,9 @@
               "command(home-manager)"
               "command(sops)"
               "command(sudo)"
-            ];
+            ]
+            # Claude Code is Notion's only writer.
+            ++ map notionTool notionWrites;
           };
           # Only the MCP server from mem0's antigravity plugin, without its
           # capture hooks: agy reads Claude's memories for the repository it
