@@ -5,9 +5,45 @@
   den.aspects.sphoono.development = {
     includes = [ (den.batteries.unfree [ "antigravity-cli" ]) ];
     homeManager =
-      { config, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
+        home = config.home.homeDirectory;
+        wiki = "${home}/Shared/AgentWiki";
         obsidianSkills = pkgs.agent-skills.github.kepano.obsidian-skills;
+        # Research runs headless (`agy -p`), where any tool needing approval
+        # is denied, so everything research needs is allowed explicitly.
+        # Targets are path prefixes matched against the resolved path (skills
+        # resolve into /nix/store); a `*` inside a path does not match.
+        managedSettings = {
+          toolPermission = "proceed-in-sandbox";
+          enableTerminalSandbox = true;
+          permissions = {
+            allow = [
+              "read_file(/nix/store)"
+              "read_file(${home}/.gemini)"
+              "read_file(${home}/Projects)"
+              "read_url(*)"
+              # Research only writes the wiki and the root plan inbox.
+              "write_file(${wiki})"
+              "write_file(${home}/Projects/.agents/plans)"
+            ];
+            # Never version control, the nix store or secrets.
+            deny = [
+              "command(git)"
+              "command(nix)"
+              "command(nh)"
+              "command(nixos-rebuild)"
+              "command(home-manager)"
+              "command(sops)"
+              "command(sudo)"
+            ];
+          };
+        };
         # agy 1.2.9 discovers global skills and rules under ~/.gemini/config/
         # only. The home-manager module's `skills` and `context` options
         # write to ~/.gemini/antigravity-cli/skills and ~/.gemini/*.md, which
@@ -22,26 +58,35 @@
         };
       in
       {
-        home.sessionVariables.AGENT_WIKI = "${config.home.homeDirectory}/Shared/AgentWiki";
+        home.sessionVariables.AGENT_WIKI = wiki;
 
         # Implementation plans handed to Claude's plan-watch loop are work
         # items, not project history; their outcome lands as commits.
         programs.git.ignores = [ ".agents/plans/" ];
 
-        programs.antigravity-cli = {
-          enable = true;
-          # Research only: agy writes the wiki and plan files, never touches
-          # version control, the nix store or secrets.
-          permissions.deny = [
-            "command(git)"
-            "command(nix)"
-            "command(nh)"
-            "command(nixos-rebuild)"
-            "command(home-manager)"
-            "command(sops)"
-            "command(sudo)"
-          ];
-        };
+        # Package only. agy rewrites settings.json itself (model choice,
+        # trusted workspaces) and replaces a read-only store link, so the
+        # module's `settings`/`permissions` are left unset and the managed
+        # keys are merged into agy's own file on activation instead.
+        programs.antigravity-cli.enable = true;
+
+        home.activation.antigravitySettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          settings="${home}/.gemini/antigravity-cli/settings.json"
+          run mkdir -p "$(dirname "$settings")"
+          if [ -L "$settings" ]; then
+            run rm "$settings"
+          fi
+          current='{}'
+          if [ -e "$settings" ]; then
+            current="$(cat "$settings")"
+          fi
+          merged="$(${lib.getExe pkgs.jq} --argjson managed ${lib.escapeShellArg (builtins.toJSON managedSettings)} \
+            '. * $managed' <<<"$current")"
+          if [ -z "''${DRY_RUN:-}" ]; then
+            printf '%s\n' "$merged" > "$settings"
+            chmod 600 "$settings"
+          fi
+        '';
 
         home.file = {
           ".gemini/config/rules/sphoono.md".text = ''
