@@ -70,6 +70,8 @@ target_repo: homelab
 # new_repo: my-new-project
 depends_on: []
 research: ["[[nix/concepts/syncthing-home-manager]]"]
+# only when the plan implements an existing Notion task:
+# notion_task: https://app.notion.com/p/<task-page-id>
 ---
 
 # Add Syncthing to the desktop hosts
@@ -98,8 +100,12 @@ What this plan deliberately does not do.
 ```
 
 - `status` is always `pending` when you write it. The watcher owns it after
-  that (`claimed`, `done`, `failed`) and adds a `notion_task` link; never
-  edit a plan that is not `pending`.
+  that (`claimed`, `done`, `failed`); never edit a plan that is not
+  `pending`.
+- `notion_task` links the plan to the Notion task it implements, when the
+  request or your Notion reading names one. The watcher then updates that
+  task instead of creating a duplicate; without it, the watcher creates a
+  task for the plan.
 - `base` is the branch the work starts from. Leave it `dev` unless the user
   or the project says otherwise.
 - Write requirements the implementer can verify by running something, not

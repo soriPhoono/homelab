@@ -56,11 +56,17 @@ as a possible earlier run and leave the branch alone. To fail a plan, set
 
 ## 3. Track it in Notion
 
-Find the project's Tasks database the same way the session-start rule does
-(the project name from the repository's AGENTS.md, then its page under
-Projects). Create a row: the plan title as its name, status "In progress",
-and in its body the plan path, the branch `handoff/<slug>` and the base.
-Record the row's URL as `notion_task: <url>` in the plan's frontmatter.
+If the plan already has `notion_task:`, it implements an existing task:
+set that row to "In progress" and add the plan path, the branch
+`handoff/<slug>` and the base to its body. Never create a second row for
+the same work.
+
+Otherwise, find the project's Tasks database the same way the
+session-start rule does (the project name from the repository's AGENTS.md,
+then its page under Projects). Create a row: the plan title as its name,
+status "In progress", and in its body the plan path, the branch and the
+base. Record the row's URL as `notion_task: <url>` in the plan's
+frontmatter.
 
 If no Tasks database can be found, say so in the pass summary and carry
 on; Notion tracking never blocks a plan.
@@ -75,22 +81,38 @@ verbatim:
 > First run:
 > `git fetch origin && git switch -c handoff/<slug> origin/<base>`.
 > Read the repository's AGENTS.md or CLAUDE.md and follow
-> it, including its verification gates. Commit with conventional commits;
+> it. A fresh worktree may lack the git hooks a dev shell generates (such
+> as `.pre-commit-config.yaml`); if so, enter that shell once (for example
+> `nix develop -c true`) before your first commit. Run every verification
+> gate your sandbox allows; it blocks some commands (anything containing
+> `eval`), so list each gate you could not run instead of substituting
+> another command for it. Commit with conventional commits;
 > never pass `--no-verify`. Never push, merge, deploy, run
 > `nixos-rebuild`, `home-manager switch` or `nh`, and never touch secrets.
 > Do not edit the plan file or Notion. Finish with: the worktree path, the
-> branch name, the commit list, the verification output, whether every
-> requirement in the plan is met, and any open questions.
+> branch name, the commit list, the verification output, the gates you
+> could not run, whether every requirement in the plan is met, and any
+> open questions.
 
-## 5. Record the result
+## 5. Run the gates yourself
 
-When a subagent reports back, update the plan:
+A subagent's sandbox blocks some gate commands, so its report is not
+enough. Before recording a result, run the repository's verification gates
+from its AGENTS.md against the subagent's worktree from this session (for
+a flake, point the commands at the worktree path). A gate that fails here
+fails the plan, whatever the subagent reported.
 
-- `status: done` if every requirement is met and the gates passed,
-  otherwise `status: failed`.
+## 6. Record the result
+
+When the gates have run, update the plan:
+
+- `status: done` if every requirement is met and the gates you ran
+  passed, otherwise `status: failed`.
 - Add `finished: <ISO timestamp>`.
-- Append a `## Result` section: worktree, branch, commits, verification
+- Append a `## Result` section: worktree, branch, commits, your gate
   output (trimmed to what matters), unmet requirements, open questions.
+  Name the harness's own `worktree-agent-<id>` branch too, so the user can
+  delete it with the worktree.
 
 Then update the Notion row: status "Done" for a done plan; for a failed
 plan leave it "In progress" and add the failure reason to its body, so it
