@@ -38,6 +38,12 @@ the ambiguity in `open_questions`. There is no one to ask mid-run.
 6. **Stop** when the question is answered, or after about 15 sources without
    convergence. Report what remains open rather than searching forever.
 
+## Shell commands
+
+Only `ls`, `cat`, `head`, `tail`, `wc` and `grep` are permitted. Any other
+command is denied, and a denial ends your run with no result. Prefer your
+file and search tools, and never try another command to see if it works.
+
 ## What you cannot verify
 
 You cannot run `nix` or `git`, and search results about packaging are often

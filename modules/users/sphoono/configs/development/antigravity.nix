@@ -39,7 +39,11 @@
             model = "Gemini 3.8 Flash (High)";
             trustedWorkspaces = [ "${home}/Projects/homelab" ];
             toolPermission = "proceed-in-sandbox";
-            enableTerminalSandbox = true;
+            # Launched from Claude Code, every sandboxed command fails with
+            # "connecting to sandbox server: ... connection reset by peer"
+            # and agy retries it unsandboxed, which print mode denies. Shell
+            # access is limited by the read-only command allow-list instead.
+            enableTerminalSandbox = false;
           };
           # Research runs headless (`agy -p`), where any tool needing approval
           # is denied, so everything research needs is allowed explicitly.
@@ -52,6 +56,14 @@
               "read_file(${home}/.gemini)"
               "read_file(${home}/Projects)"
               "read_url(*)"
+              # Read-only shell commands; any other command is denied, which
+              # ends a print-mode run.
+              "command(ls)"
+              "command(cat)"
+              "command(head)"
+              "command(tail)"
+              "command(wc)"
+              "command(grep)"
               # Research only writes the wiki and the root plan inbox.
               "write_file(${wiki})"
               "write_file(${home}/Projects/.agents/plans)"

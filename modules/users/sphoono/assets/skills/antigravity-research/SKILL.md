@@ -29,7 +29,6 @@ Run from `~/Projects` so agy sees every project, and give it the wiki:
 
 ```sh
 cd ~/Projects && agy -p "$prompt" \
-  --sandbox \
   --add-dir "${AGENT_WIKI:-$HOME/Shared/AgentWiki}" \
   --output-format json \
   --json-schema ~/.claude/skills/antigravity-research/result.schema.json \
