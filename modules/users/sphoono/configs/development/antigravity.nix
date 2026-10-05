@@ -136,10 +136,14 @@
           # Only the MCP server from mem0's antigravity plugin, without its
           # capture hooks: agy reads Claude's memories for the repository it
           # runs in (the pool is keyed by the git remote) and never writes.
-          # The API key is imperative: ~/.mem0/antigravity-plugin/api-key.
+          # The API key comes from sops and is exported to the server alone,
+          # not to agy.
           mcpServers.mem0 = {
-            command = lib.getExe pkgs.python3;
-            args = [ "${mem0Plugin}/core/mcp_server.py" ];
+            command = "${pkgs.writeShellScript "mem0-mcp" ''
+              MEM0_API_KEY="$(cat ${config.sops.secrets."api/mem0-api-key".path})"
+              export MEM0_API_KEY
+              exec ${lib.getExe pkgs.python3} ${mem0Plugin}/core/mcp_server.py
+            ''}";
             env = {
               # Without the hooks nothing sets the harness, and the server
               # would fall back to ~/.mem0/mem0-plugin.
@@ -153,6 +157,10 @@
           # host. agy reads Notion only; Claude Code is its only writer.
           mcpServers.notion.serverUrl = "https://mcp.notion.com/mcp";
         };
+
+        # mem0's core reads MEM0_API_KEY before any key file, so one secret
+        # serves agy's mem0 server and Claude Code's wrapper (claude.nix).
+        sops.secrets."api/mem0-api-key".mode = "0400";
 
         home.file = {
           # agy replaces this link with a regular file whenever it saves a
