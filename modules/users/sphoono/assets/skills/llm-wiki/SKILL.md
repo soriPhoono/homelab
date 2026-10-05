@@ -73,12 +73,23 @@ Body: facts, each traceable to a source in `sources`.
 
 ## In <project>
 
-How a specific project uses it: paths, options, decisions.
+How a specific project uses it today: paths, options, decisions.
+
+## Options for <project>
+
+How the project could use it: recommendations, not facts.
 ```
 
 - Open every entity and concept with a one-line definition.
-- Keep project-specific detail under an `## In <project>` heading so the
-  general part stays reusable by other projects.
+- Keep project-specific detail under project headings so the general part
+  stays reusable by other projects.
+- `## In <project>` records only what you read in that project's files,
+  with the path. If the project does not use it, omit the section or write
+  `Not used in <project> as of <date>.` Recommendations go under
+  `## Options for <project>`, never under `## In <project>`.
+- Packaging and option claims you could not check (nixpkgs attributes,
+  NixOS options) are marked `(unverified)` until someone checks them
+  against the project's pinned inputs.
 - Link pages with wikilinks: `[[nix/entities/den|den]]` across domains,
   `[[den]]` within one.
 
