@@ -24,6 +24,7 @@
         den.aspects.core.swap.zram
         den.aspects.core.networking.network-manager
         den.aspects.core.networking.tailscale
+        den.aspects.core.networking.openssh
         # -- Desktop environment --
         den.aspects.desktop.greeters.sddm
         den.aspects.desktop.managers.hyprland
