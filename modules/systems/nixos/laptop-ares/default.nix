@@ -41,7 +41,6 @@
       # -- Domains of desktop activity (scoped) --
       den.aspects.desktop.domains.gaming.desktop
       # -- Desktop applications (scoped) --
-      den.aspects.desktop.tools.virt-manager
       den.aspects.desktop.tools.partition-manager
       den.aspects.desktop.tools.virtualbox
       # -- External device interaction --
@@ -107,6 +106,7 @@
       den.aspects.sphoono.desktop.wm.supporting
       den.aspects.sphoono.desktop
       den.aspects.sphoono.desktop.syncthing
+      den.aspects.sphoono.desktop.trading
       den.aspects.sphoono.development
       den.aspects.hosting.gaming.client
     ];
