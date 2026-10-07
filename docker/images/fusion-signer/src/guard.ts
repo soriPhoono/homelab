@@ -1,25 +1,50 @@
+/**
+ * The order guard: pure functions that refuse an order which breaks a limit
+ * or does not match what was requested.
+ *
+ * No I/O happens here. Service gathers the inputs (balances, reference price,
+ * the built order) and calls `checkLimits` before building the order and
+ * `checkOrder` on the built order just before signing it. Every refusal is
+ * an `HttpError(403, reason)`. Comparisons are written so a NaN or non-finite
+ * input refuses instead of slipping through.
+ */
 import type { Limits } from "./config.js";
 import { HttpError } from "./errors.js";
 import type { OrderSummary } from "./ports.js";
 import { TOKENS, fromRaw, type Asset, type Token } from "./tokens.js";
 import type { Side } from "./validate.js";
 
+/** Refuse the order: throw a 403 with the given reason code. */
 const refuse = (reason: string, message: string): never => {
   throw new HttpError(403, reason, message);
 };
 
+/** Inputs to `checkLimits`, gathered by Service.placeOrder. */
 export interface PreChecks {
   limits: Limits;
+  /** Order size in USD at the reference price. */
   notionalUsd: number;
+  /** USD already submitted today (Store.dailyUsd). */
   dailyUsd: number;
+  /** Epoch ms of this asset's last order, if any (Store.lastOrderAt). */
   lastOrderAt: number | undefined;
+  /** Current epoch ms. */
   nowMs: number;
+  /** Raw amount of the token being sold. */
   sellAmount: bigint;
+  /** Wallet balance of the token being sold. */
   balance: bigint;
+  /** Allowance of the token being sold to the 1inch contract. */
   allowance: bigint;
 }
 
-/** Guard checks 4 to 8 of the spec, in order. */
+/**
+ * Guard checks 4 to 8 of the spec, in order: `order_cap`, `daily_cap`,
+ * `too_soon`, `insufficient_balance`, `insufficient_allowance`.
+ *
+ * A zero-notional order passes the cap so that an empty sell is reported as
+ * `insufficient_balance`, the more useful reason.
+ */
 export function checkLimits(c: PreChecks): void {
   const usd = (n: number) => `$${n.toFixed(2)}`;
   if (!(
@@ -51,7 +76,11 @@ export function checkLimits(c: PreChecks): void {
   }
 }
 
-/** USD per whole asset unit implied by a USDC and an asset amount. */
+/**
+ * USD per whole asset unit implied by a USDC and an asset amount.
+ * Example: 50 USDC for 0.0005 cbBTC -> 100000. Used for worst-case,
+ * quoted and filled prices.
+ */
 export function unitPrice(
   usdcRaw: bigint,
   assetRaw: bigint,
@@ -61,24 +90,41 @@ export function unitPrice(
   return usdc / Number(fromRaw(assetRaw, asset.decimals));
 }
 
-/** Positive bps = worse than the reference for this side. */
+/**
+ * Positive bps = worse than the reference for this side.
+ * A buy is worse when paying more than the reference; a sell is worse when
+ * receiving less. A better-than-reference price gives negative bps.
+ */
 export function slippageBps(side: Side, price: number, ref: number): number {
   return side === "buy" ? (price / ref - 1) * 1e4 : (1 - price / ref) * 1e4;
 }
 
+/** What the built order must match, as derived by Service from the request. */
 export interface Expected {
   side: Side;
   asset: Asset;
+  /** The signer's address: required as both maker and receiver. */
   maker: string;
+  /** The configured settlement contract (FUSION_SETTLEMENT_ADDRESS). */
   settlement: string;
   sellToken: Token;
   buyToken: Token;
   sellAmount: bigint;
+  /** Coinbase reference price in USD. */
   refPrice: number;
+  /** Largest allowed worst-case slippage, bps. */
   maxSlippageBps: number;
 }
 
-/** Guard checks 9 and 10, on the order that would be signed. */
+/**
+ * Guard checks 9 and 10, on the order that would be signed.
+ *
+ * Refuses `order_mismatch` unless maker, receiver, settlement contract,
+ * tokens and sell amount all match. Refuses `slippage` if the order's
+ * worst-case fill (its minimum `takingAmount`) is further than
+ * `maxSlippageBps` from the reference, or if the inputs are unusable.
+ * Returns the worst-case price and its slippage for the response body.
+ */
 export function checkOrder(
   o: OrderSummary,
   e: Expected,

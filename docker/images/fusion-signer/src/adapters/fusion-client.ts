@@ -1,3 +1,12 @@
+/**
+ * Production `Fusion`: the 1inch Fusion API via @1inch/fusion-sdk.
+ *
+ * Quotes, builds, signs (EIP-712, with the wallet key) and submits Fusion
+ * orders for the signer's wallet, and looks up order status. The SDK
+ * objects are reduced to the plain shapes in ports.ts; in particular
+ * `build` reports the fields the guard needs from the exact order that
+ * `submit` later signs.
+ */
 import {
   FusionSDK,
   NetworkEnum,
@@ -12,15 +21,24 @@ import type {
   QuoteSummary,
 } from "../ports.js";
 
+/**
+ * Created in main.ts with the signer's wallet, and in quote-check.ts with a
+ * throwaway wallet.
+ */
 export class FusionClient implements Fusion {
   private readonly sdk: FusionSDK;
 
+  /**
+   * `privateKey` signs orders inside the SDK's connector; `provider` serves
+   * the SDK's read calls; `authKey` is the 1inch Dev Portal API key.
+   */
   constructor(
     private readonly walletAddress: string,
     privateKey: string,
     provider: JsonRpcProvider,
     authKey: string,
   ) {
+    // The minimal provider shape the SDK expects; only eth.call is used.
     const web3: Web3Like = {
       eth: { call: (tx) => provider.call(tx) },
       extend() {},
@@ -33,6 +51,7 @@ export class FusionClient implements Fusion {
     });
   }
 
+  /** SDK request parameters for swapping `amount` of `from` into `to`. */
   private params(from: string, to: string, amount: bigint) {
     return {
       fromTokenAddress: from,
@@ -42,6 +61,10 @@ export class FusionClient implements Fusion {
     };
   }
 
+  /**
+   * Quote the swap and return the recommended preset's auction amounts:
+   * start (best case) and end (worst case).
+   */
   async quote(from: string, to: string, amount: bigint) {
     const q = await this.sdk.getQuote(this.params(from, to, amount));
     const preset = q.presets[q.recommendedPreset];
@@ -52,6 +75,12 @@ export class FusionClient implements Fusion {
     } satisfies QuoteSummary;
   }
 
+  /**
+   * Build an unsigned order. The summary is read from the same order object
+   * that `submit` signs, so the guard checks exactly what gets signed.
+   * `receiver` is the SDK's `realReceiver` (where funds really go), not the
+   * order-struct receiver, which can be a settlement contract.
+   */
   async build(from: string, to: string, amount: bigint): Promise<BuiltOrder> {
     const prepared = await this.sdk.createOrder(this.params(from, to, amount));
     const o = prepared.order;
@@ -80,6 +109,7 @@ export class FusionClient implements Fusion {
     };
   }
 
+  /** Order status and fills, with the SDK's string amounts as bigints. */
   async status(hash: string): Promise<FusionStatus> {
     const r = await this.sdk.getOrderStatus(hash);
     return {

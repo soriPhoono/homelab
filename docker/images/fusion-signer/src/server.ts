@@ -1,3 +1,12 @@
+/**
+ * The HTTP edge: routing, bearer-token auth, body parsing, error mapping,
+ * secret redaction and one log line per request.
+ *
+ * Endpoints: GET /health (no auth), GET /status, POST /quote, POST /orders,
+ * GET /orders/:hash, POST /approve, POST /withdraw, POST /halt. The server is
+ * only reachable on the internal Docker network (no published port), and it
+ * is built so that no request, however malformed, can crash the process.
+ */
 import { createHash, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server } from "node:http";
 import { HttpError, redact, redactDeep } from "./errors.js";
@@ -10,18 +19,35 @@ import {
   parseWithdraw,
 } from "./validate.js";
 
+/** Inputs to `buildServer`, supplied by main.ts (or tests). */
 export interface ServerOptions {
+  /** Handles each endpoint's logic. */
   service: Service;
+  /** Bearer token callers must send; at least 32 characters. */
   token: string;
+  /** Secret values to scrub from every response body and log line. */
   secrets: string[];
+  /** Where log lines go; defaults to one JSON line on stdout. */
   log?: (line: Record<string, unknown>) => void;
 }
 
+/** Largest request body accepted (16 KiB); larger bodies get a 413. */
 const MAX_BODY = 16 * 1024;
+
+/** A Fusion order hash: 0x followed by 64 hex characters. */
 const ORDER_HASH = /^0x[0-9a-fA-F]{64}$/;
 
+/**
+ * sha256 of a string. The auth check compares digests rather than raw
+ * strings so the comparison is constant-time and length-independent.
+ */
 const digest = (s: string) => createHash("sha256").update(s).digest();
 
+/**
+ * Read the request body and parse it as JSON. An empty body parses as null
+ * (which the strict parsers then reject). Too large -> 413, invalid JSON ->
+ * 400.
+ */
 async function readJson(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
   let size = 0;
@@ -41,17 +67,28 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
   }
 }
 
+/**
+ * Create (but do not start) the HTTP server; main.ts calls `.listen()`.
+ * Throws if the token is shorter than 32 characters.
+ */
 export function buildServer(opts: ServerOptions): Server {
   if (opts.token.length < 32) {
     throw new Error("token must be at least 32 chars");
   }
+  /** Digest of the exact Authorization header a caller must send. */
   const expected = digest(`Bearer ${opts.token}`);
   const log =
     opts.log ??
     ((line: Record<string, unknown>) => console.log(JSON.stringify(line)));
+  /** True if the request's Authorization header matches (constant time). */
   const authorized = (req: IncomingMessage) =>
     timingSafeEqual(digest(req.headers.authorization ?? ""), expected);
 
+  /**
+   * Dispatch one request to the right Service method. /health is the only
+   * route that skips auth. POST bodies go through the strict parsers in
+   * validate.ts before the service sees them. Unknown routes are 404.
+   */
   const route = async (req: IncomingMessage, path: string) => {
     if (req.method === "GET" && path === "/health") {
       return { status: 200, body: { ok: true } } as Result;
@@ -82,6 +119,17 @@ export function buildServer(opts: ServerOptions): Server {
     throw new HttpError(404, "not_found", "no such endpoint");
   };
 
+  /**
+   * Per-request pipeline, built as one promise chain so nothing throws
+   * outside it:
+   * 1. Parse the URL (a bad target becomes a 400) and route the request.
+   * 2. Map errors: HttpError keeps its status and reason; anything else is
+   *    502 with a fixed "upstream error" message, and the real message goes
+   *    only to the log (redacted).
+   * 3. Redact the body, send it, write one log line.
+   * 4. Last resort: if anything above fails (e.g. a body that cannot be
+   *    serialized), answer 500 `internal` and log a fixed-shape line.
+   */
   const server = createServer((req, res) => {
     const started = Date.now();
     let path = "?";
@@ -154,6 +202,7 @@ export function buildServer(opts: ServerOptions): Server {
         });
       });
   });
+  // Drop clients that send headers or bodies too slowly.
   server.requestTimeout = 15_000;
   server.headersTimeout = 10_000;
   return server;

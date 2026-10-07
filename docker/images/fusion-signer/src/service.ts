@@ -1,3 +1,22 @@
+/**
+ * The signer's business logic: one method per API endpoint.
+ *
+ * Service ties the pieces together: it validates amounts, fetches the
+ * reference price and balances, runs the guard, builds and submits Fusion
+ * orders, sends withdrawals, and records everything in the Store.
+ *
+ * Safety properties it maintains:
+ * - Idempotency: orders and withdrawals run through `once`, so a repeated
+ *   requestId returns the stored result and never trades or sends twice.
+ * - Atomic limits: work runs one at a time per lane, so a cap or spacing
+ *   check and the bookkeeping that follows cannot interleave with another
+ *   request.
+ * - Crash safety: an intent marker is stored before each submit or send, so
+ *   a retry after a crash finds it instead of acting again.
+ * - Timeouts: every upstream call is bounded, so a hung 1inch or RPC call
+ *   cannot block the queue forever.
+ * - No secrets in results: error text is redacted before it is stored.
+ */
 import { createHash } from "node:crypto";
 import type { Config } from "./config.js";
 import { HttpError, redact } from "./errors.js";
@@ -26,29 +45,52 @@ import type {
 } from "./validate.js";
 import { VERSION } from "./version.js";
 
+/**
+ * What every endpoint returns: the HTTP status and JSON body the server
+ * sends. Refusals from `once` come back as a Result (e.g. status 403), not
+ * as a thrown error, because they are stored for replay.
+ */
 export interface Result {
   status: number;
   body: Record<string, unknown>;
 }
 
+/**
+ * Everything Service needs, injected so tests can supply fakes.
+ * main.ts builds the production set.
+ */
 export interface Deps {
   config: Config;
   store: Store;
+  /** The wallet on Base (ethers adapter in production). */
   chain: Chain;
+  /** The 1inch Fusion API (SDK adapter in production). */
   fusion: Fusion;
+  /** Coinbase reference price lookup. */
   reference: Reference;
+  /** Clock in epoch ms; injected so tests control time. */
   now: () => number;
   /** Per upstream call; default 30 000. */
   upstreamTimeoutMs?: number;
 }
 
+/**
+ * sha256 of a parsed request. Stored with each requestId so a retry with a
+ * different body is detected (409). Parsers build objects in a fixed key
+ * order, so equal requests always hash equally.
+ */
 export const bodyHash = (value: unknown): string =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
+/** Wrap an upstream failure as 502 `upstream`, prefixed with what failed. */
 const upstream = (err: unknown, what: string): HttpError =>
   new HttpError(502, "upstream", `${what}: ${(err as Error).message}`);
 
-/** Rejects with a plain Error if `p` has not settled within `ms`. */
+/**
+ * Rejects with a plain Error if `p` has not settled within `ms`.
+ * The underlying call is not cancelled; its late result is simply ignored.
+ * Inside `once` the timeout error becomes a stored, redacted 502.
+ */
 export async function withTimeout<T>(
   p: Promise<T>,
   ms: number,
@@ -65,11 +107,18 @@ export async function withTimeout<T>(
   }
 }
 
-/** Orders and on-chain sends use separate queues so neither blocks the other. */
+/**
+ * Orders and on-chain sends use separate queues so neither blocks the other.
+ * "orders" carries Fusion orders; "chain" carries withdrawals and approvals,
+ * so the emergency withdraw never waits behind a slow 1inch call.
+ */
 type Lane = "orders" | "chain";
 
+/** One instance per process, created in main.ts and used by server.ts. */
 export class Service {
+  /** requestIds currently running; a concurrent retry gets a 409. */
   private readonly inFlight = new Set<string>();
+  /** Tail of each lane's queue; new work is chained after it. */
   private readonly queues: Record<Lane, Promise<unknown>> = {
     orders: Promise.resolve(),
     chain: Promise.resolve(),
@@ -77,22 +126,37 @@ export class Service {
 
   constructor(private readonly d: Deps) {}
 
+  /** The secret values to scrub from any stored or returned error text. */
   private secrets(): string[] {
     return Object.values(this.d.config.secrets);
   }
 
+  /** Bound an upstream call by the configured timeout (default 30 s). */
   private up<T>(p: Promise<T>, what: string): Promise<T> {
     return withTimeout(p, this.d.upstreamTimeoutMs ?? 30_000, what);
   }
 
-  /** Runs `fn` after everything already queued on `lane`. */
+  /**
+   * Runs `fn` after everything already queued on `lane`. A failed `fn`
+   * does not break the chain for later work.
+   */
   private serial<T>(lane: Lane, fn: () => Promise<T>): Promise<T> {
     const turn = this.queues[lane].then(fn);
     this.queues[lane] = turn.catch(() => undefined);
     return turn;
   }
 
-  /** Runs `run` once per requestId and stores the outcome. */
+  /**
+   * Runs `run` once per requestId and stores the outcome.
+   *
+   * - Same requestId and body as before: return the stored result.
+   * - Same requestId, different body: 409 `request_id_conflict`.
+   * - Same requestId still running: 409 `request_in_progress`.
+   * - Otherwise run it on `lane`. Refusals (HttpError) and unexpected
+   *   errors (as 502 `upstream`) are stored too, with secrets redacted, so
+   *   a replay is identical. Only 400s are not stored, so a malformed
+   *   request does not use up its id.
+   */
   protected async once(
     lane: Lane,
     requestId: string,
@@ -139,12 +203,14 @@ export class Service {
     }
   }
 
+  /** Which token is sold and which is bought: a buy sells USDC. */
   protected tokensFor(side: Side, asset: Asset) {
     return side === "buy"
       ? { sell: TOKENS.USDC, buy: TOKENS[asset] }
       : { sell: TOKENS[asset], buy: TOKENS.USDC };
   }
 
+  /** Decimal string -> raw units; too many decimals is a 400. */
   protected parseAmount(amount: string, decimals: number): bigint {
     try {
       return toRaw(amount, decimals);
@@ -157,6 +223,11 @@ export class Service {
     }
   }
 
+  /**
+   * Raw amount of the token being sold. For `{ fraction }` it reads the
+   * current balance and takes that share (rounded to 1e-6), so a full
+   * sell of an empty balance comes out as zero.
+   */
   protected async sellAmount(req: QuoteRequest, sell: Token) {
     const a = req.amount;
     if ("usdc" in a) return this.parseAmount(a.usdc, TOKENS.USDC.decimals);
@@ -165,6 +236,21 @@ export class Service {
     return (balance * BigInt(Math.round(a.fraction * 1e6))) / 1_000_000n;
   }
 
+  /**
+   * `POST /orders`: check, build, sign and submit one Fusion order.
+   *
+   * Order of operations (each step can refuse):
+   * 1. Refuse if halted (423), or if the request asks for looser slippage
+   *    than the config allows (400).
+   * 2. Inside `once` on the orders lane: reference price, sell amount and
+   *    notional; `checkLimits` (caps, spacing, balance, allowance).
+   * 3. Build the order with 1inch and `checkOrder` it (maker, receiver,
+   *    settlement, tokens, amount, worst-case slippage).
+   * 4. Dry run stops here and returns what would have been submitted.
+   * 5. Recheck halt, record the notional and order time, store a
+   *    "submitting" marker, then submit. A failed submit returns a 502 that
+   *    still carries `orderHash`, so the caller can look the order up.
+   */
   async placeOrder(req: OrderRequest): Promise<Result> {
     const { store, chain, fusion, config } = this.d;
     if (store.isHalted()) {
@@ -262,6 +348,11 @@ export class Service {
     });
   }
 
+  /**
+   * `GET /status`: wallet address, balances (USDC, BTC, ETH and native
+   * GAS), allowances to the 1inch contract, active limits, today's
+   * submitted USD, dry-run and halt flags, withdraw address and version.
+   */
   async status(): Promise<Result> {
     const { chain, config, store } = this.d;
     const balances: Record<string, string> = {};
@@ -289,6 +380,11 @@ export class Service {
     };
   }
 
+  /**
+   * `POST /quote`: price a swap without signing anything. Returns the
+   * auction's start and end amounts, the implied prices and the worst-case
+   * slippage against the Coinbase reference.
+   */
   async quote(req: QuoteRequest): Promise<Result> {
     const { sell, buy } = this.tokensFor(req.side, req.asset);
     const refPrice = await this.d.reference(req.asset);
@@ -321,6 +417,12 @@ export class Service {
     };
   }
 
+  /**
+   * `GET /orders/:hash`: an order's status plus what actually filled.
+   * Totals and the effective price are summed from the fills, so partial
+   * fills and expired-after-partial orders report what really happened;
+   * `effectivePrice` is null until something fills.
+   */
   async orderStatus(hash: string): Promise<Result> {
     const s = await this.d.fusion.status(hash);
     const maker = tokenByAddress(s.makerAsset);
@@ -359,6 +461,10 @@ export class Service {
     };
   }
 
+  /**
+   * `POST /approve`: let the 1inch contract spend one token. Refused while
+   * halted; otherwise runs on the chain lane (it sends a transaction).
+   */
   async approve(req: ApproveRequest): Promise<Result> {
     if (this.d.store.isHalted()) {
       throw new HttpError(423, "halted", "signer is halted");
@@ -366,6 +472,11 @@ export class Service {
     return this.serial("chain", () => this.approveNow(req));
   }
 
+  /**
+   * The approval itself. The amount is capped at MAX_DAILY_USD worth of
+   * the token (exact integer division, never rounded up), not unlimited,
+   * which bounds what a compromised 1inch contract could take.
+   */
   private async approveNow(req: ApproveRequest): Promise<Result> {
     const { config, chain } = this.d;
     const token = TOKENS[req.asset];
@@ -405,6 +516,16 @@ export class Service {
     return { status: 200, body: { ...detail, status: "sent", txHash } };
   }
 
+  /**
+   * `POST /withdraw`: send funds to the configured WITHDRAW_ADDRESS (the
+   * request cannot name another). Allowed while halted, so "halt, then
+   * withdraw everything" is the emergency exit.
+   *
+   * Checks: positive amount within balance; a partial native-ETH withdraw
+   * must leave ETH_GAS_RESERVE and the transfer's gas; withdrawing all
+   * native ETH sends the balance minus the gas; ERC-20 withdrawals need
+   * enough ETH for gas. A "sending" marker is stored before the transfer.
+   */
   async withdraw(req: WithdrawRequest): Promise<Result> {
     const hash = bodyHash(req);
     return this.once("chain", req.requestId, hash, async () => {
@@ -479,6 +600,10 @@ export class Service {
     });
   }
 
+  /**
+   * `POST /halt`: stop all trading by writing the halt file. There is no
+   * endpoint to resume; the user deletes /data/halt on the VPS.
+   */
   async halt(req: HaltRequest): Promise<Result> {
     this.d.store.halt(req.reason);
     return { status: 200, body: { halted: true } };
