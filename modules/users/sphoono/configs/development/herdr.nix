@@ -1,6 +1,6 @@
 { inputs, ... }:
 {
-  den.aspects.sphoono.development = {
+  den.aspects.sphoono.development.herdr = {
     homeManager =
       {
         config,
