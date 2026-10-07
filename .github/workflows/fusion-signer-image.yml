@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - feat/fusion-signer
     paths:
       - docker/images/fusion-signer/**
       - .github/workflows/fusion-signer-image.yml
@@ -25,7 +24,12 @@ jobs:
         id: version
         run: |
           pkg=docker/images/fusion-signer/package.json
-          echo "tag=$(jq -r .version "$pkg")" >> "$GITHUB_OUTPUT"
+          version=$(jq -er .version "$pkg")
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "bad version: $version" >&2
+            exit 1
+          }
+          echo "tag=$version" >> "$GITHUB_OUTPUT"
       - name: "Setting up Buildx..."
         uses: docker/setup-buildx-action@v3
       - name: "Logging in to GHCR..."
