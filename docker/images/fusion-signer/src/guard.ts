@@ -22,13 +22,17 @@ export interface PreChecks {
 /** Guard checks 4 to 8 of the spec, in order. */
 export function checkLimits(c: PreChecks): void {
   const usd = (n: number) => `$${n.toFixed(2)}`;
-  if (c.notionalUsd > c.limits.maxOrderUsd) {
+  if (!(
+    Number.isFinite(c.notionalUsd) &&
+    c.notionalUsd > 0 &&
+    c.notionalUsd <= c.limits.maxOrderUsd
+  )) {
     refuse(
       "order_cap",
       `order ${usd(c.notionalUsd)} exceeds ${usd(c.limits.maxOrderUsd)}`,
     );
   }
-  if (c.dailyUsd + c.notionalUsd > c.limits.maxDailyUsd) {
+  if (!(c.dailyUsd + c.notionalUsd <= c.limits.maxDailyUsd)) {
     refuse(
       "daily_cap",
       `today ${usd(c.dailyUsd)} + ${usd(c.notionalUsd)} exceeds ` +
@@ -36,7 +40,7 @@ export function checkLimits(c: PreChecks): void {
     );
   }
   const gapMs = c.limits.minOrderIntervalSec * 1000;
-  if (c.lastOrderAt !== undefined && c.nowMs - c.lastOrderAt < gapMs) {
+  if (!(c.lastOrderAt === undefined || c.nowMs - c.lastOrderAt >= gapMs)) {
     refuse("too_soon", "previous order for this asset was too recent");
   }
   if (c.sellAmount <= 0n || c.sellAmount > c.balance) {
@@ -87,6 +91,12 @@ export function checkOrder(
     o.makingAmount === e.sellAmount;
   if (!matches) {
     refuse("order_mismatch", "built order does not match the request");
+  }
+  if (o.takingAmount <= 0n) {
+    refuse("slippage", "taking amount must be positive");
+  }
+  if (!(Number.isFinite(e.refPrice) && e.refPrice > 0)) {
+    refuse("slippage", "reference price must be finite and positive");
   }
   const asset = TOKENS[e.asset];
   const worstPrice =

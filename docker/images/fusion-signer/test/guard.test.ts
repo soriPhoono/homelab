@@ -55,6 +55,27 @@ describe("checkLimits", () => {
     expect(r({ balance: 1n })).toBe("insufficient_balance");
     expect(r({ allowance: 1n })).toBe("insufficient_allowance");
   });
+
+  it("fails closed on non-finite notionalUsd", () => {
+    const r = (c: Partial<PreChecks>) =>
+      reason(() => checkLimits({ ...base, ...c }));
+    expect(r({ notionalUsd: NaN, sellAmount: 0n })).toBe("order_cap");
+    expect(r({ notionalUsd: -1, sellAmount: 0n })).toBe("order_cap");
+  });
+
+  it("fails closed on non-finite dailyUsd", () => {
+    const r = (c: Partial<PreChecks>) =>
+      reason(() => checkLimits({ ...base, ...c }));
+    expect(r({ dailyUsd: NaN, sellAmount: 0n })).toBe("daily_cap");
+  });
+
+  it("fails closed on non-finite nowMs", () => {
+    const r = (c: Partial<PreChecks>) =>
+      reason(() => checkLimits({ ...base, ...c }));
+    expect(r({ nowMs: NaN, lastOrderAt: base.nowMs - 60_000 })).toBe(
+      "too_soon",
+    );
+  });
 });
 
 const MAKER = "0x00000000000000000000000000000000000000A1";
@@ -129,5 +150,33 @@ describe("checkOrder", () => {
       const r = reason(() => checkOrder({ ...buyOrder, ...c }, expected));
       expect(r).toBe("order_mismatch");
     }
+  });
+
+  it("fails closed on invalid takingAmount", () => {
+    const zero = { ...buyOrder, takingAmount: 0n };
+    expect(reason(() => checkOrder(zero, expected))).toBe("slippage");
+    const negative = { ...buyOrder, takingAmount: -1n };
+    expect(reason(() => checkOrder(negative, expected))).toBe("slippage");
+  });
+
+  it("fails closed on invalid refPrice", () => {
+    const r = (e: Partial<Expected>) =>
+      reason(() => checkOrder(buyOrder, { ...expected, ...e }));
+    expect(r({ refPrice: 0 })).toBe("slippage");
+    expect(r({ refPrice: Infinity })).toBe("slippage");
+    expect(r({ refPrice: -1 })).toBe("slippage");
+    expect(r({ refPrice: NaN })).toBe("slippage");
+  });
+
+  it("passes when bought at better-than-reference price", () => {
+    // Buy at 99,000 when reference is 100,000 => negative slippage, should pass.
+    const better = {
+      ...buyOrder,
+      makingAmount: 50_000_000n, // Match expected sellAmount
+      takingAmount: 50_250n, // Receiving more than worst case => better price
+    };
+    const r = checkOrder(better, expected);
+    expect(r.slippageBps).toBeLessThan(0); // negative slippage (better than reference)
+    expect(r.slippageBps).toBeLessThanOrEqual(expected.maxSlippageBps);
   });
 });
