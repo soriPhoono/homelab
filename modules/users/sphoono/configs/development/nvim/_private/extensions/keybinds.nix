@@ -41,6 +41,8 @@ _: {
           "<leader>l" = "+LSP";
           "<leader>lg" = "+Goto";
           "<leader>lw" = "+Workspace folders";
+          "<leader>m" = "+Multicursor";
+          "<leader>mc" = "+Create";
         };
       };
       cheatsheet.enable = true;
