@@ -1,4 +1,5 @@
 import { JsonRpcProvider, Wallet } from "ethers";
+import { redact } from "./errors.js";
 import { FusionClient } from "./adapters/fusion-client.js";
 import { slippageBps, unitPrice } from "./guard.js";
 import { makeReference } from "./reference.js";
@@ -35,7 +36,12 @@ for (const asset of ["BTC", "ETH"] as Asset[]) {
           ` = ${bps} bps`,
       );
     } catch (err) {
-      console.log(`${asset} $${usd}: no quote (${(err as Error).message})`);
+      console.log(
+        `${asset} $${usd}: no quote (${redact((err as Error).message, [
+          ONEINCH_API_KEY,
+          BASE_RPC_URL,
+        ])})`,
+      );
     }
   }
 }

@@ -10,7 +10,12 @@ const ERC20 = [
   "function transfer(address,uint256) returns (bool)",
 ];
 
-/** Base also charges an L1 data fee that gas estimates leave out. */
+const GAS_PRICE_ORACLE = "0x420000000000000000000000000000000000000F";
+const ORACLE_ABI = [
+  "function getL1FeeUpperBound(uint256) view returns (uint256)",
+];
+
+/** Fallback when the oracle is unreadable. Base also charges an L1 data fee that gas estimates leave out. */
 const L1_FEE_MARGIN = 10n ** 13n; // 0.00001 ETH
 
 export class EthersChain implements Chain {
@@ -72,10 +77,24 @@ export class EthersChain implements Chain {
     return tx.hash;
   }
 
+  /** Upper bound of the L1 data fee from Base's GasPriceOracle. */
+  protected async l1FeeUpperBound(txSize: bigint): Promise<bigint> {
+    const oracle = new Contract(GAS_PRICE_ORACLE, ORACLE_ABI, this.provider);
+    return (await oracle.getFunction("getL1FeeUpperBound")(txSize)) as bigint;
+  }
+
   async gasCost(kind: "erc20" | "eth"): Promise<bigint> {
     const fee = await this.provider.getFeeData();
     const price = fee.maxFeePerGas ?? fee.gasPrice ?? 0n;
     const limit = kind === "eth" ? 21_000n : 65_000n;
-    return (limit * price * 12n) / 10n + L1_FEE_MARGIN;
+    const l2 = (limit * price * 12n) / 10n;
+    let l1: bigint;
+    try {
+      const upper = await this.l1FeeUpperBound(kind === "eth" ? 120n : 180n);
+      l1 = (upper * 3n) / 2n;
+    } catch {
+      l1 = L1_FEE_MARGIN;
+    }
+    return l2 + l1;
   }
 }

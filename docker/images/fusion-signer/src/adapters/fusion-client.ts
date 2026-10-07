@@ -67,6 +67,9 @@ export class FusionClient implements Fusion {
       },
       submit: async () => {
         const info = await this.sdk.submitOrder(o, prepared.quoteId);
+        if (info.orderHash.toLowerCase() !== prepared.hash.toLowerCase()) {
+          throw new Error("1inch returned a different order hash");
+        }
         return info.orderHash;
       },
     };
