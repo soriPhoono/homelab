@@ -13,7 +13,7 @@ _: {
         hash = "sha256-P/vCcym7Qn1t3LfkCM98LVyIhgLUsPS5is/XTdW6XrU=";
       };
 
-      extracted = pkgs.appimageTools.extractType2 { inherit pname version src; };
+      extracted = pkgs.appimageTools.extract { inherit pname version src; };
 
       wrapped = pkgs.appimageTools.wrapType2 {
         inherit pname version src;
