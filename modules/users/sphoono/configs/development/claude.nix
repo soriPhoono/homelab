@@ -118,6 +118,11 @@
               n8n-validation-expert
               n8n-code-javascript
               ;
+            # Drive Orca worktrees, terminals and agents; stubs that load the
+            # version-matched guide from `orca-ide skills get`
+            orca-cli = "${inputs.orca}/skills/orca-cli";
+            orchestration = "${inputs.orca}/skills/orchestration";
+            computer-use = "${inputs.orca}/skills/computer-use";
             # Keep the Notion project wiki and tasks current
             inherit (pkgs.agent-skills.github.makenotion.claude-code-notion-plugin)
               knowledge-capture

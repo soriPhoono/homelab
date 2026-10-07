@@ -70,6 +70,10 @@
           llm-wiki = ../../assets/skills/llm-wiki;
           research-intake = ../../assets/skills/research-intake;
           claude-handoff = ../../assets/skills/claude-handoff;
+          # Orca's stubs; the guides load from `orca-ide skills get`.
+          orca-cli = "${inputs.orca}/skills/orca-cli";
+          orchestration = "${inputs.orca}/skills/orchestration";
+          computer-use = "${inputs.orca}/skills/computer-use";
         };
       in
       {

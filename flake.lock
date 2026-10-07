@@ -830,6 +830,23 @@
         "type": "github"
       }
     },
+    "orca": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791328377,
+        "narHash": "sha256-MXX24vkVNqoBKE99yR8bMPsKimD0WEhxVLLqvYcuBKk=",
+        "owner": "stablyai",
+        "repo": "orca",
+        "rev": "4bb6f2072b07c1f0664b809551f77754700570e4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "stablyai",
+        "ref": "v1.4.222",
+        "repo": "orca",
+        "type": "github"
+      }
+    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": "flake-compat_3",
@@ -898,6 +915,7 @@
         "nixpkgs": "nixpkgs",
         "nur": "nur",
         "nvf": "nvf",
+        "orca": "orca",
         "pre-commit-hooks": "pre-commit-hooks",
         "qylock": "qylock",
         "sops-nix": "sops-nix",
