@@ -12,7 +12,9 @@
   den.aspects.sphoono.development.orca.homeManager =
     { pkgs, ... }:
     let
-      pname = "orca";
+      # Upstream names the binary orca-ide so GNOME Orca keeps the plain
+      # name; wrapType2 names the binary after pname.
+      pname = "orca-ide";
       version = "1.4.222";
 
       src = pkgs.fetchurl {
@@ -24,11 +26,7 @@
 
       wrapped = pkgs.appimageTools.wrapType2 {
         inherit pname version src;
-        # Upstream names the binary orca-ide so GNOME Orca keeps the plain
-        # name; both are exposed here.
         extraInstallCommands = ''
-          ln -s $out/bin/${pname} $out/bin/orca-ide
-
           mkdir -p $out/share
           if [ -d ${extracted}/usr/share/icons ]; then
             cp -r ${extracted}/usr/share/icons $out/share/icons
