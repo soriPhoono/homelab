@@ -16,13 +16,15 @@ In scope:
 
 - `fusion-signer`: a service in the n8n Swarm stack that holds the wallet key
   and places 1inch Fusion orders on Base, behind hard limits.
-- n8n: one credential, one ledger table and a manual-only test workflow
-  ("Fusion Rail Test").
-- A wallet-generation script that writes the key straight into SOPS.
+- n8n: one credential, one ledger table and two manual-only workflows
+  ("Fusion Rail Test" and "Fusion Withdraw").
+- Withdrawals to the user's MetaMask address, which is fixed in config.
+- A wallet-generation script that writes the key straight into SOPS, and a
+  documented recovery path that does not need the signer.
 
 Out of scope until the paper strategy is proven:
 
-- The "Crypto Trend Live" workflow (section 6.4 describes it so the rail fits).
+- The "Crypto Trend Live" workflow (section 6.5 describes it so the rail fits).
 - Funding beyond the test amount.
 
 Success means the rail executes small real swaps in both directions for both
@@ -47,8 +49,14 @@ exposes the key.
   workflow's Code nodes, so any of them could read the key.
 - **Rejected, a generic "sign this" service:** signing arbitrary typed data
   allows permit-style drains.
-- **Budget:** $100, a $50 sleeve per coin, plus about $1 of ETH for approvals.
-  User choice.
+- **Budget:** $100, a $50 sleeve per coin, plus about $1 of ETH for approvals
+  and transfers. User choice.
+- **Withdrawals:** one fixed destination, the user's MetaMask address
+  (`WITHDRAW_ADDRESS`). No request can name another address, so a stolen
+  bearer token can at worst move funds to the user.
+- **Profit sweep:** after a live sell that realizes a gain, n8n sends
+  `SWEEP_SHARE` (default 50%) of that gain in USDC to the MetaMask address. The
+  rest compounds in the sleeve. User choice.
 
 ## 3. Architecture
 
@@ -114,9 +122,14 @@ Environment variables in the compose file:
   reference price.
 - `MIN_ORDER_INTERVAL_SEC`, default `60`: minimum gap between orders for one
   asset.
+- `WITHDRAW_ADDRESS`, required: the user's MetaMask address. The service
+  refuses to start if it is missing, fails the EIP-55 checksum, or equals the
+  signer's own address. It is public, so it lives in git.
+- `ETH_GAS_RESERVE`, default `0.0003`: ETH kept back by a partial ETH
+  withdrawal so the wallet can still pay for approvals and transfers.
 
-Changing a limit is a commit to the compose file and a deploy. No API changes
-limits.
+Changing a limit or the withdrawal address is a commit to the compose file and
+a deploy. No API changes them.
 
 ### 3.5 Tokens
 
@@ -156,7 +169,11 @@ addresses.
   `cancelled`), fills, amounts sold and bought, and the effective price.
 - `POST /approve` with `{ asset }` (`USDC`, `BTC` or `ETH`): approves the v4
   contract for an amount worth at most `MAX_DAILY_USD` and returns the
-  transaction hash. The only call that spends gas. Respects `DRY_RUN`.
+  transaction hash. Spends gas. Respects `DRY_RUN`.
+- `POST /withdraw` with `{ requestId, asset, amount }`: transfers to
+  `WITHDRAW_ADDRESS` and returns the transaction hash (section 5.1). `asset`
+  is `USDC`, `BTC`, `ETH` (WETH) or `GAS` (native ETH). Spends gas. Respects
+  `DRY_RUN`. Allowed while halted.
 - `POST /halt` with `{ reason }`: writes `/data/halt` and returns
   `{ halted: true }`. No endpoint removes it; the user deletes the file on the
   VPS to resume.
@@ -166,6 +183,7 @@ addresses.
 - Buy: `{ "usdc": "25.00" }`.
 - Sell: `{ "units": "0.000291" }`, or `{ "fraction": 1 }` for a share of the
   current balance (0 < f <= 1).
+- Withdraw: `{ "units": "12.50" }` or `{ "all": true }`.
 
 `requestId` is 1 to 64 characters from `[A-Za-z0-9._:-]`.
 
@@ -204,6 +222,27 @@ State lives in `/data` as JSON files written atomically: the request log
 per asset and the halt flag. The signer never retries a submit itself; a
 caller retry with the same `requestId` returns the stored result.
 
+### 5.1 Withdraw guard
+
+`POST /withdraw` runs these checks in order. The trade caps (4 to 6 above) do
+not apply, because the destination is always the user.
+
+1. Body valid, known asset, else 400.
+2. Known `requestId`: same rule as orders (stored result or 409).
+3. The destination is `WITHDRAW_ADDRESS` from config; the body has no address
+   field.
+4. The amount is greater than zero and covered by the balance, else 403
+   `insufficient_balance`. For `GAS`, `{ "units" }` must leave
+   `ETH_GAS_RESERVE`, else 403 `gas_reserve`; `{ "all": true }` sends
+   everything except the gas for this transfer.
+5. Enough ETH for the transfer's gas, else 403 `no_gas`.
+6. If `DRY_RUN`, return 200 `dry_run` with the transfer it would send.
+7. Send an ERC-20 `transfer` (or a native transfer for `GAS`), record it and
+   return the transaction hash.
+
+Halt does not block withdrawals, so "halt, then withdraw everything" is the
+emergency exit.
+
 Errors: 400 invalid body, 401 auth, 403 guard refusal with a `reason` code,
 409 request id conflict, 423 halted, 502 upstream failure (1inch, RPC or
 Coinbase). Logs are one JSON line per request with requestId, endpoint,
@@ -219,8 +258,9 @@ token never passes through workflow code or the MCP.
 
 ### 6.2 Table `crypto_trend_live_ledger`
 
-- Identity: `request_id`, `ts`, `source` (`test` or `trend`), `symbol`,
-  `side`, `dry_run`.
+- Identity: `request_id`, `ts`, `source` (`test`, `trend`, `sweep` or
+  `withdraw`), `symbol`, `side` (`buy`, `sell` or `withdraw`), `dry_run`.
+- Withdrawals: `tx_hash`, `destination`.
 - Request: `request_amount`, `max_slippage_bps`.
 - Result: `order_hash`, `status` (`dry_run`, `pending`, `filled`, `expired`,
   `refused` or `error`), `refusal_reason`.
@@ -242,11 +282,25 @@ Manual Trigger
   -> Telegram summary to Arduin
 ```
 
-GET calls retry 3 times. `POST /orders` and `POST /approve` never retry
-automatically. Refusals and errors are recorded and sent to Telegram. The
-`errorWorkflow` is the existing Error Alert workflow (`reVnFV9ksMWtWvVu`).
+GET calls retry 3 times. `POST /orders`, `POST /approve` and `POST /withdraw`
+never retry automatically. Refusals and errors are recorded and sent to
+Telegram. The `errorWorkflow` is the existing Error Alert workflow
+(`reVnFV9ksMWtWvVu`).
 
-### 6.4 Later: "Crypto Trend Live"
+### 6.4 Workflow "Fusion Withdraw"
+
+Built with the rail. Manual trigger only.
+
+```text
+Manual Trigger
+  -> Set Params {asset: USDC|BTC|ETH|GAS, amount: units or all}
+  -> GET /status (shows balances and the destination)
+  -> POST /withdraw {requestId: "withdraw-<executionId>"}
+  -> insert row (source "withdraw") into crypto_trend_live_ledger
+  -> Telegram receipt to Arduin with the Basescan link
+```
+
+### 6.5 Later: "Crypto Trend Live"
 
 Not built in this phase. A copy of the trend bot whose decision step calls the
 rail; the paper bot keeps running.
@@ -256,6 +310,12 @@ rail; the paper bot keeps running.
 - `requestId` is `<bar_date>-<symbol>-<attempt>`.
 - An expired order is retried with a fresh quote on the next hourly run. After
   3 expiries for one decision it alerts and holds.
+- Profit sweep: when a sell fills, n8n computes the realized gain in USDC
+  against the sleeve's cost basis. If the gain is positive, it withdraws
+  `SWEEP_SHARE` of it (default 0.5, a constant in the workflow) as USDC with
+  `requestId` `<sell requestId>-sweep` and records a `sweep` row that lowers
+  the sleeve's cash. Losses sweep nothing and are not topped up. Sweeps under
+  `MIN_SWEEP_USD` (default 1) are skipped so gas does not eat them.
 
 ## 7. Wallet generation
 
@@ -265,14 +325,22 @@ directly into `sops --encrypt` for
 key never appears on screen, in shell history or in an agent session. The user
 runs it.
 
+Recovery without the signer: the user holds the age key, so
+`sops --decrypt docker/stacks/n8n/secrets/fusion-signer-key` on their own
+machine gives the private key, which can be imported into MetaMask to move
+everything out. The stack README documents this as the last resort for when
+the signer or the VPS is unavailable.
+
 ## 8. Testing
 
 Each layer must pass before the next.
 
 1. Unit tests (vitest), run in CI before the image is published. $0. Every
    guard check refuses what it should; idempotency; decimals for 6, 8 and 18;
-   `order_mismatch` on a tampered order; slippage maths. 1inch, the RPC and
-   Coinbase are mocked.
+   `order_mismatch` on a tampered order; slippage maths; withdrawals always go
+   to `WITHDRAW_ADDRESS` and keep the gas reserve; start-up refuses a bad or
+   self-referencing `WITHDRAW_ADDRESS`. 1inch, the RPC and Coinbase are
+   mocked.
 2. Local dry run against the real Base RPC and 1inch API, with an empty
    throwaway wallet. $0. Quotes for $5, $25 and $50 exist and fall within 1%
    of Coinbase, which answers the Fusion minimum-size question.
@@ -283,10 +351,13 @@ Each layer must pass before the next.
    fills, fill time and cost per side against Coinbase.
 5. Live refusals: a $61 order, a reused requestId, and halt followed by a
    manual resume. $0. The limits hold in production.
+6. Withdrawal: "Fusion Withdraw" sends the leftover test USDC to MetaMask, then
+   a reused requestId returns the stored result. Cents of gas. The user
+   confirms the funds arrived in MetaMask.
 
 Exit criteria:
 
-- All four round-trip legs fill.
+- All four round-trip legs fill, and the withdrawal arrives in MetaMask.
 - Cost per side is at most 0.3% against the Coinbase reference. The backtest
   assumes 0.175%, and `bt3.py` holds at 4x costs.
 - Every layer-5 refusal behaves as specified.
@@ -308,7 +379,7 @@ Branch `feat/fusion-signer` from `origin/dev`, one logical change per commit:
 
 Swarm-CD deploys from `main`, so the signer reaches the VPS when `dev` is
 merged into `main`. The user deploys. The n8n objects (credential, table and
-test workflow) are created after deployment.
+the two manual workflows) are created after deployment.
 
 ## 10. Risks
 
@@ -324,3 +395,8 @@ test workflow) are created after deployment.
 - **Coinbase reference unavailable.** Orders are refused (`no_reference`).
 - **Wrong token contract.** Hardcoded addresses, decimals verified at start and
   a Basescan check before the first real swap.
+- **Wrong withdrawal address in config.** EIP-55 checksum check at start, and
+  the first withdrawal is the small layer-6 test that the user confirms in
+  MetaMask.
+- **Signer or VPS lost with funds inside.** Decrypt the key with the user's age
+  key and import it into MetaMask (section 7).
