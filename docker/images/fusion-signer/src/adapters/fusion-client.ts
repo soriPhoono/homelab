@@ -60,6 +60,7 @@ export class FusionClient implements Fusion {
         hash: prepared.hash,
         maker: o.maker.toString(),
         receiver: o.realReceiver.toString(),
+        settlement: o.settlementExtensionContract.toString(),
         makerAsset: o.makerAsset.toString(),
         takerAsset: o.takerAsset.toString(),
         makingAmount: o.makingAmount,
@@ -67,8 +68,12 @@ export class FusionClient implements Fusion {
       },
       submit: async () => {
         const info = await this.sdk.submitOrder(o, prepared.quoteId);
+        // Defense in depth only: this compares the hash the SDK computed
+        // locally for the order it built, not an independent source.
         if (info.orderHash.toLowerCase() !== prepared.hash.toLowerCase()) {
-          throw new Error("1inch returned a different order hash");
+          throw new Error(
+            "SDK order hash differs from the locally computed hash",
+          );
         }
         return info.orderHash;
       },

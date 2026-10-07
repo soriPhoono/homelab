@@ -125,13 +125,89 @@ describe("placeOrder", () => {
     expect(fusion.submits).toBe(0);
   });
 
+  it("refuses an order bound to another settlement contract", async () => {
+    const { service, fusion } = makeService();
+    fusion.settlement = "0x00000000000000000000000000000000000000B2";
+    const r = await service.placeOrder(buy("o1"));
+    expect(r.body.reason).toBe("order_mismatch");
+    expect(fusion.submits).toBe(0);
+  });
+
+  it("rechecks the halt flag after the build, inside the queue", async () => {
+    const { service, fusion, deps } = makeService();
+    let open!: () => void;
+    fusion.gate = new Promise((r) => (open = r));
+    const pending = service.placeOrder(buy("h1"));
+    deps.store.halt("during build");
+    open();
+    const r = await pending;
+    expect([r.status, r.body.reason]).toEqual([423, "halted"]);
+    expect(fusion.submits).toBe(0);
+    expect(deps.store.dailyUsd()).toBe(0);
+    expect(deps.store.lastOrderAt("BTC")).toBeUndefined();
+  });
+
+  it("turns a hung upstream into a stored 502", async () => {
+    const { service, fusion } = makeService({ upstreamTimeoutMs: 50 });
+    fusion.hang = true;
+    const r = await service.placeOrder(buy("t1"));
+    expect([r.status, r.body.reason]).toEqual([502, "upstream"]);
+    expect(r.body.error).toBe("build order timed out");
+    expect(fusion.submits).toBe(0);
+    expect(await service.placeOrder(buy("t1"))).toEqual(r);
+  });
+
+  it("carries the order hash in every outcome that built one", async () => {
+    const hash = "0x" + "cd".repeat(32);
+    const dry = makeService({ config: testConfig({ dryRun: true }) });
+    expect((await dry.service.placeOrder(buy("d1"))).body.orderHash).toBe(hash);
+    const live = makeService();
+    const r = await live.service.placeOrder(buy("p1"));
+    expect(r.body.orderHash).toBe(hash);
+    const marker = live.deps.store.getRequest("p1");
+    expect(marker?.body).toMatchObject({ orderHash: hash });
+  });
+
+  it("keeps the intent marker's order hash while submitting", async () => {
+    const { service, fusion, deps } = makeService();
+    const submit = fusion.build.bind(fusion);
+    let seen: unknown;
+    fusion.build = async (...a) => {
+      const b = await submit(...a);
+      const send = b.submit;
+      b.submit = async () => {
+        seen = deps.store.getRequest("m1")?.body;
+        return send();
+      };
+      return b;
+    };
+    await service.placeOrder(buy("m1"));
+    expect(seen).toMatchObject({
+      status: "submitting",
+      orderHash: "0x" + "cd".repeat(32),
+    });
+  });
+
+  it("refuses a slippage request looser than the configured limit", async () => {
+    const { service, fusion } = makeService();
+    const req = { ...buy("sl1"), maxSlippageBps: 101 };
+    const e = await thrown(service.placeOrder(req));
+    expect([e.status, e.reason]).toEqual([400, "invalid_body"]);
+    expect(e.message).toBe("maxSlippageBps above the configured limit");
+    expect(fusion.submits).toBe(0);
+    const ok = await service.placeOrder({ ...buy("sl2"), maxSlippageBps: 100 });
+    expect(ok.body.status).toBe("pending");
+  });
+
   it("stores a failed submit as 502 with secrets redacted", async () => {
     const { service, fusion, deps } = makeService();
     fusion.failSubmit = true;
     const r = await service.placeOrder(buy("o1"));
     expect(r.status).toBe(502);
     expect(r.body.reason).toBe("upstream");
+    expect(r.body.orderHash).toBe("0x" + "cd".repeat(32));
     expect(JSON.stringify(r.body)).not.toContain(RPC_URL);
+    expect(deps.store.getRequest("o1")?.body).toEqual(r.body);
     fusion.failSubmit = false;
     expect(await service.placeOrder(buy("o1"))).toEqual(r);
     expect(deps.store.dailyUsd()).toBe(25);

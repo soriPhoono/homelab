@@ -45,3 +45,23 @@ for (const asset of ["BTC", "ETH"] as Asset[]) {
     }
   }
 }
+
+// Build only, never submit: the throwaway wallet signs nothing and holds nothing.
+try {
+  const built = await fusion.build(
+    TOKENS.USDC.address,
+    TOKENS.ETH.address,
+    toRaw("5", 6),
+  );
+  console.log(
+    "settlement contract (verify on Basescan before setting " +
+      `FUSION_SETTLEMENT_ADDRESS): ${built.summary.settlement}`,
+  );
+} catch (err) {
+  console.log(
+    `settlement contract: no order (${redact((err as Error).message, [
+      ONEINCH_API_KEY,
+      BASE_RPC_URL,
+    ])})`,
+  );
+}

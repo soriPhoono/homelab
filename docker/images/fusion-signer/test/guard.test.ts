@@ -8,6 +8,7 @@ import {
 import { HttpError } from "../src/errors.js";
 import type { OrderSummary } from "../src/ports.js";
 import { TOKENS } from "../src/tokens.js";
+import { SETTLEMENT } from "./fakes.js";
 
 const reason = (fn: () => unknown): string => {
   try {
@@ -91,6 +92,7 @@ const buyOrder: OrderSummary = {
   hash: "0x" + "ab".repeat(32),
   maker: MAKER,
   receiver: MAKER.toLowerCase(),
+  settlement: SETTLEMENT.toLowerCase(),
   makerAsset: TOKENS.USDC.address,
   takerAsset: TOKENS.BTC.address.toLowerCase(),
   makingAmount: 50_000_000n,
@@ -101,6 +103,7 @@ const expected: Expected = {
   side: "buy",
   asset: "BTC",
   maker: MAKER,
+  settlement: SETTLEMENT,
   sellToken: TOKENS.USDC,
   buyToken: TOKENS.BTC,
   sellAmount: 50_000_000n,
@@ -147,6 +150,7 @@ describe("checkOrder", () => {
     const other = "0x00000000000000000000000000000000000000B2";
     const cases: Partial<OrderSummary>[] = [
       { receiver: other },
+      { settlement: other },
       { maker: other },
       { makerAsset: TOKENS.ETH.address },
       { takerAsset: TOKENS.ETH.address },

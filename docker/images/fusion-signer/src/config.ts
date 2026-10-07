@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { getAddress } from "ethers";
+import { toRaw } from "./tokens.js";
 
 export interface Limits {
   maxOrderUsd: number;
@@ -19,6 +20,7 @@ export interface Config {
   dryRun: boolean;
   limits: Limits;
   withdrawAddress: string;
+  settlementAddress: string;
   ethGasReserve: string;
   dataDir: string;
   port: number;
@@ -53,23 +55,38 @@ const secret = (read: ReadSecret, name: string): string => {
   return value;
 };
 
-const withdrawAddress = (raw: string | undefined): string => {
+const checksummedAddress = (name: string, raw: string | undefined): string => {
   let checksummed: string;
   try {
     checksummed = getAddress(raw ?? "");
   } catch {
-    throw new Error("WITHDRAW_ADDRESS is not a valid address");
+    throw new Error(`${name} is not a valid address`);
   }
   if (checksummed !== raw) {
-    throw new Error("WITHDRAW_ADDRESS must be EIP-55 checksummed");
+    throw new Error(`${name} must be EIP-55 checksummed`);
   }
   return checksummed;
 };
 
+const gasReserve = (raw: string): string => {
+  positive("ETH_GAS_RESERVE", raw);
+  try {
+    if (toRaw(raw, 18) <= 0n) throw new Error("zero");
+  } catch {
+    throw new Error(
+      "ETH_GAS_RESERVE must be a positive decimal with at most 18 decimals",
+    );
+  }
+  return raw;
+};
+
 export function loadConfig(env: Env, read: ReadSecret): Config {
-  const address = withdrawAddress(env.WITHDRAW_ADDRESS);
-  const reserve = env.ETH_GAS_RESERVE ?? "0.0003";
-  positive("ETH_GAS_RESERVE", reserve);
+  const address = checksummedAddress("WITHDRAW_ADDRESS", env.WITHDRAW_ADDRESS);
+  const settlement = checksummedAddress(
+    "FUSION_SETTLEMENT_ADDRESS",
+    env.FUSION_SETTLEMENT_ADDRESS,
+  );
+  const reserve = gasReserve(env.ETH_GAS_RESERVE ?? "0.0003");
   const token = secret(read, "fusion_signer_token");
   if (token.length < 32) {
     throw new Error("secret fusion_signer_token is shorter than 32 chars");
@@ -83,6 +100,7 @@ export function loadConfig(env: Env, read: ReadSecret): Config {
       minOrderIntervalSec: num(env, "MIN_ORDER_INTERVAL_SEC", 60),
     },
     withdrawAddress: address,
+    settlementAddress: settlement,
     ethGasReserve: reserve,
     dataDir: env.DATA_DIR ?? "/data",
     port: num(env, "PORT", 8080),

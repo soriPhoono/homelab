@@ -4,6 +4,8 @@ import { assertNotSelf, loadConfig } from "../src/config.js";
 // EIP-55 test vector.
 const ADDR = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
 
+const SETTLEMENT = "0x1111111254EEB25477B68fb85Ed929f73A960582";
+
 const secrets: Record<string, string> = {
   fusion_signer_key: "0x" + "11".repeat(32) + "\n",
   fusion_signer_token: "t".repeat(64),
@@ -20,7 +22,14 @@ const reader =
   };
 
 const load = (env: Record<string, string>, values = secrets) =>
-  loadConfig({ WITHDRAW_ADDRESS: ADDR, ...env }, reader(values));
+  loadConfig(
+    {
+      WITHDRAW_ADDRESS: ADDR,
+      FUSION_SETTLEMENT_ADDRESS: SETTLEMENT,
+      ...env,
+    },
+    reader(values),
+  );
 
 describe("loadConfig", () => {
   it("applies the spec defaults", () => {
@@ -53,6 +62,17 @@ describe("loadConfig", () => {
     expect(() => load({ WITHDRAW_ADDRESS: badSum })).toThrow(/not a valid/);
   });
 
+  it("requires a checksummed settlement address", () => {
+    expect(load({}).settlementAddress).toBe(SETTLEMENT);
+    const env = { WITHDRAW_ADDRESS: ADDR };
+    expect(() => loadConfig(env, reader(secrets))).toThrow(
+      /FUSION_SETTLEMENT_ADDRESS is not a valid/,
+    );
+    expect(() =>
+      load({ FUSION_SETTLEMENT_ADDRESS: SETTLEMENT.toLowerCase() }),
+    ).toThrow(/FUSION_SETTLEMENT_ADDRESS must be EIP-55 checksummed/);
+  });
+
   it("names a missing or empty secret without leaking values", () => {
     const missing = { ...secrets };
     delete missing.oneinch_api_key;
@@ -75,6 +95,10 @@ describe("loadConfig", () => {
     expect(() => load({ MAX_ORDER_USD: "0" })).toThrow(/MAX_ORDER_USD/);
     expect(() => load({ MAX_DAILY_USD: "abc" })).toThrow(/MAX_DAILY_USD/);
     expect(() => load({ ETH_GAS_RESERVE: "-1" })).toThrow(/ETH_GAS_RESERVE/);
+    expect(() => load({ ETH_GAS_RESERVE: "1e-3" })).toThrow(/ETH_GAS_RESERVE/);
+    expect(() => load({ ETH_GAS_RESERVE: "0.0000000000000000001" })).toThrow(
+      /ETH_GAS_RESERVE/,
+    );
   });
 
   it("refuses a withdraw address equal to the signer", () => {

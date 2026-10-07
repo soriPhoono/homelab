@@ -70,6 +70,7 @@ export interface Expected {
   side: Side;
   asset: Asset;
   maker: string;
+  settlement: string;
   sellToken: Token;
   buyToken: Token;
   sellAmount: bigint;
@@ -86,6 +87,7 @@ export function checkOrder(
   const matches =
     same(o.maker, e.maker) &&
     same(o.receiver, e.maker) &&
+    same(o.settlement, e.settlement) &&
     same(o.makerAsset, e.sellToken.address) &&
     same(o.takerAsset, e.buyToken.address) &&
     o.makingAmount === e.sellAmount;

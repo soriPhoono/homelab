@@ -17,6 +17,8 @@ export interface OrderSummary {
   maker: string;
   /** Where the funds actually go (the SDK's realReceiver). */
   receiver: string;
+  /** The 1inch settlement extension contract the order is bound to. */
+  settlement: string;
   makerAsset: string;
   takerAsset: string;
   makingAmount: bigint;

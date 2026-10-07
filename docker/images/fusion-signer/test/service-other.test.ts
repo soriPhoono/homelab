@@ -200,6 +200,26 @@ describe("withdraw", () => {
     expect(chain.sent).toEqual([]);
   });
 
+  it("is not blocked by an order that is still building", async () => {
+    const { service, fusion } = makeService();
+    let open!: () => void;
+    fusion.gate = new Promise((r) => (open = r));
+    const order = service.placeOrder({
+      requestId: "q1",
+      side: "buy",
+      asset: "BTC",
+      amount: { usdc: "25" },
+    });
+    const r = await service.withdraw({
+      requestId: "wq",
+      asset: "USDC",
+      amount: { units: "10" },
+    });
+    expect(r.body.status).toBe("sent");
+    open();
+    expect((await order).body.status).toBe("pending");
+  });
+
   it("stores a failed send so a retry never sends twice", async () => {
     const { service, chain } = makeService();
     chain.failSend = true;

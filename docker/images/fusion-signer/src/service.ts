@@ -38,6 +38,8 @@ export interface Deps {
   fusion: Fusion;
   reference: Reference;
   now: () => number;
+  /** Per upstream call; default 30 000. */
+  upstreamTimeoutMs?: number;
 }
 
 export const bodyHash = (value: unknown): string =>
@@ -46,9 +48,32 @@ export const bodyHash = (value: unknown): string =>
 const upstream = (err: unknown, what: string): HttpError =>
   new HttpError(502, "upstream", `${what}: ${(err as Error).message}`);
 
+/** Rejects with a plain Error if `p` has not settled within `ms`. */
+export async function withTimeout<T>(
+  p: Promise<T>,
+  ms: number,
+  what: string,
+): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${what} timed out`)), ms);
+  });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Orders and on-chain sends use separate queues so neither blocks the other. */
+type Lane = "orders" | "chain";
+
 export class Service {
   private readonly inFlight = new Set<string>();
-  private queue: Promise<unknown> = Promise.resolve();
+  private readonly queues: Record<Lane, Promise<unknown>> = {
+    orders: Promise.resolve(),
+    chain: Promise.resolve(),
+  };
 
   constructor(private readonly d: Deps) {}
 
@@ -56,8 +81,20 @@ export class Service {
     return Object.values(this.d.config.secrets);
   }
 
+  private up<T>(p: Promise<T>, what: string): Promise<T> {
+    return withTimeout(p, this.d.upstreamTimeoutMs ?? 30_000, what);
+  }
+
+  /** Runs `fn` after everything already queued on `lane`. */
+  private serial<T>(lane: Lane, fn: () => Promise<T>): Promise<T> {
+    const turn = this.queues[lane].then(fn);
+    this.queues[lane] = turn.catch(() => undefined);
+    return turn;
+  }
+
   /** Runs `run` once per requestId and stores the outcome. */
   protected async once(
+    lane: Lane,
     requestId: string,
     hash: string,
     run: () => Promise<Result>,
@@ -82,7 +119,7 @@ export class Service {
     }
     this.inFlight.add(requestId);
     try {
-      const turn = this.queue.then(async (): Promise<Result> => {
+      const result = await this.serial(lane, async (): Promise<Result> => {
         try {
           return await run();
         } catch (err) {
@@ -95,8 +132,6 @@ export class Service {
           return { status: e.status, body: { error, reason: e.reason } };
         }
       });
-      this.queue = turn.catch(() => undefined);
-      const result = await turn;
       this.d.store.putRequest(requestId, { bodyHash: hash, ...result });
       return result;
     } finally {
@@ -135,10 +170,23 @@ export class Service {
     if (store.isHalted()) {
       throw new HttpError(423, "halted", "signer is halted");
     }
+    if (
+      req.maxSlippageBps !== undefined &&
+      req.maxSlippageBps > config.limits.defaultMaxSlippageBps
+    ) {
+      throw new HttpError(
+        400,
+        "invalid_body",
+        "maxSlippageBps above the configured limit",
+      );
+    }
     const hash = bodyHash(req);
-    return this.once(req.requestId, hash, async () => {
+    return this.once("orders", req.requestId, hash, async () => {
       const { sell, buy } = this.tokensFor(req.side, req.asset);
-      const refPrice = await this.d.reference(req.asset);
+      const refPrice = await this.up(
+        this.d.reference(req.asset),
+        "reference price",
+      );
       const sellAmount = await this.sellAmount(req, sell);
       const sellUnits = Number(fromRaw(sellAmount, sell.decimals));
       const notionalUsd = sellUnits * (req.side === "buy" ? 1 : refPrice);
@@ -149,14 +197,21 @@ export class Service {
         lastOrderAt: store.lastOrderAt(req.asset),
         nowMs: this.d.now(),
         sellAmount,
-        balance: await chain.balance(sell.address),
-        allowance: await chain.allowance(sell.address, LOP_V4),
+        balance: await this.up(chain.balance(sell.address), "balance"),
+        allowance: await this.up(
+          chain.allowance(sell.address, LOP_V4),
+          "allowance",
+        ),
       });
-      const built = await fusion.build(sell.address, buy.address, sellAmount);
+      const built = await this.up(
+        fusion.build(sell.address, buy.address, sellAmount),
+        "build order",
+      );
       const check = checkOrder(built.summary, {
         side: req.side,
         asset: req.asset,
         maker: chain.address,
+        settlement: config.settlementAddress,
         sellToken: sell,
         buyToken: buy,
         sellAmount,
@@ -166,6 +221,7 @@ export class Service {
       });
       const detail = {
         requestId: req.requestId,
+        orderHash: built.summary.hash,
         side: req.side,
         asset: req.asset,
         sellToken: sell.symbol,
@@ -180,6 +236,10 @@ export class Service {
       if (config.dryRun) {
         return { status: 200, body: { ...detail, status: "dry_run" } };
       }
+      // A halt may land while this order waited in the queue or upstream.
+      if (store.isHalted()) {
+        throw new HttpError(423, "halted", "signer is halted");
+      }
       store.addDailyUsd(notionalUsd);
       store.setLastOrderAt(req.asset, this.d.now());
       // Intent marker: a retry after a crash finds it and does not resubmit.
@@ -188,16 +248,17 @@ export class Service {
         status: 202,
         body: { ...detail, status: "submitting" },
       });
-      let orderHash: string;
       try {
-        orderHash = await built.submit();
+        await this.up(built.submit(), "submit");
       } catch (err) {
-        throw upstream(err, "submit failed");
+        // Returned, not thrown, so the stored 502 still carries orderHash.
+        const error = redact(
+          upstream(err, "submit failed").message,
+          this.secrets(),
+        );
+        return { status: 502, body: { ...detail, error, reason: "upstream" } };
       }
-      return {
-        status: 200,
-        body: { ...detail, orderHash, status: "pending" },
-      };
+      return { status: 200, body: { ...detail, status: "pending" } };
     });
   }
 
@@ -299,17 +360,25 @@ export class Service {
   }
 
   async approve(req: ApproveRequest): Promise<Result> {
-    const { config, chain } = this.d;
     if (this.d.store.isHalted()) {
       throw new HttpError(423, "halted", "signer is halted");
     }
+    return this.serial("chain", () => this.approveNow(req));
+  }
+
+  private async approveNow(req: ApproveRequest): Promise<Result> {
+    const { config, chain } = this.d;
     const token = TOKENS[req.asset];
     const capMicro = BigInt(Math.round(config.limits.maxDailyUsd * 1e6));
     let amount = capMicro;
     if (req.asset !== "USDC") {
-      const priceMicro = BigInt(
-        Math.round((await this.d.reference(req.asset)) * 1e6),
-      );
+      let price: number;
+      try {
+        price = await this.up(this.d.reference(req.asset), "reference price");
+      } catch (err) {
+        throw upstream(err, "approve failed");
+      }
+      const priceMicro = BigInt(Math.round(price * 1e6));
       if (priceMicro <= 0n) {
         throw new HttpError(403, "no_reference", "reference price unusable");
       }
@@ -326,7 +395,10 @@ export class Service {
     }
     let txHash: string;
     try {
-      txHash = await chain.approve(token.address, LOP_V4, amount);
+      txHash = await this.up(
+        chain.approve(token.address, LOP_V4, amount),
+        "approve",
+      );
     } catch (err) {
       throw upstream(err, "approve failed");
     }
@@ -335,16 +407,19 @@ export class Service {
 
   async withdraw(req: WithdrawRequest): Promise<Result> {
     const hash = bodyHash(req);
-    return this.once(req.requestId, hash, async () => {
+    return this.once("chain", req.requestId, hash, async () => {
       const { chain, config } = this.d;
       const to = config.withdrawAddress;
       const isGas = req.asset === "GAS";
       const token = isGas ? undefined : TOKENS[req.asset as TokenKey];
       const decimals = token?.decimals ?? 18;
       const balance = token
-        ? await chain.balance(token.address)
-        : await chain.ethBalance();
-      const gas = await chain.gasCost(isGas ? "eth" : "erc20");
+        ? await this.up(chain.balance(token.address), "balance")
+        : await this.up(chain.ethBalance(), "ETH balance");
+      const gas = await this.up(
+        chain.gasCost(isGas ? "eth" : "erc20"),
+        "gas estimate",
+      );
       const all = "all" in req.amount;
       const refuse = (reason: string, message: string): never => {
         throw new HttpError(403, reason, message);
@@ -370,7 +445,7 @@ export class Service {
           refuse("no_gas", "not enough ETH left to pay for the transfer");
         }
       }
-      if (!isGas && (await chain.ethBalance()) < gas) {
+      if (!isGas && (await this.up(chain.ethBalance(), "ETH balance")) < gas) {
         refuse("no_gas", "not enough ETH to pay for the transfer");
       }
       const detail = {
@@ -391,9 +466,12 @@ export class Service {
       });
       let txHash: string;
       try {
-        txHash = token
-          ? await chain.transfer(token.address, to, amount)
-          : await chain.sendEth(to, amount);
+        txHash = await this.up(
+          token
+            ? chain.transfer(token.address, to, amount)
+            : chain.sendEth(to, amount),
+          "withdraw",
+        );
       } catch (err) {
         throw upstream(err, "withdraw failed");
       }

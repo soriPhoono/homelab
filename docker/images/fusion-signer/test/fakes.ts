@@ -15,6 +15,8 @@ import { LOP_V4, TOKENS } from "../src/tokens.js";
 
 export const SIGNER = "0x00000000000000000000000000000000000000A1";
 export const METAMASK = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+/** A checksummed address standing in for the 1inch settlement contract. */
+export const SETTLEMENT = "0x1111111254EEB25477B68fb85Ed929f73A960582";
 export const RPC_URL = "https://base.example/v2/rpc-secret-key";
 
 export class FakeChain implements Chain {
@@ -64,6 +66,8 @@ export class FakeFusion implements Fusion {
   price = 100_000;
   bps = 20;
   receiver: string | undefined;
+  settlement: string | undefined;
+  hang = false;
   submits = 0;
   failSubmit = false;
   gate: Promise<void> | undefined;
@@ -86,12 +90,14 @@ export class FakeFusion implements Fusion {
   }
 
   async build(from: string, to: string, amount: bigint): Promise<BuiltOrder> {
+    if (this.hang) await new Promise<never>(() => undefined);
     if (this.gate) await this.gate;
     return {
       summary: {
         hash: "0x" + "cd".repeat(32),
         maker: SIGNER,
         receiver: this.receiver ?? SIGNER,
+        settlement: this.settlement ?? SETTLEMENT,
         makerAsset: from,
         takerAsset: to,
         makingAmount: amount,
@@ -119,6 +125,7 @@ export const testConfig = (over: Partial<Config> = {}): Config => ({
     minOrderIntervalSec: 60,
   },
   withdrawAddress: METAMASK,
+  settlementAddress: SETTLEMENT,
   ethGasReserve: "0.0003",
   dataDir: mkdtempSync(join(tmpdir(), "fusion-signer-")),
   port: 0,
