@@ -13,8 +13,8 @@ else
 fi
 out=$dir/$name
 sops=${SOPS:-sops}
-# SOPS_AGE_RECIPIENTS overrides the committed recipients; it exists for tests.
-recipients=${SOPS_AGE_RECIPIENTS:-age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn,age1t405nrcjuavjg3u3qk65q2vnwkdm9zrc5j04xdk5kwl39kcucp5sscq8z6}
+# FUSION_SEAL_RECIPIENTS overrides the committed recipients; it exists for tests.
+recipients=${FUSION_SEAL_RECIPIENTS:-age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn,age1t405nrcjuavjg3u3qk65q2vnwkdm9zrc5j04xdk5kwl39kcucp5sscq8z6}
 
 if [[ -n ${XDG_RUNTIME_DIR:-} && -d $XDG_RUNTIME_DIR ]]; then
   ram=$XDG_RUNTIME_DIR
