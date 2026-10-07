@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { redact } from "../src/errors.js";
+import { redact, redactDeep } from "../src/errors.js";
 import { TOKENS, fromRaw, toRaw, tokenByAddress } from "../src/tokens.js";
 
 describe("tokens", () => {
@@ -33,5 +33,18 @@ describe("redact", () => {
     expect(redact(text, [url, "short"])).toBe(
       "connect [redacted] failed; again [redacted]",
     );
+  });
+});
+
+describe("redactDeep", () => {
+  it("redacts secrets containing JSON-special characters", () => {
+    const secret = 'pa"ss\\word-123';
+    const input = [{ a: { msg: `x ${secret} y` }, n: 1, ok: true }, null];
+    const out = redactDeep(input, [secret]);
+    expect(JSON.stringify(out)).not.toContain("pa");
+    expect(out).toEqual([
+      { a: { msg: "x [redacted] y" }, n: 1, ok: true },
+      null,
+    ]);
   });
 });

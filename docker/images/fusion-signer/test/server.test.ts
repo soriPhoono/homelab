@@ -1,4 +1,4 @@
-import type { AddressInfo } from "node:net";
+import net, { type AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HttpError } from "../src/errors.js";
 import { buildServer } from "../src/server.js";
@@ -22,7 +22,8 @@ const service = {
 };
 
 const lines: Record<string, unknown>[] = [];
-let close: () => void = () => {};
+let close: () => Promise<void> = async () => {};
+let port = 0;
 
 async function start() {
   const server = buildServer({
@@ -32,8 +33,12 @@ async function start() {
     log: (l) => lines.push(l),
   });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
-  close = () => server.close();
-  const { port } = server.address() as AddressInfo;
+  close = () =>
+    new Promise<void>((r) => {
+      server.close(() => r());
+      server.closeAllConnections();
+    });
+  port = (server.address() as AddressInfo).port;
   const call = (path: string, init: RequestInit = {}, auth = true) =>
     fetch(`http://127.0.0.1:${port}${path}`, {
       ...init,
@@ -42,8 +47,9 @@ async function start() {
   return call;
 }
 
-afterEach(() => {
-  close();
+afterEach(async () => {
+  await close();
+  close = async () => {};
   lines.length = 0;
   vi.clearAllMocks();
 });
@@ -94,13 +100,100 @@ describe("server", () => {
     service.status.mockRejectedValueOnce(new Error(`fetch ${RPC} failed`));
     const r = await call("/status");
     expect(r.status).toBe(502);
-    const text = await r.text();
-    expect(text).toContain("[redacted]");
-    expect(text).not.toContain(RPC);
+    expect(await r.text()).not.toContain(RPC);
+    expect(String(lines[0]?.error)).toContain("[redacted]");
     service.status.mockRejectedValueOnce(new HttpError(423, "halted"));
-    expect((await call("/status")).status).toBe(423);
+    const h = await call("/status");
+    expect(h.status).toBe(423);
+    expect(((await h.json()) as { reason: string }).reason).toBe("halted");
     expect(JSON.stringify(lines)).not.toContain(RPC);
     expect(JSON.stringify(lines)).not.toContain(TOKEN);
+  });
+
+  it("hides raw upstream errors on every route", async () => {
+    const call = await start();
+    const hash = `0x${"ab".repeat(32)}`;
+    const order = JSON.stringify({
+      requestId: "r1",
+      side: "buy",
+      asset: "BTC",
+      amount: { usdc: "5" },
+    });
+    const cases: [
+      string,
+      RequestInit,
+      { mockRejectedValueOnce: (e: Error) => unknown },
+    ][] = [
+      [
+        "/quote",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            side: "buy",
+            asset: "BTC",
+            amount: { usdc: "5" },
+          }),
+        },
+        service.quote,
+      ],
+      ["/orders", { method: "POST", body: order }, service.placeOrder],
+      [
+        "/approve",
+        { method: "POST", body: JSON.stringify({ asset: "USDC" }) },
+        service.approve,
+      ],
+      [`/orders/${hash}`, {}, service.orderStatus],
+    ];
+    for (const [path, init, mock] of cases) {
+      mock.mockRejectedValueOnce(new Error(`fetch ${RPC} failed`));
+      const r = await call(path, init);
+      const text = await r.text();
+      expect(r.status, path).toBe(502);
+      expect((JSON.parse(text) as { error: string }).error).toBe(
+        "upstream error",
+      );
+      expect(text).not.toContain(RPC);
+    }
+    expect(lines).toHaveLength(4);
+    expect(lines.every((l) => String(l.error).includes("[redacted]"))).toBe(
+      true,
+    );
+    expect(JSON.stringify(lines)).not.toContain(RPC);
+    expect(JSON.stringify(lines)).not.toContain(TOKEN);
+  });
+
+  it("survives malformed request targets", async () => {
+    const call = await start();
+    const raw = await new Promise<string>((resolve, reject) => {
+      const sock = net.connect(port, "127.0.0.1");
+      let data = "";
+      sock.on("data", (d) => (data += d));
+      sock.on("end", () => resolve(data));
+      sock.on("error", reject);
+      sock.write("GET // HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n");
+    });
+    expect(raw.split("\r\n")[0]).toContain(" 400 ");
+    expect((await call("/health", {}, false)).status).toBe(200);
+  });
+
+  it("answers 500 when a result cannot be serialized", async () => {
+    const call = await start();
+    service.status.mockResolvedValueOnce({ status: 200, body: { n: 1n } });
+    const r = await call("/status");
+    expect(r.status).toBe(500);
+    expect(((await r.json()) as { reason: string }).reason).toBe("internal");
+    expect(lines[0]).toMatchObject({ status: 500, reason: "internal" });
+    expect((await call("/health", {}, false)).status).toBe(200);
+  });
+
+  it("rejects short tokens", () => {
+    expect(() =>
+      buildServer({
+        service: service as unknown as Service,
+        token: "short",
+        secrets: [],
+      }),
+    ).toThrow("token must be at least 32 chars");
   });
 
   it("logs one line per request", async () => {

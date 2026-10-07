@@ -16,3 +16,15 @@ export function redact(text: string, secrets: string[]): string {
   }
   return out;
 }
+
+/** Copy `value` with every string (recursively) passed through `redact`. */
+export function redactDeep(value: unknown, secrets: string[]): unknown {
+  if (typeof value === "string") return redact(value, secrets);
+  if (Array.isArray(value)) return value.map((v) => redactDeep(v, secrets));
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, redactDeep(v, secrets)]),
+    );
+  }
+  return value;
+}

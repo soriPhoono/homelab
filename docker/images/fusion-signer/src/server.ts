@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server } from "node:http";
-import { HttpError, redact } from "./errors.js";
+import { HttpError, redact, redactDeep } from "./errors.js";
 import type { Result, Service } from "./service.js";
 import {
   parseApprove,
@@ -42,6 +42,9 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
 }
 
 export function buildServer(opts: ServerOptions): Server {
+  if (opts.token.length < 32) {
+    throw new Error("token must be at least 32 chars");
+  }
   const expected = digest(`Bearer ${opts.token}`);
   const log =
     opts.log ??
@@ -79,10 +82,26 @@ export function buildServer(opts: ServerOptions): Server {
     throw new HttpError(404, "not_found", "no such endpoint");
   };
 
-  return createServer((req, res) => {
+  const server = createServer((req, res) => {
     const started = Date.now();
-    const path = new URL(req.url ?? "/", "http://signer").pathname;
-    route(req, path)
+    let path = "?";
+    let upstreamError: string | undefined;
+    const safeLog = (line: Record<string, unknown>) => {
+      try {
+        log(line);
+      } catch {
+        // A failing logger must never take the process down.
+      }
+    };
+    Promise.resolve()
+      .then(() => {
+        try {
+          path = new URL(req.url ?? "/", "http://signer").pathname;
+        } catch {
+          throw new HttpError(400, "invalid_request", "bad request target");
+        }
+        return route(req, path);
+      })
       .catch((err: unknown): Result => {
         if (err instanceof HttpError) {
           return {
@@ -90,15 +109,21 @@ export function buildServer(opts: ServerOptions): Server {
             body: { error: err.message, reason: err.reason },
           };
         }
-        const error = (err as Error)?.message ?? "upstream error";
-        return { status: 502, body: { error, reason: "upstream" } };
+        upstreamError = (err as Error)?.message ?? "upstream error";
+        return {
+          status: 502,
+          body: { error: "upstream error", reason: "upstream" },
+        };
       })
       .then((result) => {
-        const text = redact(JSON.stringify(result.body), opts.secrets);
+        const body = redactDeep(result.body, opts.secrets) as Record<
+          string,
+          unknown
+        >;
+        const text = JSON.stringify(body);
         res.writeHead(result.status, { "content-type": "application/json" });
         res.end(text);
-        const body = result.body;
-        const line = JSON.stringify({
+        safeLog({
           ts: new Date().toISOString(),
           method: req.method,
           path,
@@ -106,10 +131,30 @@ export function buildServer(opts: ServerOptions): Server {
           reason: body.reason,
           requestId: body.requestId,
           orderHash: body.orderHash,
+          error:
+            upstreamError === undefined
+              ? undefined
+              : redact(upstreamError, opts.secrets),
           ms: Date.now() - started,
         });
-        // Redact the serialized line, never the object, so no field can leak.
-        log(JSON.parse(redact(line, opts.secrets)) as Record<string, unknown>);
+      })
+      .catch(() => {
+        if (!res.headersSent) {
+          res.writeHead(500, { "content-type": "application/json" });
+          res.end('{"error":"internal error","reason":"internal"}');
+        } else {
+          res.end();
+        }
+        safeLog({
+          ts: new Date().toISOString(),
+          method: req.method,
+          path,
+          status: 500,
+          reason: "internal",
+        });
       });
   });
+  server.requestTimeout = 15_000;
+  server.headersTimeout = 10_000;
+  return server;
 }
