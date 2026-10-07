@@ -8,5 +8,6 @@
     den.aspects.sphoono.development.claude
     den.aspects.sphoono.development.antigravity
     den.aspects.sphoono.development.orca
+    den.aspects.sphoono.development.gh
   ];
 }
