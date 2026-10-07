@@ -5,12 +5,24 @@ set -euo pipefail
 
 here=$(cd "$(dirname "$0")/.." && pwd)
 cd "$here"
+
+if [[ -n ${XDG_RUNTIME_DIR:-} && -d $XDG_RUNTIME_DIR ]]; then
+  ram=$XDG_RUNTIME_DIR
+elif [[ -d /dev/shm ]]; then
+  ram=/dev/shm
+else
+  echo "no tmpfs for plaintext (set XDG_RUNTIME_DIR)" >&2
+  exit 1
+fi
+
+addrfile=$(mktemp -p "$ram")
+trap 'rm -f "$addrfile"' EXIT
 node --input-type=module -e '
+  import fs from "node:fs";
   import { Wallet } from "ethers";
   const w = Wallet.createRandom();
+  fs.writeSync(3, w.address + "\n");
   process.stdout.write(w.privateKey);
-  process.stderr.write(w.address + "\n");
-' 2>"${XDG_RUNTIME_DIR:-/tmp}/fusion-signer-address" |
+' 3>"$addrfile" |
   "$here/scripts/seal-secret.sh" fusion-signer-key >/dev/null
-echo "wallet address: $(cat "${XDG_RUNTIME_DIR:-/tmp}/fusion-signer-address")"
-rm -f "${XDG_RUNTIME_DIR:-/tmp}/fusion-signer-address"
+echo "wallet address: $(cat "$addrfile")"
