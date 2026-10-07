@@ -37,6 +37,7 @@ const upstream = (err: unknown, what: string): HttpError =>
 
 export class Service {
   private readonly inFlight = new Set<string>();
+  private queue: Promise<unknown> = Promise.resolve();
 
   constructor(private readonly d: Deps) {}
 
@@ -70,14 +71,21 @@ export class Service {
     }
     this.inFlight.add(requestId);
     try {
-      let result: Result;
-      try {
-        result = await run();
-      } catch (err) {
-        if (!(err instanceof HttpError) || err.status === 400) throw err;
-        const error = redact(err.message, this.secrets());
-        result = { status: err.status, body: { error, reason: err.reason } };
-      }
+      const turn = this.queue.then(async (): Promise<Result> => {
+        try {
+          return await run();
+        } catch (err) {
+          const e =
+            err instanceof HttpError
+              ? err
+              : new HttpError(502, "upstream", (err as Error).message);
+          if (e.status === 400) throw e;
+          const error = redact(e.message, this.secrets());
+          return { status: e.status, body: { error, reason: e.reason } };
+        }
+      });
+      this.queue = turn.catch(() => undefined);
+      const result = await turn;
       this.d.store.putRequest(requestId, { bodyHash: hash, ...result });
       return result;
     } finally {
@@ -116,7 +124,8 @@ export class Service {
     if (store.isHalted()) {
       throw new HttpError(423, "halted", "signer is halted");
     }
-    return this.once(req.requestId, bodyHash(req), async () => {
+    const hash = bodyHash(req);
+    return this.once(req.requestId, hash, async () => {
       const { sell, buy } = this.tokensFor(req.side, req.asset);
       const refPrice = await this.d.reference(req.asset);
       const sellAmount = await this.sellAmount(req, sell);
@@ -162,6 +171,12 @@ export class Service {
       }
       store.addDailyUsd(notionalUsd);
       store.setLastOrderAt(req.asset, this.d.now());
+      // Intent marker: a retry after a crash finds it and does not resubmit.
+      store.putRequest(req.requestId, {
+        bodyHash: hash,
+        status: 202,
+        body: { ...detail, status: "submitting" },
+      });
       let orderHash: string;
       try {
         orderHash = await built.submit();

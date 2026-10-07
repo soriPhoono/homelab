@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { HttpError } from "../src/errors.js";
 import { TOKENS } from "../src/tokens.js";
@@ -124,7 +126,7 @@ describe("placeOrder", () => {
   });
 
   it("stores a failed submit as 502 with secrets redacted", async () => {
-    const { service, fusion } = makeService();
+    const { service, fusion, deps } = makeService();
     fusion.failSubmit = true;
     const r = await service.placeOrder(buy("o1"));
     expect(r.status).toBe(502);
@@ -132,6 +134,8 @@ describe("placeOrder", () => {
     expect(JSON.stringify(r.body)).not.toContain(RPC_URL);
     fusion.failSubmit = false;
     expect(await service.placeOrder(buy("o1"))).toEqual(r);
+    expect(deps.store.dailyUsd()).toBe(25);
+    expect(fusion.submits).toBe(0);
   });
 
   it("stores a missing reference price as 403", async () => {
@@ -148,5 +152,73 @@ describe("placeOrder", () => {
     const { service } = makeService();
     const e = await thrown(service.placeOrder(buy("o1", "1.0000001")));
     expect([e.status, e.reason]).toEqual([400, "invalid_body"]);
+  });
+
+  it("leaves an intent marker that a retry replays as 202", async () => {
+    const { service, fusion, deps } = makeService();
+    const real = deps.store.putRequest.bind(deps.store);
+    let calls = 0;
+    deps.store.putRequest = (id, result) => {
+      calls += 1;
+      if (calls === 2) throw new Error("disk full");
+      real(id, result);
+    };
+    await expect(service.placeOrder(buy("o1"))).rejects.toThrow("disk full");
+    expect(fusion.submits).toBe(1);
+    deps.store.putRequest = real;
+    const again = await service.placeOrder(buy("o1"));
+    expect(again.status).toBe(202);
+    expect(again.body.status).toBe("submitting");
+    expect(fusion.submits).toBe(1);
+  });
+
+  it("serializes orders so the daily cap holds under concurrency", async () => {
+    const { service, deps, chain } = makeService();
+    chain.balances.set(TOKENS.USDC.address, 1_000_000_000n);
+    chain.allowances.set(TOKENS.USDC.address, 1_000_000_000n);
+    deps.store.addDailyUsd(100);
+    const eth: OrderRequest = {
+      requestId: "b",
+      side: "buy",
+      asset: "ETH",
+      amount: { usdc: "30.00" },
+    };
+    const rs = await Promise.all([
+      service.placeOrder(buy("a", "30.00")),
+      service.placeOrder(eth),
+    ]);
+    expect(rs.map((r) => r.body.status ?? r.body.reason).sort()).toEqual([
+      "daily_cap",
+      "pending",
+    ]);
+  });
+
+  it("serializes same-asset orders so spacing holds", async () => {
+    const { service } = makeService();
+    const rs = await Promise.all([
+      service.placeOrder(buy("a")),
+      service.placeOrder(buy("b")),
+    ]);
+    expect(rs.map((r) => r.body.status ?? r.body.reason).sort()).toEqual([
+      "pending",
+      "too_soon",
+    ]);
+  });
+
+  it("records a non-HttpError as a redacted 502", async () => {
+    const config = testConfig();
+    const { service } = makeService({
+      config,
+      reference: async () => {
+        throw new Error(`fetch ${RPC_URL} failed`);
+      },
+    });
+    const r = await service.placeOrder(buy("o1"));
+    expect(r.status).toBe(502);
+    expect(r.body.reason).toBe("upstream");
+    expect(JSON.stringify(r.body)).not.toContain(RPC_URL);
+    expect(await service.placeOrder(buy("o1"))).toEqual(r);
+    const file = readFileSync(join(config.dataDir, "state.json"), "utf8");
+    expect(file).not.toContain(RPC_URL);
   });
 });
