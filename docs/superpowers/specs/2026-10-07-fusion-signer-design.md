@@ -55,7 +55,7 @@ exposes the key.
   (`WITHDRAW_ADDRESS`). No request can name another address, so a stolen
   bearer token can at worst move funds to the user.
 - **Profit sweep:** after a live sell that realizes a gain, n8n sends
-  `SWEEP_SHARE` (default 50%) of that gain in USDC to the MetaMask address. The
+  `SWEEP_SHARE` (default 20%) of that gain in USDC to the MetaMask address. The
   rest compounds in the sleeve. User choice.
 
 ## 3. Architecture
@@ -312,7 +312,7 @@ rail; the paper bot keeps running.
   3 expiries for one decision it alerts and holds.
 - Profit sweep: when a sell fills, n8n computes the realized gain in USDC
   against the sleeve's cost basis. If the gain is positive, it withdraws
-  `SWEEP_SHARE` of it (default 0.5, a constant in the workflow) as USDC with
+  `SWEEP_SHARE` of it (default 0.2, a constant in the workflow) as USDC with
   `requestId` `<sell requestId>-sweep` and records a `sweep` row that lowers
   the sleeve's cash. Losses sweep nothing and are not topped up. Sweeps under
   `MIN_SWEEP_USD` (default 1) are skipped so gas does not eat them.
