@@ -1,6 +1,9 @@
 import {
+  closeSync,
   existsSync,
+  fsyncSync,
   mkdirSync,
+  openSync,
   readFileSync,
   renameSync,
   writeFileSync,
@@ -20,6 +23,7 @@ interface State {
 }
 
 export class Store {
+  private readonly dir: string;
   private readonly file: string;
   private readonly haltFile: string;
   private state: State;
@@ -29,6 +33,7 @@ export class Store {
     private readonly now: () => number = Date.now,
   ) {
     mkdirSync(dir, { recursive: true });
+    this.dir = dir;
     this.file = join(dir, "state.json");
     this.haltFile = join(dir, "halt");
     this.state = existsSync(this.file)
@@ -38,8 +43,29 @@ export class Store {
 
   private save(): void {
     const tmp = `${this.file}.tmp`;
-    writeFileSync(tmp, JSON.stringify(this.state));
+    const fd = openSync(tmp, "w", 0o600);
+    try {
+      writeFileSync(fd, JSON.stringify(this.state));
+      fsyncSync(fd);
+    } finally {
+      closeSync(fd);
+    }
     renameSync(tmp, this.file);
+    this.syncDir();
+  }
+
+  /** Makes the rename durable; some platforms cannot fsync a directory. */
+  private syncDir(): void {
+    let fd: number | undefined;
+    try {
+      fd = openSync(this.dir, "r");
+      fsyncSync(fd);
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== "EISDIR" && code !== "EINVAL") throw err;
+    } finally {
+      if (fd !== undefined) closeSync(fd);
+    }
   }
 
   private today(): string {
