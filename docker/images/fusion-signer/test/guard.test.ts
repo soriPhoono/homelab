@@ -76,6 +76,12 @@ describe("checkLimits", () => {
       "too_soon",
     );
   });
+
+  it("allows zero notional to fall through to insufficient_balance", () => {
+    const r = (c: Partial<PreChecks>) =>
+      reason(() => checkLimits({ ...base, ...c }));
+    expect(r({ notionalUsd: 0, sellAmount: 0n })).toBe("insufficient_balance");
+  });
 });
 
 const MAKER = "0x00000000000000000000000000000000000000A1";

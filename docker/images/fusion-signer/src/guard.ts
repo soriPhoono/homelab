@@ -24,7 +24,7 @@ export function checkLimits(c: PreChecks): void {
   const usd = (n: number) => `$${n.toFixed(2)}`;
   if (!(
     Number.isFinite(c.notionalUsd) &&
-    c.notionalUsd > 0 &&
+    c.notionalUsd >= 0 &&
     c.notionalUsd <= c.limits.maxOrderUsd
   )) {
     refuse(
