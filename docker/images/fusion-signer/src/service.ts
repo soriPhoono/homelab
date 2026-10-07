@@ -300,11 +300,21 @@ export class Service {
 
   async approve(req: ApproveRequest): Promise<Result> {
     const { config, chain } = this.d;
+    if (this.d.store.isHalted()) {
+      throw new HttpError(423, "halted", "signer is halted");
+    }
     const token = TOKENS[req.asset];
-    const cap = config.limits.maxDailyUsd;
-    const units =
-      req.asset === "USDC" ? cap : cap / (await this.d.reference(req.asset));
-    const amount = toRaw(units.toFixed(token.decimals), token.decimals);
+    const capMicro = BigInt(Math.round(config.limits.maxDailyUsd * 1e6));
+    let amount = capMicro;
+    if (req.asset !== "USDC") {
+      const priceMicro = BigInt(
+        Math.round((await this.d.reference(req.asset)) * 1e6),
+      );
+      if (priceMicro <= 0n) {
+        throw new HttpError(403, "no_reference", "reference price unusable");
+      }
+      amount = (capMicro * 10n ** BigInt(token.decimals)) / priceMicro;
+    }
     const detail = {
       asset: req.asset,
       token: token.symbol,
@@ -355,6 +365,9 @@ export class Service {
         const reserve = toRaw(config.ethGasReserve, 18);
         if (balance - amount < reserve) {
           refuse("gas_reserve", "would leave less than ETH_GAS_RESERVE");
+        }
+        if (balance - amount < gas) {
+          refuse("no_gas", "not enough ETH left to pay for the transfer");
         }
       }
       if (!isGas && (await chain.ethBalance()) < gas) {

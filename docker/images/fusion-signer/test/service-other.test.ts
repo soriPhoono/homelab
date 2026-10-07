@@ -85,6 +85,27 @@ describe("approve", () => {
     ]);
   });
 
+  it("floors to the cap for non-terminating prices", async () => {
+    const exact = makeService({ reference: async () => 3 });
+    await exact.service.approve({ asset: "ETH" });
+    expect(exact.chain.sent[0]?.amount).toBe(50n * 10n ** 18n);
+    const { service, chain } = makeService({ reference: async () => 7 });
+    await service.approve({ asset: "ETH" });
+    expect(chain.sent[0]?.amount).toBe(
+      (150_000_000n * 10n ** 18n) / 7_000_000n,
+    );
+  });
+
+  it("refuses while halted", async () => {
+    const { service, chain, deps } = makeService();
+    deps.store.halt("x");
+    await expect(service.approve({ asset: "USDC" })).rejects.toMatchObject({
+      status: 423,
+      reason: "halted",
+    });
+    expect(chain.sent).toEqual([]);
+  });
+
   it("dry run approves nothing", async () => {
     const config = testConfig({ dryRun: true });
     const { service, chain } = makeService({ config });
@@ -121,6 +142,18 @@ describe("withdraw", () => {
       amount: { units: "0.0098" },
     });
     expect(r.body.reason).toBe("gas_reserve");
+  });
+
+  it("keeps gas for the transfer itself on a partial ETH withdrawal", async () => {
+    const config = testConfig({ ethGasReserve: "0.0000001" });
+    const { service, chain } = makeService({ config });
+    const r = await service.withdraw({
+      requestId: "w9",
+      asset: "GAS",
+      amount: { units: "0.0099995" },
+    });
+    expect(r.body.reason).toBe("no_gas");
+    expect(chain.sent).toEqual([]);
   });
 
   it("withdraws all ETH minus the transfer's gas", async () => {
