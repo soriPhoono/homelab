@@ -9,7 +9,7 @@
   # Orca ADE, packaged from the upstream AppImage. State lives in
   # ~/.config/orca and is deliberately not managed declaratively. Wayland is
   # enabled session-wide by NIXOS_OZONE_WL in the desktop aspect.
-  den.aspects.sphoono.development.orca.homeManager =
+  den.aspects.sphoono.development.desktop.homeManager =
     { pkgs, ... }:
     let
       # Upstream names the binary orca-ide so GNOME Orca keeps the plain
