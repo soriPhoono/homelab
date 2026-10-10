@@ -232,7 +232,10 @@ export class Service {
     const a = req.amount;
     if ("usdc" in a) return this.parseAmount(a.usdc, TOKENS.USDC.decimals);
     if ("units" in a) return this.parseAmount(a.units, sell.decimals);
-    const balance = await this.d.chain.balance(sell.address);
+    const balance = await this.up(
+      this.d.chain.balance(sell.address),
+      "balance",
+    );
     return (balance * BigInt(Math.round(a.fraction * 1e6))) / 1_000_000n;
   }
 
@@ -487,6 +490,7 @@ export class Service {
       try {
         price = await this.up(this.d.reference(req.asset), "reference price");
       } catch (err) {
+        if (err instanceof HttpError) throw err;
         throw upstream(err, "approve failed");
       }
       const priceMicro = BigInt(Math.round(price * 1e6));

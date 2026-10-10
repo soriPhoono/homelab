@@ -157,6 +157,19 @@ describe("placeOrder", () => {
     expect(await service.placeOrder(buy("t1"))).toEqual(r);
   });
 
+  it("bounds the fraction-sell balance read by the timeout", async () => {
+    const { service, chain } = makeService({ upstreamTimeoutMs: 50 });
+    chain.balance = () => new Promise<never>(() => undefined);
+    const r = await service.placeOrder({
+      requestId: "fb1",
+      side: "sell",
+      asset: "BTC",
+      amount: { fraction: 1 },
+    });
+    expect([r.status, r.body.reason]).toEqual([502, "upstream"]);
+    expect(r.body.error).toBe("balance timed out");
+  });
+
   it("carries the order hash in every outcome that built one", async () => {
     const hash = "0x" + "cd".repeat(32);
     const dry = makeService({ config: testConfig({ dryRun: true }) });

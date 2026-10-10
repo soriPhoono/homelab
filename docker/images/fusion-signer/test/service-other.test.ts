@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { HttpError } from "../src/errors.js";
 import { LOP_V4, TOKENS } from "../src/tokens.js";
 import { METAMASK, RPC_URL, SIGNER, makeService, testConfig } from "./fakes.js";
 
@@ -102,6 +103,19 @@ describe("approve", () => {
     await expect(service.approve({ asset: "USDC" })).rejects.toMatchObject({
       status: 423,
       reason: "halted",
+    });
+    expect(chain.sent).toEqual([]);
+  });
+
+  it("keeps a missing reference price as 403, not 502", async () => {
+    const { service, chain } = makeService({
+      reference: async () => {
+        throw new HttpError(403, "no_reference");
+      },
+    });
+    await expect(service.approve({ asset: "BTC" })).rejects.toMatchObject({
+      status: 403,
+      reason: "no_reference",
     });
     expect(chain.sent).toEqual([]);
   });
