@@ -38,6 +38,7 @@
       den.aspects.desktop.components.bluetooth
       # -- Desktop application runtimes --
       den.aspects.desktop.platforms.appimage
+      den.aspects.desktop.platforms.flatpak
       # -- Domains of desktop activity (scoped) --
       den.aspects.desktop.domains.gaming.desktop
       # -- Desktop applications (scoped) --
