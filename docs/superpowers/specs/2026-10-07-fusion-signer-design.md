@@ -125,6 +125,13 @@ Environment variables in the compose file:
 - `WITHDRAW_ADDRESS`, required: the user's MetaMask address. The service
   refuses to start if it is missing, fails the EIP-55 checksum, or equals the
   signer's own address. It is public, so it lives in git.
+- `FUSION_SETTLEMENT_ADDRESS`, required: the 1inch Fusion settlement
+  extension contract on Base, verified on Basescan by the user (`quote-check`
+  prints the one 1inch returns). The service refuses to start if it is
+  missing or fails the EIP-55 checksum, and refuses any order whose
+  `settlementExtensionContract` differs (`order_mismatch`), because that
+  contract governs the order's real economics. It is public, so it lives in
+  git.
 - `ETH_GAS_RESERVE`, default `0.0003`: ETH kept back by a partial ETH
   withdrawal so the wallet can still pay for approvals and transfers.
 
