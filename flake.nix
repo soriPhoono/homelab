@@ -15,6 +15,10 @@
   };
 
   inputs = {
+    artcraft = {
+      url = "github:devitek/artcraft-nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     awesome-copilot = {
       url = "github:github/awesome-copilot/d6131471b85fbb4799e64175ebc42c9309ecc28a";
       flake = false;

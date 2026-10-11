@@ -30,6 +30,26 @@
         "type": "github"
       }
     },
+    "artcraft": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791701352,
+        "narHash": "sha256-sIStfugp6y8mxLNJR86d9ATPSiKdaMrpCwTp8Zc/dO4=",
+        "owner": "devitek",
+        "repo": "artcraft-nixos",
+        "rev": "a4d4bc15fa0a395af19de091acc78106f877eaf9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "devitek",
+        "repo": "artcraft-nixos",
+        "type": "github"
+      }
+    },
     "awesome-copilot": {
       "flake": false,
       "locked": {
@@ -893,6 +913,7 @@
     },
     "root": {
       "inputs": {
+        "artcraft": "artcraft",
         "awesome-copilot": "awesome-copilot",
         "claude-plugins-official": "claude-plugins-official",
         "comin": "comin",
