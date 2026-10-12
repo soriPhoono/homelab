@@ -31,16 +31,41 @@
       url = "github:obra/superpowers/5bf4e78011075bcfc0dc295f0724994cd123ee71";
       flake = false;
     };
+    # rea-agents-6.4.0. The skill must match the MCP server version pinned
+    # below; nix-skills indexes only 3.2.1.
+    rea = {
+      url = "github:morluto/rea/a56f7bb668ab23fec8d33f7af353ac7ed2fe1895";
+      flake = false;
+    };
   };
   den.aspects.sphoono.development.claude = {
     # claude-code is unfree.
     includes = [ (den.batteries.unfree [ "claude-code" ]) ];
     homeManager =
       { config, pkgs, ... }:
+      let
+        # Node, the JDK and Ghidra exist only inside this launcher, so
+        # claude's MCP server resolves them and the user's shell does not.
+        rea-mcp = pkgs.writeShellApplication {
+          name = "rea-mcp";
+          runtimeInputs = [
+            pkgs.nodejs_22
+            pkgs.jdk21
+          ];
+          runtimeEnv = {
+            GHIDRA_INSTALL_DIR = "${pkgs.ghidra}/lib/ghidra";
+            JAVA_HOME = "${pkgs.jdk21}";
+          };
+          text = ''
+            exec npx -y rea-agents@6.4.0 mcp "$@"
+          '';
+        };
+      in
       {
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
           enable = true;
+          mcpServers.rea.command = lib.getExe rea-mcp;
           package =
             let
               agent = pkgs.claude-code;
@@ -66,12 +91,14 @@
             # Opus plans, Sonnet executes.
             model = "opusplan";
             effortLevel = "medium";
-            # Opt the mem0 plugin's hooks, MCP server and flush worker out
-            # of usage telemetry.
-            env.MEM0_TELEMETRY = "false";
-            # Subagents default to Sonnet; frontmatter or a per-call model
-            # still overrides this.
-            env.CLAUDE_CODE_SUBAGENT_MODEL = "sonnet";
+            env = {
+              # Opt the mem0 plugin's hooks, MCP server and flush worker out
+              # of usage telemetry.
+              MEM0_TELEMETRY = "false";
+              # Subagents default to Sonnet; frontmatter or a per-call model
+              # still overrides this.
+              CLAUDE_CODE_SUBAGENT_MODEL = "sonnet";
+            };
           };
           context = ''
             ${builtins.readFile ../../assets/documents/user.md}
@@ -122,11 +149,8 @@
               n8n-validation-expert
               n8n-code-javascript
               ;
-            # Drive Orca worktrees, terminals and agents; stubs that load the
-            # version-matched guide from `orca-ide skills get`
-            orca-cli = "${inputs.orca}/skills/orca-cli";
-            orchestration = "${inputs.orca}/skills/orchestration";
-            computer-use = "${inputs.orca}/skills/computer-use";
+            # Reverse engineering; drives the REA MCP tools
+            reverse-engineer-anything = "${inputs.rea}/.agents/skills/reverse-engineer-anything";
             # Keep the Notion project wiki and tasks current
             inherit (pkgs.agent-skills.github.makenotion.claude-code-notion-plugin)
               knowledge-capture

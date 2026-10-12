@@ -109,10 +109,6 @@
       url = "github:notashelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    orca = {
-      url = "github:stablyai/orca/v1.4.222";
-      flake = false;
-    };
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -123,6 +119,10 @@
         flake-utils.inputs.systems.follows = "systems";
         nixpkgs.follows = "nixpkgs";
       };
+    };
+    rea = {
+      url = "github:morluto/rea/a56f7bb668ab23fec8d33f7af353ac7ed2fe1895";
+      flake = false;
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
