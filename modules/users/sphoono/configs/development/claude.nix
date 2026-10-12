@@ -63,11 +63,15 @@
               '';
             };
           settings = {
-            model = "sonnet";
-            effortLevel = "high";
+            # Opus plans, Sonnet executes.
+            model = "opusplan";
+            effortLevel = "medium";
             # Opt the mem0 plugin's hooks, MCP server and flush worker out
             # of usage telemetry.
             env.MEM0_TELEMETRY = "false";
+            # Subagents default to Sonnet; frontmatter or a per-call model
+            # still overrides this.
+            env.CLAUDE_CODE_SUBAGENT_MODEL = "sonnet";
           };
           context = ''
             ${builtins.readFile ../../assets/documents/user.md}
