@@ -79,6 +79,10 @@
     import-tree = {
       url = "github:denful/import-tree";
     };
+    knowledge-work-plugins = {
+      url = "github:anthropics/knowledge-work-plugins/02ffa99ff00ce4d3046ccebabb8357cb39f3ab06";
+      flake = false;
+    };
     mattpocock-skills = {
       url = "github:mattpocock/skills/d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
       flake = false;

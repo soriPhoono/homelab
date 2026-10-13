@@ -681,6 +681,23 @@
         "type": "github"
       }
     },
+    "knowledge-work-plugins": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791704772,
+        "narHash": "sha256-YlxE+rV0CwMubm8RixWM+Rv2B0GcsCJ9dfforH3npbY=",
+        "owner": "anthropics",
+        "repo": "knowledge-work-plugins",
+        "rev": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "knowledge-work-plugins",
+        "rev": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
+        "type": "github"
+      }
+    },
     "mattpocock-skills": {
       "flake": false,
       "locked": {
@@ -929,6 +946,7 @@
         "herdr-nvim": "herdr-nvim",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
+        "knowledge-work-plugins": "knowledge-work-plugins",
         "mattpocock-skills": "mattpocock-skills",
         "mem0": "mem0",
         "nix-index-database": "nix-index-database",

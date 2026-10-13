@@ -37,6 +37,13 @@
       url = "github:morluto/rea/a56f7bb668ab23fec8d33f7af353ac7ed2fe1895";
       flake = false;
     };
+    # Individual skills only. The plugins' own .mcp.json files would register
+    # Snowflake, Databricks, Slack, Atlassian and others, so none of them is
+    # installed as a plugin.
+    knowledge-work-plugins = {
+      url = "github:anthropics/knowledge-work-plugins/02ffa99ff00ce4d3046ccebabb8357cb39f3ab06";
+      flake = false;
+    };
   };
   den.aspects.sphoono.development.claude = {
     # claude-code is unfree.
@@ -44,6 +51,19 @@
     homeManager =
       { config, pkgs, ... }:
       let
+        kwp = inputs.knowledge-work-plugins;
+        # small-business skills read ../../shared/*.md (and ../../../shared/
+        # from nested files) relative to their own directory, which breaks
+        # once each skill is linked on its own. Point those at the store.
+        smbSkill =
+          name:
+          pkgs.runCommand name { } ''
+            cp -r ${kwp}/small-business/skills/${name} $out
+            chmod -R u+w $out
+            find $out -type f -name '*.md' -exec sed -E -i \
+              -e 's|(\.\./)+shared/|${kwp}/small-business/shared/|g' \
+              -e 's|(\.\./)+ad-manager/|${kwp}/small-business/skills/ad-manager/|g' {} +
+          '';
         # Node, the JDK and Ghidra exist only inside this launcher, so
         # claude's MCP server resolves them and the user's shell does not.
         rea-mcp = pkgs.writeShellApplication {
@@ -167,6 +187,31 @@
               api-and-interface-design
               deprecation-and-migration
               ;
+            # Finance: variance, reconciliation, statements and close
+            variance-analysis = "${kwp}/finance/skills/variance-analysis";
+            reconciliation = "${kwp}/finance/skills/reconciliation";
+            financial-statements = "${kwp}/finance/skills/financial-statements";
+            close-management = "${kwp}/finance/skills/close-management";
+            journal-entry-prep = "${kwp}/finance/skills/journal-entry-prep";
+            # Data analysis
+            sql-queries = "${kwp}/data/skills/sql-queries";
+            statistical-analysis = "${kwp}/data/skills/statistical-analysis";
+            data-visualization = "${kwp}/data/skills/data-visualization";
+            validate-data = "${kwp}/data/skills/validate-data";
+            # Operations
+            runbook = "${kwp}/operations/skills/runbook";
+            capacity-plan = "${kwp}/operations/skills/capacity-plan";
+            process-doc = "${kwp}/operations/skills/process-doc";
+            risk-assessment = "${kwp}/operations/skills/risk-assessment";
+            process-optimization = "${kwp}/operations/skills/process-optimization";
+            # Dropshipping books and growth, over the QuickBooks and Shopify
+            # connectors
+            month-end-prep = smbSkill "month-end-prep";
+            close-month = smbSkill "close-month";
+            cash-flow-snapshot = smbSkill "cash-flow-snapshot";
+            business-pulse = smbSkill "business-pulse";
+            report-builder = smbSkill "report-builder";
+            growth-pulse = smbSkill "growth-pulse";
             # Reverse engineering; drives the REA MCP tools
             reverse-engineer-anything = "${inputs.rea}/.agents/skills/reverse-engineer-anything";
             # Keep the Notion project wiki and tasks current
