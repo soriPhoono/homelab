@@ -204,6 +204,12 @@
             process-doc = "${kwp}/operations/skills/process-doc";
             risk-assessment = "${kwp}/operations/skills/risk-assessment";
             process-optimization = "${kwp}/operations/skills/process-optimization";
+            # Legal: contract and NDA review, risk and compliance checks.
+            # Drafts for a lawyer's review, not legal advice.
+            review-contract = "${kwp}/legal/skills/review-contract";
+            triage-nda = "${kwp}/legal/skills/triage-nda";
+            legal-risk-assessment = "${kwp}/legal/skills/legal-risk-assessment";
+            compliance-check = "${kwp}/legal/skills/compliance-check";
             # Dropshipping books and growth, over the QuickBooks and Shopify
             # connectors
             month-end-prep = smbSkill "month-end-prep";
