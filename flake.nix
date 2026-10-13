@@ -19,6 +19,10 @@
       url = "github:devitek/artcraft-nixos";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    awesome-ai-agent-skills = {
+      url = "github:seb1n/awesome-ai-agent-skills/75865a5d037a4cdaa7f409a4ec14ab9b0292920b";
+      flake = false;
+    };
     awesome-copilot = {
       url = "github:github/awesome-copilot/d6131471b85fbb4799e64175ebc42c9309ecc28a";
       flake = false;

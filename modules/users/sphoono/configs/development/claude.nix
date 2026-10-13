@@ -44,6 +44,11 @@
       url = "github:anthropics/knowledge-work-plugins/02ffa99ff00ce4d3046ccebabb8357cb39f3ab06";
       flake = false;
     };
+    # 103 skills, MIT, all linked; see the awesomeSkills list.
+    awesome-ai-agent-skills = {
+      url = "github:seb1n/awesome-ai-agent-skills/75865a5d037a4cdaa7f409a4ec14ab9b0292920b";
+      flake = false;
+    };
   };
   den.aspects.sphoono.development.claude = {
     # claude-code is unfree.
@@ -52,6 +57,164 @@
       { config, pkgs, ... }:
       let
         kwp = inputs.knowledge-work-plugins;
+        # Every skill of seb1n/awesome-ai-agent-skills. Merged last, so it
+        # wins on a name clash, and the installed skills these replace
+        # (ci-cd-and-automation, observability-and-instrumentation,
+        # api-and-interface-design, sql-queries, data-visualization,
+        # financial-statements, review-contract) are no longer linked, and
+        # so is antigravity-research. note-taking, project-management and
+        # task-automation are left out: the Notion and n8n skills target
+        # those jobs.
+        awesomeSkills = lib.mergeAttrsList (
+          lib.mapAttrsToList
+            (
+              category: names: lib.genAttrs names (name: "${inputs.awesome-ai-agent-skills}/${category}/${name}")
+            )
+            {
+              agent-engineering = [
+                "agent-evaluation"
+                "agent-observability"
+                "human-in-the-loop"
+                "mcp-server-building"
+                "multi-agent-orchestration"
+                "tool-schema-design"
+              ];
+              agent-security = [
+                "agent-red-teaming"
+                "prompt-injection-defense"
+                "skill-supply-chain-audit"
+              ];
+              ai-ml-operations = [
+                "data-labeling"
+                "hyperparameter-tuning"
+                "ml-pipeline-creation"
+                "model-deployment"
+                "model-training"
+              ];
+              api-and-integration = [
+                "api-design"
+                "api-integration"
+                "graphql-api-design"
+                "oauth-2-0-setup"
+                "webhook-setup"
+              ];
+              code-and-development = [
+                "code-documentation"
+                "code-review"
+                "debugging"
+                "refactoring"
+                "testing"
+                "version-control"
+              ];
+              communication = [
+                "chatbot-conversation-design"
+                "email-drafting"
+                "meeting-transcription"
+                "presentation-creation"
+                "report-generation"
+              ];
+              context-engineering = [
+                "context-compression"
+                "context-injection"
+                "context-optimization"
+                "context-ranking"
+                "context-retrieval"
+              ];
+              customer-success = [
+                "churn-analysis"
+                "customer-feedback-analysis"
+                "knowledge-base-article-writing"
+                "onboarding-playbook-creation"
+                "ticket-triage"
+              ];
+              data-and-analytics = [
+                "data-analysis"
+                "data-cleaning"
+                "data-visualization"
+                "exploratory-data-analysis"
+                "sql-query-generation"
+              ];
+              database = [
+                "database-backup"
+                "database-migration"
+                "database-schema-design"
+                "database-seeding"
+                "query-optimization"
+              ];
+              design-and-ui-ux = [
+                "accessibility-testing"
+                "frontend-design"
+                "logo-design"
+                "user-flow-mapping"
+                "wireframing"
+              ];
+              devops-and-infrastructure = [
+                "ci-cd"
+                "cloud-monitoring"
+                "docker-compose-setup"
+                "infrastructure-as-code"
+                "kubernetes-deployment"
+              ];
+              documents-and-files = [
+                "pdf-processing"
+                "spreadsheet-analysis"
+              ];
+              finance-and-accounting = [
+                "budget-planning"
+                "expense-categorization"
+                "financial-modeling"
+                "financial-report-generation"
+                "invoice-processing"
+              ];
+              legal-and-compliance = [
+                "compliance-checklist-generation"
+                "contract-review"
+                "eu-ai-act-readiness"
+                "license-analysis"
+                "privacy-policy-drafting"
+                "terms-of-service-generation"
+              ];
+              marketing-and-seo = [
+                "analytics-reporting"
+                "content-strategy"
+                "keyword-research"
+                "seo-optimization"
+                "social-media-posting"
+              ];
+              productivity-and-workflow = [
+                "file-organization"
+                "meeting-scheduler"
+              ];
+              research-and-knowledge = [
+                "deep-research"
+                "fact-checking"
+                "knowledge-graph-creation"
+                "literature-review"
+                "summarization"
+              ];
+              sales = [
+                "competitive-battlecard-creation"
+                "crm-data-enrichment"
+                "lead-scoring"
+                "proposal-generation"
+                "sales-email-sequences"
+              ];
+              security = [
+                "dependency-scanning"
+                "dynamic-application-security-testing"
+                "security-audit"
+                "static-application-security-testing"
+                "threat-modeling"
+              ];
+              writing-and-content = [
+                "blog-post-writing"
+                "copywriting"
+                "proofreading"
+                "technical-writing"
+                "translation"
+              ];
+            }
+        );
         # small-business skills read ../../shared/*.md (and ../../../shared/
         # from nested files) relative to their own directory, which breaks
         # once each skill is linked on its own. Point those at the store.
@@ -163,9 +326,7 @@
             create-readme = "${inputs.awesome-copilot}/skills/create-readme";
             # Work with git repos
             git-commit = "${inputs.awesome-copilot}/skills/git-commit";
-            # Hand outside research to Antigravity, and implement the plans
-            # it hands back
-            antigravity-research = ../../assets/skills/antigravity-research;
+            # Implement the plans Antigravity hands back
             plan-watch = ../../assets/skills/plan-watch;
             # Build n8n workflows through the n8n MCP server
             inherit (pkgs.agent-skills.github.czlonkowski.n8n-skills)
@@ -179,24 +340,18 @@
             # hardening, interface design and migrations. superpowers
             # already covers TDD, debugging, planning and review.
             inherit (pkgs.agent-skills.github.addyosmani.agent-skills)
-              ci-cd-and-automation
               shipping-and-launch
               documentation-and-adrs
-              observability-and-instrumentation
               security-and-hardening
-              api-and-interface-design
               deprecation-and-migration
               ;
             # Finance: variance, reconciliation, statements and close
             variance-analysis = "${kwp}/finance/skills/variance-analysis";
             reconciliation = "${kwp}/finance/skills/reconciliation";
-            financial-statements = "${kwp}/finance/skills/financial-statements";
             close-management = "${kwp}/finance/skills/close-management";
             journal-entry-prep = "${kwp}/finance/skills/journal-entry-prep";
             # Data analysis
-            sql-queries = "${kwp}/data/skills/sql-queries";
             statistical-analysis = "${kwp}/data/skills/statistical-analysis";
-            data-visualization = "${kwp}/data/skills/data-visualization";
             validate-data = "${kwp}/data/skills/validate-data";
             # Operations
             runbook = "${kwp}/operations/skills/runbook";
@@ -206,7 +361,6 @@
             process-optimization = "${kwp}/operations/skills/process-optimization";
             # Legal: contract and NDA review, risk and compliance checks.
             # Drafts for a lawyer's review, not legal advice.
-            review-contract = "${kwp}/legal/skills/review-contract";
             triage-nda = "${kwp}/legal/skills/triage-nda";
             legal-risk-assessment = "${kwp}/legal/skills/legal-risk-assessment";
             compliance-check = "${kwp}/legal/skills/compliance-check";
@@ -225,7 +379,8 @@
               knowledge-capture
               spec-to-implementation
               ;
-          };
+          }
+          // awesomeSkills;
         };
       };
   };

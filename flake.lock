@@ -50,6 +50,23 @@
         "type": "github"
       }
     },
+    "awesome-ai-agent-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786314487,
+        "narHash": "sha256-G9CWTBtpY5mMW8JmEpdL2nWvVf0EoWXvEn0dM9aHwz0=",
+        "owner": "seb1n",
+        "repo": "awesome-ai-agent-skills",
+        "rev": "75865a5d037a4cdaa7f409a4ec14ab9b0292920b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "seb1n",
+        "repo": "awesome-ai-agent-skills",
+        "rev": "75865a5d037a4cdaa7f409a4ec14ab9b0292920b",
+        "type": "github"
+      }
+    },
     "awesome-copilot": {
       "flake": false,
       "locked": {
@@ -931,6 +948,7 @@
     "root": {
       "inputs": {
         "artcraft": "artcraft",
+        "awesome-ai-agent-skills": "awesome-ai-agent-skills",
         "awesome-copilot": "awesome-copilot",
         "claude-plugins-official": "claude-plugins-official",
         "comin": "comin",
