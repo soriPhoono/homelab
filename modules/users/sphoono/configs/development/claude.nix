@@ -149,6 +149,18 @@
               n8n-validation-expert
               n8n-code-javascript
               ;
+            # SDLC: pipelines, release readiness, ADRs, observability,
+            # hardening, interface design and migrations. superpowers
+            # already covers TDD, debugging, planning and review.
+            inherit (pkgs.agent-skills.github.addyosmani.agent-skills)
+              ci-cd-and-automation
+              shipping-and-launch
+              documentation-and-adrs
+              observability-and-instrumentation
+              security-and-hardening
+              api-and-interface-design
+              deprecation-and-migration
+              ;
             # Reverse engineering; drives the REA MCP tools
             reverse-engineer-anything = "${inputs.rea}/.agents/skills/reverse-engineer-anything";
             # Keep the Notion project wiki and tasks current
