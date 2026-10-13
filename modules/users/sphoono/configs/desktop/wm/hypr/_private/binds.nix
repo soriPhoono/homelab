@@ -52,7 +52,7 @@ in
     # -- Applications --
     (bind "SUPER + Return" (app terminal))
     (bind "SUPER + E" (app "${terminal} -e ${lib.getExe config.programs.yazi.package}"))
-    (bind "SUPER + C" (app "orca-ide"))
+    (bind "SUPER + C" (app "${terminal} -e ${lib.getExe config.programs.herdr.package}"))
 
     # -- Session --
     (bind "SUPER + SHIFT + Escape" (exec "${uwsm} stop"))

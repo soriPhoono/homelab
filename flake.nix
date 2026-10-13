@@ -4,14 +4,16 @@
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 
   nixConfig = {
-    extraSubstituters = [
+    extra-substituters = [
       "https://numtide.cachix.org"
       "https://pre-commit-hooks.cachix.org/"
     ];
-    extraTrustedPublicKeys = [
+    extra-trusted-public-keys = [
       "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
       "pre-commit-hooks.cachix.org-1:Pkk3Panw5AW24TOv6kz3PvLhlH8puAsJTBbOPmBo7Rc="
     ];
+    extraSubstituters = [ ];
+    extraTrustedPublicKeys = [ ];
   };
 
   inputs = {

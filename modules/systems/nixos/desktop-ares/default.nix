@@ -48,7 +48,6 @@
         den.aspects.hosting.podman
         den.aspects.hosting.microserver.media
         den.aspects.hosting.gaming.host
-        den.aspects.hosting.trading
       ];
       nixos = { pkgs, ... }: {
         imports = [ inputs.qylock.nixosModules.default ];

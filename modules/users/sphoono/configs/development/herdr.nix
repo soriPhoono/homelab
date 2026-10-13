@@ -17,6 +17,7 @@
 
         programs.herdr = {
           enable = true;
+          settings.onboarding = false;
           settings.ui = {
             sidebar_width = 34;
             sidebar_min_width = 24;
