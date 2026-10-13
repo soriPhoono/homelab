@@ -65,7 +65,13 @@
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
           enable = true;
-          mcpServers.rea.command = lib.getExe rea-mcp;
+          mcpServers = {
+            rea.command = lib.getExe rea-mcp;
+            # NixOS, Home Manager and nixpkgs option and package lookup over
+            # stdio. Referenced by store path, so it is not on the user's
+            # PATH.
+            nixos.command = lib.getExe pkgs.mcp-nixos;
+          };
           package =
             let
               agent = pkgs.claude-code;
