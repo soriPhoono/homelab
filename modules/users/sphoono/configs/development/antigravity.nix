@@ -86,7 +86,7 @@
             # its own writes to this file are replaced on every switch (see
             # below).
             model = "Gemini 3.8 Flash (High)";
-            trustedWorkspaces = [ "${home}/Projects/homelab" ];
+            trustedWorkspaces = [ "${home}/Projects" ];
             toolPermission = "proceed-in-sandbox";
             # Launched from Claude Code, every sandboxed command fails with
             # "connecting to sandbox server: ... connection reset by peer"
