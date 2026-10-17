@@ -67,6 +67,11 @@ in
               # default.
               screen_corners.enabled = true;
 
+              # Noctalia's native polkit agent answers authorization prompts;
+              # no other agent runs in the session, and polkitd itself comes
+              # from security.polkit in the desktop aspect.
+              polkit_agent = true;
+
               panel = {
                 transparency_mode = "glass";
                 borders = true;
