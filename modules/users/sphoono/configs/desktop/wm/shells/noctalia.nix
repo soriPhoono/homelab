@@ -106,12 +106,13 @@ in
               reserve_space = true;
               capsule = false;
               start = [
+                # The work-clock plugin widget instance, named by the GUI.
+                "widget"
                 "launcher"
                 "workspaces"
                 "cpu"
                 "temp"
                 "ram"
-                "work-clock"
               ];
               center = [ "media" ];
               end = [
@@ -137,7 +138,9 @@ in
               ];
             };
 
-            widget.work-clock.type = "soriphoono/work-clock:widget";
+            widget.widget.type = "soriphoono/work-clock:widget";
+
+            plugin_settings."soriphoono/work-clock".auto-start-breaks = true;
 
             dock.enabled = false;
 
