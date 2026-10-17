@@ -10,6 +10,11 @@ let
   toLua = lib.generators.toLua { };
 in
 {
+  flake-file.inputs.work-clock-plugin = {
+    url = "github:soriPhoono/community-plugins?ref=feat/work-clock";
+    flake = false;
+  };
+
   den.aspects.sphoono.desktop.wm.shells.noctalia = {
     homeManager =
       { config, pkgs, ... }:
