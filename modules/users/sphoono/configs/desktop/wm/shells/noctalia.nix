@@ -63,6 +63,10 @@ in
               # and survive a shell restart.
               launch_apps_as_systemd_services = true;
 
+              # Black rounded overlays at each screen corner, 32px radius by
+              # default.
+              screen_corners.enabled = true;
+
               panel = {
                 transparency_mode = "glass";
                 borders = true;
