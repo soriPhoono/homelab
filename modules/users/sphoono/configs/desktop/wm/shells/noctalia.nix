@@ -196,7 +196,8 @@ in
 
             nightlight = {
               enabled = true;
-              force = false;
+              # Hold the night temperature all day, ignoring the schedule.
+              force = true;
               temperature_day = 6500;
               temperature_night = 4000;
             };
