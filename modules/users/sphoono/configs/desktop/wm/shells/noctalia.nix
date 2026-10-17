@@ -5,7 +5,7 @@
 #
 # Each compositor's integration (autostart, keybinds, layer rules) lives in a
 # guarded block below, so this aspect stays usable from any window manager.
-{ lib, ... }:
+{ inputs, lib, ... }:
 let
   toLua = lib.generators.toLua { };
 in
@@ -29,6 +29,13 @@ in
             opts
           ];
         };
+        # A path plugin source is a directory of plugin directories, each named
+        # after the second half of its id; the fork is a monorepo, so expose
+        # only the work-clock plugin from it.
+        workClockPlugins = pkgs.runCommandLocal "noctalia-work-clock-plugin" { } ''
+          mkdir -p $out
+          cp -r ${inputs.work-clock-plugin}/work-clock $out/work-clock
+        '';
         locked = {
           locked = true;
         };
@@ -104,6 +111,7 @@ in
                 "cpu"
                 "temp"
                 "ram"
+                "work-clock"
               ];
               center = [ "media" ];
               end = [
@@ -117,6 +125,19 @@ in
                 "session"
               ];
             };
+
+            plugins = {
+              enabled = [ "soriphoono/work-clock" ];
+              source = [
+                {
+                  name = "homelab";
+                  kind = "path";
+                  location = "${workClockPlugins}";
+                }
+              ];
+            };
+
+            widget.work-clock.type = "soriphoono/work-clock:widget";
 
             dock.enabled = false;
 

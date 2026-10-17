@@ -171,6 +171,10 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    work-clock-plugin = {
+      url = "github:soriPhoono/community-plugins?ref=feat/work-clock";
+      flake = false;
+    };
     ygo-nix = {
       url = "github:digiboid/ygo-nix";
       inputs = {

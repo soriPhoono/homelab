@@ -981,6 +981,7 @@
         "systems": "systems",
         "templates": "templates",
         "treefmt-nix": "treefmt-nix",
+        "work-clock-plugin": "work-clock-plugin",
         "ygo-nix": "ygo-nix",
         "zen-browser": "zen-browser"
       }
@@ -1188,6 +1189,23 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "work-clock-plugin": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792262548,
+        "narHash": "sha256-wQ3TMm5fy7CiFKR3W5rfxXVY1PO0YFgFp0rca7t6jPU=",
+        "owner": "soriPhoono",
+        "repo": "community-plugins",
+        "rev": "3ff312b6a3b92ed54ea3debd9ad8890aa2cf7dbf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "soriPhoono",
+        "ref": "feat/work-clock",
+        "repo": "community-plugins",
         "type": "github"
       }
     },
