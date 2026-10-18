@@ -154,7 +154,10 @@ in
 
             widget.widget.type = "soriphoono/work-clock:widget";
 
-            plugin_settings."soriphoono/work-clock".auto-start-breaks = true;
+            plugin_settings."soriphoono/work-clock" = {
+              auto-start-breaks = true;
+              use-bundled-alarm-sound = true;
+            };
 
             dock.enabled = false;
 
@@ -166,6 +169,13 @@ in
               scale = 1.0;
               offset_x = 20;
               offset_y = 8;
+              # The bundled alarm replaces the default notification sound,
+              # which would otherwise play on top of it.
+              filter.pomodoro = {
+                match = "noctalia";
+                match_content = "Pomodoro Timer";
+                play_sound = false;
+              };
             };
 
             osd = {
