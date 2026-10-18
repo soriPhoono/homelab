@@ -5,10 +5,21 @@
 
       den.aspects.desktop.xdg.portals.gtk
     ];
-    nixos.programs.hyprland = {
-      enable = true;
-      withUWSM = true;
-    };
+    nixos =
+      { pkgs, ... }:
+      {
+        programs.hyprland = {
+          enable = true;
+          withUWSM = true;
+        };
+
+        # DDC/CI brightness for external monitors. The ddcutil udev rules grant
+        # the active seat access to the GPU-attached i2c buses, so no group
+        # membership is needed.
+        hardware.i2c.enable = true;
+        services.udev.packages = [ pkgs.ddcutil ];
+        environment.systemPackages = [ pkgs.ddcutil ];
+      };
     homeManager =
       {
         config,

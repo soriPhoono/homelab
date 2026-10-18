@@ -215,6 +215,10 @@ in
               disk_poll_seconds = 10.0;
             };
 
+            brightness = {
+              enable_ddcutil = true;
+            };
+
             audio = {
               enable_overdrive = false;
               enable_sounds = true;
