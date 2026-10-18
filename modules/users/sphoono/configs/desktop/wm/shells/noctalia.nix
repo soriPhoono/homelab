@@ -118,7 +118,7 @@ in
               shadow = true;
               auto_hide = false;
               reserve_space = true;
-              capsule = false;
+              capsule = true;
               start = [
                 # The work-clock plugin widget instance, named by the GUI.
                 "widget"
