@@ -2,9 +2,6 @@
 { inputs, lib, ... }:
 {
   imports = [
-    (inputs.flake-file.lib.flakeModules.flake-parts-builder ../flake-system)
-    (inputs.flake-file.flakeModules.auto-follow or { })
-    (inputs.flake-file.flakeModules.dendritic or { })
     (inputs.den.flakeModules.dendritic or { })
   ];
   # Tracks den's `latest` release ref rather than main, so updates are stable
