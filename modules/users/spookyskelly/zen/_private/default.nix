@@ -14,7 +14,7 @@
       id = 0;
       isDefault = true;
 
-      keyboardShortcutsVersion = 20;
+      keyboardShortcutsVersion = 21;
       keyboardShortcuts = [
         {
           id = "zen-compact-mode-toggle";

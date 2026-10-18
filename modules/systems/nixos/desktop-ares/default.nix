@@ -24,12 +24,15 @@
         den.aspects.core.swap.zram
         den.aspects.core.networking.network-manager
         den.aspects.core.networking.tailscale
+        den.aspects.core.networking.openssh
         # -- Desktop environment --
         den.aspects.desktop.greeters.sddm
         den.aspects.desktop.managers.hyprland
         # -- Core desktop features --
         den.aspects.desktop.components.audio
         den.aspects.desktop.components.bluetooth
+        den.aspects.desktop.components.gnome.keyring
+        den.aspects.desktop.components.gnome.dconf
         # -- Desktop application runtimes --
         den.aspects.desktop.platforms.appimage
         # -- Domains of desktop activity (scoped) --
@@ -104,8 +107,10 @@
         den.aspects.sphoono.desktop.wm.shells.noctalia
         den.aspects.sphoono.desktop.wm.supporting
         den.aspects.sphoono.desktop
+        den.aspects.sphoono.desktop.syncthing
         den.aspects.sphoono.development
         den.aspects.sphoono.content-creation
+        den.aspects.sphoono.trading.desktop
         den.aspects.hosting.gaming.client
       ];
 

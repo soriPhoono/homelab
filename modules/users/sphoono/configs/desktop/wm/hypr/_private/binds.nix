@@ -52,7 +52,7 @@ in
     # -- Applications --
     (bind "SUPER + Return" (app terminal))
     (bind "SUPER + E" (app "${terminal} -e ${lib.getExe config.programs.yazi.package}"))
-    (bind "SUPER + C" (app "${terminal} -e nvim"))
+    (bind "SUPER + C" (app "${terminal} -e ${lib.getExe config.programs.herdr.package}"))
 
     # -- Session --
     (bind "SUPER + SHIFT + Escape" (exec "${uwsm} stop"))

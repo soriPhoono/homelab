@@ -36,12 +36,13 @@
       # -- Core desktop features --
       den.aspects.desktop.components.audio
       den.aspects.desktop.components.bluetooth
+      den.aspects.desktop.components.gnome.keyring
       # -- Desktop application runtimes --
       den.aspects.desktop.platforms.appimage
+      den.aspects.desktop.platforms.flatpak
       # -- Domains of desktop activity (scoped) --
       den.aspects.desktop.domains.gaming.desktop
       # -- Desktop applications (scoped) --
-      den.aspects.desktop.tools.virt-manager
       den.aspects.desktop.tools.partition-manager
       den.aspects.desktop.tools.virtualbox
       # -- External device interaction --
@@ -106,8 +107,9 @@
       den.aspects.sphoono.desktop.wm.shells.noctalia
       den.aspects.sphoono.desktop.wm.supporting
       den.aspects.sphoono.desktop
+      den.aspects.sphoono.desktop.syncthing
       den.aspects.sphoono.development
-      den.aspects.sphoono.content-creation
+      den.aspects.sphoono.trading.desktop
       den.aspects.hosting.gaming.client
     ];
 

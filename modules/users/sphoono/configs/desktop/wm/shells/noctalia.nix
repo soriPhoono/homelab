@@ -5,11 +5,16 @@
 #
 # Each compositor's integration (autostart, keybinds, layer rules) lives in a
 # guarded block below, so this aspect stays usable from any window manager.
-{ lib, ... }:
+{ inputs, lib, ... }:
 let
   toLua = lib.generators.toLua { };
 in
 {
+  flake-file.inputs.work-clock-plugin = {
+    url = "github:soriPhoono/community-plugins?ref=feat/work-clock";
+    flake = false;
+  };
+
   den.aspects.sphoono.desktop.wm.shells.noctalia = {
     homeManager =
       { config, pkgs, ... }:
@@ -29,6 +34,13 @@ in
             opts
           ];
         };
+        # A path plugin source is a directory of plugin directories, each named
+        # after the second half of its id; the fork is a monorepo, so expose
+        # only the work-clock plugin from it.
+        workClockPlugins = pkgs.runCommandLocal "noctalia-work-clock-plugin" { } ''
+          mkdir -p $out
+          cp -r ${inputs.work-clock-plugin}/work-clock $out/work-clock
+        '';
         locked = {
           locked = true;
         };
@@ -55,6 +67,15 @@ in
               # Noctalia runs under uwsm, so launched apps get their own units
               # and survive a shell restart.
               launch_apps_as_systemd_services = true;
+
+              # Black rounded overlays at each screen corner, 32px radius by
+              # default.
+              screen_corners.enabled = true;
+
+              # Noctalia's native polkit agent answers authorization prompts;
+              # no other agent runs in the session, and polkitd itself comes
+              # from security.polkit in the desktop aspect.
+              polkit_agent = true;
 
               panel = {
                 transparency_mode = "glass";
@@ -97,8 +118,10 @@ in
               shadow = true;
               auto_hide = false;
               reserve_space = true;
-              capsule = false;
+              capsule = true;
               start = [
+                # The work-clock plugin widget instance, named by the GUI.
+                "widget"
                 "launcher"
                 "workspaces"
                 "cpu"
@@ -118,6 +141,24 @@ in
               ];
             };
 
+            plugins = {
+              enabled = [ "soriphoono/work-clock" ];
+              source = [
+                {
+                  name = "homelab";
+                  kind = "path";
+                  location = "${workClockPlugins}";
+                }
+              ];
+            };
+
+            widget.widget.type = "soriphoono/work-clock:widget";
+
+            plugin_settings."soriphoono/work-clock" = {
+              auto-start-breaks = true;
+              use-bundled-alarm-sound = true;
+            };
+
             dock.enabled = false;
 
             notification = {
@@ -128,6 +169,13 @@ in
               scale = 1.0;
               offset_x = 20;
               offset_y = 8;
+              # The bundled alarm replaces the default notification sound,
+              # which would otherwise play on top of it.
+              filter.pomodoro = {
+                match = "noctalia";
+                match_content = "Pomodoro Timer";
+                play_sound = false;
+              };
             };
 
             osd = {
@@ -167,6 +215,10 @@ in
               disk_poll_seconds = 10.0;
             };
 
+            brightness = {
+              enable_ddcutil = true;
+            };
+
             audio = {
               enable_overdrive = false;
               enable_sounds = true;
@@ -175,7 +227,8 @@ in
 
             nightlight = {
               enabled = true;
-              force = false;
+              # Hold the night temperature all day, ignoring the schedule.
+              force = true;
               temperature_day = 6500;
               temperature_night = 4000;
             };
@@ -263,7 +316,7 @@ in
             (bind "ALT + Tab" "window-switcher hold")
 
             # -- Screenshots --
-            (bind "Print" "screenshot-fullscreen monitor")
+            (bind "Print" "screenshot-fullscreen")
             (bind "SUPER + Print" "screenshot-region")
             (bind "SUPER + SHIFT + Print" "screenshot-annotate")
 

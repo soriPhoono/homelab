@@ -11,6 +11,7 @@
     ./extensions/indent-blankline.nix
     ./extensions/keybinds.nix
     ./extensions/lualine.nix
+    ./extensions/multicursors.nix
     ./extensions/neo-tree.nix
     ./extensions/neotest.nix
     ./extensions/noice.nix

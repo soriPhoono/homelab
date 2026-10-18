@@ -82,14 +82,14 @@ At the end of every turn, before handing back off to me you should:
   existing workflows, then create, update, activate, deactivate, and test
   workflows and custom tooling. Read back the workflow or execution after
   every external change to verify the result.
-- **Composio is the third-party action runner:** Use Composio when an
-  agent needs to check Gmail, search Google Drive, inspect Twitter/X
-  posts, or perform another action against an external service. Composio
-  executes the action; it is not the durable automation workbench or
-  scheduler.
+- **claude.ai connectors are the third-party action runner:** Use a
+  connector when an agent needs to check Gmail, search Google Drive,
+  inspect social posts, or perform another action against an external
+  service. A connector executes the action; it is not the durable
+  automation workbench or scheduler.
 - **Decision rule:** Durable, scheduled, reusable automation belongs in
-  n8n; individual third-party actions belong in Composio; use both when an
-  n8n automation needs Composio-backed service actions.
+  n8n; individual third-party actions go through claude.ai connectors; use
+  both when an n8n automation needs a connector-backed service action.
 - **Autonomy guardrails:** Make autonomous n8n workflows idempotent,
   observable, retry-safe, and explicit about credentials and external side
   effects.
@@ -118,6 +118,9 @@ sops-nix.
 - Mem0 stores agent-maintained context; it does not replace the repository
   or Notion.
 - Do not rely on Mem0 alone for handoff or source-of-truth state.
+- Mem0 reaches Claude Code only. The claude.ai Mem0 connector is not used,
+  so Claude on web and mobile has no Mem0 access. Anything those agents
+  need goes in Notion.
 
 ## Tool Use
 
@@ -126,9 +129,16 @@ sops-nix.
   call when it improves freshness, accuracy, context, persistence, or safe
   interaction with an external system; do not avoid a call merely to save
   tokens or because a task could be completed from memory.
-- **`personal/notion` is the personal knowledge-base:** Use it to read
+- **Connectors serve both Claudes:** claude.ai connectors reach Claude on
+  web and mobile as well as Claude Code. Weigh a change's effect on the
+  web and mobile agent as heavily as its effect on the coding agent. Prefer
+  a connector when one fits, and state the reason when choosing a
+  coding-only tool (a local MCP server, a CLI, plugin hooks). Put state
+  both agents need, such as decisions, tasks and project knowledge, in a
+  store both can read, which is Notion, not in a coding-only store.
+- **`Notion` is the personal knowledge-base:** Use it to read
   project notes and handle task management.
-- **`software-development/n8n` is the background automation:** Use it to
+- **`N8n` is the background automation:** Use it to
   discover, inspect, test, and modify durable n8n workflows. Read back
   workflows or executions after every external change.
 - **Parallel execution:** Issue independent MCP requests concurrently to

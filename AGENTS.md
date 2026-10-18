@@ -28,7 +28,8 @@ Configuration is expressed as _aspects_: composable units declared under
 - `flake-system/` — flake-parts plumbing: dev shell, pre-commit hooks,
   treefmt, systems, GitHub workflow generators.
 - `secrets/` — sops-encrypted secrets. See [Secrets](#secrets).
-- `.agents/wikis/` — research wikis. See [Research](#research-and-the-wiki).
+- `.agents/plans/` — implementation plans for the plan watcher, gitignored.
+  See [Research](#research-and-the-wiki).
 
 ## Never hand-edit generated files
 
@@ -82,7 +83,7 @@ Each of these fails with a message that points somewhere unhelpful.
   declare their own without conflicting. Names are exact `lib.getName`
   matches, with no prefix matching.
 
-## Verification gates
+## Verification tests
 
 Run these in order before reporting that a change works. Stopping early
 is not evidence. `<host>` is a directory under `modules/systems/nixos/`.
@@ -101,9 +102,15 @@ nix eval .#nixosConfigurations.<host>.config.assertions \
 nix fmt                    # the treefmt hook fails the commit otherwise
 ```
 
-`nix flake check` is **not** a gate. It runs only `check-flake-file`,
-`pre-commit` and `treefmt`; it never evaluates or builds the systems, and
-passes happily on a completely broken host.
+`nix flake check` is **not** a test. Besides `check-flake-file`,
+`pre-commit` and `treefmt`, it evaluates every host, so it fails on
+evaluation errors and failed assertions. It builds nothing: a derivation
+that fails to build (a broken wrapper script, say) passes it and surfaces
+only at deploy.
+
+Do not build whole systems to verify a change; that risks running out of
+memory. Building a small package you changed is fine. The user deploys and
+reports build failures.
 
 For changes that need to actually boot, use the VM:
 
@@ -151,45 +158,40 @@ at boot rather than at evaluation.
 
 ## Research and the wiki
 
+Research lives outside this repository, in the shared agent wiki at
+`$AGENT_WIKI` (`~/Shared/AgentWiki`): one Obsidian vault holding one LLM
+wiki per domain, shared by every project. This repository's research is in
+the `nix` and `desktop-linux` domains. The `llm-wiki` skill defines the
+layout and page rules.
+
 Before researching anything externally, consult, in this order:
 
-1. This file, and the wikis under `.agents/wikis/`.
+1. This file, and the wiki: `$AGENT_WIKI/index.md`, then the index of
+   each relevant domain.
 2. Documentation shipped by the flake inputs and readable in the nix
    store: den's module doc comments, nixpkgs option `description`
    fields, upstream READMEs. These are authoritative and match the
    pinned revision.
-3. The web.
+3. The web, through the `antigravity-research` skill, which hands the
+   search to Antigravity CLI and records the findings in the wiki.
 
-Cite an existing article rather than re-deriving it. Re-derivation
-produces a second, possibly contradictory article.
+Cite an existing wiki page rather than re-deriving it. Re-derivation
+produces a second, possibly contradictory article. Citations are web URLs,
+wiki pages or nix store code locations.
 
-When external information is used, record it. A wiki lives at
-`.agents/wikis/<subject>/`, kebab-case and named after the subject, never
-after the task that prompted it. Each holds three directories:
-
-- `raw/` — one file per source page.
-- `entities/` — one file per named thing (`den.md`, `flake-parts.md`),
-  opening with a one-line definition.
-- `concepts/` — one file per idea or relationship, such as
-  `aspect-resolution.md`, in the same shape.
-
-Citations are web URLs or nix store code locations. Convert a source page
-with:
-
-```sh
-pandoc -f html -t gfm-raw_html --wrap=auto --columns=80 page.html \
-  -o .agents/wikis/<wiki>/raw/<slug>.md
-markdownlint --fix .agents/wikis/<wiki>/raw/<slug>.md
-```
-
-Then prepend the article title as a top-level heading, the source URL and
-the retrieval date. `-t gfm-raw_html` strips inline HTML, `--columns=80`
-satisfies the line-length rule, and the heading satisfies the
-first-line-heading rule.
+Implementation work that comes out of research arrives as plan files in
+`~/Projects/.agents/plans/` with `target_repo: homelab`, written by
+Antigravity's `claude-handoff` skill; plans written by hand can also go in
+this repository's `.agents/plans/`. A Claude session started in this
+repository and running `/loop 15m /plan-watch` implements each one in a
+worktree on a `handoff/<slug>` branch from `origin/dev`, and tracks it in
+the Tasks - Homelab Notion database. The loop must run here, not in
+`~/Projects`: mem0 keys memory by the repository's git remote. Plans are
+gitignored; never commit them.
 
 ## Recipes
 
-Every recipe ends with the [verification gates](#verification-gates).
+Every recipe ends with the [verification tests](#verification-tests).
 
 ### Add an aspect
 

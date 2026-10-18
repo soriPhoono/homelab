@@ -1,6 +1,10 @@
 { inputs, ... }:
 {
-  den.aspects.sphoono.development = {
+  flake-file.inputs.herdr-nvim = {
+    url = "github:ChmaraX/herdr-nvim/v1.1.0";
+    flake = false;
+  };
+  den.aspects.sphoono.development.herdr = {
     homeManager =
       {
         config,
@@ -17,13 +21,16 @@
 
         programs.herdr = {
           enable = true;
+          settings.onboarding = false;
           settings.ui = {
             sidebar_width = 34;
             sidebar_min_width = 24;
             sidebar_max_width = 40;
             agent_panel_sort = "spaces";
             status_indicators = "symbols";
+            mouse_scroll_lines = 1;
           };
+          settings.keys.prefix = "ctrl+space";
           settings.keys.command = [
             {
               key = "prefix+shift+e";

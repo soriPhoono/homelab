@@ -1,0 +1,4 @@
+n8n:
+  repo: homelab
+  branch: main
+  compose_file: docker/stacks/n8n/docker-compose.yml
