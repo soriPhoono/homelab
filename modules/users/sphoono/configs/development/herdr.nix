@@ -28,6 +28,7 @@
             sidebar_max_width = 40;
             agent_panel_sort = "spaces";
             status_indicators = "symbols";
+            mouse_scroll_lines = 1;
           };
           settings.keys.prefix = "ctrl+space";
           settings.keys.command = [
