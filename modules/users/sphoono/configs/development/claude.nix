@@ -50,7 +50,7 @@
       flake = false;
     };
   };
-  den.aspects.sphoono.development.claude = {
+  den.aspects.sphoono.development = {
     # claude-code is unfree.
     includes = [ (den.batteries.unfree [ "claude-code" ]) ];
     homeManager =

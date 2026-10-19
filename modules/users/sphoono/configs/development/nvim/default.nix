@@ -1,7 +1,7 @@
 { inputs, ... }: {
   flake-file.inputs.nvf.url = "github:notashelf/nvf";
 
-  den.aspects.sphoono.development.nvim = {
+  den.aspects.sphoono.development = {
     homeManager = {
       imports = [
         inputs.nvf.homeManagerModules.default

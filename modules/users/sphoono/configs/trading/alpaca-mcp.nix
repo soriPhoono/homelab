@@ -1,7 +1,7 @@
 { lib, den, ... }: {
   den.aspects.sphoono.trading = {
     includes = [
-      den.aspects.sphoono.development.claude
+      den.aspects.sphoono.development
     ];
     homeManager = { pkgs, config, ... }: {
       # Alpaca's MCP server for Claude Code, against the paper account.

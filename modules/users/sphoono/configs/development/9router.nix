@@ -4,7 +4,7 @@ _: {
   # subscription quota runs out. Rootless podman container on loopback only;
   # providers and API keys are added imperatively in the dashboard at
   # http://localhost:20128, and persist in the `9router-data` volume.
-  den.aspects.sphoono.development."9router" = {
+  den.aspects.sphoono.development = {
     homeManager =
       { config, ... }:
       {

@@ -2,7 +2,7 @@
 {
   # Antigravity CLI (agy) does outside research for Claude Code and writes it
   # into the shared agent wiki. Login is imperative: run `agy` once per host.
-  den.aspects.sphoono.development.antigravity = {
+  den.aspects.sphoono.development = {
     includes = [ (den.batteries.unfree [ "antigravity-cli" ]) ];
     homeManager =
       {

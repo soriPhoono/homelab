@@ -4,7 +4,7 @@
     url = "github:ChmaraX/herdr-nvim/v1.1.0";
     flake = false;
   };
-  den.aspects.sphoono.development.herdr = {
+  den.aspects.sphoono.development = {
     homeManager =
       {
         config,
