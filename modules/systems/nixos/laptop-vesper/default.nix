@@ -34,6 +34,7 @@
       den.aspects.hosting.docker
       den.aspects.hosting.podman
       den.aspects.hosting.microserver.media
+      den.aspects.hosting.homepage
     ];
     nixos = { pkgs, ... }: {
       hardware.facter.reportPath = ./facter.json;

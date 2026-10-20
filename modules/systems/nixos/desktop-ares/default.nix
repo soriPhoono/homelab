@@ -49,6 +49,7 @@
         den.aspects.hosting.docker
         den.aspects.hosting.podman
         den.aspects.hosting.microserver.media
+        den.aspects.hosting.homepage
         den.aspects.hosting.gaming.host
       ];
       nixos = { pkgs, ... }: {
