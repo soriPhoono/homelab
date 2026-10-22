@@ -33,10 +33,13 @@ The package must be public so the VPS can pull it without a registry login.
 
 `fusion-signer` holds the trading wallet key and places 1inch Fusion orders
 on Base for n8n at `http://fusion-signer:8080`. It has no published port.
-Design: `docs/superpowers/specs/2026-10-07-fusion-signer-design.md`.
+The source, design spec and image workflow live in the private
+`soriPhoono/fusion-signer` repository. Its image is private, so the VPS
+needs a registry login with read access to pull it.
 
-Seal its secrets once, inside `docker/images/fusion-signer` with
-dependencies installed (`pnpm install`):
+Seal its secrets once, from a checkout of `soriPhoono/fusion-signer` with
+dependencies installed (`pnpm install`) and `SECRETS_DIR` pointing at
+`docker/stacks/n8n/secrets`:
 
 ```sh
 ./scripts/new-wallet.sh            # prints only the wallet address
