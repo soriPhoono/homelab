@@ -63,7 +63,8 @@ in
               show_location = true;
               clipboard_enabled = true;
               password_style = "default";
-              settings_show_advanced = false;
+              settings_show_advanced = true;
+              avatar_path = "${config.home.homeDirectory}/.face";
               # Noctalia runs under uwsm, so launched apps get their own units
               # and survive a shell restart.
               launch_apps_as_systemd_services = true;
@@ -106,11 +107,15 @@ in
             wallpaper = {
               enabled = true;
               directory = "${config.home.homeDirectory}/Shared/Pictures/Wallpapers";
+              transition_on_startup = true;
+              automation = {
+                enabled = true;
+                recursive = true;
+              };
             };
 
             bar.main = {
               position = "top";
-              background_opacity = 0.9;
               radius = 12;
               padding = 14;
               widget_spacing = 6;
@@ -120,9 +125,9 @@ in
               reserve_space = true;
               capsule = true;
               start = [
-                # The work-clock plugin widget instance, named by the GUI.
-                "widget"
                 "launcher"
+                # The work-clock plugin widget instance, named by the GUI.
+                "widget_2"
                 "workspaces"
                 "cpu"
                 "temp"
@@ -152,14 +157,16 @@ in
               ];
             };
 
-            widget.widget.type = "soriphoono/work-clock:widget";
+            widget.widget_2.type = "soriphoono/work-clock:widget";
 
             plugin_settings."soriphoono/work-clock" = {
               auto-start-breaks = true;
               use-bundled-alarm-sound = true;
             };
 
-            dock.enabled = false;
+            dock = {
+              enabled = false;
+            };
 
             notification = {
               enable_daemon = true;
@@ -206,6 +213,17 @@ in
               tint_intensity = 0.3;
             };
 
+            # One login box per output, placed in that output's pixel space.
+            lockscreen_widgets = {
+              enabled = true;
+              schema_version = 2;
+              grid = {
+                cell_size = 16;
+                major_interval = 4;
+                visible = true;
+              };
+            };
+
             system.monitor = {
               enabled = true;
               cpu_poll_seconds = 2.0;
@@ -241,12 +259,14 @@ in
               behavior = {
                 lock = {
                   action = "lock";
-                  timeout = 600;
+                  command = "noctalia:session lock";
+                  timeout = 600.0;
                   enabled = true;
                 };
                 screen-off = {
                   action = "screen_off";
-                  timeout = 660;
+                  resume_command = "noctalia:dpms-on";
+                  timeout = 660.0;
                   enabled = true;
                 };
               };
@@ -255,6 +275,7 @@ in
             calendar = {
               enabled = true;
               refresh_minutes = 15;
+              account.personal_google.type = "google";
             };
 
             # Stylix themes the other applications; noctalia's own templates
