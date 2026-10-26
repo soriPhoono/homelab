@@ -17,8 +17,11 @@ _: {
         systemd.user.services."9router" = {
           Unit = {
             Description = "9router AI gateway";
-            # The env file is rendered by sops-nix at login.
+            # The env file is rendered by sops-nix at login. Home Manager
+            # restarts sops-nix on every switch, and PartOf carries that
+            # restart here, so the service never keeps a stale env file.
             After = [ "sops-nix.service" ];
+            PartOf = [ "sops-nix.service" ];
           };
           Service = {
             # The default host is 0.0.0.0, and no API key is required, so the
