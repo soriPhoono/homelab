@@ -8,7 +8,8 @@
   the managed `opencode.json`. OpenCode merges the two. Every model, the
   local Gemma included, comes from that list with the gateway's own limits.
 */
-_: {
+{ inputs, ... }:
+{
   den.aspects.sphoono.development.opencode = {
     homeManager =
       {
@@ -19,6 +20,68 @@ _: {
       }:
       let
         gateway = "http://127.0.0.1:20128/v1";
+
+        # Skills are found in the pinned inputs at evaluation time, so a
+        # bumped input brings its new skills along. A skill is any
+        # directory that holds a SKILL.md.
+        skillDirs =
+          base:
+          lib.mapAttrs (name: _: base + "/${name}") (
+            lib.filterAttrs (
+              name: type: type == "directory" && builtins.pathExists (base + "/${name}/SKILL.md")
+            ) (builtins.readDir base)
+          );
+        skillDirsIn = base: dirs: lib.mergeAttrsList (map (dir: skillDirs (base + "/${dir}")) dirs);
+
+        # mattpocock's library without in-progress and deprecated.
+        mattpocock = skillDirsIn inputs.mattpocock-skills [
+          "skills/engineering"
+          "skills/misc"
+          "skills/productivity"
+        ];
+        # Every category of awesome-ai-agent-skills (103 skills). Merged
+        # after mattpocock, so its code-review wins the one name clash.
+        awesome = skillDirsIn inputs.awesome-ai-agent-skills (
+          lib.attrNames (
+            lib.filterAttrs (_: type: type == "directory") (builtins.readDir inputs.awesome-ai-agent-skills)
+          )
+        );
+        superpowers = skillDirs (inputs.superpowers + "/skills");
+        agentSkills = pkgs.agent-skills.github;
+        skills =
+          mattpocock
+          // awesome
+          // superpowers
+          // {
+            create-agentsmd = inputs.awesome-copilot + "/skills/create-agentsmd";
+            create-readme = inputs.awesome-copilot + "/skills/create-readme";
+            git-commit = inputs.awesome-copilot + "/skills/git-commit";
+            stop-slop = agentSkills.hardikpandya.stop-slop.stop-slop;
+            # Lets an agent search skills.sh and install a skill into a
+            # project.
+            inherit (agentSkills.vercel-labs.skills) find-skills;
+          }
+          # The n8n skills that do not depend on czlonkowski's separate
+          # n8n-mcp server; n8n's own MCP server covers the rest.
+          // {
+            inherit (agentSkills.czlonkowski.n8n-skills)
+              n8n-expression-syntax
+              n8n-code-javascript
+              n8n-code-python
+              n8n-code-tool
+              n8n-binary-and-data
+              ;
+          }
+          // {
+            inherit (agentSkills.kepano.obsidian-skills)
+              defuddle
+              json-canvas
+              knap
+              obsidian-bases
+              obsidian-cli
+              obsidian-markdown
+              ;
+          };
 
         # OpenCode reads ~/.claude/skills, which Home Manager fills for Claude
         # Code: 177 skills, about 17.7k tokens on every request. The switch
@@ -98,9 +161,14 @@ _: {
         # Antigravity aspects with the same mode.
         sops.secrets."api/mem0-api-key".mode = "0400";
 
+        # Provides pkgs.agent-skills; the Claude aspect adds it too, which is
+        # harmless.
+        nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
+
         programs.opencode = {
           enable = true;
           package = opencode;
+          inherit skills;
           # Claude's prompt, verbatim: v2 does not read ~/.claude/CLAUDE.md.
           context = ''
             ${builtins.readFile ../../../assets/documents/user.md}
