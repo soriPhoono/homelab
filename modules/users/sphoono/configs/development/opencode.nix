@@ -5,8 +5,8 @@
 
   OpenCode does not discover models from an OpenAI-compatible endpoint, so a
   oneshot service lists 9router's `/v1/models` into `opencode.jsonc` beside
-  the managed `opencode.json`. OpenCode merges the two. Models declared here
-  keep their hand-tuned limits and are skipped by the generated file.
+  the managed `opencode.json`. OpenCode merges the two. Every model, the
+  local Gemma included, comes from that list with the gateway's own limits.
 */
 _: {
   den.aspects.sphoono.development.opencode = {
@@ -18,20 +18,6 @@ _: {
       }:
       let
         gateway = "http://127.0.0.1:20128/v1";
-
-        # Declared by hand because the gateway reports a rounded 128000
-        # context for it, not the 131072 Ollama is configured with.
-        declaredModels = {
-          "desktop-ollama/gemma4:26b-a4b-it-qat" = {
-            name = "Gemma 4 26B-A4B QAT (desktop-ares)";
-            # Matches OLLAMA_CONTEXT_LENGTH. Output is generous because the
-            # model reasons first and an exhausted budget returns nothing.
-            limit = {
-              context = 131072;
-              output = 32768;
-            };
-          };
-        };
 
         syncModels = pkgs.writeShellApplication {
           name = "opencode-sync-models";
@@ -55,10 +41,9 @@ _: {
             done
             [ -s "$tmp" ] || { echo "9router did not answer; keeping the old list" >&2; exit 1; }
 
-            jq --argjson skip '${builtins.toJSON (builtins.attrNames declaredModels)}' '
+            jq '
               { provider: { "9router": { models: (
                 .data
-                | map(select(.id as $id | $skip | index($id) | not))
                 | map({ key: .id, value: {
                     name: .id,
                     tool_call: (.capabilities.tools // false),
@@ -92,7 +77,6 @@ _: {
                 # 9router needs no key on loopback; the SDK wants a non-empty one.
                 apiKey = "9router";
               };
-              models = declaredModels;
             };
           };
         };
