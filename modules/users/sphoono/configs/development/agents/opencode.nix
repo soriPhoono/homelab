@@ -19,6 +19,19 @@ _: {
       let
         gateway = "http://127.0.0.1:20128/v1";
 
+        # OpenCode reads ~/.claude/skills, which Home Manager fills for Claude
+        # Code: 177 skills, about 17.7k tokens on every request. The switch
+        # hides them; project-level CLAUDE.md files keep loading.
+        opencode = pkgs.symlinkJoin {
+          inherit (pkgs.opencode) pname version meta;
+          name = "${pkgs.opencode.name}-wrapped";
+          paths = [ pkgs.opencode ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/opencode --set OPENCODE_DISABLE_CLAUDE_CODE_SKILLS 1
+          '';
+        };
+
         syncModels = pkgs.writeShellApplication {
           name = "opencode-sync-models";
           runtimeInputs = [
@@ -67,6 +80,13 @@ _: {
 
         programs.opencode = {
           enable = true;
+          package = opencode;
+          # Claude's prompt, verbatim: v2 does not read ~/.claude/CLAUDE.md.
+          context = ''
+            ${builtins.readFile ../../../assets/documents/user.md}
+
+            ${builtins.readFile ../../../assets/documents/claude/AGENTS.md}
+          '';
           settings = {
             "$schema" = "https://opencode.ai/config.json";
             provider."9router" = {
