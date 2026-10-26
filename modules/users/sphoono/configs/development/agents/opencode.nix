@@ -12,6 +12,7 @@ _: {
   den.aspects.sphoono.development.opencode = {
     homeManager =
       {
+        config,
         lib,
         pkgs,
         ...
@@ -93,6 +94,10 @@ _: {
       {
         home.packages = [ syncModels ];
 
+        # Read by the mem0 MCP entry above; also declared by the Claude and
+        # Antigravity aspects with the same mode.
+        sops.secrets."api/mem0-api-key".mode = "0400";
+
         programs.opencode = {
           enable = true;
           package = opencode;
@@ -111,6 +116,57 @@ _: {
                 baseURL = gateway;
                 # 9router needs no key on loopback; the SDK wants a non-empty one.
                 apiKey = "9router";
+              };
+            };
+            # Always-on tools. Hosted servers sign in with OAuth (run
+            # `opencode mcp auth <name>` once); nothing sensitive is stored
+            # in Nix. Project-specific servers live in each repo's config.
+            mcp.servers = {
+              notion = {
+                type = "remote";
+                url = "https://mcp.notion.com/mcp";
+              };
+              n8n = {
+                type = "remote";
+                url = "https://agents.cryptic-coders.net/mcp-server/http";
+              };
+              # Works without a key; a key only raises the rate limit.
+              context7 = {
+                type = "remote";
+                url = "https://mcp.context7.com/mcp";
+                oauth = false;
+              };
+              # The mem0 plugin targets OpenCode 1 and fails to load in 2, so
+              # the hosted server stands in. The existing sops key is read
+              # from its path at startup, never inlined.
+              mem0 = {
+                type = "remote";
+                url = "https://mcp.mem0.ai/mcp/";
+                oauth = false;
+                headers.Authorization = "Bearer {file:${config.sops.secrets."api/mem0-api-key".path}}";
+              };
+              # nixpkgs marks mcp-nixos's dependency broken until the channel
+              # passes 2026-10-25, so the PyPI release runs through uvx, like
+              # Headroom. Swap for pkgs.mcp-nixos once it builds again.
+              nixos = {
+                type = "local";
+                command = [
+                  (lib.getExe' pkgs.uv "uvx")
+                  "--python"
+                  (lib.getExe pkgs.python313)
+                  "--from"
+                  "mcp-nixos==3.1.0"
+                  "mcp-nixos"
+                ];
+                environment = {
+                  UV_PYTHON_DOWNLOADS = "never";
+                  LD_LIBRARY_PATH = lib.makeLibraryPath [
+                    pkgs.stdenv.cc.cc.lib
+                    pkgs.zlib
+                  ];
+                };
+                # The first start downloads the package.
+                timeout.startup = 120000;
               };
             };
             # Session titles go to a cheap chat chain on 9router, so they
