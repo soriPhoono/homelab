@@ -165,6 +165,8 @@
         nixpkgs.follows = "nixpkgs";
         systems.follows = "systems";
         treefmt-nix.follows = "treefmt-nix";
+        flake-file.follows = "flake-file";
+        pre-commit-hooks.follows = "pre-commit-hooks";
       };
     };
     treefmt-nix = {

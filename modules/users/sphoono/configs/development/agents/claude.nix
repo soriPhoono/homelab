@@ -250,10 +250,9 @@
           enable = true;
           mcpServers = {
             rea.command = lib.getExe rea-mcp;
-            # NixOS, Home Manager and nixpkgs option and package lookup over
-            # stdio. Referenced by store path, so it is not on the user's
-            # PATH.
-            nixos.command = lib.getExe pkgs.mcp-nixos;
+            # The nixos lookup server is dropped: nixpkgs marks its
+            # dependency fastmcp-slim broken (2026-10-19), and Claude Code is
+            # being retired. OpenCode carries its own entry.
           };
           package =
             let
@@ -290,9 +289,9 @@
             };
           };
           context = ''
-            ${builtins.readFile ../../assets/documents/user.md}
+            ${builtins.readFile ../../../assets/documents/user.md}
 
-            ${builtins.readFile ../../assets/documents/claude/AGENTS.md}
+            ${builtins.readFile ../../../assets/documents/claude/AGENTS.md}
           '';
           marketplaces = {
             inherit (inputs) mem0;
@@ -327,7 +326,7 @@
             # Work with git repos
             git-commit = "${inputs.awesome-copilot}/skills/git-commit";
             # Implement the plans Antigravity hands back
-            plan-watch = ../../assets/skills/plan-watch;
+            plan-watch = ../../../assets/skills/plan-watch;
             # Build n8n workflows through the n8n MCP server
             inherit (pkgs.agent-skills.github.czlonkowski.n8n-skills)
               n8n-mcp-tools-expert
