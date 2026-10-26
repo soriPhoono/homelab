@@ -18,7 +18,10 @@
           OLLAMA_MAX_LOADED_MODELS = "1";
           OLLAMA_NUM_PARALLEL = "1";
           OLLAMA_KEEP_ALIVE = "5m";
-          OLLAMA_CONTEXT_LENGTH = "16384";
+          # Ollama truncates a prompt to half the context, so this is a
+          # 32k-token prompt budget. Measured on the 26B-A4B: 3.2 GiB of the
+          # 24 GiB card stays free; 262144 starves the compositor.
+          OLLAMA_CONTEXT_LENGTH = "65536";
           OLLAMA_FLASH_ATTENTION = "1";
           OLLAMA_KV_CACHE_TYPE = "q8_0";
         };
