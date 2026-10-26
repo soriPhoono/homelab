@@ -103,7 +103,6 @@
       includes = [
         den.batteries.primary-user
         den.batteries.host-aspects
-
         den.aspects.sphoono.desktop.wm.hypr
         den.aspects.sphoono.desktop.wm.shells.noctalia
         den.aspects.sphoono.desktop.wm.supporting
@@ -111,7 +110,6 @@
         den.aspects.sphoono.desktop.syncthing
         den.aspects.sphoono.development
         den.aspects.sphoono.content-creation
-        den.aspects.sphoono.trading.desktop
         den.aspects.hosting.gaming.client
       ];
 

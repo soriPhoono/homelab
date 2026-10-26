@@ -109,7 +109,6 @@
       den.aspects.sphoono.desktop
       den.aspects.sphoono.desktop.syncthing
       den.aspects.sphoono.development
-      den.aspects.sphoono.trading.desktop
       den.aspects.hosting.gaming.client
     ];
 
