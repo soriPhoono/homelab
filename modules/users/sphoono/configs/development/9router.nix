@@ -25,8 +25,9 @@ _: {
           };
           Service = {
             # The default host is 0.0.0.0, and no API key is required, so the
-            # loopback bind is the only access control.
-            ExecStart = "${lib.getExe pkgs._9router} --host 127.0.0.1 --port 20128 --no-browser --skip-update";
+            # loopback bind is the only access control. --log sends the
+            # server's own errors to the journal; they are hidden otherwise.
+            ExecStart = "${lib.getExe pkgs._9router} --host 127.0.0.1 --port 20128 --no-browser --skip-update --log";
             EnvironmentFile = config.sops.templates."9router.env".path;
             Environment = [
               "NODE_ENV=production"
