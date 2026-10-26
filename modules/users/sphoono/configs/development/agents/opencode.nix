@@ -54,13 +54,28 @@ _: {
             done
             [ -s "$tmp" ] || { echo "9router did not answer; keeping the old list" >&2; exit 1; }
 
+            # OpenCode 2 model schema: capabilities and limit.
             jq '
-              { provider: { "9router": { models: (
+              { providers: { "9router": { models: (
                 .data
                 | map({ key: .id, value: {
                     name: .id,
-                    tool_call: (.capabilities.tools // false),
-                    reasoning: (.capabilities.reasoning // false),
+                    capabilities: {
+                      tools: (.capabilities.tools // false),
+                      input: (
+                        ["text"]
+                        + (if .capabilities.vision then ["image"] else [] end)
+                        + (if .capabilities.pdf then ["pdf"] else [] end)
+                        + (if .capabilities.audioInput then ["audio"] else [] end)
+                        + (if .capabilities.videoInput then ["video"] else [] end)
+                      ),
+                      output: (
+                        ["text"]
+                        + (if .capabilities.imageOutput then ["image"] else [] end)
+                        + (if .capabilities.audioOutput then ["audio"] else [] end)
+                      ),
+                      reasoning: { supported: (.capabilities.reasoning // false) }
+                    },
                     limit: {
                       context: (.context_length // 128000),
                       output: (.max_completion_tokens // 8192)
@@ -71,7 +86,7 @@ _: {
             ' "$tmp" > "$tmp.out"
 
             mv "$tmp.out" "$dest"
-            echo "wrote $(jq '.provider."9router".models | length' "$dest") models to $dest"
+            echo "wrote $(jq '.providers."9router".models | length' "$dest") models to $dest"
           '';
         };
       in
@@ -89,15 +104,32 @@ _: {
           '';
           settings = {
             "$schema" = "https://opencode.ai/config.json";
-            provider."9router" = {
-              npm = "@ai-sdk/openai-compatible";
+            providers."9router" = {
               name = "9router";
-              options = {
+              package = "aisdk:@ai-sdk/openai-compatible";
+              settings = {
                 baseURL = gateway;
                 # 9router needs no key on loopback; the SDK wants a non-empty one.
                 apiKey = "9router";
               };
             };
+            # Session titles go to a cheap chat chain on 9router, so they
+            # never queue on the local GPU.
+            agents.title.model = "9router/Summary-models";
+            permissions = [
+              # find-skills installs third-party skills through npx.
+              {
+                action = "shell";
+                resource = "npx skills add *";
+                effect = "ask";
+              }
+              # v2 allows leaving the project by default; v1 asked.
+              {
+                action = "external_directory";
+                resource = "*";
+                effect = "ask";
+              }
+            ];
           };
         };
 
