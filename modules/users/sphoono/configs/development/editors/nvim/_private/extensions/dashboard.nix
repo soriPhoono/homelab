@@ -2,7 +2,7 @@
 let
   inherit (lib.generators) mkLuaInline;
 
-  logo = lib.strings.splitString "\n" (builtins.readFile ../../../../../assets/logo.txt);
+  logo = lib.strings.splitString "\n" (builtins.readFile ../../../../../../assets/logo.txt);
 
   button = icon: label: shortcut: command: {
     type = "button";

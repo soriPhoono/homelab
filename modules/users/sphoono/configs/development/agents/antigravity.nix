@@ -67,9 +67,9 @@
           mem0-search = "${mem0Plugin}/skills/search";
           # Research protocol: wiki upkeep, requests from Claude, and plans
           # handed back to Claude.
-          llm-wiki = ../../assets/skills/llm-wiki;
-          research-intake = ../../assets/skills/research-intake;
-          claude-handoff = ../../assets/skills/claude-handoff;
+          llm-wiki = ../../../assets/skills/llm-wiki;
+          research-intake = ../../../assets/skills/research-intake;
+          claude-handoff = ../../../assets/skills/claude-handoff;
         };
       in
       {
@@ -177,9 +177,9 @@
             trigger: always_on
             ---
 
-            ${builtins.readFile ../../assets/documents/user.md}
+            ${builtins.readFile ../../../assets/documents/user.md}
 
-            ${builtins.readFile ../../assets/documents/antigravity/AGENTS.md}
+            ${builtins.readFile ../../../assets/documents/antigravity/AGENTS.md}
           '';
         }
         // builtins.listToAttrs (
