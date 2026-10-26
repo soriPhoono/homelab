@@ -7,6 +7,7 @@
     den.aspects.sphoono.development.antigravity
     den.aspects.sphoono.development."9router"
     den.aspects.sphoono.development.opencode
+    den.aspects.sphoono.development.headroom
     den.aspects.sphoono.development.gh
   ];
 }
