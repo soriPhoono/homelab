@@ -5,10 +5,6 @@
       "systemd.show_status=false"
       "udev.log_level=3"
     ];
-    initrd = {
-      verbose = false;
-      systemd.enable = true;
-    };
     consoleLogLevel = 0;
     loader = {
       efi.canTouchEfiVariables = true;
