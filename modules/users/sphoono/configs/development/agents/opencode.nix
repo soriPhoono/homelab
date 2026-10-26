@@ -96,6 +96,101 @@
           '';
         };
 
+        # Claude plugin agents and commands, converted to OpenCode 2 markdown
+        # at build time. Frontmatter becomes description plus mode (agents
+        # only); the model is dropped so they use the session model, and
+        # color names become hex. Agents that listed read-only tools get
+        # edit and shell denied. Bodies are kept verbatim, so references to
+        # Claude's TodoWrite and Task tools remain.
+        plugins = inputs.claude-plugins-official + "/plugins";
+        mdFiles =
+          dir:
+          lib.attrNames (
+            lib.filterAttrs (n: t: t == "regular" && lib.hasSuffix ".md" n) (builtins.readDir dir)
+          );
+        colors = {
+          cyan = "#06b6d4";
+          green = "#22c55e";
+          pink = "#ec4899";
+          red = "#ef4444";
+          yellow = "#eab308";
+        };
+        # Frontmatter fields (a key: line plus its indented continuation
+        # lines) and the body.
+        splitMd =
+          text:
+          let
+            lines = lib.splitString "\n" text;
+            total = builtins.length lines;
+            fmLength = lib.lists.findFirstIndex (l: l == "---") 0 (lib.sublist 1 total lines);
+            fm = lib.sublist 1 fmLength lines;
+            fields = lib.foldl' (
+              acc: l:
+              if builtins.match "[a-z-]+:.*" l != null then
+                acc
+                ++ [
+                  {
+                    key = lib.head (lib.splitString ":" l);
+                    lines = [ l ];
+                  }
+                ]
+              else
+                lib.init acc ++ [ (lib.last acc // { lines = (lib.last acc).lines ++ [ l ]; }) ]
+            ) [ ] fm;
+          in
+          {
+            inherit fields;
+            body = lib.sublist (fmLength + 2) total lines;
+          };
+        fieldOf = fields: key: lib.findFirst (f: f.key == key) null fields;
+        render = fm: body: "---\n${lib.concatStringsSep "\n" fm}\n---\n${lib.concatStringsSep "\n" body}";
+        toAgent =
+          file:
+          let
+            md = splitMd (builtins.readFile file);
+            color = fieldOf md.fields "color";
+            colorName =
+              if color == null then "" else lib.trim (lib.removePrefix "color:" (lib.head color.lines));
+          in
+          render (
+            (fieldOf md.fields "description").lines
+            ++ [ "mode: subagent" ]
+            ++ lib.optional (colors ? ${colorName}) ''color: "${colors.${colorName}}"''
+            ++ lib.optionals (fieldOf md.fields "tools" != null) [
+              "permissions:"
+              "  - action: edit"
+              "    resource: \"*\""
+              "    effect: deny"
+              "  - action: shell"
+              "    resource: \"*\""
+              "    effect: deny"
+            ]
+          ) md.body;
+        toCommand =
+          file:
+          let
+            md = splitMd (builtins.readFile file);
+          in
+          render (fieldOf md.fields "description").lines md.body;
+        fromPlugin =
+          plugin: kind: convert: namespaced:
+          lib.listToAttrs (
+            map (
+              file:
+              lib.nameValuePair ((lib.optionalString namespaced "${plugin}/") + lib.removeSuffix ".md" file) (
+                convert (plugins + "/${plugin}/${kind}/${file}")
+              )
+            ) (mdFiles (plugins + "/${plugin}/${kind}"))
+          );
+        pluginNames = [
+          "feature-dev"
+          "pr-review-toolkit"
+        ];
+        agents = lib.mergeAttrsList (map (plugin: fromPlugin plugin "agents" toAgent true) pluginNames);
+        commands = lib.mergeAttrsList (
+          map (plugin: fromPlugin plugin "commands" toCommand false) pluginNames
+        );
+
         syncModels = pkgs.writeShellApplication {
           name = "opencode-sync-models";
           runtimeInputs = [
@@ -168,7 +263,7 @@
         programs.opencode = {
           enable = true;
           package = opencode;
-          inherit skills;
+          inherit skills agents commands;
           # Claude's prompt, verbatim: v2 does not read ~/.claude/CLAUDE.md.
           context = ''
             ${builtins.readFile ../../../assets/documents/user.md}
