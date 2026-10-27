@@ -245,6 +245,7 @@
         };
       in
       {
+        sops.secrets."api/mem0-api-key" = { };
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
           enable = true;
