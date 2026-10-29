@@ -3,14 +3,14 @@
 #
 # The runners image ships without a package manager, so ffmpeg comes in as
 # static binaries and the runner config is patched in a throwaway stage.
-ARG N8N_VERSION=2.39.6
-ARG FFMPEG_VERSION=9.0.2
+ARG N8N_VERSION=2.45.6
+ARG FFMPEG_VERSION=9.0.2-1
 
 FROM mwader/static-ffmpeg:${FFMPEG_VERSION} AS ffmpeg
 
 FROM n8nio/runners:${N8N_VERSION} AS runners
 
-FROM alpine:3.22 AS config
+FROM alpine:3.24 AS config
 # Stdlib modules the Python runner may import. Upstream allows none; the
 # render code shells out to ffmpeg and manages files under /data/vods.
 ARG PYTHON_STDLIB_ALLOW=subprocess,json,pathlib,tempfile,shutil,os,re,datetime

@@ -24,7 +24,6 @@
       den.aspects.core.hardware.firmware
       den.aspects.core.hardware.cpu.amd
       den.aspects.core.hardware.gpu.amd
-      den.aspects.core.hardware.gpu.nvidia.laptop
       # -- Core OS modules --
       den.aspects.core.bootloaders.systemd-boot
       den.aspects.core.swap.zram
@@ -85,6 +84,7 @@
             ];
           };
       };
+      time.timeZone = "America/Chicago";
       services.asusd.enable = true;
       stylix = {
         enable = true;

@@ -17,19 +17,18 @@ Configuration is expressed as _aspects_: composable units declared under
 
 ## Repo map
 
-- `modules/aspects/` — reusable aspects, the bulk of the configuration.
+- `modules/aspects/` — reusable aspects, only the most general of modules.
 - `modules/systems/nixos/<host>/` — per-host configuration, disko layout
   and the `facter.json` hardware report.
 - `modules/systems/darwin/`, `modules/systems/wsl/` — future planning,
   currently empty scaffolding.
 - `modules/users/<name>.nix` — `den.aspects.<name>` for a user.
 - `modules/homes/<name>.nix` — `den.homes.<system>.<name>`.
-- `modules/inputs.nix` — flake inputs.
+- `modules/inputs.nix` — flake inputs for general stuff, flake inputs for
+  features belong in the feature module.
 - `flake-system/` — flake-parts plumbing: dev shell, pre-commit hooks,
   treefmt, systems, GitHub workflow generators.
 - `secrets/` — sops-encrypted secrets. See [Secrets](#secrets).
-- `.agents/plans/` — implementation plans for the plan watcher, gitignored.
-  See [Research](#research-and-the-wiki).
 
 ## Never hand-edit generated files
 
