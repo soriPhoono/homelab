@@ -7,6 +7,7 @@
     den.aspects.sphoono.development.headroom
     den.aspects.sphoono.development.claude
     den.aspects.sphoono.development.opencode
+    den.aspects.sphoono.development.codex
     den.aspects.sphoono.development.gh
   ];
 }
