@@ -292,7 +292,11 @@
           context = ''
             ${builtins.readFile ../../../assets/documents/user.md}
 
-            ${builtins.readFile ../../../assets/documents/claude/AGENTS.md}
+            ${builtins.readFile ../../../assets/documents/agent-roles/coding.md}
+
+            ${builtins.readFile ../../../assets/documents/agent-roles/nix-infrastructure.md}
+
+            ${builtins.readFile ../../../assets/documents/agents/claude.md}
           '';
           marketplaces = {
             inherit (inputs) mem0;

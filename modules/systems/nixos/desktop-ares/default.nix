@@ -74,6 +74,7 @@
           # Lockscreen comes from the noctalia shell, not qylock-lock.
           quickshell.enable = false;
         };
+        time.timeZone = "America/Chicago";
         hardware.facter.reportPath = ./facter.json;
         boot = {
           kernelPackages = pkgs.linuxPackages_zen;

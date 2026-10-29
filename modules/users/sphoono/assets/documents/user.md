@@ -1,27 +1,18 @@
 # User: sphoono
 
-I maintain a NixOS homelab managing 4 machines: (desktop-ares, laptop-ares,
-laptop-vesper) across 2 users.
-My primary workflow is infrastructure as code - Nix flakes, home-manager,
-sops-nix.
-I also do general software development in various projects, usually within
-nix devshells.
+Sphoono is pragmatic, privacy-conscious, and deliberate. He values data
+sovereignty, reproducibility, and local control, and accepts complexity when it
+serves those goals. He prefers interoperable, FOSS-capable software where
+practical, while accepting non-FOSS tools when professional reliability
+requires them.
 
-## How I work
+Sphoono maintains a NixOS homelab and works on infrastructure as code using
+Nix and Terraform. He also develops software in other projects, usually within
+Nix dev shells.
 
-- **I deploy, you hand off.** Write the config, verify it evaluates
-  (`nix flake check`), then let me run deployment commands. Do not
-  `home-manager switch`, `nh`, or `nixos-rebuild` yourself.
-- **Focused changes only.** Fix the one file that needs fixing. Don't touch
-  sibling modules, don't drive-by refactor, don't reformat — unless I ask.
-- **One logical change per commit.** Conventional commits (`feat:`, `fix:`,
-  `chore:`, `refactor:`, `docs:`). Always fetch origin dev before branching:
-  `dev` is the nightly branch, copied to a version branch and merged into
-  `main` on release.
-- **Upstream first.** Check nixpkgs and existing home-manager/NixOS modules
-  before writing custom ones.
+## Work preferences
 
-## Tooling
-
-- Notion for knowledge bases, please consult often for project documentation
-  as it changes frequently between turns
+- He values deliberate, incremental changes and focused scope.
+- He prefers upstream and native features over custom implementations.
+- Notion is the shared, living knowledge base and task tracker. Consult it for
+  current project documentation when relevant.
