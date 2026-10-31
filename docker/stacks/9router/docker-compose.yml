@@ -8,8 +8,12 @@ services:
       - /bin/sh
       - -c
       - >-
-        export JWT_SECRET="$$(cat /run/secrets/9router-jwt-secret)"
+        set -eu;
+        JWT_SECRET="$$(cat /run/secrets/9router-jwt-secret)";
         INITIAL_PASSWORD="$$(cat /run/secrets/9router-initial-password)";
+        [ -n "$$JWT_SECRET" ] && [ -n "$$INITIAL_PASSWORD" ] ||
+        { echo "missing secret" >&2; exit 1; };
+        export JWT_SECRET INITIAL_PASSWORD;
         exec /entrypoint.sh node custom-server.js
     environment:
       DATA_DIR: /app/data
