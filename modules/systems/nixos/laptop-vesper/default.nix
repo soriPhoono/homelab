@@ -60,6 +60,7 @@
             ];
           };
       };
+      time.timeZone = "America/Chicago";
     };
   };
 

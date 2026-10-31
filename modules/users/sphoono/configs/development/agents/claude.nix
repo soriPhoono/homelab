@@ -7,10 +7,6 @@
 {
   flake-file.inputs = {
     nix-skills.url = "github:sudosubin/nix-skills";
-    mem0 = {
-      url = "github:mem0ai/mem0/v2.2.1";
-      flake = false;
-    };
     # nix-skills has not yet indexed these two repos (tracked in its
     # sources.json but no skill data generated), so their skills are
     # taken directly instead of through pkgs.agent-skills.
@@ -42,11 +38,6 @@
     # installed as a plugin.
     knowledge-work-plugins = {
       url = "github:anthropics/knowledge-work-plugins/02ffa99ff00ce4d3046ccebabb8357cb39f3ab06";
-      flake = false;
-    };
-    # 103 skills, MIT, all linked; see the awesomeSkills list.
-    awesome-ai-agent-skills = {
-      url = "github:seb1n/awesome-ai-agent-skills/75865a5d037a4cdaa7f409a4ec14ab9b0292920b";
       flake = false;
     };
   };
@@ -245,6 +236,7 @@
         };
       in
       {
+        sops.secrets."api/mem0-api-key" = { };
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
           enable = true;
@@ -291,7 +283,11 @@
           context = ''
             ${builtins.readFile ../../../assets/documents/user.md}
 
-            ${builtins.readFile ../../../assets/documents/claude/AGENTS.md}
+            ${builtins.readFile ../../../assets/documents/agent-roles/coding.md}
+
+            ${builtins.readFile ../../../assets/documents/agent-roles/nix-infrastructure.md}
+
+            ${builtins.readFile ../../../assets/documents/agents/claude.md}
           '';
           marketplaces = {
             inherit (inputs) mem0;
