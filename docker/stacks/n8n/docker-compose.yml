@@ -30,9 +30,6 @@ services:
       - n8n_data:/home/node/.n8n
       - vods:/data/vods
     deploy:
-      placement:
-        constraints:
-          - node.hostname == sphoono-vps
       resources:
         limits:
           memory: 2G
@@ -57,9 +54,6 @@ services:
     deploy:
       mode: replicated
       replicas: 2
-      placement:
-        constraints:
-          - node.hostname == sphoono-vps
       resources:
         limits:
           memory: 2G
@@ -74,9 +68,6 @@ services:
     secrets:
       - cloudflared_tunnel_token
     deploy:
-      placement:
-        constraints:
-          - node.hostname == sphoono-vps
       resources:
         limits:
           memory: 256M

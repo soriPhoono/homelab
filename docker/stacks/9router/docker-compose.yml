@@ -61,6 +61,8 @@ services:
     environment:
       HEADROOM_TELEMETRY: "off"
       HEADROOM_UPDATE_CHECK: "off"
+    networks:
+      - default
     deploy:
       resources:
         limits:
