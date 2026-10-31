@@ -48,9 +48,9 @@ _: {
             [ -s "$tmp" ] || { echo "gateway did not answer; keeping the old list" >&2; exit 1; }
 
             # OpenCode 2 model schema: capabilities and limit.
-            jq --arg key "$key" '
+            jq --arg key "$key" --arg url "${gateway}" '
               { providers: { "9router": {
-                settings: { apiKey: $key },
+                settings: { apiKey: $key, baseURL: $url },
                 models: (
                   .data
                   | map({ key: .id, value: {
@@ -87,6 +87,8 @@ _: {
         };
       in
       lib.mkIf config.programs.opencode.enable {
+        home.packages = [ syncModels ];
+
         programs.opencode.settings.providers."9router" = {
           name = "9router";
           package = "aisdk:@ai-sdk/openai-compatible";
