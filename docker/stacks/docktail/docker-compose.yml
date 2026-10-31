@@ -1,0 +1,57 @@
+services:
+  tailscale:
+    image: tailscale/tailscale:v1.104
+    secrets:
+      - tailscale-oauth-client-id
+      - tailscale-oauth-client-secret
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - tailscale-socket:/var/run/tailscale
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - TS_CLIENT_ID=file:/run/secrets/tailscale-oauth-client-id
+      - TS_CLIENT_SECRET=file:/run/secrets/tailscale-oauth-client-secret
+      - TS_EXTRA_ARGS=--advertise-tags=tag:sphoono-vps
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SOCKET=/var/run/tailscale/tailscaled.sock
+      - TS_USERSPACE=false
+    networks:
+      - tailscale
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    deploy:
+      mode: global
+  docktail:
+    image: ghcr.io/marvinvr/docktail:v1.8.6
+    restart: unless-stopped
+    secrets:
+      - tailscale-oauth-client-id
+      - tailscale-oauth-client-secret
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - tailscale-socket:/var/run/tailscale
+    networks:
+      - tailscale
+    environment:
+      - TAILSCALE_OAUTH_CLIENT_ID_FILE=/run/secrets/tailscale-oauth-client-id
+      - TAILSCALE_OAUTH_CLIENT_SECRET_FILE=/run/secrets/tailscale-oauth-client-secret
+    deploy:
+      mode: global
+
+networks:
+  tailscale:
+    driver: overlay
+    attachable: true
+    # A fixed name lets other stacks join it as an external network.
+    name: tailscale
+
+secrets:
+  tailscale-oauth-client-id:
+    file: ./secrets/tailscale-oauth-client-id
+  tailscale-oauth-client-secret:
+    file: ./secrets/tailscale-oauth-client-secret
+
+volumes:
+  tailscale-state:
+  tailscale-socket:

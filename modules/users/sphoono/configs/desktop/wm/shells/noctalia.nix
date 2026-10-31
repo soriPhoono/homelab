@@ -104,6 +104,10 @@ in
               ];
             };
 
+            # Detect the location from the IP address via noctalia.dev, for
+            # weather and the night light schedule.
+            location.auto_locate = true;
+
             wallpaper = {
               enabled = true;
               directory = "${config.home.homeDirectory}/Shared/Pictures/Wallpapers";

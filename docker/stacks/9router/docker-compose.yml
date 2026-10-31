@@ -1,0 +1,87 @@
+services:
+  9router:
+    image: decolua/9router:0.5.112
+    # The app reads JWT_SECRET and INITIAL_PASSWORD from the environment only.
+    # Export them from the Swarm secrets, then hand off to the image entrypoint
+    # so it still drops to the node user. $$ keeps compose from interpolating.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        set -eu;
+        JWT_SECRET="$$(cat /run/secrets/9router-jwt-secret)";
+        INITIAL_PASSWORD="$$(cat /run/secrets/9router-initial-password)";
+        [ -n "$$JWT_SECRET" ] && [ -n "$$INITIAL_PASSWORD" ] ||
+        { echo "missing secret" >&2; exit 1; };
+        export JWT_SECRET INITIAL_PASSWORD;
+        exec /entrypoint.sh node custom-server.js
+    environment:
+      DATA_DIR: /app/data
+      HEADROOM_URL: http://headroom:8787
+      HOSTNAME: 0.0.0.0
+      NEXT_TELEMETRY_DISABLED: "1"
+      NODE_ENV: production
+      PORT: "20128"
+      # Request logs hold prompts and code.
+      ENABLE_REQUEST_LOGS: "false"
+    networks:
+      - default
+      - tailscale
+    secrets:
+      - 9router-jwt-secret
+      - 9router-initial-password
+    volumes:
+      - 9router-data:/app/data
+    # DockTail reads container labels only; Swarm applies top-level labels to
+    # each task container, whereas deploy.labels stay on the service object.
+    labels:
+      docktail.service.enable: "true"
+      docktail.service.network: tailscale
+      docktail.service.name: sphoono-vps-9router
+      docktail.service.port: "20128"
+      docktail.service.service-port: "80"
+      docktail.service.service-protocol: http
+      docktail.service.1.name: sphoono-vps-9router
+      docktail.service.1.port: "20128"
+      docktail.service.1.service-port: "443"
+      docktail.service.1.service-protocol: https
+    deploy:
+      placement:
+        max_replicas_per_node: 1
+      resources:
+        limits:
+          memory: 1G
+      restart_policy:
+        condition: any
+        delay: 5s
+  headroom:
+    # The image entrypoint is already `headroom proxy --host 0.0.0.0 --port
+    # 8787`, so no command is needed.
+    image: ghcr.io/chopratejas/headroom@sha256:50b85d8e320cfcdf1b38919bb7ae067b93ff7a8de0a93f05b2c1246370200d1c
+    environment:
+      HEADROOM_TELEMETRY: "off"
+      HEADROOM_UPDATE_CHECK: "off"
+    networks:
+      - default
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+      restart_policy:
+        condition: any
+        delay: 5s
+
+networks:
+  default:
+    driver: overlay
+  tailscale:
+    external: true
+
+secrets:
+  9router-jwt-secret:
+    file: ./secrets/9router-jwt-secret
+  9router-initial-password:
+    file: ./secrets/9router-initial-password
+
+volumes:
+  9router-data:
