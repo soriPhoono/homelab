@@ -23,7 +23,7 @@ services:
     deploy:
       mode: global
   docktail:
-    image: ghcr.io/marvinvr/docktail:v1.8.6
+    image: ghcr.io/marvinvr/docktail:1.8.6
     restart: unless-stopped
     secrets:
       - tailscale-oauth-client-id
