@@ -38,6 +38,8 @@ services:
       docktail.service.enable: "true"
       docktail.service.network: tailscale
       docktail.service.name: sphoono-vps-9router
+      # Docktail defaults to tag:container, which the tailnet does not define.
+      docktail.tags: tag:sphoono-vps-service
       docktail.service.port: "20128"
       docktail.service.service-port: "80"
       docktail.service.service-protocol: http
