@@ -33,7 +33,23 @@
           image = "ghcr.io/soriphoono/comfyui-rocm:0.43.2-rocm10.1.0";
           ports = [ "127.0.0.1:8188:8188" ];
           volumes = [ "${stateDirectory}:/data:rw" ];
-          extraOptions = [ "--user=1000:1000" ];
+          # Cap RAM below the host's total so a runaway load OOM-kills the
+          # container, not the desktop. The cap sits above the ~15-20 GB the
+          # staged MiniMax H3 models need.
+          extraOptions = [
+            "--user=1000:1000"
+            "--memory=20g"
+            "--memory-swap=20g"
+          ];
+
+          # Unload models after each run and keep 4 GB of VRAM free for the
+          # compositor and Ollama. The image entrypoint is main.py, so these
+          # are appended to it.
+          cmd = [
+            "--disable-smart-memory"
+            "--reserve-vram"
+            "4"
+          ];
         };
 
         # On demand only; see the header.
