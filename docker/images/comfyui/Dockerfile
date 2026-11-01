@@ -9,9 +9,12 @@ ARG COMFYUI_VERSION=0.43.2
 FROM rocm/pytorch:${ROCM_PYTORCH_TAG}
 ARG COMFYUI_VERSION
 
-# hadolint ignore=DL3003
-RUN git clone --depth 1 --branch "v${COMFYUI_VERSION}" \
-      https://github.com/comfyanonymous/ComfyUI /opt/ComfyUI \
+# The base image has no git or curl, so the release tarball comes down with
+# the Python it already ships.
+RUN mkdir /opt/ComfyUI \
+  && python -c "import urllib.request as u; u.urlretrieve('https://github.com/comfyanonymous/ComfyUI/archive/refs/tags/v${COMFYUI_VERSION}.tar.gz', '/tmp/comfyui.tar.gz')" \
+  && tar -xzf /tmp/comfyui.tar.gz -C /opt/ComfyUI --strip-components=1 \
+  && rm /tmp/comfyui.tar.gz \
   && grep -viE '^(torch|torchvision|torchaudio)([<>=!~ ]|$)' \
       /opt/ComfyUI/requirements.txt > /tmp/requirements.txt \
   && python -m pip install --no-cache-dir -r /tmp/requirements.txt \
