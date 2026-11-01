@@ -18,8 +18,15 @@
       in
       {
         # The container runs as uid 1000 and keeps everything in /data.
-        systemd.tmpfiles.rules = [
-          "d ${stateDirectory} 0755 1000 1000 -"
+        # ComfyUI lists custom_nodes at startup without creating it, so the
+        # state layout has to exist before the first run.
+        systemd.tmpfiles.rules = map (dir: "d ${stateDirectory}${dir} 0755 1000 1000 -") [
+          ""
+          "/custom_nodes"
+          "/models"
+          "/input"
+          "/output"
+          "/user"
         ];
 
         virtualisation.oci-containers.containers.comfyui = {
