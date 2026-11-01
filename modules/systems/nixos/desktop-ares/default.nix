@@ -52,10 +52,12 @@
         den.aspects.hosting.microserver.media
         den.aspects.hosting.gaming.host
         den.aspects.hosting.ollama.rocm
+        den.aspects.hosting.comfyui.rocm
       ];
       nixos = { pkgs, ... }: {
         imports = [ inputs.qylock.nixosModules.default ];
         hosting = {
+          comfyui.renderDevice = "/dev/dri/renderD129";
           microserver.media.jellyfin = {
             renderDevice = "/dev/dri/renderD128";
             cardDevice = "/dev/dri/card1";
