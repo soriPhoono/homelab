@@ -9,15 +9,16 @@ ARG COMFYUI_VERSION=0.43.2
 FROM rocm/pytorch:${ROCM_PYTORCH_TAG}
 ARG COMFYUI_VERSION
 
-# The base image has no git or curl, so the release tarball comes down with
+# The base image has no git, curl or `python` (only `python3`, with ROCm torch
+# in the system site-packages), so the release tarball comes down with
 # the Python it already ships.
 RUN mkdir /opt/ComfyUI \
-  && python -c "import urllib.request as u; u.urlretrieve('https://github.com/comfyanonymous/ComfyUI/archive/refs/tags/v${COMFYUI_VERSION}.tar.gz', '/tmp/comfyui.tar.gz')" \
+  && python3 -c "import urllib.request as u; u.urlretrieve('https://github.com/comfyanonymous/ComfyUI/archive/refs/tags/v${COMFYUI_VERSION}.tar.gz', '/tmp/comfyui.tar.gz')" \
   && tar -xzf /tmp/comfyui.tar.gz -C /opt/ComfyUI --strip-components=1 \
   && rm /tmp/comfyui.tar.gz \
   && grep -viE '^(torch|torchvision|torchaudio)([<>=!~ ]|$)' \
       /opt/ComfyUI/requirements.txt > /tmp/requirements.txt \
-  && python -m pip install --no-cache-dir -r /tmp/requirements.txt \
+  && python3 -m pip install --no-cache-dir -r /tmp/requirements.txt \
   && rm /tmp/requirements.txt
 
 WORKDIR /opt/ComfyUI
@@ -25,4 +26,4 @@ WORKDIR /opt/ComfyUI
 # HOME points there too so the non-root runtime user has somewhere to write.
 ENV HOME=/data
 EXPOSE 8188
-ENTRYPOINT ["python", "main.py", "--listen", "0.0.0.0", "--port", "8188", "--base-directory", "/data"]
+ENTRYPOINT ["python3", "main.py", "--listen", "0.0.0.0", "--port", "8188", "--base-directory", "/data"]
