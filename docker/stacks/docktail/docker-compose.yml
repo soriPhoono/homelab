@@ -11,7 +11,6 @@ services:
     environment:
       - TS_CLIENT_ID=file:/run/secrets/tailscale-oauth-client-id
       - TS_CLIENT_SECRET=file:/run/secrets/tailscale-oauth-client-secret
-      - TS_EXTRA_ARGS=--advertise-tags=tag:sphoono-vps
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_SOCKET=/var/run/tailscale/tailscaled.sock
       - TS_USERSPACE=false
