@@ -1,3 +1,5 @@
+# TODO: update this to a docker container to work with the remote 9router system on the vps
+
 /**
   Local LLM runtime: an Ollama server for open-weight models, bound to
   loopback. Models are pulled by hand (`ollama pull`), not declared, since
