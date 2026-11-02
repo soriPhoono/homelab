@@ -16,6 +16,7 @@
     ./extensions/keybinds.nix
     ./extensions/lspsaga.nix
     ./extensions/lualine.nix
+    ./extensions/minimap.nix
     ./extensions/multicursors.nix
     ./extensions/neo-tree.nix
     ./extensions/neogit.nix
