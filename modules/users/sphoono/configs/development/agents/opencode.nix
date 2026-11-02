@@ -181,7 +181,12 @@
                   for bin in $out/bin/*; do
                     if [ -f "$bin" ] && [ -x "$bin" ]; then
                       wrapProgram "$bin" \
-                        --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]} \
+                        --prefix PATH : ${
+                          lib.makeBinPath [
+                            pkgs.nodejs
+                            pkgs.python3
+                          ]
+                        } \
                         --run 'export OPENCODE_DISABLE_CLAUDE_CODE=1'
                     fi
                   done
