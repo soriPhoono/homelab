@@ -3,8 +3,9 @@
   tailnet through docktail. OpenCode does not discover models from an
   OpenAI-compatible endpoint, so a oneshot lists the gateway's `/v1/models`
   into `opencode.jsonc` beside the managed `opencode.json`, which OpenCode
-  merges. The API key is read from its sops file at run time and written only
-  to that file in `~/.config`, never to the nix store.
+  merges. The API key is entered imperatively with `/connect` in OpenCode,
+  which keeps it in the `credential` table of its database. The oneshot only
+  reads it from there to list models; nothing secret is written to a file.
 */
 _: {
   den.aspects.sphoono.development.opencode-gateway = {
@@ -16,10 +17,8 @@ _: {
         ...
       }:
       let
-        # Fill in with the tailnet's MagicDNS name.
-        tailnetDomain = "tailnet-name.ts.net";
+        tailnetDomain = "xerus-augmented.ts.net";
         gateway = "https://sphoono-vps-9router.${tailnetDomain}/v1";
-        keyFile = config.sops.secrets."api/9router-api-key".path;
 
         syncModels = pkgs.writeShellApplication {
           name = "opencode-sync-models";
@@ -27,15 +26,26 @@ _: {
             pkgs.curl
             pkgs.jq
             pkgs.coreutils
+            pkgs.sqlite
           ];
           text = ''
             dest="''${XDG_CONFIG_HOME:-$HOME/.config}/opencode/opencode.jsonc"
+            db="''${XDG_DATA_HOME:-$HOME/.local/share}/opencode/opencode.db"
             mkdir -p "$(dirname "$dest")"
             tmp="$(mktemp)"
             trap 'rm -f "$tmp" "$tmp.out"' EXIT
 
-            key="$(tr -d '\n' < ${keyFile})"
-            [ -n "$key" ] || { echo "empty API key in ${keyFile}" >&2; exit 1; }
+            # Not an error before the first `/connect`; there is nothing to retry.
+            key=""
+            if [ -f "$db" ]; then
+              key="$(sqlite3 -readonly "$db" \
+                "select json_extract(value, '$.key') from credential
+                 where integration_id = '9router' order by time_updated desc limit 1" || true)"
+            fi
+            if [ -z "$key" ]; then
+              echo "no 9router credential yet; run /connect in OpenCode, then opencode-sync-models" >&2
+              exit 0
+            fi
 
             # The tailnet may still be coming up at login.
             for _ in $(seq 1 30); do
@@ -48,9 +58,9 @@ _: {
             [ -s "$tmp" ] || { echo "gateway did not answer; keeping the old list" >&2; exit 1; }
 
             # OpenCode 2 model schema: capabilities and limit.
-            jq --arg key "$key" --arg url "${gateway}" '
+            jq --arg url "${gateway}" '
               { providers: { "9router": {
-                settings: { apiKey: $key, baseURL: $url },
+                settings: { baseURL: $url },
                 models: (
                   .data
                   | map({ key: .id, value: {
@@ -80,7 +90,6 @@ _: {
                 ) } } }
             ' "$tmp" > "$tmp.out"
 
-            chmod 600 "$tmp.out"
             mv "$tmp.out" "$dest"
             echo "wrote $(jq '.providers."9router".models | length' "$dest") models to $dest"
           '';
@@ -95,14 +104,9 @@ _: {
           settings.baseURL = gateway;
         };
 
-        sops.secrets."api/9router-api-key".mode = "0400";
-
         # Run `opencode-sync-models` after changing providers in the dashboard.
         systemd.user.services.opencode-9router-models = {
-          Unit = {
-            Description = "List 9router models for OpenCode";
-            After = [ "sops-nix.service" ];
-          };
+          Unit.Description = "List 9router models for OpenCode";
           Service = {
             Type = "oneshot";
             ExecStart = lib.getExe syncModels;
