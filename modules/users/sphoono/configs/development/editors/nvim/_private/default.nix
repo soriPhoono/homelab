@@ -7,6 +7,7 @@
     ./extensions/dap.nix
     ./extensions/dashboard.nix
     ./extensions/diffview.nix
+    ./extensions/direnv.nix
     ./extensions/gitsigns.nix
     ./extensions/illuminate.nix
     ./extensions/indent-blankline.nix
