@@ -14,6 +14,7 @@
     ./extensions/illuminate.nix
     ./extensions/indent-blankline.nix
     ./extensions/keybinds.nix
+    ./extensions/lspsaga.nix
     ./extensions/lualine.nix
     ./extensions/multicursors.nix
     ./extensions/neo-tree.nix
