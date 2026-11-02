@@ -16,8 +16,7 @@ _: {
         ...
       }:
       let
-        # Fill in with the tailnet's MagicDNS name.
-        tailnetDomain = "tailnet-name.ts.net";
+        tailnetDomain = "xerus-augmented.ts.net";
         gateway = "https://sphoono-vps-9router.${tailnetDomain}/v1";
         keyFile = config.sops.secrets."api/9router-api-key".path;
 
