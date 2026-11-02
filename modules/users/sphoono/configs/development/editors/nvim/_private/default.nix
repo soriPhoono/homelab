@@ -22,6 +22,7 @@
     ./extensions/smooth-scroll.nix
     ./extensions/telescope.nix
     ./extensions/theme.nix
+    ./extensions/toggleterm.nix
     ./extensions/treesitter.nix
     ./extensions/trouble.nix
     ./languages/bash.nix
