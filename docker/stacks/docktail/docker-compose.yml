@@ -26,16 +26,16 @@ services:
     image: ghcr.io/marvinvr/docktail:1.8.6
     restart: unless-stopped
     secrets:
-      - tailscale-oauth-client-id
-      - tailscale-oauth-client-secret
+      - docktail-oauth-client-id
+      - docktail-oauth-client-secret
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - tailscale-socket:/var/run/tailscale
     networks:
       - tailscale
     environment:
-      - TAILSCALE_OAUTH_CLIENT_ID_FILE=/run/secrets/tailscale-oauth-client-id
-      - TAILSCALE_OAUTH_CLIENT_SECRET_FILE=/run/secrets/tailscale-oauth-client-secret
+      - TAILSCALE_OAUTH_CLIENT_ID_FILE=/run/secrets/docktail-oauth-client-id
+      - TAILSCALE_OAUTH_CLIENT_SECRET_FILE=/run/secrets/docktail-oauth-client-secret
     deploy:
       mode: global
 
@@ -51,6 +51,10 @@ secrets:
     file: ./secrets/tailscale-oauth-client-id
   tailscale-oauth-client-secret:
     file: ./secrets/tailscale-oauth-client-secret
+  docktail-oauth-client-id:
+    file: ./secrets/docktail-oauth-client-id
+  docktail-oauth-client-secret:
+    file: ./secrets/docktail-oauth-client-secret
 
 volumes:
   tailscale-state:
