@@ -29,12 +29,21 @@
     ./languages/clang.nix
     ./languages/common.nix
     ./languages/css.nix
+    ./languages/docker.nix
+    ./languages/fish.nix
     ./languages/go.nix
+    ./languages/hcl.nix
+    ./languages/helm.nix
     ./languages/html.nix
     ./languages/json.nix
+    ./languages/just.nix
+    ./languages/lua.nix
+    ./languages/make.nix
+    ./languages/markdown.nix
     ./languages/nix.nix
     ./languages/python.nix
     ./languages/rust.nix
+    ./languages/sql.nix
     ./languages/terraform.nix
     ./languages/toml.nix
     ./languages/typescript.nix
