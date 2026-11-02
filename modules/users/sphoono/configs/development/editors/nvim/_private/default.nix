@@ -20,6 +20,7 @@
     ./extensions/noice.nix
     ./extensions/notify.nix
     ./extensions/overseer.nix
+    ./extensions/persisted.nix
     ./extensions/rainbow-delimiters.nix
     ./extensions/scrollbar.nix
     ./extensions/smooth-scroll.nix
