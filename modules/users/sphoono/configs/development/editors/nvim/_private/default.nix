@@ -26,6 +26,7 @@
     ./extensions/rainbow-delimiters.nix
     ./extensions/scrollbar.nix
     ./extensions/smooth-scroll.nix
+    ./extensions/surround.nix
     ./extensions/telescope.nix
     ./extensions/theme.nix
     ./extensions/todo-comments.nix
