@@ -139,6 +139,19 @@
         "type": "github"
       }
     },
+    "codex-honcho": {
+      "flake": false,
+      "locked": {
+        "lastModified": 499162500,
+        "narHash": "sha256-wXYvEuKwuGoQv5krPDOMiWrT2TazWcoPXim0RvQVOco=",
+        "type": "tarball",
+        "url": "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz"
+      }
+    },
     "comin": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -760,6 +773,7 @@
         "awesome-ai-agent-skills": "awesome-ai-agent-skills",
         "awesome-copilot": "awesome-copilot",
         "claude-plugins-official": "claude-plugins-official",
+        "codex-honcho": "codex-honcho",
         "comin": "comin",
         "darwin": "darwin",
         "den": "den",
