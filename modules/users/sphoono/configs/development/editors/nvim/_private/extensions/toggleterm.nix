@@ -7,5 +7,7 @@ _: {
       direction = "float";
       float_opts.border = "curved";
     };
+    # <leader>gg opens lazygit in a float, from the lazygit in nixpkgs.
+    lazygit.enable = true;
   };
 }
