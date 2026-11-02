@@ -29,6 +29,7 @@
     ./extensions/toggleterm.nix
     ./extensions/treesitter.nix
     ./extensions/trouble.nix
+    ./extensions/undotree.nix
     ./languages/bash.nix
     ./languages/clang.nix
     ./languages/common.nix
