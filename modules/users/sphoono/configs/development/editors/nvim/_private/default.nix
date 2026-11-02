@@ -6,6 +6,7 @@
     ./extensions/colorizer.nix
     ./extensions/dap.nix
     ./extensions/dashboard.nix
+    ./extensions/diffview.nix
     ./extensions/gitsigns.nix
     ./extensions/illuminate.nix
     ./extensions/indent-blankline.nix
@@ -13,6 +14,7 @@
     ./extensions/lualine.nix
     ./extensions/multicursors.nix
     ./extensions/neo-tree.nix
+    ./extensions/neogit.nix
     ./extensions/neotest.nix
     ./extensions/noice.nix
     ./extensions/notify.nix
