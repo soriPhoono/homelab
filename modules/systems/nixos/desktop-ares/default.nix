@@ -42,6 +42,7 @@
         den.aspects.desktop.tools.partition-manager
         den.aspects.desktop.tools.virtualbox
         # -- External device interaction --
+        den.aspects.core.hardware.hid.keyboards.qmk
         den.aspects.core.hardware.hid.mice.logitech
         den.aspects.core.hardware.hid.controllers.xbox
         den.aspects.core.hardware.android
@@ -50,6 +51,7 @@
         den.aspects.hosting.podman
         den.aspects.hosting.microserver.media
         den.aspects.hosting.gaming.host
+        den.aspects.hosting.ollama.rocm
       ];
       nixos = { pkgs, ... }: {
         imports = [ inputs.qylock.nixosModules.default ];
@@ -72,6 +74,7 @@
           # Lockscreen comes from the noctalia shell, not qylock-lock.
           quickshell.enable = false;
         };
+        time.timeZone = "America/Chicago";
         hardware.facter.reportPath = ./facter.json;
         boot = {
           kernelPackages = pkgs.linuxPackages_zen;
@@ -102,7 +105,6 @@
       includes = [
         den.batteries.primary-user
         den.batteries.host-aspects
-
         den.aspects.sphoono.desktop.wm.hypr
         den.aspects.sphoono.desktop.wm.shells.noctalia
         den.aspects.sphoono.desktop.wm.supporting
@@ -110,7 +112,6 @@
         den.aspects.sphoono.desktop.syncthing
         den.aspects.sphoono.development
         den.aspects.sphoono.content-creation
-        den.aspects.sphoono.trading.desktop
         den.aspects.hosting.gaming.client
       ];
 

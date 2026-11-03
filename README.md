@@ -59,7 +59,6 @@ onto the same base aspect. Nothing else changes.
 - `flake-system/` — flake-parts plumbing: dev shell, formatter,
   pre-commit hooks, CI workflow generators.
 - `secrets/` — sops-encrypted secrets.
-- `.agents/` — research wikis for agent-assisted work.
 
 ## Getting started
 
@@ -77,10 +76,6 @@ Host and home packages are [nh] wrappers; they take an action argument
 and default to `build`.
 
 ```sh
-nix run .#laptop-ares            # build the host closure
-nix run .#laptop-ares switch     # build and activate it
-nix run .#sphoono                # build the home-manager generation
-
 nix run .#vm-laptop-ares         # boot the host in a QEMU VM
 
 nix run .#write-flake            # regenerate flake.nix from inputs.nix

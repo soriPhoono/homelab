@@ -7,7 +7,18 @@ keys:
   - &desktop-ares age19g0rp5pkc533jlht5w3f5fx30e8tra8du9hy7s323chanyjqeekq4hjyuu
   - &laptop-vesper age1yqsdglc9s03k6yhefaqpnpyurj0j9nktlccc8rq2uevpuzn0ea2stx0msr
   - &user-spookyskelly age1kv7f5nyknwhf5lvm7yzhm0jetleceklj7u225uxce5x007hkvgys0fmeey
+  # Already a recipient of docker/stacks/n8n/secrets/* since 2026-09-16,
+  # mirrored here so updatekeys does not silently drop it. Provenance is NOT
+  # verified: it is not the ssh-to-age output of either known_hosts VPS host
+  # key. Confirm which age identity the VPS decrypts with, then rename this
+  # anchor or retire the key and re-run updatekeys.
+  - &sphoono-vps-unverified age1t405nrcjuavjg3u3qk65q2vnwkdm9zrc5j04xdk5kwl39kcucp5sscq8z6
 creation_rules:
+  - path_regex: docker/stacks/[^/]+/secrets/.*
+    key_groups:
+      - age:
+          - *user-sphoono
+          - *sphoono-vps-unverified
   - path_regex: secrets/user-sphoono.yaml$
     key_groups:
       - age:
@@ -22,13 +33,13 @@ creation_rules:
       - age:
           - *user-sphoono
           - *desktop-ares
-  - path_regex: secrets/host-laptop-vesper.yaml$
-    key_groups:
-      - age:
-          - *user-sphoono
-          - *laptop-vesper
   - path_regex: secrets/user-spookyskelly.yaml$
     key_groups:
       - age:
           - *user-sphoono
           - *user-spookyskelly
+  - path_regex: secrets/host-laptop-vesper.yaml$
+    key_groups:
+      - age:
+          - *user-sphoono
+          - *laptop-vesper

@@ -1,0 +1,12 @@
+n8n:
+  repo: homelab
+  branch: main
+  compose_file: docker/stacks/n8n/docker-compose.yml
+9router:
+  repo: homelab
+  branch: main
+  compose_file: docker/stacks/9router/docker-compose.yml
+docktail:
+  repo: homelab
+  branch: main
+  compose_file: docker/stacks/docktail/docker-compose.yml

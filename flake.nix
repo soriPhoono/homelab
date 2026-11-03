@@ -33,6 +33,10 @@
       url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
       flake = false;
     };
+    codex-honcho = {
+      url = "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz";
+      flake = false;
+    };
     comin = {
       url = "github:nlewo/comin";
       inputs = {
@@ -161,12 +165,12 @@
           flake-parts.follows = "flake-parts";
           treefmt-nix.follows = "treefmt-nix";
         };
+        flake-file.follows = "flake-file";
         flake-parts.follows = "flake-parts";
         nixpkgs.follows = "nixpkgs";
+        pre-commit-hooks.follows = "pre-commit-hooks";
         systems.follows = "systems";
         treefmt-nix.follows = "treefmt-nix";
-        flake-file.follows = "flake-file";
-        pre-commit-hooks.follows = "pre-commit-hooks";
       };
     };
     treefmt-nix = {
