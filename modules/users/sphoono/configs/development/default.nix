@@ -15,7 +15,6 @@
   den.aspects.sphoono.development.includes = [
     # Tools
     den.aspects.sphoono.development.herdr
-    den.aspects.sphoono.development.honcho
     den.aspects.sphoono.development.nvim
     den.aspects.sphoono.development.opencode-gateway
     den.aspects.sphoono.development.claude

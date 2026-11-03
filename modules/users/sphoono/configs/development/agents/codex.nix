@@ -1,4 +1,4 @@
-{ inputs, ... }: {
+{ den, inputs, ... }: {
   # The npm tarball ships the prebuilt hook bundle, so nothing is built here.
   flake-file.inputs.codex-honcho = {
     url = "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz";
@@ -6,6 +6,9 @@
   };
 
   den.aspects.sphoono.development.codex = {
+    includes = [
+      den.aspects.sphoono.development.honcho
+    ];
     homeManager =
       {
         config,
@@ -106,12 +109,6 @@
           };
           skills = {
             honcho-memory = "${inputs.codex-honcho}/skills/honcho-memory";
-            code-documentation = "${inputs.awesome-ai-agent-skills}/code-and-development/code-documentation";
-            code-review = "${inputs.awesome-ai-agent-skills}/code-and-development/code-review";
-            debugging = "${inputs.awesome-ai-agent-skills}/code-and-development/debugging";
-            refactoring = "${inputs.awesome-ai-agent-skills}/code-and-development/refactoring";
-            testing = "${inputs.awesome-ai-agent-skills}/code-and-development/testing";
-            version-control = "${inputs.awesome-ai-agent-skills}/code-and-development/version-control";
           };
         };
       };

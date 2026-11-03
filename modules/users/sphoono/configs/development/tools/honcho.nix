@@ -20,13 +20,13 @@ _: {
             apiKey = config.sops.placeholder."api/honcho-api-key";
             baseUrl = "https://api.honcho.dev";
             peerName = "sphoono";
-            hosts.opencode = {
+            hosts.opencode = lib.mkIf config.programs.opencode.enable {
               workspace = "software-development";
               aiPeer = "opencode";
               removeUserPrefix = true;
               observationMode = "unified";
             };
-            hosts.codex = {
+            hosts.codex = lib.mkIf config.programs.codex.enable {
               workspace = "personal-assistant";
               aiPeer = "codex";
             };

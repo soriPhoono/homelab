@@ -1,7 +1,10 @@
-{ inputs, ... }: {
+{ den, inputs, ... }: {
   flake-file.inputs.nix-skills.url = "github:sudosubin/nix-skills";
 
   den.aspects.sphoono.development.opencode = {
+    includes = [
+      den.aspects.sphoono.development.honcho
+    ];
     homeManager =
       {
         lib,
