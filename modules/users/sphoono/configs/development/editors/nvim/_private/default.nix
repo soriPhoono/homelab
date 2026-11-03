@@ -4,36 +4,58 @@
     ./extensions/bufferline.nix
     ./extensions/colorful-menu.nix
     ./extensions/colorizer.nix
+    ./extensions/comment.nix
     ./extensions/dap.nix
     ./extensions/dashboard.nix
+    ./extensions/diffview.nix
+    ./extensions/direnv.nix
+    ./extensions/fidget.nix
     ./extensions/gitsigns.nix
     ./extensions/illuminate.nix
     ./extensions/indent-blankline.nix
     ./extensions/keybinds.nix
+    ./extensions/lspsaga.nix
     ./extensions/lualine.nix
+    ./extensions/minimap.nix
     ./extensions/multicursors.nix
     ./extensions/neo-tree.nix
+    ./extensions/neogit.nix
     ./extensions/neotest.nix
     ./extensions/noice.nix
     ./extensions/notify.nix
     ./extensions/overseer.nix
+    ./extensions/persisted.nix
+    ./extensions/presence.nix
     ./extensions/rainbow-delimiters.nix
     ./extensions/scrollbar.nix
     ./extensions/smooth-scroll.nix
+    ./extensions/surround.nix
     ./extensions/telescope.nix
     ./extensions/theme.nix
+    ./extensions/todo-comments.nix
+    ./extensions/toggleterm.nix
     ./extensions/treesitter.nix
     ./extensions/trouble.nix
+    ./extensions/undotree.nix
     ./languages/bash.nix
     ./languages/clang.nix
     ./languages/common.nix
     ./languages/css.nix
+    ./languages/docker.nix
+    ./languages/fish.nix
     ./languages/go.nix
+    ./languages/hcl.nix
+    ./languages/helm.nix
     ./languages/html.nix
     ./languages/json.nix
+    ./languages/just.nix
+    ./languages/lua.nix
+    ./languages/make.nix
+    ./languages/markdown.nix
     ./languages/nix.nix
     ./languages/python.nix
     ./languages/rust.nix
+    ./languages/sql.nix
     ./languages/terraform.nix
     ./languages/toml.nix
     ./languages/typescript.nix
