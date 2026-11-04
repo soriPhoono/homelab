@@ -51,7 +51,7 @@
       # -- Hosting --
       den.aspects.hosting.docker
       den.aspects.hosting.podman
-      den.aspects.hosting.microserver.media
+      den.aspects.hosting.media
     ];
     nixos = { pkgs, ... }: {
       imports = [ inputs.qylock.nixosModules.default ];
