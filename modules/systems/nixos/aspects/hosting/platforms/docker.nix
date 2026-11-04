@@ -48,6 +48,7 @@
             in
             {
               after = [ "docker.service" ];
+              requires = [ "docker.service" ];
               wantedBy = [ "multi-user.target" ];
               serviceConfig = {
                 Type = "oneshot";
@@ -55,18 +56,14 @@
                 ExecStart = lib.getExe (
                   pkgs.writeShellApplication {
                     name = "docker-create-networks";
-                    runtimeInputs = [
-                      config.virtualisation.docker.package
-                      pkgs.gnugrep
-                    ];
-                    text = lib.optionalString (networks != [ ]) ''
-                      EXISTING_NETWORKS=$(docker network ls --format '{{.Name}}')
-                      ${lib.concatMapStringsSep "\n" (network: ''
-                        if ! echo "$EXISTING_NETWORKS" | grep -Fxq "${network}"; then
-                          docker network create "${network}"
-                        fi
-                      '') networks}
-                    '';
+                    runtimeInputs = [ config.virtualisation.docker.package ];
+                    # Fail the unit if a network is still absent afterwards, so
+                    # a silent skip cannot leave the containers without it.
+                    text = lib.concatMapStringsSep "\n" (network: ''
+                      docker network inspect "${network}" >/dev/null 2>&1 \
+                        || docker network create "${network}"
+                      docker network inspect "${network}" >/dev/null
+                    '') networks;
                   }
                 );
               };
@@ -77,6 +74,10 @@
           lib.nameValuePair "docker-${name}" {
             after = [ "docker-create-networks.service" ];
             bindsTo = [ "docker-create-networks.service" ];
+            # Retry slowly and indefinitely: a dependency that is late at boot
+            # must not exhaust the start limit and leave the unit failed.
+            unitConfig.StartLimitIntervalSec = 0;
+            serviceConfig.RestartSec = "5s";
           }
         ) config.virtualisation.oci-containers.containers;
       };

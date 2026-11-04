@@ -48,6 +48,14 @@
         ];
       };
     };
+    # CDI devices so containers can use the GPU (`--device nvidia.com/gpu=all`).
+    container-toolkit = {
+      includes = [
+        den.aspects.core.hardware.gpu.nvidia
+      ];
+      # The toolkit module asserts the driver is present, hence the include.
+      nixos.hardware.nvidia-container-toolkit.enable = true;
+    };
     desktop = {
       includes = [
         den.aspects.core.hardware.gpu.nvidia
