@@ -10,6 +10,9 @@ in
   programs.nvf.settings.vim = {
     lsp.lspsaga.enable = true;
 
+    # Keep the sign-column bulb only; the end-of-line one duplicates it.
+    lsp.lspsaga.setupOpts.lightbulb.virtual_text = false;
+
     # nvf maps nothing for lspsaga; these sit beside the built-in <leader>l LSP maps.
     keymaps = [
       (key "f" "Finder (references, implementations)" "finder")
