@@ -23,6 +23,7 @@
     ./extensions/neotest.nix
     ./extensions/noice.nix
     ./extensions/notify.nix
+    ./extensions/obsidian.nix
     ./extensions/overseer.nix
     ./extensions/persisted.nix
     ./extensions/presence.nix
