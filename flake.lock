@@ -922,11 +922,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794444723,
-        "narHash": "sha256-6KbBHwVXx81QnoSErh+/whwZvei7yKUzUGBdZ5PsZUc=",
+        "lastModified": 1794505634,
+        "narHash": "sha256-Q6UwN29SCS3G/X/ih7OygYn0EYhCWHxC7TyevxXa3vU=",
         "owner": "soriphoono",
         "repo": "templates",
-        "rev": "cb6101ea96ed306d4337914c6d027bf021b320b9",
+        "rev": "c2bfec112a54f55ff136022ef8ba91b231651e1f",
         "type": "github"
       },
       "original": {
