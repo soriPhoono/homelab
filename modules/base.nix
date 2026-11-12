@@ -21,5 +21,8 @@
       };
     };
     schema.user.classes = lib.mkDefault [ "homeManager" ];
+    # Users' own aspect content reaches their hosts through this battery;
+    # den's implicit transition default for it ends 2027-01-01 (denful/den#694).
+    schema.host.includes = [ den.batteries.user-aspects ];
   };
 }

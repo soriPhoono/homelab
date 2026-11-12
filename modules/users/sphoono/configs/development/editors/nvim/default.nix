@@ -4,7 +4,7 @@
   den.aspects.sphoono.development.nvim = {
     homeManager = {
       imports = [
-        inputs.nvf.homeManagerModules.default
+        inputs.nvf.homeModules.default
 
         ./_private
       ];

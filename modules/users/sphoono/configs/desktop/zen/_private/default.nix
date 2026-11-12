@@ -13,7 +13,6 @@
     profiles.default = {
       id = 0;
       isDefault = true;
-      keyboardShortcutsVersion = 21;
       keyboardShortcuts = [
         {
           id = "zen-compact-mode-toggle";

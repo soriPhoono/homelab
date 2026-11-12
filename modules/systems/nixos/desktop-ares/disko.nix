@@ -1,7 +1,10 @@
 { inputs, ... }:
 {
-  den.aspects.desktop-ares.nixos = {
+  den.aspects.desktop-ares.nixos = { pkgs, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
+
+    # No mail transport; log array events to the journal instead.
+    boot.swraid.mdadmConf = "PROGRAM ${pkgs.util-linux}/bin/logger";
 
     disko.devices = {
       mdadm = {
