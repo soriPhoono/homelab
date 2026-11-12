@@ -7,6 +7,8 @@ let
     neotest-rust = "require('neotest-rust')({ dap_adapter = 'codelldb' })";
     neotest-golang = "require('neotest-golang')({})";
     neotest-zig = "require('neotest-zig')({})";
+    neotest-vitest = "require('neotest-vitest')({})";
+    neotest-jest = "require('neotest-jest')({})";
     neotest-gtest = "require('neotest-gtest').setup({})";
     neotest-ctest = "require('neotest-ctest').setup({})";
   };

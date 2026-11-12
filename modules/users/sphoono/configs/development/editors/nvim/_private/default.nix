@@ -6,6 +6,7 @@
     ./extensions/colorizer.nix
     ./extensions/comment.nix
     ./extensions/dap.nix
+    ./extensions/dap-javascript.nix
     ./extensions/dashboard.nix
     ./extensions/diffview.nix
     ./extensions/direnv.nix

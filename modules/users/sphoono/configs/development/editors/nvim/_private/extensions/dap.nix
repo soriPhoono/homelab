@@ -62,7 +62,7 @@ in
       local launchjs_loaded = {}
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("nvf_dap_launchjs", { clear = true }),
-        pattern = { "c", "cpp", "rust", "zig", "python", "go" },
+        pattern = { "c", "cpp", "rust", "zig", "python", "go", "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
         callback = function()
           local cwd = vim.fn.getcwd()
           if launchjs_loaded[cwd] then
@@ -77,6 +77,8 @@ in
               debugpy = { "python" },
               python = { "python" },
               delve = { "go" },
+              ["pwa-node"] = { "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
+              node = { "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
               go = { "go" },
             })
           end
