@@ -46,6 +46,7 @@
     ./languages/css.nix
     ./languages/docker.nix
     ./languages/fish.nix
+    ./languages/gdscript.nix
     ./languages/go.nix
     ./languages/hcl.nix
     ./languages/helm.nix
