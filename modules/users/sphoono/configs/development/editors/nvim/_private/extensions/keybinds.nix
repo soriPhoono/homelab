@@ -2,8 +2,21 @@ _: {
   programs.nvf.settings.vim = {
     # <leader>lt is a prefix for telescope type definitions and this toggle.
     lsp.mappings.toggleFormatOnSave = "<leader>lF";
+    # nvf binds format to vim.lsp.buf.format, which skips every conform
+    # formatter (prettier, yamlfmt, gdformat, ...); it is rebound below.
+    lsp.mappings.format = null;
 
     keymaps = [
+      {
+        mode = [
+          "n"
+          "v"
+        ];
+        key = "<leader>lf";
+        lua = true;
+        action = "function() require('conform').format({ lsp_format = 'fallback', async = true }) end";
+        desc = "Format buffer";
+      }
       {
         mode = "n";
         key = "<leader>fc";
