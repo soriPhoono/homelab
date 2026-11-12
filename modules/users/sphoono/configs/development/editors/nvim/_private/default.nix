@@ -84,7 +84,7 @@
         cursorline = true; # Highlight the line of the cursor
         cursorcolumn = false; # Highlight the column of the cursor
         wrap = false; # Disable line wrapping
-        signcolumn = "auto"; # Show sign column when needed
+        signcolumn = "yes"; # Always reserve it so signs don't shift the text
         conceallevel = 2; # Hide text in certain contexts
         spell = false; # Enable spell checking
         mouse = "a"; # Enable mouse support
