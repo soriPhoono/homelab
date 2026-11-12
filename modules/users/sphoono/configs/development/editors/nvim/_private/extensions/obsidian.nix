@@ -19,11 +19,6 @@ in
             name = "vault";
             path = "${home}/Shared/Vault";
           }
-          {
-            # The agent wiki is a vault of its own, one wiki per domain.
-            name = "agent-wiki";
-            path = "${home}/Shared/AgentWiki";
-          }
         ];
         # Follows the layout Obsidian's daily-notes plugin uses in the vault.
         daily_notes = {
