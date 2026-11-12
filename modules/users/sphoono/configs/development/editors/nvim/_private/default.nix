@@ -31,6 +31,7 @@
     ./extensions/rainbow-delimiters.nix
     ./extensions/scrollbar.nix
     ./extensions/smooth-scroll.nix
+    ./extensions/spellcheck.nix
     ./extensions/surround.nix
     ./extensions/telescope.nix
     ./extensions/theme.nix
@@ -88,7 +89,6 @@
         wrap = false; # Disable line wrapping
         signcolumn = "yes"; # Always reserve it so signs don't shift the text
         conceallevel = 2; # Hide text in certain contexts
-        spell = false; # Enable spell checking
         mouse = "a"; # Enable mouse support
         clipboard = "unnamedplus"; # System clipboard
 
