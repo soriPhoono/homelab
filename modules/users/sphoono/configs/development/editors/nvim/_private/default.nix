@@ -6,6 +6,7 @@
     ./extensions/colorizer.nix
     ./extensions/comment.nix
     ./extensions/dap.nix
+    ./extensions/dap-javascript.nix
     ./extensions/dashboard.nix
     ./extensions/diffview.nix
     ./extensions/direnv.nix
@@ -23,12 +24,14 @@
     ./extensions/neotest.nix
     ./extensions/noice.nix
     ./extensions/notify.nix
+    ./extensions/obsidian.nix
     ./extensions/overseer.nix
     ./extensions/persisted.nix
     ./extensions/presence.nix
     ./extensions/rainbow-delimiters.nix
     ./extensions/scrollbar.nix
     ./extensions/smooth-scroll.nix
+    ./extensions/spellcheck.nix
     ./extensions/surround.nix
     ./extensions/telescope.nix
     ./extensions/theme.nix
@@ -43,6 +46,7 @@
     ./languages/css.nix
     ./languages/docker.nix
     ./languages/fish.nix
+    ./languages/gdscript.nix
     ./languages/go.nix
     ./languages/hcl.nix
     ./languages/helm.nix
@@ -84,9 +88,8 @@
         cursorline = true; # Highlight the line of the cursor
         cursorcolumn = false; # Highlight the column of the cursor
         wrap = false; # Disable line wrapping
-        signcolumn = "auto"; # Show sign column when needed
+        signcolumn = "yes"; # Always reserve it so signs don't shift the text
         conceallevel = 2; # Hide text in certain contexts
-        spell = false; # Enable spell checking
         mouse = "a"; # Enable mouse support
         clipboard = "unnamedplus"; # System clipboard
 

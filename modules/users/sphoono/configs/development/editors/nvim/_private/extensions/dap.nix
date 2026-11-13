@@ -54,6 +54,17 @@ in
         vim.fn.sign_define(name, { text = icon[1], texthl = icon[2], linehl = "", numhl = "" })
       end
 
+      -- The Godot editor serves the debug adapter on 6006 while a project is open.
+      dap.adapters.godot = { type = "server", host = "127.0.0.1", port = 6006 }
+      dap.configurations.gdscript = {
+        {
+          type = "godot",
+          request = "launch",
+          name = "Launch project",
+          project = "''${workspaceFolder}",
+        },
+      }
+
       dap.listeners.after.event_initialized["virtual_text"] = function()
         require("lz.n").trigger_load("nvim-dap-virtual-text")
       end
@@ -62,7 +73,7 @@ in
       local launchjs_loaded = {}
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("nvf_dap_launchjs", { clear = true }),
-        pattern = { "c", "cpp", "rust", "zig", "python", "go" },
+        pattern = { "c", "cpp", "rust", "zig", "python", "go", "gdscript", "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
         callback = function()
           local cwd = vim.fn.getcwd()
           if launchjs_loaded[cwd] then
@@ -77,6 +88,9 @@ in
               debugpy = { "python" },
               python = { "python" },
               delve = { "go" },
+              godot = { "gdscript" },
+              ["pwa-node"] = { "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
+              node = { "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
               go = { "go" },
             })
           end
