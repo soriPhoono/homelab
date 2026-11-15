@@ -14,6 +14,7 @@
       den.aspects.core.hardware.gpu.intel
       # -- Core OS modules --
       den.aspects.core.bootloaders.systemd-boot
+      den.aspects.core.bootloaders.lts-fallback
       den.aspects.core.swap.zram
       den.aspects.core.networking.network-manager
       den.aspects.core.networking.tailscale
