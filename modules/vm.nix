@@ -28,6 +28,9 @@
                   # qemu-vm provides its own disk/filesystems; drop disko's
                   # real-hardware layout (partitions, LUKS, mounts).
                   disko.enableConfig = lib.mkForce false;
+                  # No btrfs root to reset and no /persist subvolume either,
+                  # so a host with core.impermanence runs as a plain one.
+                  environment.persistence."/persist".enable = lib.mkForce false;
                   # The facter report describes the physical machine (nvidia,
                   # amdgpu, nvme, ...); none of that exists in the guest.
                   hardware.facter.reportPath = lib.mkForce null;

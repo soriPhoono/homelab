@@ -33,6 +33,14 @@
           };
         };
 
+        # Images, containers and named volumes.
+        environment.persistence."/persist".directories = [
+          {
+            directory = "/var/lib/docker";
+            mode = "0710";
+          }
+        ];
+
         # Docker group membership is root-equivalent: admins only.
         users.groups.docker.members = config.users.groups.wheel.members;
 

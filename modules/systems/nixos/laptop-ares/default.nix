@@ -87,6 +87,8 @@
       };
       time.timeZone = "America/Chicago";
       services.asusd.enable = true;
+      # Fan curves, charge limit and keyboard lighting set through asusctl.
+      environment.persistence."/persist".directories = [ "/etc/asusd" ];
       stylix = {
         enable = true;
         base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";

@@ -20,6 +20,10 @@ per-machine configuration files.
   [nixos-facter] report that drives kernel modules, initrd contents and
   firmware. Aspects describe intent; facter supplies the per-machine
   specifics.
+- **Ephemeral root, opt-in.** A host including `core.impermanence`
+  rebuilds its root subvolume empty on every boot. `/home` and `/nix`
+  are kept, and each aspect declares the state it owns under
+  [impermanence]'s `environment.persistence`.
 - **Secrets at rest.** [sops-nix] with per-host age recipients. Only
   encrypted material and public keys are committed.
 - **Generated flake boilerplate.** `flake.nix` is produced by
@@ -109,6 +113,7 @@ GPL-3.0-or-later. See [LICENSE.md](LICENSE.md).
 
 [den]: https://den.denful.dev/
 [flake-file]: https://github.com/denful/flake-file
+[impermanence]: https://github.com/nix-community/impermanence
 [import-tree]: https://github.com/denful/import-tree
 [nh]: https://github.com/nix-community/nh
 [nixos-facter]: https://github.com/nix-community/nixos-facter
