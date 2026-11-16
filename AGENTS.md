@@ -161,7 +161,9 @@ nix run .#vm-laptop-ares
   a single top-level heading.
 - CI (`.github/workflows/flake-check.yml`) runs nix-fast-build over
   `checks`, `packages` and `devShells` on pull requests and pushes to
-  `main`. Host breakage surfaces in the `packages` build, never in
+  `main`. No host is built there: the VM runners are `apps`, kept out of
+  `packages` so CI does not build whole system closures. Host breakage
+  surfaces in the verification tests above and at deploy, never in
   `checks`.
 - `.github/workflows/update-flake-lock.yml` opens an input-bump pull
   request weekly, Sundays at 00:00.

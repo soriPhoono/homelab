@@ -1,4 +1,4 @@
-# Shim exposing every nixosConfiguration as a runnable QEMU VM.
+# Shim exposing every nixosConfiguration as a runnable QEMU VM app.
 #
 #   nix run .#vm-<host>
 #
@@ -103,6 +103,15 @@
         });
     in
     {
-      packages = lib.mapAttrs' (name: host: lib.nameValuePair "vm-${name}" (mkVm name host)) hosts;
+      # Apps rather than packages: CI builds every package, and a VM drags
+      # in the host's whole system closure.
+      apps = lib.mapAttrs' (
+        name: host:
+        lib.nameValuePair "vm-${name}" {
+          type = "app";
+          program = lib.getExe (mkVm name host);
+          meta.description = "Boot ${name} in a QEMU VM";
+        }
+      ) hosts;
     };
 }
