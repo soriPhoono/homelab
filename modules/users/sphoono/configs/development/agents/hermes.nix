@@ -12,6 +12,7 @@
   den.aspects.sphoono.development.hermes = {
     includes = [
       den.aspects.sphoono.development.honcho
+      den.aspects.sphoono.development.ninerouter
     ];
     homeManager =
       {
@@ -47,16 +48,6 @@
             The backend address and session token are set through
             `development.hermes.backend`. The units need linger to outlive
             the login.
-          '';
-        };
-
-        options.development.hermes.gatewayUrl = lib.mkOption {
-          type = lib.types.str;
-          default = "https://sphoono-vps-9router.xerus-augmented.ts.net/v1";
-          description = ''
-            OpenAI-compatible endpoint of the 9router gateway on sphoono-vps,
-            reached over the tailnet through docktail. Same gateway as the
-            OpenCode provider.
           '';
         };
 
@@ -123,7 +114,7 @@
               environmentFiles = [ config.sops.templates."hermes/env".path ];
               settings = {
                 providers."9router" = {
-                  api = cfg.gatewayUrl;
+                  api = config.development.ninerouter.url;
                   key_env = "NINEROUTER_API_KEY";
                   transport = "chat_completions";
                 };
