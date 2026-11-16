@@ -44,11 +44,59 @@
             - "server" is "desktop" plus the backend with the browser
               dashboard (`hermes dashboard`).
 
-            Bind address, port and session token are upstream options under
-            `services.hermes-agent.backend`. A non-loopback `host` needs
-            credentials, and the units need linger to outlive the login.
+            The backend address and session token are set through
+            `development.hermes.backend`. The units need linger to outlive
+            the login.
           '';
         };
+
+        # Thin pass-through to services.hermes-agent.backend: null leaves the
+        # upstream default. Types and semantics are documented upstream.
+        options.development.hermes.backend =
+          let
+            nullable =
+              type:
+              lib.mkOption {
+                type = lib.types.nullOr type;
+                default = null;
+              };
+          in
+          {
+            host = nullable lib.types.str // {
+              description = ''
+                Bind address of the backend. A non-loopback value starts the
+                authentication gate and the server rejects any Host header
+                that differs from it, so use the name clients connect with,
+                for example a Tailscale MagicDNS name.
+              '';
+            };
+            port = nullable lib.types.port;
+            waitFor =
+              nullable (
+                lib.types.enum [
+                  "hostname"
+                  "interface"
+                ]
+              )
+              // {
+                description = ''
+                  Poll for the bind target before starting, to win the race
+                  against tailscaled at boot. "hostname" waits for `host` to
+                  resolve; "interface" binds to the address of `interfaceName`
+                  and ignores `host`.
+                '';
+              };
+            interfaceName = nullable lib.types.str;
+            sessionTokenFile = nullable lib.types.str // {
+              description = ''
+                Runtime path to a file holding the raw session token, mode
+                0600, for example a sops-nix secret path. Never a Nix path
+                literal, which copies the secret into the store. Hermes
+                Desktop presents the same token, so it reaches this backend
+                instead of starting its own.
+              '';
+            };
+          };
 
         config = lib.mkMerge [
           {
@@ -60,7 +108,10 @@
           (lib.mkIf (cfg.mode != "desktop") {
             services.hermes-agent = {
               enable = true;
-              backend.mode = if cfg.mode == "server" then "dashboard" else "serve";
+              backend = {
+                mode = if cfg.mode == "server" then "dashboard" else "serve";
+              }
+              // lib.filterAttrs (_: v: v != null) cfg.backend;
             };
           })
         ];
