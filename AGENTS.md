@@ -54,6 +54,37 @@ Configuration is expressed as _aspects_: composable units declared under
   options for configuring a user environment when the aspect is applied to a
   home or host
 
+## Impermanence
+
+`den.aspects.core.impermanence` deletes the root subvolume and recreates
+it empty in the initrd on every boot. `/nix`, `/home` and `/boot` are
+filesystems of their own and are untouched; everything else is lost
+unless it is declared.
+
+- **Declare state in the aspect that owns it**, next to the service that
+  writes it:
+  `environment.persistence."/persist".directories = [ "/var/lib/foo" ];`
+  The option exists on every host and does nothing until the host
+  includes `core.impermanence`, so declare it unconditionally.
+- **An aspect that writes outside `/home` and `/nix` and declares nothing
+  loses that data at the next reboot** on such a host. Check
+  `StateDirectory=`, container volumes and tmpfiles rules when adding a
+  service.
+- **Do not declare a path that is its own filesystem.** That bind-mounts
+  over it. `hosting/_private/on-own-filesystem.nix` tests for this.
+- **Including the aspect on an installed host is not a deploy.** The host
+  disko layouts gain a `/persist` subvolume when it is included, and a
+  host installed without one fails to mount it at boot. The host has to
+  be reinstalled from its disko layout. The user does that; never add
+  the aspect to a host unasked.
+- **The SSH host key must be seeded before first boot**, at
+  `/persist/etc/ssh/ssh_host_ed25519_key`. sops decrypts with it, and
+  with `users.mutableUsers = false` a host that cannot decrypt has no
+  login password. Reusing the previous key keeps the age recipient in
+  `.sops.yaml` valid.
+- `nix run .#vm-<host>` switches impermanence off: the VM has no btrfs
+  disk to reset.
+
 ## Gotchas
 
 Each of these fails with a message that points somewhere unhelpful.
@@ -128,10 +159,12 @@ nix run .#vm-laptop-ares
 - Markdown is linted with markdownlint defaults, so **wrap prose at 80
   columns**, give every fenced block a language, and start each file with
   a single top-level heading.
-- CI (`.github/workflows/flake-check.yml`) runs nix-fast-build over
-  `checks`, `packages` and `devShells` on pull requests and pushes to
-  `main`. Host breakage surfaces in the `packages` build, never in
-  `checks`.
+- CI (`.github/workflows/flake-check.yml`) runs `nix flake check`, then
+  nix-fast-build over `packages` and `devShells`, on pull requests and
+  pushes to `main`. That evaluates every host, so evaluation errors and
+  failed assertions fail CI. No host is built there: the VM runners are
+  `apps`, kept out of `packages` so CI does not build whole system
+  closures. A host that evaluates but fails to build surfaces at deploy.
 - `.github/workflows/update-flake-lock.yml` opens an input-bump pull
   request weekly, Sundays at 00:00.
 
@@ -199,6 +232,14 @@ Every recipe ends with the [verification tests](#verification-tests).
    attribute.
 3. `git add` the file.
 4. Include it from a host, user or home, then run the gates.
+
+### Persist a service's state
+
+1. Find what the service writes outside `/home` and `/nix`.
+2. In the aspect that enables it, add the paths to
+   `environment.persistence."/persist".directories` (or `.files`), with
+   `user`, `group` and `mode` when they are not `root:root 0755`.
+3. Run the gates against a host that includes the aspect.
 
 ### Add a host
 

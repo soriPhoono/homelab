@@ -23,6 +23,7 @@
           cfg = config.hosting.gaming.wolf;
           inherit (cfg) renderDevice cardDevice internalMac;
           stateDirectory = "/var/lib/wolf";
+          onOwnFilesystem = import ./_private/on-own-filesystem.nix { inherit lib config; };
           nvidia = renderDevice == null;
         in
         {
@@ -75,6 +76,12 @@
               systemd.tmpfiles.rules = [
                 "d ${stateDirectory} 0755 root root -"
               ];
+
+              # Pairings, app definitions and per-client game state, unless a
+              # host gives them a disk of their own.
+              environment.persistence."/persist".directories = lib.optional (
+                !onOwnFilesystem stateDirectory
+              ) stateDirectory;
 
               # Virtual input devices for streamed controllers and keyboards.
               services.udev.extraRules = ''
