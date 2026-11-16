@@ -52,6 +52,8 @@
         den.aspects.hosting.podman
         den.aspects.hosting.media
         den.aspects.hosting.gaming.host
+        # -- VR gaming (Meta Quest 3 over WiVRn) --
+        den.aspects.desktop.domains.gaming.vr.wivrn
         den.aspects.hosting.ollama.rocm
       ];
       nixos = { pkgs, ... }: {
