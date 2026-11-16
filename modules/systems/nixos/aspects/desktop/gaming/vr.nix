@@ -10,15 +10,15 @@
   - `vr.alvr`: ALVR, which streams a real SteamVR session. Install SteamVR
     from Steam; every OpenVR game and tool then runs unmodified.
 
-  The base aspect adds the Steam gaming suite, adb, and SideQuest for
-  installing the headset-side app.
+  The base aspect adds the Steam gaming suite and adb, for installing the
+  headset-side app. SideQuest is left out: nixpkgs marks it insecure (it
+  ships the end-of-life Electron 29), and `adb install` does the same job.
 
   One-time setup, none of which Nix can do:
 
   1. Put the Quest in developer mode (Meta Horizon phone app).
   2. Install the headset-side app, either from the Meta store or sideloaded
-     with SideQuest or `adb install`. WiVRn's dashboard can also install it
-     over adb.
+     with `adb install`. WiVRn's dashboard can also install it over adb.
   3. Log out and back in once, so the Steam sandbox sees the OpenXR runtime
      (`PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES`).
   4. For ALVR, install SteamVR from Steam, then register the ALVR driver from
@@ -41,15 +41,6 @@
 
     # Registers the parent so its sub-aspects resolve.
     nixos = _: { };
-
-    homeManager =
-      { pkgs, ... }:
-      {
-        home.packages = with pkgs; [
-          # Installs the headset-side app and manages the Quest over adb.
-          sidequest
-        ];
-      };
 
     wivrn = {
       includes = [
