@@ -36,10 +36,10 @@ jobs:
         run: |
           nix profile install nixpkgs#nix-fast-build # parallel nix builder
 
+      # Builds the checks and evaluates every host, so evaluation errors and
+      # failed assertions fail here. It builds no host.
       - name: "Running `nix flake check`..."
-        run: nix-fast-build --skip-cached --no-nom
-        # NOTE: You can also limit the build only to the currentSystem if needed
-        # run: nix-fast-build --skip-cached --no-nom --flake ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem)"
+        run: nix flake check
 
       - name: "Running `nix build ...`..."
         run: nix-fast-build --skip-cached --no-nom --flake ".#packages"

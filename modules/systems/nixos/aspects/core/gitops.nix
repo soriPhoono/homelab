@@ -10,6 +10,8 @@
   den.aspects.core.gitops = { host, ... }: {
     nixos = {
       imports = [ inputs.comin.nixosModules.comin ];
+      # The deployed checkout and the generation comin last switched to.
+      environment.persistence."/persist".directories = [ "/var/lib/comin" ];
       services.comin = {
         enable = true;
         remotes = [

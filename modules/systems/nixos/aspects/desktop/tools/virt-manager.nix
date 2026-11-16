@@ -32,6 +32,8 @@
         programs.virt-manager = {
           enable = true;
         };
+        # Domain definitions, networks, storage pools and their images.
+        environment.persistence."/persist".directories = [ "/var/lib/libvirt" ];
         environment.systemPackages = with pkgs; [
           (runCommand "virtio-win-symlinked" { } ''
             mkdir -p $out/share/virtio-win

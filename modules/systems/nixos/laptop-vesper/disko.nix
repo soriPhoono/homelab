@@ -1,7 +1,7 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
   # Layout copied verbatim from v1 (nix/systems/laptop-vesper/disko.nix).
-  den.aspects.laptop-vesper.nixos = {
+  den.aspects.laptop-vesper.nixos = { config, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
 
     disko.devices = {
@@ -49,6 +49,14 @@
                       };
                       "/nix" = {
                         mountpoint = "/nix";
+                        mountOptions = [
+                          "compress=zstd"
+                          "noatime"
+                        ];
+                      };
+                      # Only exists on a host installed with core.impermanence.
+                      "/persist" = lib.mkIf config.environment.persistence."/persist".enable {
+                        mountpoint = "/persist";
                         mountOptions = [
                           "compress=zstd"
                           "noatime"

@@ -1,6 +1,6 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
-  den.aspects.laptop-ares.nixos = {
+  den.aspects.laptop-ares.nixos = { config, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
 
     disko.devices.disk.main = {
@@ -48,6 +48,11 @@
                     };
                     "/nix" = {
                       mountpoint = "/nix";
+                      inherit mountOptions;
+                    };
+                    # Only exists on a host installed with core.impermanence.
+                    "/persist" = lib.mkIf config.environment.persistence."/persist".enable {
+                      mountpoint = "/persist";
                       inherit mountOptions;
                     };
                   };

@@ -3,6 +3,10 @@
     includes = [
       den.aspects.desktop
     ];
-    nixos.services.flatpak.enable = true;
+    nixos = {
+      services.flatpak.enable = true;
+      # System-wide installations and remotes.
+      environment.persistence."/persist".directories = [ "/var/lib/flatpak" ];
+    };
   };
 }
