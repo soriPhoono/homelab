@@ -87,9 +87,10 @@ nix fmt                          # treefmt across the tree
 nix flake check                  # flake-file, pre-commit and treefmt
 ```
 
-Note that `nix flake check` covers only those three checks. CI builds
-the checks, packages and dev shells but no host: the VM runners are
-apps, so a host that fails to build surfaces at deploy.
+`nix flake check` builds those three checks and evaluates every host,
+which is what CI runs, along with building the packages and dev shells.
+No host is built: the VM runners are apps, so a host that evaluates but
+fails to build surfaces at deploy.
 
 ## Secrets
 

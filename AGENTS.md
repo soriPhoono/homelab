@@ -159,12 +159,12 @@ nix run .#vm-laptop-ares
 - Markdown is linted with markdownlint defaults, so **wrap prose at 80
   columns**, give every fenced block a language, and start each file with
   a single top-level heading.
-- CI (`.github/workflows/flake-check.yml`) runs nix-fast-build over
-  `checks`, `packages` and `devShells` on pull requests and pushes to
-  `main`. No host is built there: the VM runners are `apps`, kept out of
-  `packages` so CI does not build whole system closures. Host breakage
-  surfaces in the verification tests above and at deploy, never in
-  `checks`.
+- CI (`.github/workflows/flake-check.yml`) runs `nix flake check`, then
+  nix-fast-build over `packages` and `devShells`, on pull requests and
+  pushes to `main`. That evaluates every host, so evaluation errors and
+  failed assertions fail CI. No host is built there: the VM runners are
+  `apps`, kept out of `packages` so CI does not build whole system
+  closures. A host that evaluates but fails to build surfaces at deploy.
 - `.github/workflows/update-flake-lock.yml` opens an input-bump pull
   request weekly, Sundays at 00:00.
 
