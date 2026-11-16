@@ -127,24 +127,5 @@
           };
         };
     };
-    vr = {
-      includes = [
-        den.aspects.core.hardware.android
-      ];
-      nixos = {
-        services.wivrn = {
-          enable = true;
-          openFirewall = true;
-          autoStart = true;
-          highPriority = true;
-          steam.implementOXRRuntimes = true;
-        };
-      };
-      homeManager = { pkgs, ... }: {
-        home.packages = with pkgs; [
-          sidequest
-        ];
-      };
-    }; # TODO: Complete this
   };
 }
