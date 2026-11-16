@@ -17,8 +17,9 @@
     den.aspects.sphoono.development.herdr
     den.aspects.sphoono.development.nvim
     den.aspects.sphoono.development.claude
-    den.aspects.sphoono.development.opencode
     den.aspects.sphoono.development.codex
+    den.aspects.sphoono.development.opencode
+    den.aspects.sphoono.development.hermes
     den.aspects.sphoono.development.gh
   ];
 }

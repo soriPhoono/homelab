@@ -2,7 +2,6 @@
   flake-file.inputs.qylock = {
     # Fork carries girl-coffee themeMode until Darkkal44/qylock#112 merges.
     url = "github:soriPhoono/qylock/girl-coffee-dark-mode";
-    inputs.nixpkgs.follows = "nixpkgs";
   };
   imports = [
     ./disko.nix
