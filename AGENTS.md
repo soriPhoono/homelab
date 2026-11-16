@@ -59,7 +59,7 @@ Configuration is expressed as _aspects_: composable units declared under
 `den.aspects.core.impermanence` deletes the root subvolume and recreates
 it empty in the initrd on every boot. `/nix`, `/home` and `/boot` are
 filesystems of their own and are untouched; everything else is lost
-unless it is declared.
+unless it is declared. Every host includes it.
 
 - **Declare state in the aspect that owns it**, next to the service that
   writes it:
@@ -72,11 +72,16 @@ unless it is declared.
   service.
 - **Do not declare a path that is its own filesystem.** That bind-mounts
   over it. `hosting/_private/on-own-filesystem.nix` tests for this.
-- **Including the aspect on an installed host is not a deploy.** The host
-  disko layouts gain a `/persist` subvolume when it is included, and a
-  host installed without one fails to mount it at boot. The host has to
-  be reinstalled from its disko layout. The user does that; never add
-  the aspect to a host unasked.
+- **A host must be reinstalled from its disko layout before it boots a
+  generation that includes the aspect.** The disko layouts gain a
+  `/persist` subvolume when it is included, and an installed host has
+  none. The wipe refuses to run without that subvolume, and the initrd
+  stops at the failed `/persist` mount: boot the previous generation from
+  the boot menu. The user does the reinstall; never include the aspect on
+  a new host unasked.
+- `/home` is mounted in the initrd (`neededForBoot`), so the user's home
+  directory, created while the initrd activates the system, lands on the
+  home subvolume rather than being hidden by the mount.
 - **The SSH host key must be seeded before first boot**, at
   `/persist/etc/ssh/ssh_host_ed25519_key`. sops decrypts with it, and
   with `users.mutableUsers = false` a host that cannot decrypt has no

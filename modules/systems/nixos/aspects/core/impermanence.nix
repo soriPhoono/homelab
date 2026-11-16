@@ -59,13 +59,17 @@ in
       cfg = config.environment.persistence.${persist};
       root = config.fileSystems."/";
 
+      # The btrfs subvolume a filesystem is mounted from, without the leading
+      # slash, or "" when it is not mounted from one.
+      subvolOf =
+        fs:
+        let
+          options = lib.filter (lib.hasPrefix "subvol=") fs.options;
+        in
+        if options == [ ] then "" else lib.removePrefix "/" (lib.removePrefix "subvol=" (lib.head options));
       # The subvolume to reset is whichever one the host mounts as root.
-      subvolOptions = lib.filter (lib.hasPrefix "subvol=") root.options;
-      subvolume =
-        if subvolOptions == [ ] then
-          ""
-        else
-          lib.removePrefix "/" (lib.removePrefix "subvol=" (lib.head subvolOptions));
+      subvolume = subvolOf root;
+      persistSubvolume = subvolOf config.fileSystems.${persist};
       # Mount the top level the way root is mounted, minus what selects root.
       mountOptions = [
         "subvolid=5"
@@ -123,6 +127,21 @@ in
           '';
         }
         {
+          assertion = persistSubvolume != "";
+          message = ''
+            core.impermanence keeps its state in ${persist}, which must be
+            mounted from a btrfs `subvol=<name>` on the same device as `/`.
+          '';
+        }
+        {
+          assertion = (config.fileSystems."/home".device or null) != null;
+          message = ''
+            core.impermanence leaves `/home` alone, so it must be a filesystem
+            of its own. Without one, home directories live on the root
+            subvolume and are deleted on every boot.
+          '';
+        }
+        {
           assertion = !config.users.mutableUsers;
           message = ''
             core.impermanence discards /etc/passwd and /etc/shadow on every
@@ -132,7 +151,14 @@ in
         }
       ];
 
-      fileSystems.${persist} = lib.mkIf cfg.enable { neededForBoot = true; };
+      fileSystems = lib.mkIf cfg.enable {
+        ${persist}.neededForBoot = true;
+        # Home directories are created while the initrd activates the system.
+        # With /home mounted later they land on the root subvolume, are hidden
+        # by the mount, and a freshly installed user has no home until the
+        # next switch.
+        "/home".neededForBoot = true;
+      };
 
       # Secrets for users are decrypted before the bind mounts over /etc
       # exist, so read the keys from where they are stored instead.
@@ -164,6 +190,17 @@ in
           mkdir -p ${top}
           mount -t btrfs -o ${lib.concatStringsSep "," mountOptions} ${lib.escapeShellArg root.device} ${top}
           trap 'umount ${top}' EXIT
+
+          # Without the persist subvolume nothing would survive the reset, the
+          # SSH host key included, and sops could no longer decrypt anything.
+          # That is a host that was never reinstalled from its disko layout.
+          if [ ! -e ${top}/${lib.escapeShellArg persistSubvolume} ]; then
+            echo "Refusing to reset ${subvolume}: there is no ${persistSubvolume} subvolume. Reinstall this host from its disko layout." >&2
+            exit 1
+          fi
+          if [ ! -e ${top}/${lib.escapeShellArg persistSubvolume}${sopsKey} ]; then
+            echo "Warning: no SSH host key in ${persistSubvolume}${sopsKey}; sops cannot decrypt secrets, so no user will have a password." >&2
+          fi
 
           # --recursive also removes subvolumes nested in root, which a plain
           # delete refuses to do.
