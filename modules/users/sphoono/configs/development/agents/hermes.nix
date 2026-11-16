@@ -118,7 +118,10 @@
                   key_env = "NINEROUTER_API_KEY";
                   transport = "chat_completions";
                 };
-                model.provider = "custom:9router";
+                model = {
+                  provider = "custom:9router";
+                  default = "Primary-models";
+                };
               };
             };
 
