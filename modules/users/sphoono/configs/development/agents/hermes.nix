@@ -50,6 +50,16 @@
           '';
         };
 
+        options.development.hermes.gatewayUrl = lib.mkOption {
+          type = lib.types.str;
+          default = "https://sphoono-vps-9router.xerus-augmented.ts.net/v1";
+          description = ''
+            OpenAI-compatible endpoint of the 9router gateway on sphoono-vps,
+            reached over the tailnet through docktail. Same gateway as the
+            OpenCode provider.
+          '';
+        };
+
         # Thin pass-through to services.hermes-agent.backend: null leaves the
         # upstream default. Types and semantics are documented upstream.
         options.development.hermes.backend =
@@ -104,10 +114,32 @@
               enable = true;
               desktop.enable = true;
             };
+
+            # Enabling the service module alone runs no unit: it only writes
+            # config.yaml and .env at activation. Both are needed in every
+            # mode, so the 9router provider reaches the CLI and Desktop too.
+            services.hermes-agent = {
+              enable = true;
+              environmentFiles = [ config.sops.templates."hermes/env".path ];
+              settings = {
+                providers."9router" = {
+                  api = cfg.gatewayUrl;
+                  key_env = "NINEROUTER_API_KEY";
+                  transport = "chat_completions";
+                };
+                model.provider = "custom:9router";
+              };
+            };
+
+            sops = {
+              secrets."api/9router-api-key" = { };
+              templates."hermes/env".content = ''
+                NINEROUTER_API_KEY=${config.sops.placeholder."api/9router-api-key"}
+              '';
+            };
           }
           (lib.mkIf (cfg.mode != "desktop") {
             services.hermes-agent = {
-              enable = true;
               backend = {
                 mode = if cfg.mode == "server" then "dashboard" else "serve";
               }
