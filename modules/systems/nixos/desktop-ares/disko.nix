@@ -1,6 +1,6 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
-  den.aspects.desktop-ares.nixos = { pkgs, ... }: {
+  den.aspects.desktop-ares.nixos = { config, pkgs, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
 
     # No mail transport; log array events to the journal instead.
@@ -89,6 +89,14 @@
                       };
                       "/nix" = {
                         mountpoint = "/nix";
+                        mountOptions = [
+                          "compress=zstd"
+                          "noatime"
+                        ];
+                      };
+                      # Only exists on a host installed with core.impermanence.
+                      "/persist" = lib.mkIf config.environment.persistence."/persist".enable {
+                        mountpoint = "/persist";
                         mountOptions = [
                           "compress=zstd"
                           "noatime"

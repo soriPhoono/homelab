@@ -4,9 +4,11 @@
   den.aspects.sphoono.development.opencode = {
     includes = [
       den.aspects.sphoono.development.honcho
+      den.aspects.sphoono.development.ninerouter
     ];
     homeManager =
       {
+        config,
         lib,
         pkgs,
         ...
@@ -20,8 +22,7 @@
         # `/connect` in OpenCode, which keeps it in the `credential` table of
         # its database. The oneshot only reads it from there to list models;
         # nothing secret is written to a file.
-        tailnetDomain = "xerus-augmented.ts.net";
-        gateway = "https://sphoono-vps-9router.${tailnetDomain}/v1";
+        gateway = config.development.ninerouter.url;
 
         syncModels = pkgs.writeShellApplication {
           name = "opencode-sync-models";

@@ -52,7 +52,9 @@ in
     # -- Applications --
     (bind "SUPER + Return" (app terminal))
     (bind "SUPER + E" (app "${terminal} -e ${lib.getExe config.programs.yazi.package}"))
-    (bind "SUPER + C" (app "${terminal} -e ${lib.getExe config.programs.herdr.package}"))
+    # Resolved from PATH on purpose: the hermes module installs a wrapped
+    # hermes-desktop that carries HERMES_HOME, which the bare package lacks.
+    (bind "SUPER + C" (app "hermes-desktop"))
 
     # -- Session --
     (bind "SUPER + SHIFT + Escape" (exec "${uwsm} stop"))

@@ -82,9 +82,30 @@
       url = "github:ChmaraX/herdr-nvim/v1.1.0";
       flake = false;
     };
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        home-manager.follows = "home-manager";
+        nixpkgs.follows = "hermes-nixpkgs";
+        pyproject-build-systems.inputs.nixpkgs.follows = "nixpkgs";
+        pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
+        uv2nix.inputs.nixpkgs.follows = "nixpkgs";
+      };
+    };
+    hermes-nixpkgs = {
+      url = "github:NixOS/nixpkgs/02c087f3fe673c9e317f206a627cb6b910336dbe";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    impermanence = {
+      url = "github:nix-community/impermanence";
+      inputs = {
+        home-manager.follows = "home-manager";
+        nixpkgs.follows = "nixpkgs";
+      };
     };
     import-tree = {
       url = "github:denful/import-tree";

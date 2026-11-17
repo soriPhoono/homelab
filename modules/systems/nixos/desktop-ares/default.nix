@@ -2,7 +2,6 @@
   flake-file.inputs.qylock = {
     # Fork carries girl-coffee themeMode until Darkkal44/qylock#112 merges.
     url = "github:soriPhoono/qylock/girl-coffee-dark-mode";
-    inputs.nixpkgs.follows = "nixpkgs";
   };
   imports = [
     ./disko.nix
@@ -20,7 +19,9 @@
         den.aspects.core.hardware.gpu.intel
         den.aspects.core.hardware.gpu.amd.gpgpu
         # -- Core OS modules --
+        den.aspects.core.impermanence
         den.aspects.core.bootloaders.systemd-boot
+        den.aspects.core.bootloaders.lts-fallback
         den.aspects.core.swap.zram
         den.aspects.core.networking.network-manager
         den.aspects.core.networking.tailscale
@@ -51,6 +52,8 @@
         den.aspects.hosting.podman
         den.aspects.hosting.media
         den.aspects.hosting.gaming.host
+        # -- VR gaming (Meta Quest 3 over WiVRn) --
+        den.aspects.desktop.domains.gaming.vr.wivrn
         den.aspects.hosting.ollama.rocm
       ];
       nixos = { pkgs, ... }: {

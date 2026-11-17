@@ -22,6 +22,7 @@ in
       pkg-config
     ];
     buildInputs = with pkgs; [
+      libgit2
       openssl
       zlib
     ];

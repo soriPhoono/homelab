@@ -1,4 +1,4 @@
-# Shim exposing every nixosConfiguration as a runnable QEMU VM.
+# Shim exposing every nixosConfiguration as a runnable QEMU VM app.
 #
 #   nix run .#vm-<host>
 #
@@ -28,6 +28,9 @@
                   # qemu-vm provides its own disk/filesystems; drop disko's
                   # real-hardware layout (partitions, LUKS, mounts).
                   disko.enableConfig = lib.mkForce false;
+                  # No btrfs root to reset and no /persist subvolume either,
+                  # so a host with core.impermanence runs as a plain one.
+                  environment.persistence."/persist".enable = lib.mkForce false;
                   # The facter report describes the physical machine (nvidia,
                   # amdgpu, nvme, ...); none of that exists in the guest.
                   hardware.facter.reportPath = lib.mkForce null;
@@ -100,6 +103,15 @@
         });
     in
     {
-      packages = lib.mapAttrs' (name: host: lib.nameValuePair "vm-${name}" (mkVm name host)) hosts;
+      # Apps rather than packages: CI builds every package, and a VM drags
+      # in the host's whole system closure.
+      apps = lib.mapAttrs' (
+        name: host:
+        lib.nameValuePair "vm-${name}" {
+          type = "app";
+          program = lib.getExe (mkVm name host);
+          meta.description = "Boot ${name} in a QEMU VM";
+        }
+      ) hosts;
     };
 }

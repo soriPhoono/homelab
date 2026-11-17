@@ -25,7 +25,9 @@
       den.aspects.core.hardware.cpu.amd
       den.aspects.core.hardware.gpu.amd
       # -- Core OS modules --
+      den.aspects.core.impermanence
       den.aspects.core.bootloaders.systemd-boot
+      den.aspects.core.bootloaders.lts-fallback
       den.aspects.core.swap.zram
       den.aspects.core.networking.network-manager
       den.aspects.core.networking.tailscale
@@ -86,6 +88,8 @@
       };
       time.timeZone = "America/Chicago";
       services.asusd.enable = true;
+      # Fan curves, charge limit and keyboard lighting set through asusctl.
+      environment.persistence."/persist".directories = [ "/etc/asusd" ];
       stylix = {
         enable = true;
         base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";

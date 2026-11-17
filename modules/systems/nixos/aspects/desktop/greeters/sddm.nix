@@ -9,6 +9,15 @@
           wayland.enable = true;
         };
         security.pam.services.sddm.enableGnomeKeyring = config.services.gnome.gnome-keyring.enable;
+        # The greeter's home: last user and session.
+        environment.persistence."/persist".directories = [
+          {
+            directory = "/var/lib/sddm";
+            user = "sddm";
+            group = "sddm";
+            mode = "0700";
+          }
+        ];
       };
   };
 }

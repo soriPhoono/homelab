@@ -14,6 +14,7 @@
         cfg = config.hosting.microserver.media;
         inherit (cfg) root;
         inherit (cfg.jellyfin) renderDevice cardDevice;
+        onOwnFilesystem = import ./_private/on-own-filesystem.nix { inherit lib config; };
 
         tz = lib.optionalAttrs (config.time.timeZone != null) {
           TZ = config.time.timeZone;
@@ -204,6 +205,12 @@
               "${root}/books"
             ]
             ++ lib.mapAttrsToList (_: s: s.tmpfiles) services;
+
+          # Each service's configuration and database, and the library when
+          # it lives on the root filesystem rather than a disk of its own.
+          environment.persistence."/persist".directories =
+            map (name: "/var/lib/${name}") (lib.attrNames services)
+            ++ lib.optional (!onOwnFilesystem root) root;
 
           virtualisation.oci-containers.containers = lib.mapAttrs (_: s: s.container) services;
         };
