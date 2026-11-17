@@ -1,0 +1,53 @@
+services:
+  syncthing:
+    image: syncthing/syncthing:2.1.7
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      # The web GUI must listen on the overlay address for DockTail to reach it.
+      STGUIADDRESS: 0.0.0.0:8384
+      STNODEFAULTFOLDER: "1"
+      STNOUPGRADE: "1"
+    networks:
+      - default
+      - tailscale
+    volumes:
+      # Holds config.xml, the device key and the synced Vault folder.
+      - syncthing-data:/var/syncthing
+    # DockTail reads container labels only; Swarm applies top-level labels to
+    # each task container, whereas deploy.labels stay on the service object.
+    labels:
+      docktail.service.enable: "true"
+      docktail.service.network: tailscale
+      # Docktail defaults to tag:container, which the tailnet does not define.
+      docktail.tags: tag:sphoono-vps-service
+      # Sync protocol: raw TCP, reached as tcp://sphoono-vps-syncthing:22000.
+      docktail.service.name: sphoono-vps-syncthing
+      docktail.service.port: "22000"
+      docktail.service.protocol: tcp
+      docktail.service.service-port: "22000"
+      docktail.service.service-protocol: tcp
+      # Web GUI: Tailscale terminates TLS on 443.
+      docktail.service.1.name: sphoono-vps-syncthing
+      docktail.service.1.port: "8384"
+      docktail.service.1.protocol: http
+      docktail.service.1.service-port: "443"
+      docktail.service.1.service-protocol: https
+    deploy:
+      placement:
+        max_replicas_per_node: 1
+      resources:
+        limits:
+          memory: 1G
+      restart_policy:
+        condition: any
+        delay: 5s
+
+networks:
+  default:
+    driver: overlay
+  tailscale:
+    external: true
+
+volumes:
+  syncthing-data:

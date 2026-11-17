@@ -10,3 +10,7 @@ docktail:
   repo: homelab
   branch: main
   compose_file: docker/stacks/docktail/docker-compose.yml
+syncthing:
+  repo: homelab
+  branch: main
+  compose_file: docker/stacks/syncthing/docker-compose.yml
