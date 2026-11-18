@@ -14,3 +14,7 @@ syncthing:
   repo: homelab
   branch: main
   compose_file: docker/stacks/syncthing/docker-compose.yml
+hermes:
+  repo: homelab
+  branch: main
+  compose_file: docker/stacks/hermes/docker-compose.yml

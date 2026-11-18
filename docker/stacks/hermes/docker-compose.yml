@@ -1,0 +1,96 @@
+services:
+  hermes:
+    # v0.23.2, pinned by its multi-arch index digest.
+    image: nousresearch/hermes-agent:v0.23.2@sha256:d6746a084e9341baada483e3d6210444d3c1aeb7c130f0915150065fb2851459
+    # Hermes reads secrets from the environment or /opt/data/.env only. Export
+    # them from the Swarm secrets, then exec the image entrypoint so it stays
+    # PID 1: it only starts s6-overlay's /init, which supervises the gateway
+    # and the dashboard, when it is PID 1. $$ keeps compose from interpolating.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        set -eu;
+        NINEROUTER_API_KEY="$$(cat /run/secrets/hermes-9router-api-key)";
+        HERMES_DASHBOARD_BASIC_AUTH_PASSWORD="$$(cat /run/secrets/hermes-dashboard-password)";
+        HERMES_DASHBOARD_BASIC_AUTH_SECRET="$$(cat /run/secrets/hermes-dashboard-secret)";
+        [ -n "$$NINEROUTER_API_KEY" ] &&
+        [ -n "$$HERMES_DASHBOARD_BASIC_AUTH_PASSWORD" ] &&
+        [ -n "$$HERMES_DASHBOARD_BASIC_AUTH_SECRET" ] ||
+        { echo "missing secret" >&2; exit 1; };
+        export NINEROUTER_API_KEY HERMES_DASHBOARD_BASIC_AUTH_PASSWORD
+        HERMES_DASHBOARD_BASIC_AUTH_SECRET;
+        exec /opt/hermes/docker/entrypoint-dispatch.sh "$$@"
+      - hermes
+    # Under s6 the gateway is supervised; this CMD is only a heartbeat.
+    command: ["gateway", "run"]
+    environment:
+      # The dashboard is the backend Hermes Desktop connects to as a remote
+      # gateway. It must bind a non-loopback address for DockTail to reach it,
+      # which engages its auth gate; the username/password provider below
+      # satisfies it. Tailnet only, never published on the VPS.
+      HERMES_DASHBOARD: "1"
+      HERMES_DASHBOARD_HOST: 0.0.0.0
+      HERMES_DASHBOARD_PORT: "9119"
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME: sphoono
+      # The DNS-rebinding guard accepts only this exact Host and Origin.
+      HERMES_DASHBOARD_PUBLIC_URL: https://sphoono-vps-hermes.xerus-augmented.ts.net
+      TZ: America/Chicago
+    networks:
+      - default
+      # Also how Hermes reaches 9router: both stacks join this overlay, where
+      # Swarm resolves the other stack's service as 9router_9router.
+      - tailscale
+    secrets:
+      - hermes-9router-api-key
+      - hermes-dashboard-password
+      - hermes-dashboard-secret
+    volumes:
+      # The whole of Hermes' state: config.yaml, .env, SOUL.md, sessions,
+      # memories, skills, cron. A named volume, so SQLite WAL works.
+      - hermes-data:/opt/data
+    # DockTail reads container labels only; Swarm applies top-level labels to
+    # each task container, whereas deploy.labels stay on the service object.
+    labels:
+      docktail.service.enable: "true"
+      docktail.service.network: tailscale
+      # Docktail defaults to tag:container, which the tailnet does not define.
+      docktail.tags: tag:sphoono-vps-service
+      # Dashboard and Desktop backend: Tailscale terminates TLS on 443.
+      docktail.service.name: sphoono-vps-hermes
+      docktail.service.port: "9119"
+      docktail.service.protocol: http
+      docktail.service.service-port: "443"
+      docktail.service.service-protocol: https
+    deploy:
+      # Exactly one gateway: two against the same data volume corrupt it.
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+      update_config:
+        order: stop-first
+      resources:
+        limits:
+          # Upstream recommends 2-4G; Chromium for the browser tools is the
+          # bulk of it.
+          memory: 4G
+      restart_policy:
+        condition: any
+        delay: 5s
+
+networks:
+  default:
+    driver: overlay
+  tailscale:
+    external: true
+
+secrets:
+  hermes-9router-api-key:
+    file: ./secrets/hermes-9router-api-key
+  hermes-dashboard-password:
+    file: ./secrets/hermes-dashboard-password
+  hermes-dashboard-secret:
+    file: ./secrets/hermes-dashboard-secret
+
+volumes:
+  hermes-data:
