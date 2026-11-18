@@ -66,6 +66,17 @@
             services.hermes-agent = {
               enable = true;
               environmentFiles = [ config.sops.templates."hermes/env".path ];
+              # Hermes reads SOUL.md from HERMES_HOME, not the working
+              # directory, so it goes through hermesHomeFiles. The soul is
+              # composed from the shared documents, like the other agents'
+              # context.
+              hermesHomeFiles."SOUL.md" = ''
+                ${builtins.readFile ../../../assets/documents/identities/general-assistant.md}
+
+                ${builtins.readFile ../../../assets/documents/agent-roles/personal-assistant.md}
+
+                ${builtins.readFile ../../../assets/documents/agents/hermes.md}
+              '';
               settings = {
                 # Desktop first-run state, so a fresh HERMES_HOME starts
                 # straight into the app instead of the onboarding flow.
