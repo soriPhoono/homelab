@@ -272,32 +272,7 @@
           in
           {
             enable = true;
-            package =
-              let
-                agent = pkgs.opencode;
-              in
-              pkgs.symlinkJoin {
-                inherit (agent) pname;
-                inherit (agent) version;
-                name = "${agent.name}"; # TODO: name this properly after implementation
-
-                paths = [ agent ];
-                buildInputs = [ pkgs.makeWrapper ];
-                postBuild = ''
-                  for bin in $out/bin/*; do
-                    if [ -f "$bin" ] && [ -x "$bin" ]; then
-                      wrapProgram "$bin" \
-                        --prefix PATH : ${
-                          lib.makeBinPath [
-                            pkgs.nodejs
-                            pkgs.python3
-                          ]
-                        } \
-                        --run 'export OPENCODE_DISABLE_CLAUDE_CODE=1'
-                    fi
-                  done
-                '';
-              };
+            package = import ./_private/wrap-opencode.nix { inherit lib pkgs; } pkgs.opencode;
             settings = {
               plugin = [ "@honcho-ai/opencode-honcho" ];
               providers."9router" = {
@@ -344,4 +319,15 @@
           };
       };
   };
+
+  # OpenCode Desktop, for hosts with a desktop. It reads the same
+  # ~/.config/opencode as the CLI, so it shares the settings, providers, MCP
+  # servers, skills and plugin above.
+  den.aspects.sphoono.development.opencode.desktop.homeManager =
+    { lib, pkgs, ... }:
+    {
+      home.packages = [
+        (import ./_private/wrap-opencode.nix { inherit lib pkgs; } pkgs.opencode-desktop)
+      ];
+    };
 }
