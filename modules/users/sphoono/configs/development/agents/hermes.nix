@@ -24,8 +24,27 @@
       {
         config,
         lib,
+        pkgs,
         ...
       }:
+      let
+        # Hermes has no skills option for its default profile; it reads extra
+        # skill directories from settings.skills.external_dirs. Each entry of
+        # the farm is one skill directory.
+        obsidianSkills = pkgs.linkFarm "hermes-obsidian-skills" (
+          lib.mapAttrsToList (name: path: { inherit name path; }) {
+            inherit (pkgs.agent-skills.github.obsidianmd.obsidian-skills)
+              defuddle
+              json-canvas
+              knap
+              obsidian-bases
+              obsidian-cli
+              obsidian-headless
+              obsidian-markdown
+              ;
+          }
+        );
+      in
       {
         imports = [
           # Pulls in upstream's module as well.
@@ -55,6 +74,8 @@
 
         config = lib.mkMerge [
           {
+            nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
+
             programs.hermes-agent = {
               enable = true;
               desktop.enable = true;
@@ -78,6 +99,8 @@
                 ${builtins.readFile ../../../assets/documents/agents/hermes.md}
               '';
               settings = {
+                skills.external_dirs = [ obsidianSkills ];
+
                 # Desktop first-run state, so a fresh HERMES_HOME starts
                 # straight into the app instead of the onboarding flow.
                 onboarding = {
