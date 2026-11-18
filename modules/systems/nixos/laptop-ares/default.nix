@@ -25,7 +25,6 @@
       den.aspects.core.hardware.cpu.amd
       den.aspects.core.hardware.gpu.amd
       # -- Core OS modules --
-      den.aspects.core.impermanence
       den.aspects.core.bootloaders.systemd-boot
       den.aspects.core.bootloaders.lts-fallback
       den.aspects.core.swap.zram
