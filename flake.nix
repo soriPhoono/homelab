@@ -93,6 +93,17 @@
         uv2nix.inputs.nixpkgs.follows = "nixpkgs";
       };
     };
+    hermes-agent-nix = {
+      url = "github:soriPhoono/hermes-agent-nix";
+      inputs.hermes-agent.follows = "hermes-agent";
+      inputs.flake-file.follows = "flake-file";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.home-manager.follows = "home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.pre-commit-hooks.follows = "pre-commit-hooks";
+      inputs.systems.follows = "systems";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+    };
     hermes-nixpkgs = {
       url = "github:NixOS/nixpkgs/02c087f3fe673c9e317f206a627cb6b910336dbe";
     };

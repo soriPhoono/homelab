@@ -7,6 +7,12 @@
     # (patchelf 0.19.2) until nixpkgs catches up or hermes drops the patch.
     hermes-nixpkgs.url = "github:NixOS/nixpkgs/02c087f3fe673c9e317f206a627cb6b910336dbe";
     hermes-agent.inputs.nixpkgs.follows = "hermes-nixpkgs";
+    # Declarative profiles on top of upstream's services.hermes-agent. Follow
+    # our hermes-agent so there is a single Hermes pin.
+    hermes-agent-nix = {
+      url = "github:soriPhoono/hermes-agent-nix";
+      inputs.hermes-agent.follows = "hermes-agent";
+    };
   };
 
   den.aspects.sphoono.development.hermes = {
@@ -25,7 +31,8 @@
       in
       {
         imports = [
-          inputs.hermes-agent.homeManagerModules.default
+          # Pulls in upstream's module as well.
+          inputs.hermes-agent-nix.homeManagerModules.default
         ];
 
         options.development.hermes.mode = lib.mkOption {

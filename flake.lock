@@ -536,6 +536,47 @@
         "type": "github"
       }
     },
+    "hermes-agent-nix": {
+      "inputs": {
+        "flake-file": [
+          "flake-file"
+        ],
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "hermes-agent": [
+          "hermes-agent"
+        ],
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "pre-commit-hooks": [
+          "pre-commit-hooks"
+        ],
+        "systems": [
+          "systems"
+        ],
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794979367,
+        "narHash": "sha256-znCwNUMwcC3eFsKBDMVS9iJYzTausKEeMFEQKPFX28E=",
+        "owner": "soriPhoono",
+        "repo": "hermes-agent-nix",
+        "rev": "1f782eee628801e876336090a1fb0467b0262f19",
+        "type": "github"
+      },
+      "original": {
+        "owner": "soriPhoono",
+        "repo": "hermes-agent-nix",
+        "type": "github"
+      }
+    },
     "hermes-nixpkgs": {
       "locked": {
         "lastModified": 1792502884,
@@ -902,6 +943,7 @@
         "flake-parts": "flake-parts",
         "herdr-nvim": "herdr-nvim",
         "hermes-agent": "hermes-agent",
+        "hermes-agent-nix": "hermes-agent-nix",
         "hermes-nixpkgs": "hermes-nixpkgs",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
