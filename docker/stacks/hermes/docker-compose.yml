@@ -2,10 +2,16 @@ services:
   hermes:
     # v0.23.2, pinned by its multi-arch index digest.
     image: nousresearch/hermes-agent:v0.23.2@sha256:d6746a084e9341baada483e3d6210444d3c1aeb7c130f0915150065fb2851459
-    # Hermes reads secrets from the environment or /opt/data/.env only. Export
-    # them from the Swarm secrets, then exec the image entrypoint so it stays
-    # PID 1: it only starts s6-overlay's /init, which supervises the gateway
-    # and the dashboard, when it is PID 1. $$ keeps compose from interpolating.
+    # Hermes reads secrets from the environment or a profile's .env only.
+    # Export them from the Swarm secrets, then exec the image entrypoint so it
+    # stays PID 1: it only starts s6-overlay's /init, which supervises the
+    # gateway and the dashboard, when it is PID 1. $$ keeps compose from
+    # interpolating.
+    #
+    # Named profiles (the Librarian) never inherit the process environment,
+    # only their own .env, so the 9router key is also written into each
+    # existing profile's .env on every start. Rotating the secret and
+    # redeploying updates them all.
     entrypoint:
       - /bin/sh
       - -c
@@ -18,6 +24,15 @@ services:
         [ -n "$$HERMES_DASHBOARD_BASIC_AUTH_PASSWORD" ] &&
         [ -n "$$HERMES_DASHBOARD_BASIC_AUTH_SECRET" ] ||
         { echo "missing secret" >&2; exit 1; };
+        for profile in /opt/data/profiles/*/; do
+        [ -d "$$profile" ] && [ ! -L "$${profile%/}" ] || continue;
+        env="$${profile}.env";
+        umask 077;
+        { grep -v '^NINEROUTER_API_KEY=' "$$env" 2>/dev/null || true;
+        printf 'NINEROUTER_API_KEY=%s\n' "$$NINEROUTER_API_KEY"; } > "$$env.tmp";
+        chown "$$HERMES_UID:$$HERMES_GID" "$$env.tmp";
+        mv "$$env.tmp" "$$env";
+        done;
         export NINEROUTER_API_KEY HERMES_DASHBOARD_BASIC_AUTH_PASSWORD
         HERMES_DASHBOARD_BASIC_AUTH_SECRET;
         exec /opt/hermes/docker/entrypoint-dispatch.sh "$$@"
@@ -35,6 +50,10 @@ services:
       HERMES_DASHBOARD_BASIC_AUTH_USERNAME: sphoono
       # The DNS-rebinding guard accepts only this exact Host and Origin.
       HERMES_DASHBOARD_PUBLIC_URL: https://sphoono-vps-hermes.xerus-augmented.ts.net
+      # Run as Syncthing's uid and gid, so each side can edit the other's
+      # files in the shared vault.
+      HERMES_UID: "1000"
+      HERMES_GID: "1000"
       TZ: America/Chicago
     networks:
       - default
@@ -49,6 +68,16 @@ services:
       # The whole of Hermes' state: config.yaml, .env, SOUL.md, sessions,
       # memories, skills, cron. A named volume, so SQLite WAL works.
       - hermes-data:/opt/data
+      # The Obsidian vault, from the syncthing stack's volume. Only its Vault
+      # folder: the volume also holds Syncthing's device key and config.
+      # Under the tool subprocess HOME, at the path the Librarian used on
+      # NixOS; /opt/data/vault itself is on Hermes' protected-path denylist.
+      - type: volume
+        source: syncthing_syncthing-data
+        target: /opt/data/home/Shared/Vault
+        volume:
+          nocopy: true
+          subpath: Vault
     # DockTail reads container labels only; Swarm applies top-level labels to
     # each task container, whereas deploy.labels stay on the service object.
     labels:
@@ -94,3 +123,6 @@ secrets:
 
 volumes:
   hermes-data:
+  # Created by the syncthing stack, which Swarm prefixes with its name.
+  syncthing_syncthing-data:
+    external: true
