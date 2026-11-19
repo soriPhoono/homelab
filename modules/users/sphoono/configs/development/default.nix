@@ -20,6 +20,7 @@
     den.aspects.sphoono.development.codex
     den.aspects.sphoono.development.opencode
     den.aspects.sphoono.development.hermes
+    den.aspects.sphoono.development.hermes.librarian
     den.aspects.sphoono.development.gh
   ];
 }

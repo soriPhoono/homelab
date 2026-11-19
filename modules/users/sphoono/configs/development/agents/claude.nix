@@ -54,7 +54,7 @@
         # api-and-interface-design, sql-queries, data-visualization,
         # financial-statements, review-contract) are no longer linked, and
         # so is antigravity-research. note-taking, project-management and
-        # task-automation are left out: the Notion and n8n skills target
+        # task-automation are left out: the Obsidian and n8n skills target
         # those jobs.
         awesomeSkills = lib.mergeAttrsList (
           lib.mapAttrsToList
@@ -369,10 +369,15 @@
             growth-pulse = smbSkill "growth-pulse";
             # Reverse engineering; drives the REA MCP tools
             reverse-engineer-anything = "${inputs.rea}/.agents/skills/reverse-engineer-anything";
-            # Keep the Notion project wiki and tasks current
-            inherit (pkgs.agent-skills.github.makenotion.claude-code-notion-plugin)
-              knowledge-capture
-              spec-to-implementation
+            # Work with the Obsidian vault: markdown, bases, canvas and CLI
+            inherit (pkgs.agent-skills.github.obsidianmd.obsidian-skills)
+              defuddle
+              json-canvas
+              knap
+              obsidian-bases
+              obsidian-cli
+              obsidian-headless
+              obsidian-markdown
               ;
           }
           // awesomeSkills;
