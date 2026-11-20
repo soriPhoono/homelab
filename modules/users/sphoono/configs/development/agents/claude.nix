@@ -205,37 +205,12 @@
               ];
             }
         );
-        # small-business skills read ../../shared/*.md (and ../../../shared/
-        # from nested files) relative to their own directory, which breaks
-        # once each skill is linked on its own. Point those at the store.
-        # Node, the JDK and Ghidra exist only inside this launcher, so
-        # claude's MCP server resolves them and the user's shell does not.
-        rea-mcp = pkgs.writeShellApplication {
-          name = "rea-mcp";
-          runtimeInputs = [
-            pkgs.nodejs_22
-            pkgs.jdk21
-          ];
-          runtimeEnv = {
-            GHIDRA_INSTALL_DIR = "${pkgs.ghidra}/lib/ghidra";
-            JAVA_HOME = "${pkgs.jdk21}";
-          };
-          text = ''
-            exec npx -y rea-agents@6.4.0 mcp "$@"
-          '';
-        };
       in
       {
         sops.secrets."api/mem0-api-key" = { };
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
           enable = true;
-          mcpServers = {
-            rea.command = lib.getExe rea-mcp;
-            # The nixos lookup server is dropped: nixpkgs marks its
-            # dependency fastmcp-slim broken (2026-10-19), and Claude Code is
-            # being retired. OpenCode carries its own entry.
-          };
           package =
             let
               agent = pkgs.claude-code;

@@ -204,6 +204,10 @@
 
               ${builtins.readFile ../../../assets/documents/agents/opencode.md}
             '';
+            agents = {
+              coding-agent = ../../../assets/documents/agent-roles/coding.md;
+              devops = ../../../assets/documents/agent-roles/nix-infrastructure.md;
+            };
             skills = {
               # Writing
               stop-slop = pkgs.agent-skills.github.hardikpandya.stop-slop.stop-slop;

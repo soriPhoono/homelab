@@ -1,3 +1,3 @@
 {
-  den.aspects.sphoono.desktop.office.homeManager.programs.calibre.enable = true;
+  den.aspects.sphoono.desktop.homeManager.programs.calibre.enable = true;
 }
