@@ -36,8 +36,10 @@
         den.aspects.desktop.components.gnome.dconf
         # -- Desktop application runtimes --
         den.aspects.desktop.platforms.appimage
+        den.aspects.desktop.platforms.flatpak
         # -- Domains of desktop activity (scoped) --
         den.aspects.desktop.domains.gaming.desktop
+        den.aspects.desktop.domains.gaming.vr.wivrn
         # -- Desktop applications (scoped) --
         den.aspects.desktop.tools.virt-manager
         den.aspects.desktop.tools.partition-manager
@@ -52,8 +54,6 @@
         den.aspects.hosting.podman
         den.aspects.hosting.media
         den.aspects.hosting.gaming.host
-        # -- VR gaming (Meta Quest 3 over WiVRn) --
-        den.aspects.desktop.domains.gaming.vr.wivrn
         den.aspects.hosting.ollama.rocm
       ];
       nixos = { pkgs, ... }: {
