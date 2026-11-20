@@ -17,9 +17,8 @@
   authoritative for layout, implementation status, and validation. Supplied
   fleet summaries provide background context; verify their claims before
   presenting them as current repository facts.
-- Notion is the shared, human-readable source for project architecture,
-  decisions, constraints, terminology, runbooks, tasks, and handoffs. Obsidian
-  is for the personal daily journal and work log, not shared project knowledge.
+- Obsidian is the shared, human-readable source for project architecture,
+  decisions, constraints, terminology, runbooks, tasks, and handoffs.
 - OpenCode uses `@honcho-ai/opencode-honcho` for agent-maintained memory. Its
   declarative configuration materializes `~/.honcho/config.json`; the API key
   comes from sops-nix. The configured workspace is `software-development`, the
