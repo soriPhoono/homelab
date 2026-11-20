@@ -17,10 +17,6 @@
   };
 
   inputs = {
-    artcraft = {
-      url = "github:devitek/artcraft-nixos";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     awesome-ai-agent-skills = {
       url = "github:seb1n/awesome-ai-agent-skills/75865a5d037a4cdaa7f409a4ec14ab9b0292920b";
       flake = false;
@@ -31,10 +27,6 @@
     };
     claude-plugins-official = {
       url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
-      flake = false;
-    };
-    codex-honcho = {
-      url = "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz";
       flake = false;
     };
     comin = {

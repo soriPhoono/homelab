@@ -1,5 +1,5 @@
 { den, ... }: {
-  # Shared by the claude, opencode, pi and codex aspects below. Declared here so
+  # Shared by the claude and opencode aspects below. Declared here so
   # retiring claude does not orphan the inputs the surviving agents consume.
   flake-file.inputs = {
     mem0 = {
@@ -17,9 +17,7 @@
     den.aspects.sphoono.development.herdr
     den.aspects.sphoono.development.nvim
     den.aspects.sphoono.development.claude
-    den.aspects.sphoono.development.codex
     den.aspects.sphoono.development.opencode
-    den.aspects.sphoono.development.pi
     den.aspects.sphoono.development.gh
   ];
 }

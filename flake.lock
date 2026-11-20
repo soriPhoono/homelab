@@ -1,25 +1,5 @@
 {
   "nodes": {
-    "artcraft": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1794519742,
-        "narHash": "sha256-YI41WSTM0UHbY1HqvUO2ZQ0hmwJn/XsibH4ZkBCsiW0=",
-        "owner": "devitek",
-        "repo": "artcraft-nixos",
-        "rev": "7d7369245e30f5f0b997609773e0e4e7e4710b17",
-        "type": "github"
-      },
-      "original": {
-        "owner": "devitek",
-        "repo": "artcraft-nixos",
-        "type": "github"
-      }
-    },
     "awesome-ai-agent-skills": {
       "flake": false,
       "locked": {
@@ -137,19 +117,6 @@
         "repo": "claude-plugins-official",
         "rev": "d182ca456ca09d31d139f7d3818d1d333b103cce",
         "type": "github"
-      }
-    },
-    "codex-honcho": {
-      "flake": false,
-      "locked": {
-        "lastModified": 499162500,
-        "narHash": "sha256-wXYvEuKwuGoQv5krPDOMiWrT2TazWcoPXim0RvQVOco=",
-        "type": "tarball",
-        "url": "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz"
       }
     },
     "comin": {
@@ -792,11 +759,9 @@
     },
     "root": {
       "inputs": {
-        "artcraft": "artcraft",
         "awesome-ai-agent-skills": "awesome-ai-agent-skills",
         "awesome-copilot": "awesome-copilot",
         "claude-plugins-official": "claude-plugins-official",
-        "codex-honcho": "codex-honcho",
         "comin": "comin",
         "darwin": "darwin",
         "den": "den",
