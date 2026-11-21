@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono.desktop = {
+  den.aspects.sphoono.core.office.zathura = {
     homeManager = {
       programs.zathura.enable = true;
       xdg.mimeApps.defaultApplications =

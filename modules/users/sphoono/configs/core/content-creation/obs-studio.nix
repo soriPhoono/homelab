@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono.content-creation.homeManager =
+  den.aspects.sphoono.core.content-creation.blender.homeManager =
     { pkgs, ... }:
     {
       programs.obs-studio = {

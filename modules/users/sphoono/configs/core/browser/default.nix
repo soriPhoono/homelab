@@ -1,6 +1,6 @@
 { inputs, den, ... }: {
   flake-file.inputs.zen-browser.url = "github:0xc000022070/zen-browser-flake";
-  den.aspects.sphoono.configs.zen-browser = {
+  den.aspects.sphoono.core.browser = {
     includes = [
       den.aspects.nur
     ];
