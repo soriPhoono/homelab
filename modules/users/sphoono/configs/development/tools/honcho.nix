@@ -1,8 +1,7 @@
 /**
   The Honcho config shared by the agents. Each agent reads its own `hosts.*`
   block from `~/.honcho/config.json` and shares the API key and peer name.
-  Workspaces are kept apart: OpenCode works in `software-development`, Codex in
-  `personal-assistant`.
+  OpenCode works in the `software-development` workspace.
 */
 _: {
   den.aspects.sphoono.development.honcho = {
@@ -25,10 +24,6 @@ _: {
               aiPeer = "opencode";
               removeUserPrefix = true;
               observationMode = "unified";
-            };
-            hosts.codex = lib.mkIf config.programs.codex.enable {
-              workspace = "personal-assistant";
-              aiPeer = "codex";
             };
           };
         };

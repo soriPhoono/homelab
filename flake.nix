@@ -17,10 +17,6 @@
   };
 
   inputs = {
-    artcraft = {
-      url = "github:devitek/artcraft-nixos";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     awesome-ai-agent-skills = {
       url = "github:seb1n/awesome-ai-agent-skills/75865a5d037a4cdaa7f409a4ec14ab9b0292920b";
       flake = false;
@@ -31,10 +27,6 @@
     };
     claude-plugins-official = {
       url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
-      flake = false;
-    };
-    codex-honcho = {
-      url = "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz";
       flake = false;
     };
     comin = {
@@ -81,31 +73,6 @@
     herdr-nvim = {
       url = "github:ChmaraX/herdr-nvim/v1.1.0";
       flake = false;
-    };
-    hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
-      inputs = {
-        flake-parts.follows = "flake-parts";
-        home-manager.follows = "home-manager";
-        nixpkgs.follows = "hermes-nixpkgs";
-        pyproject-build-systems.inputs.nixpkgs.follows = "nixpkgs";
-        pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
-        uv2nix.inputs.nixpkgs.follows = "nixpkgs";
-      };
-    };
-    hermes-agent-nix = {
-      url = "github:soriPhoono/hermes-agent-nix";
-      inputs.hermes-agent.follows = "hermes-agent";
-      inputs.flake-file.follows = "flake-file";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.home-manager.follows = "home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.pre-commit-hooks.follows = "pre-commit-hooks";
-      inputs.systems.follows = "systems";
-      inputs.treefmt-nix.follows = "treefmt-nix";
-    };
-    hermes-nixpkgs = {
-      url = "github:NixOS/nixpkgs/02c087f3fe673c9e317f206a627cb6b910336dbe";
     };
     home-manager = {
       url = "github:nix-community/home-manager";

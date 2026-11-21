@@ -47,7 +47,6 @@
     homeManager =
       { config, pkgs, ... }:
       let
-        kwp = inputs.knowledge-work-plugins;
         # Every skill of seb1n/awesome-ai-agent-skills. Merged last, so it
         # wins on a name clash, and the installed skills these replace
         # (ci-cd-and-automation, observability-and-instrumentation,
@@ -206,46 +205,12 @@
               ];
             }
         );
-        # small-business skills read ../../shared/*.md (and ../../../shared/
-        # from nested files) relative to their own directory, which breaks
-        # once each skill is linked on its own. Point those at the store.
-        smbSkill =
-          name:
-          pkgs.runCommand name { } ''
-            cp -r ${kwp}/small-business/skills/${name} $out
-            chmod -R u+w $out
-            find $out -type f -name '*.md' -exec sed -E -i \
-              -e 's|(\.\./)+shared/|${kwp}/small-business/shared/|g' \
-              -e 's|(\.\./)+ad-manager/|${kwp}/small-business/skills/ad-manager/|g' {} +
-          '';
-        # Node, the JDK and Ghidra exist only inside this launcher, so
-        # claude's MCP server resolves them and the user's shell does not.
-        rea-mcp = pkgs.writeShellApplication {
-          name = "rea-mcp";
-          runtimeInputs = [
-            pkgs.nodejs_22
-            pkgs.jdk21
-          ];
-          runtimeEnv = {
-            GHIDRA_INSTALL_DIR = "${pkgs.ghidra}/lib/ghidra";
-            JAVA_HOME = "${pkgs.jdk21}";
-          };
-          text = ''
-            exec npx -y rea-agents@6.4.0 mcp "$@"
-          '';
-        };
       in
       {
         sops.secrets."api/mem0-api-key" = { };
         nixpkgs.overlays = [ inputs.nix-skills.overlays.default ];
         programs.claude-code = {
           enable = true;
-          mcpServers = {
-            rea.command = lib.getExe rea-mcp;
-            # The nixos lookup server is dropped: nixpkgs marks its
-            # dependency fastmcp-slim broken (2026-10-19), and Claude Code is
-            # being retired. OpenCode carries its own entry.
-          };
           package =
             let
               agent = pkgs.claude-code;
@@ -321,54 +286,6 @@
             create-readme = "${inputs.awesome-copilot}/skills/create-readme";
             # Work with git repos
             git-commit = "${inputs.awesome-copilot}/skills/git-commit";
-            # Implement the plans Antigravity hands back
-            plan-watch = ../../../assets/skills/plan-watch;
-            # Build n8n workflows through the n8n MCP server
-            inherit (pkgs.agent-skills.github.czlonkowski.n8n-skills)
-              n8n-mcp-tools-expert
-              n8n-workflow-patterns
-              n8n-expression-syntax
-              n8n-validation-expert
-              n8n-code-javascript
-              ;
-            # SDLC: pipelines, release readiness, ADRs, observability,
-            # hardening, interface design and migrations. superpowers
-            # already covers TDD, debugging, planning and review.
-            inherit (pkgs.agent-skills.github.addyosmani.agent-skills)
-              shipping-and-launch
-              documentation-and-adrs
-              security-and-hardening
-              deprecation-and-migration
-              ;
-            # Finance: variance, reconciliation, statements and close
-            variance-analysis = "${kwp}/finance/skills/variance-analysis";
-            reconciliation = "${kwp}/finance/skills/reconciliation";
-            close-management = "${kwp}/finance/skills/close-management";
-            journal-entry-prep = "${kwp}/finance/skills/journal-entry-prep";
-            # Data analysis
-            statistical-analysis = "${kwp}/data/skills/statistical-analysis";
-            validate-data = "${kwp}/data/skills/validate-data";
-            # Operations
-            runbook = "${kwp}/operations/skills/runbook";
-            capacity-plan = "${kwp}/operations/skills/capacity-plan";
-            process-doc = "${kwp}/operations/skills/process-doc";
-            risk-assessment = "${kwp}/operations/skills/risk-assessment";
-            process-optimization = "${kwp}/operations/skills/process-optimization";
-            # Legal: contract and NDA review, risk and compliance checks.
-            # Drafts for a lawyer's review, not legal advice.
-            triage-nda = "${kwp}/legal/skills/triage-nda";
-            legal-risk-assessment = "${kwp}/legal/skills/legal-risk-assessment";
-            compliance-check = "${kwp}/legal/skills/compliance-check";
-            # Dropshipping books and growth, over the QuickBooks and Shopify
-            # connectors
-            month-end-prep = smbSkill "month-end-prep";
-            close-month = smbSkill "close-month";
-            cash-flow-snapshot = smbSkill "cash-flow-snapshot";
-            business-pulse = smbSkill "business-pulse";
-            report-builder = smbSkill "report-builder";
-            growth-pulse = smbSkill "growth-pulse";
-            # Reverse engineering; drives the REA MCP tools
-            reverse-engineer-anything = "${inputs.rea}/.agents/skills/reverse-engineer-anything";
             # Work with the Obsidian vault: markdown, bases, canvas and CLI
             inherit (pkgs.agent-skills.github.obsidianmd.obsidian-skills)
               defuddle

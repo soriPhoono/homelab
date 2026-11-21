@@ -25,5 +25,6 @@ The `syncthing-data` volume holds the config, the device key and the vault at
 
 ## Hermes
 
-Hermes should read the vault from this volume, or from its own Syncthing
-peer, rather than through the GUI.
+The [hermes](../hermes/README.md) stack mounts the `Vault` folder of this
+volume, and runs as the same uid and gid (1000) so each side can edit the
+other's files. It cannot start until that folder exists.
