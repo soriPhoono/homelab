@@ -92,6 +92,13 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-openclaw = {
+      url = "github:openclaw/nix-openclaw";
+      inputs.home-manager.follows = "home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.inputs.systems.follows = "systems";
+      inputs.nix-openclaw-tools.inputs.nixpkgs.follows = "nixpkgs";
+    };
     nix-skills = {
       url = "github:sudosubin/nix-skills";
       inputs.nixpkgs.follows = "nixpkgs";

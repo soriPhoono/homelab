@@ -100,13 +100,13 @@
       den.batteries.primary-user
       den.batteries.host-aspects
 
+      den.aspects.sphoono.core
       den.aspects.sphoono.core.wm.hypr
       den.aspects.sphoono.core.wm.shells.noctalia
-      den.aspects.sphoono.core.wm.supporting
-      den.aspects.sphoono.core
-      den.aspects.sphoono.core.syncthing
+
       den.aspects.sphoono.development
-      den.aspects.sphoono.development.agents.opencode.desktop
+      den.aspects.sphoono.development.desktop
+
       den.aspects.hosting.gaming.client
     ];
 

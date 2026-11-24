@@ -3,7 +3,6 @@
     homeManager = {
       programs.zed-editor = {
         enable = true;
-        defaultEditor = true;
         mutableUserDebug = false;
         mutableUserKeymaps = false;
         mutableUserSettings = false;

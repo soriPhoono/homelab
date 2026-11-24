@@ -2,7 +2,6 @@
 # and screenshots. Settings here are the declarative base layer; anything
 # changed in the GUI lands in ~/.local/state/noctalia/settings.toml and wins.
 # Colours, theme mode and font come from the Stylix noctalia target.
-#
 # Each compositor's integration (autostart, keybinds, layer rules) lives in a
 # guarded block below, so this aspect stays usable from any window manager.
 { inputs, lib, ... }:

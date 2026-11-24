@@ -19,7 +19,6 @@
         den.aspects.core.hardware.gpu.intel
         den.aspects.core.hardware.gpu.amd.gpgpu
         # -- Core OS modules --
-        den.aspects.core.impermanence
         den.aspects.core.bootloaders.systemd-boot
         den.aspects.core.bootloaders.lts-fallback
         den.aspects.core.swap.zram
@@ -108,14 +107,16 @@
       includes = [
         den.batteries.primary-user
         den.batteries.host-aspects
+
+        den.aspects.sphoono.core
         den.aspects.sphoono.core.wm.hypr
         den.aspects.sphoono.core.wm.shells.noctalia
-        den.aspects.sphoono.core.wm.supporting
-        den.aspects.sphoono.core
-        den.aspects.sphoono.core.syncthing
+
         den.aspects.sphoono.development
-        den.aspects.sphoono.development.agents.opencode.desktop
+        den.aspects.sphoono.development.desktop
+
         den.aspects.sphoono.content-creation
+
         den.aspects.hosting.gaming.client
       ];
 
