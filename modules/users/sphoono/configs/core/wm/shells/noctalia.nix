@@ -15,7 +15,7 @@ in
     flake = false;
   };
 
-  den.aspects.sphoono.desktop.wm.shells.noctalia = {
+  den.aspects.sphoono.core.wm.shells.noctalia = {
     homeManager =
       { config, pkgs, ... }:
       let

@@ -1,7 +1,7 @@
 { den, lib, ... }: {
-  den.aspects.sphoono.desktop.wm.hypr = {
+  den.aspects.sphoono.core.wm.hypr = {
     includes = [
-      den.aspects.sphoono.desktop.wm.supporting
+      den.aspects.sphoono.core.wm.supporting
     ];
     homeManager =
       {

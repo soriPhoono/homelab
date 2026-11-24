@@ -25,10 +25,6 @@
       url = "github:github/awesome-copilot/d6131471b85fbb4799e64175ebc42c9309ecc28a";
       flake = false;
     };
-    claude-plugins-official = {
-      url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
-      flake = false;
-    };
     comin = {
       url = "github:nlewo/comin";
       inputs = {
@@ -88,16 +84,8 @@
     import-tree = {
       url = "github:denful/import-tree";
     };
-    knowledge-work-plugins = {
-      url = "github:anthropics/knowledge-work-plugins/02ffa99ff00ce4d3046ccebabb8357cb39f3ab06";
-      flake = false;
-    };
     mattpocock-skills = {
       url = "github:mattpocock/skills/d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
-      flake = false;
-    };
-    mem0 = {
-      url = "github:mem0ai/mem0/v2.2.1";
       flake = false;
     };
     nix-index-database = {
@@ -133,10 +121,6 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
-    rea = {
-      url = "github:morluto/rea/a56f7bb668ab23fec8d33f7af353ac7ed2fe1895";
-      flake = false;
-    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -149,10 +133,6 @@
         nur.follows = "nur";
         systems.follows = "systems";
       };
-    };
-    superpowers = {
-      url = "github:obra/superpowers/5bf4e78011075bcfc0dc295f0724994cd123ee71";
-      flake = false;
     };
     systems = {
       url = "github:nix-systems/default";

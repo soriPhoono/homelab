@@ -39,12 +39,12 @@ A host is a list of aspects. Optional capability comes from opting into
 a sub-aspect rather than from toggling options:
 
 ```nix
-den.aspects.laptop-ares.includes = [
+den.aspects.shared-computer.includes = [
   den.aspects.core.hardware.cpu.amd
   den.aspects.core.hardware.gpu.amd # driver, firmware, monitoring
   den.aspects.core.hardware.gpu.nvidia.laptop # PRIME offload
   den.aspects.core.bootloaders.systemd-boot
-  den.aspects.core.swap.zram-swap
+  den.aspects.core.swap.zram
 ];
 ```
 
@@ -80,7 +80,7 @@ Host and home packages are [nh] wrappers; they take an action argument
 and default to `build`.
 
 ```sh
-nix run .#vm-laptop-ares         # boot the host in a QEMU VM
+nix run .#vm-shared-computer         # boot the host in a QEMU VM
 
 nix run .#write-flake            # regenerate flake.nix from inputs.nix
 nix fmt                          # treefmt across the tree

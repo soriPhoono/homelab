@@ -14,9 +14,9 @@
     ./disko.nix
   ];
 
-  den.hosts.x86_64-linux.laptop-ares.users.sphoono = { };
+  den.hosts.x86_64-linux.shared-computer.users.sphoono = { };
 
-  den.aspects.laptop-ares = {
+  den.aspects.shared-computer = {
     includes = [
       # -- External libraries --
       den.aspects.stylix
@@ -101,18 +101,18 @@
   # host-aspects projects each host aspect's `homeManager` half onto this user.
   # It is applied here rather than on den.aspects.sphoono so that aspect stays
   # shell-only and remains portable to a standalone home.
-  den.aspects."sphoono@laptop-ares" = {
+  den.aspects."sphoono@shared-computer" = {
     includes = [
       den.batteries.primary-user
       den.batteries.host-aspects
 
-      den.aspects.sphoono.desktop.wm.hypr
-      den.aspects.sphoono.desktop.wm.shells.noctalia
-      den.aspects.sphoono.desktop.wm.supporting
-      den.aspects.sphoono.desktop
-      den.aspects.sphoono.desktop.syncthing
+      den.aspects.sphoono.core.wm.hypr
+      den.aspects.sphoono.core.wm.shells.noctalia
+      den.aspects.sphoono.core.wm.supporting
+      den.aspects.sphoono.core
+      den.aspects.sphoono.core.syncthing
       den.aspects.sphoono.development
-      den.aspects.sphoono.development.opencode.desktop
+      den.aspects.sphoono.development.agents.opencode.desktop
       den.aspects.hosting.gaming.client
     ];
 

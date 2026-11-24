@@ -56,7 +56,7 @@ in
     # -- Session --
     (bind "SUPER + SHIFT + Escape" (exec "${uwsm} stop"))
   ]
-  # The browser module only exists when sphoono.desktop is included.
+  # The browser module only exists when sphoono.core is included.
   ++ lib.optional (config.programs ? zen-browser) (
     bind "SUPER + B" (app (lib.getExe config.programs.zen-browser.package))
   )

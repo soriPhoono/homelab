@@ -1,15 +1,15 @@
 {
+  inputs,
   lib,
   pkgs,
-  ...
 }:
 {
   imports = [
-    ./plugins/honcho.nix
+    ./plugins/mem0.nix
 
     ./providers/9router.nix
 
-    ./skills.nix
+    (import ./skills.nix { inherit inputs lib pkgs; })
     ./mcp.nix
   ];
 
@@ -46,8 +46,8 @@
       ${builtins.readFile ../assets/AGENTS.md}
     '';
     agents = {
-      coding-agent = ../../../assets/documents/agent-roles/coding.md;
-      devops = ../../../assets/documents/agent-roles/nix-infrastructure.md;
+      coding-agent = ../assets/agent-roles/coding.md;
+      devops = ../assets/agent-roles/nix-infrastructure.md;
     };
   };
 }

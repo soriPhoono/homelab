@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono.desktop.wm.supporting = {
+  den.aspects.sphoono.core.wm.supporting = {
     homeManager = {
       programs.mpv.enable = true;
       xdg.mimeApps.defaultApplications =

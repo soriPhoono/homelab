@@ -150,7 +150,7 @@ reports build failures.
 For changes that need to actually boot, use the VM:
 
 ```sh
-nix run .#vm-laptop-ares
+nix run .#vm-shared-computer
 ```
 
 ## Development patterns

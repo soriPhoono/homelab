@@ -1,9 +1,11 @@
 { den, ... }: {
-  den.aspects.sphoono.desktop = {
+  den.aspects.sphoono.core = {
     includes = [
       den.aspects.sphoono.gpg
       den.aspects.sphoono.ssh
-      den.aspects.sphoono.configs.zen-browser
+      den.aspects.sphoono.core.browser
+      den.aspects.sphoono.core.communication
+      den.aspects.sphoono.core.office
     ];
     homeManager = { pkgs, ... }: {
       home.packages = [ pkgs.wl-clipboard ];

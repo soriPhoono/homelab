@@ -1,11 +1,11 @@
 { inputs, lib, ... }:
 {
-  den.aspects.laptop-ares.nixos = { config, ... }: {
+  den.aspects.workstation-ares.nixos = { config, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
 
     disko.devices.disk.main = {
       type = "disk";
-      device = "/dev/disk/by-id/nvme-SAMSUNG_MZVLQ1T0HBLB-00B00_S6F7NE0R217324";
+      device = "/dev/disk/by-id/nvme-CT1000P310SSD8_2538531B2311";
       content = {
         type = "gpt";
         partitions = {

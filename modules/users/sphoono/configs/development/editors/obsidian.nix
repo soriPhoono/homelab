@@ -1,5 +1,5 @@
 { den, lib, ... }: {
-  den.aspects.sphoono.desktop = {
+  den.aspects.sphoono.development.editors.obsidian = {
     includes = [ (den.batteries.unfree [ "obsidian" ]) ];
     homeManager = { pkgs, ... }: {
       programs.obsidian = {

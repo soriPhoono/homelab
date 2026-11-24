@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono.core.content-creation.audacity.homeManager =
+  den.aspects.sphoono.content-creation.audacity.homeManager =
     { pkgs, ... }:
     {
       home.packages = [ pkgs.audacity ];

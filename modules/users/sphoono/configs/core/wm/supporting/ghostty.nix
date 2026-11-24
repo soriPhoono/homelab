@@ -1,5 +1,5 @@
 {
-  den.aspects.sphoono.desktop.wm.supporting = {
+  den.aspects.sphoono.core.wm.supporting = {
     homeManager = {
       programs.ghostty.enable = true;
       xdg.mimeApps.defaultApplications =
