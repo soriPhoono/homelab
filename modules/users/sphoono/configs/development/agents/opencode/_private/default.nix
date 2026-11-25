@@ -46,8 +46,8 @@
       ${builtins.readFile ../assets/AGENTS.md}
     '';
     agents = {
-      coding-agent = ../assets/agent-roles/coding.md;
-      devops = ../assets/agent-roles/nix-infrastructure.md;
+      coding-agent = ../../assets/agent-roles/coding.md;
+      devops = ../../assets/agent-roles/nix-infrastructure.md;
     };
   };
 }
