@@ -109,7 +109,7 @@ in
 
             wallpaper = {
               enabled = true;
-              directory = "${config.home.homeDirectory}/Shared/Pictures/Wallpapers";
+              directory = "${config.home.homeDirectory}/Shared Directory/Pictures/Wallpapers";
               transition_on_startup = true;
               automation = {
                 enabled = true;
