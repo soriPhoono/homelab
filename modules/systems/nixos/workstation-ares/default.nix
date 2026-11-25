@@ -1,14 +1,5 @@
-{
-  den,
-  inputs,
-  ...
-}:
-{
+{ den, inputs, ... }: {
   flake-file.inputs.qylock.url = "github:soriPhoono/qylock/girl-coffee-dark-mode";
-
-  imports = [
-    ./disko.nix
-  ];
 
   den.hosts.x86_64-linux.workstation-ares.users.sphoono = { };
 
@@ -32,8 +23,6 @@
       # -- Core desktop features --
       den.aspects.desktop.components.audio
       den.aspects.desktop.components.bluetooth
-      den.aspects.desktop.components.gnome.keyring
-      den.aspects.desktop.components.gnome.dconf
       # -- Desktop application runtimes --
       den.aspects.desktop.platforms.appimage
       den.aspects.desktop.platforms.flatpak
@@ -50,51 +39,67 @@
       # -- Hosting --
       den.aspects.hosting.docker
       den.aspects.hosting.podman
-      den.aspects.hosting.media
     ];
-    nixos = { pkgs, ... }: {
-      imports = [ inputs.qylock.nixosModules.default ];
-      hosting.microserver.media.jellyfin = {
-        renderDevice = "/dev/dri/renderD128";
-        cardDevice = "/dev/dri/card1";
+    nixos =
+      { pkgs, ... }:
+      {
+        imports = [ inputs.qylock.nixosModules.default ];
+
+        stylix = {
+          enable = true;
+          base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+          # The host picks its own plymouth theme above.
+          targets.plymouth.enable = false;
+        };
+
+        fileSystems."/" = {
+          device = "/dev/disk/by-uuid/3ac163f0-5eea-4347-911d-269baa85f4a6";
+          fsType = "ext4";
+        };
+
+        fileSystems."/boot" = {
+          device = "/dev/disk/by-uuid/CA4E-D10A";
+          fsType = "vfat";
+          options = [
+            "fmask=0077"
+            "dmask=0077"
+          ];
+        };
+
+        # Hardware manifest
+        hardware.facter.reportPath = ./facter.json;
+
+        programs.qylock = {
+          enable = true;
+          theme = "girl-coffee";
+          themeOptions.girl-coffee.themeMode = "dark";
+          # Lockscreen comes from the noctalia shell, not qylock-lock.
+          quickshell.enable = false;
+        };
+
+        # Set your time zone.
+        time.timeZone = "America/Chicago";
+
+        boot = {
+          kernelPackages = pkgs.linuxPackages_zen;
+          plymouth =
+            let
+              theme = "connect";
+            in
+            {
+              inherit theme;
+              themePackages = [
+                (pkgs.adi1090x-plymouth-themes.override {
+                  selected_themes = [
+                    theme
+                  ];
+                })
+              ];
+            };
+        };
       };
-      programs.qylock = {
-        enable = true;
-        theme = "girl-coffee";
-        themeOptions.girl-coffee.themeMode = "dark";
-        quickshell.enable = false;
-      };
-      hardware.facter.reportPath = ./facter.json;
-      boot = {
-        kernelPackages = pkgs.linuxPackages_zen;
-        plymouth =
-          let
-            theme = "connect";
-          in
-          {
-            inherit theme;
-            themePackages = [
-              (pkgs.adi1090x-plymouth-themes.override {
-                selected_themes = [
-                  theme
-                ];
-              })
-            ];
-          };
-      };
-      time.timeZone = "America/Chicago";
-      stylix = {
-        enable = true;
-        base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
-        # The host picks its own plymouth theme above.
-        targets.plymouth.enable = false;
-      };
-    };
   };
 
-  # host-aspects projects each host aspect's `homeManager` half onto this user.
-  # It is applied here rather than on den.aspects.sphoono so that aspect stays
-  # shell-only and remains portable to a standalone home.
   den.aspects."sphoono@workstation-ares" = {
     includes = [
       den.batteries.primary-user
@@ -109,17 +114,15 @@
 
       den.aspects.hosting.gaming.client
     ];
-
-    # Properties of this laptop: its internal panel and the ASUS launch keys.
     homeManager = {
       wayland.windowManager.hyprland.settings = {
         monitor = [
-          # {
-          #   output = "eDP-1";
-          #   mode = "1920x1080@144";
-          #   position = "0x0";
-          #   scale = 1.25;
-          # }
+          {
+            output = "eDP-1";
+            mode = "2880x1800@120";
+            position = "0x0";
+            scale = 1.5;
+          }
         ];
       };
     };
