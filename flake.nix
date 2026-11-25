@@ -88,16 +88,22 @@
       url = "github:mattpocock/skills/d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
       flake = false;
     };
+    mem0 = {
+      url = "github:mem0ai/mem0";
+      flake = false;
+    };
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-openclaw = {
       url = "github:openclaw/nix-openclaw";
-      inputs.home-manager.follows = "home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.inputs.systems.follows = "systems";
-      inputs.nix-openclaw-tools.inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        flake-utils.inputs.systems.follows = "systems";
+        home-manager.follows = "home-manager";
+        nix-openclaw-tools.inputs.nixpkgs.follows = "nixpkgs";
+        nixpkgs.follows = "nixpkgs";
+      };
     };
     nix-skills = {
       url = "github:sudosubin/nix-skills";
