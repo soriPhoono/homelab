@@ -5,13 +5,13 @@
     den.aspects.sphoono.development.editors.nvim
     den.aspects.sphoono.development.agents.opencode
     den.aspects.sphoono.development.agents.claude-code
-    den.aspects.sphoono.development.agents.openclaw
+    den.aspects.sphoono.development.agents.hermes
     den.aspects.sphoono.development.tools.gh
   ];
 
   den.aspects.sphoono.development.desktop.includes = [
     den.aspects.sphoono.development.editors.obsidian
-    den.aspects.sphoono.development.agents.opencode.desktop
+    den.aspects.sphoono.development.agents.hermes.desktop
     den.aspects.sphoono.development.editors.zed
   ];
 }

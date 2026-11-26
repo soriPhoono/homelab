@@ -70,6 +70,12 @@
       url = "github:ChmaraX/herdr-nvim/v1.1.0";
       flake = false;
     };
+    hermes-agent = {
+      url = "github:soriPhoono/hermes-agent";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.home-manager.follows = "home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -95,15 +101,6 @@
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nix-openclaw = {
-      url = "github:openclaw/nix-openclaw";
-      inputs = {
-        flake-utils.inputs.systems.follows = "systems";
-        home-manager.follows = "home-manager";
-        nix-openclaw-tools.inputs.nixpkgs.follows = "nixpkgs";
-        nixpkgs.follows = "nixpkgs";
-      };
     };
     nix-skills = {
       url = "github:sudosubin/nix-skills";

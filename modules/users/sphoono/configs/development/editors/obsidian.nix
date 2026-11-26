@@ -2,6 +2,15 @@
   den.aspects.sphoono.development.editors.obsidian = {
     includes = [ (den.batteries.unfree [ "obsidian" ]) ];
     homeManager = { pkgs, ... }: {
+      wayland.windowManager.hyprland.settings.bind =
+        let
+          desktop = pkgs.obsidian;
+          inherit (import ../../core/wm/hypr/_private/lib.nix { inherit lib; }) bind exec;
+        in
+        [
+          (bind "SUPER + N" (exec "${lib.getExe pkgs.uwsm} app -- ${lib.getExe desktop}"))
+        ];
+
       programs.obsidian = {
         enable = true;
         cli.enable = true;

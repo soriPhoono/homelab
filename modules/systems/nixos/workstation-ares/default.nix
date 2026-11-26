@@ -23,6 +23,8 @@
       # -- Core desktop features --
       den.aspects.desktop.components.audio
       den.aspects.desktop.components.bluetooth
+      den.aspects.desktop.components.gnome.keyring
+      den.aspects.desktop.components.gnome.dconf
       # -- Desktop application runtimes --
       den.aspects.desktop.platforms.appimage
       den.aspects.desktop.platforms.flatpak
