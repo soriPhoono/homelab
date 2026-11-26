@@ -71,6 +71,7 @@
     den.batteries.host-aspects
 
     den.aspects.spookyskelly.core
+    den.aspects.spookyskelly.core.winboat
 
     den.aspects.spookyskelly.development
     den.aspects.spookyskelly.development.desktop
