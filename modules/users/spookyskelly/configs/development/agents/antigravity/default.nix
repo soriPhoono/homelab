@@ -10,8 +10,13 @@
     homeManager =
       { lib, pkgs, ... }:
       {
+        # Shared MCP server definitions. Aspects that own an application
+        # declare its server under programs.mcp.servers.
+        programs.mcp.enable = true;
+
         programs.antigravity-cli = {
           enable = true;
+          enableMcpIntegration = true;
           context.GEMINI = builtins.readFile ../assets/USER.md;
           mcpServers.n8n.serverUrl = "https://agents.cryptic-coders.net/mcp-server/http";
           skills = import ../_private/skills.nix { inherit inputs lib pkgs; };
