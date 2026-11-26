@@ -37,6 +37,7 @@
       den.aspects.core.hardware.hid.keyboards.qmk
       den.aspects.core.hardware.hid.mice.logitech
       den.aspects.core.hardware.hid.controllers.xbox
+      den.aspects.core.hardware.hid.tablets.weylus
       den.aspects.core.hardware.android
       # -- Hosting --
       den.aspects.hosting.docker
