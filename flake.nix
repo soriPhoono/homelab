@@ -72,9 +72,11 @@
     };
     hermes-agent = {
       url = "github:soriPhoono/hermes-agent";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.home-manager.follows = "home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        home-manager.follows = "home-manager";
+        nixpkgs.follows = "nixpkgs";
+      };
     };
     home-manager = {
       url = "github:nix-community/home-manager";
