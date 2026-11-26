@@ -19,7 +19,6 @@
         den.aspects.core.hardware.gpu.intel
         den.aspects.core.hardware.gpu.amd.gpgpu
         # -- Core OS modules --
-        den.aspects.core.impermanence
         den.aspects.core.bootloaders.systemd-boot
         den.aspects.core.bootloaders.lts-fallback
         den.aspects.core.swap.zram
@@ -36,8 +35,10 @@
         den.aspects.desktop.components.gnome.dconf
         # -- Desktop application runtimes --
         den.aspects.desktop.platforms.appimage
+        den.aspects.desktop.platforms.flatpak
         # -- Domains of desktop activity (scoped) --
         den.aspects.desktop.domains.gaming.desktop
+        den.aspects.desktop.domains.gaming.vr.wivrn
         # -- Desktop applications (scoped) --
         den.aspects.desktop.tools.virt-manager
         den.aspects.desktop.tools.partition-manager
@@ -52,8 +53,6 @@
         den.aspects.hosting.podman
         den.aspects.hosting.media
         den.aspects.hosting.gaming.host
-        # -- VR gaming (Meta Quest 3 over WiVRn) --
-        den.aspects.desktop.domains.gaming.vr.wivrn
         den.aspects.hosting.ollama.rocm
       ];
       nixos = { pkgs, ... }: {
@@ -108,13 +107,16 @@
       includes = [
         den.batteries.primary-user
         den.batteries.host-aspects
-        den.aspects.sphoono.desktop.wm.hypr
-        den.aspects.sphoono.desktop.wm.shells.noctalia
-        den.aspects.sphoono.desktop.wm.supporting
-        den.aspects.sphoono.desktop
-        den.aspects.sphoono.desktop.syncthing
+
+        den.aspects.sphoono.core
+        den.aspects.sphoono.core.wm.hypr
+        den.aspects.sphoono.core.wm.shells.noctalia
+
         den.aspects.sphoono.development
+        den.aspects.sphoono.development.desktop
+
         den.aspects.sphoono.content-creation
+
         den.aspects.hosting.gaming.client
       ];
 

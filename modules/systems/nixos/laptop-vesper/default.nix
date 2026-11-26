@@ -13,7 +13,6 @@
       den.aspects.core.hardware.cpu.intel
       den.aspects.core.hardware.gpu.intel
       # -- Core OS modules --
-      den.aspects.core.impermanence
       den.aspects.core.bootloaders.systemd-boot
       den.aspects.core.bootloaders.lts-fallback
       den.aspects.core.swap.zram
@@ -30,6 +29,7 @@
       den.aspects.desktop.tools.partition-manager
       # -- External device interaction --
       den.aspects.core.hardware.hid.tablets.xp-pen
+      den.aspects.core.hardware.hid.tablets.weylus
       den.aspects.core.hardware.hid.controllers.xbox
       den.aspects.core.hardware.android
       # -- Hosting --
@@ -69,6 +69,11 @@
   den.aspects."spookyskelly@laptop-vesper".includes = [
     den.batteries.primary-user
     den.batteries.host-aspects
+
+    den.aspects.spookyskelly.core
+
+    den.aspects.spookyskelly.development
+    den.aspects.spookyskelly.development.desktop
 
     den.aspects.hosting.gaming.client
   ];

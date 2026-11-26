@@ -1,7 +1,7 @@
 # sops-nix wiring for every host and home. Secrets are declared next to the
 # aspect that consumes them, e.g. in a host aspect:
 #
-#   den.aspects.laptop-ares.nixos.sops.secrets.foo.sopsFile = ../../../secrets/host-laptop-ares.yaml;
+#   den.aspects.shared-computer.nixos.sops.secrets.foo.sopsFile = ../../../secrets/host-shared-computer.yaml;
 #
 # Encrypted files live in ./secrets and are governed by ./.sops.yaml:
 #

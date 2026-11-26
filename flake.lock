@@ -1,25 +1,5 @@
 {
   "nodes": {
-    "artcraft": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1794519742,
-        "narHash": "sha256-YI41WSTM0UHbY1HqvUO2ZQ0hmwJn/XsibH4ZkBCsiW0=",
-        "owner": "devitek",
-        "repo": "artcraft-nixos",
-        "rev": "7d7369245e30f5f0b997609773e0e4e7e4710b17",
-        "type": "github"
-      },
-      "original": {
-        "owner": "devitek",
-        "repo": "artcraft-nixos",
-        "type": "github"
-      }
-    },
     "awesome-ai-agent-skills": {
       "flake": false,
       "locked": {
@@ -120,36 +100,6 @@
         "repo": "base16-vim",
         "rev": "577fe8125d74ff456cf942c733a85d769afe58b7",
         "type": "github"
-      }
-    },
-    "claude-plugins-official": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1790976370,
-        "narHash": "sha256-LQ78jO8fzutmPJSsc3XeA+KqEP8wOrhH8AQaDCr/Pd8=",
-        "owner": "anthropics",
-        "repo": "claude-plugins-official",
-        "rev": "d182ca456ca09d31d139f7d3818d1d333b103cce",
-        "type": "github"
-      },
-      "original": {
-        "owner": "anthropics",
-        "repo": "claude-plugins-official",
-        "rev": "d182ca456ca09d31d139f7d3818d1d333b103cce",
-        "type": "github"
-      }
-    },
-    "codex-honcho": {
-      "flake": false,
-      "locked": {
-        "lastModified": 499162500,
-        "narHash": "sha256-wXYvEuKwuGoQv5krPDOMiWrT2TazWcoPXim0RvQVOco=",
-        "type": "tarball",
-        "url": "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz"
       }
     },
     "comin": {
@@ -516,80 +466,23 @@
           "home-manager"
         ],
         "nixpkgs": [
-          "hermes-nixpkgs"
+          "nixpkgs"
         ],
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1794976890,
-        "narHash": "sha256-Y67fSvAVxOXh3Y1G0mIJ18B2R4t/1QhdBng3sRgGvlo=",
-        "owner": "NousResearch",
-        "repo": "hermes-agent",
-        "rev": "f7e2898aaefc8f967dbf7345e3999a65672fe60e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NousResearch",
-        "repo": "hermes-agent",
-        "type": "github"
-      }
-    },
-    "hermes-agent-nix": {
-      "inputs": {
-        "flake-file": [
-          "flake-file"
-        ],
-        "flake-parts": [
-          "flake-parts"
-        ],
-        "hermes-agent": [
-          "hermes-agent"
-        ],
-        "home-manager": [
-          "home-manager"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "pre-commit-hooks": [
-          "pre-commit-hooks"
-        ],
-        "systems": [
-          "systems"
-        ],
-        "treefmt-nix": [
-          "treefmt-nix"
-        ]
-      },
-      "locked": {
-        "lastModified": 1794979367,
-        "narHash": "sha256-znCwNUMwcC3eFsKBDMVS9iJYzTausKEeMFEQKPFX28E=",
+        "lastModified": 1795717081,
+        "narHash": "sha256-6+Mi6IVuo8fZILeJNuxaLwyzVTV+hSq7mPDqsWtoTHU=",
         "owner": "soriPhoono",
-        "repo": "hermes-agent-nix",
-        "rev": "1f782eee628801e876336090a1fb0467b0262f19",
+        "repo": "hermes-agent",
+        "rev": "ab6ee9f5b21eb84c99159ff22b4be314dbaa25d8",
         "type": "github"
       },
       "original": {
         "owner": "soriPhoono",
-        "repo": "hermes-agent-nix",
-        "type": "github"
-      }
-    },
-    "hermes-nixpkgs": {
-      "locked": {
-        "lastModified": 1792502884,
-        "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+        "repo": "hermes-agent",
         "type": "github"
       }
     },
@@ -651,23 +544,6 @@
         "type": "github"
       }
     },
-    "knowledge-work-plugins": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1791704772,
-        "narHash": "sha256-YlxE+rV0CwMubm8RixWM+Rv2B0GcsCJ9dfforH3npbY=",
-        "owner": "anthropics",
-        "repo": "knowledge-work-plugins",
-        "rev": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
-        "type": "github"
-      },
-      "original": {
-        "owner": "anthropics",
-        "repo": "knowledge-work-plugins",
-        "rev": "02ffa99ff00ce4d3046ccebabb8357cb39f3ab06",
-        "type": "github"
-      }
-    },
     "mattpocock-skills": {
       "flake": false,
       "locked": {
@@ -688,16 +564,15 @@
     "mem0": {
       "flake": false,
       "locked": {
-        "lastModified": 1790357652,
-        "narHash": "sha256-C7E7Xd1+7Vy0ZwRIjblihexQTkS2YBPx5Sogz6ACYXs=",
+        "lastModified": 1795511267,
+        "narHash": "sha256-Fwiy5rH6zJAmNXtBeiRHZXFrZzvw2GuWxOLOcz8KTL4=",
         "owner": "mem0ai",
         "repo": "mem0",
-        "rev": "94c3fe9f238f3dbf29c9ce98643bd71eb13077cd",
+        "rev": "8096993d69396bf97311249206915cadb2eb998f",
         "type": "github"
       },
       "original": {
         "owner": "mem0ai",
-        "ref": "v2.2.1",
         "repo": "mem0",
         "type": "github"
       }
@@ -839,6 +714,7 @@
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
+          "hermes-agent",
           "nixpkgs"
         ],
         "pyproject-nix": [
@@ -867,6 +743,7 @@
     "pyproject-nix": {
       "inputs": {
         "nixpkgs": [
+          "hermes-agent",
           "nixpkgs"
         ]
       },
@@ -907,30 +784,10 @@
         "type": "github"
       }
     },
-    "rea": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1791691049,
-        "narHash": "sha256-aAbOYpsT6QhlLAZDtVHZ1Acz6uIqrVEd4p49s/2FJgc=",
-        "owner": "morluto",
-        "repo": "rea",
-        "rev": "a56f7bb668ab23fec8d33f7af353ac7ed2fe1895",
-        "type": "github"
-      },
-      "original": {
-        "owner": "morluto",
-        "repo": "rea",
-        "rev": "a56f7bb668ab23fec8d33f7af353ac7ed2fe1895",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
-        "artcraft": "artcraft",
         "awesome-ai-agent-skills": "awesome-ai-agent-skills",
         "awesome-copilot": "awesome-copilot",
-        "claude-plugins-official": "claude-plugins-official",
-        "codex-honcho": "codex-honcho",
         "comin": "comin",
         "darwin": "darwin",
         "den": "den",
@@ -943,12 +800,9 @@
         "flake-parts": "flake-parts",
         "herdr-nvim": "herdr-nvim",
         "hermes-agent": "hermes-agent",
-        "hermes-agent-nix": "hermes-agent-nix",
-        "hermes-nixpkgs": "hermes-nixpkgs",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
         "import-tree": "import-tree",
-        "knowledge-work-plugins": "knowledge-work-plugins",
         "mattpocock-skills": "mattpocock-skills",
         "mem0": "mem0",
         "nix-index-database": "nix-index-database",
@@ -958,10 +812,8 @@
         "nvf": "nvf",
         "pre-commit-hooks": "pre-commit-hooks",
         "qylock": "qylock",
-        "rea": "rea",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
-        "superpowers": "superpowers",
         "systems": "systems",
         "templates": "templates",
         "treefmt-nix": "treefmt-nix",
@@ -1026,23 +878,6 @@
       "original": {
         "owner": "nix-community",
         "repo": "stylix",
-        "type": "github"
-      }
-    },
-    "superpowers": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1789777895,
-        "narHash": "sha256-rgeJhjQyABYlhlyFRmgyhbZmmmIPPNkch4CXyTkGEyM=",
-        "owner": "obra",
-        "repo": "superpowers",
-        "rev": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
-        "type": "github"
-      },
-      "original": {
-        "owner": "obra",
-        "repo": "superpowers",
-        "rev": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
         "type": "github"
       }
     },
@@ -1183,6 +1018,7 @@
     "uv2nix": {
       "inputs": {
         "nixpkgs": [
+          "hermes-agent",
           "nixpkgs"
         ],
         "pyproject-nix": [

@@ -3,36 +3,32 @@
 # under the relevant creation rule, then run `sops updatekeys <file>`.
 keys:
   - &user-sphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
-  - &laptop-ares age1ldzusjw28wzed8y6q9ynn9d7se7qxpsapxxys00jgrsfdw88eeasnt795x
+  - &sphoono-vps age1t405nrcjuavjg3u3qk65q2vnwkdm9zrc5j04xdk5kwl39kcucp5sscq8z6
   - &desktop-ares age19g0rp5pkc533jlht5w3f5fx30e8tra8du9hy7s323chanyjqeekq4hjyuu
-  - &laptop-vesper age1yqsdglc9s03k6yhefaqpnpyurj0j9nktlccc8rq2uevpuzn0ea2stx0msr
+  - &workstation-ares age14fzm62rkwxe9g5mrtqzud2rtusp04mauf5lz6u5xsdleh6d5vfkqqhs2xp
   - &user-spookyskelly age1kv7f5nyknwhf5lvm7yzhm0jetleceklj7u225uxce5x007hkvgys0fmeey
-  # Already a recipient of docker/stacks/n8n/secrets/* since 2026-09-16,
-  # mirrored here so updatekeys does not silently drop it. Provenance is NOT
-  # verified: it is not the ssh-to-age output of either known_hosts VPS host
-  # key. Confirm which age identity the VPS decrypts with, then rename this
-  # anchor or retire the key and re-run updatekeys.
-  - &sphoono-vps-unverified age1t405nrcjuavjg3u3qk65q2vnwkdm9zrc5j04xdk5kwl39kcucp5sscq8z6
+  - &laptop-vesper age1yqsdglc9s03k6yhefaqpnpyurj0j9nktlccc8rq2uevpuzn0ea2stx0msr
+  - &shared-computer age1ldzusjw28wzed8y6q9ynn9d7se7qxpsapxxys00jgrsfdw88eeasnt795x
 creation_rules:
-  - path_regex: docker/stacks/[^/]+/secrets/.*
-    key_groups:
-      - age:
-          - *user-sphoono
-          - *sphoono-vps-unverified
   - path_regex: secrets/user-sphoono.yaml$
     key_groups:
       - age:
           - *user-sphoono
-  - path_regex: secrets/host-laptop-ares.yaml$
+  - path_regex: docker/stacks/[^/]+/secrets/.*
     key_groups:
       - age:
           - *user-sphoono
-          - *laptop-ares
+          - *sphoono-vps
   - path_regex: secrets/host-desktop-ares.yaml$
     key_groups:
       - age:
           - *user-sphoono
           - *desktop-ares
+  - path_regex: secrets/host-workstation-ares.yaml$
+    key_groups:
+      - age:
+          - *user-sphoono
+          - *workstation-ares
   - path_regex: secrets/user-spookyskelly.yaml$
     key_groups:
       - age:

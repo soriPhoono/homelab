@@ -17,24 +17,12 @@
   };
 
   inputs = {
-    artcraft = {
-      url = "github:devitek/artcraft-nixos";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     awesome-ai-agent-skills = {
       url = "github:seb1n/awesome-ai-agent-skills/75865a5d037a4cdaa7f409a4ec14ab9b0292920b";
       flake = false;
     };
     awesome-copilot = {
       url = "github:github/awesome-copilot/d6131471b85fbb4799e64175ebc42c9309ecc28a";
-      flake = false;
-    };
-    claude-plugins-official = {
-      url = "github:anthropics/claude-plugins-official/d182ca456ca09d31d139f7d3818d1d333b103cce";
-      flake = false;
-    };
-    codex-honcho = {
-      url = "https://registry.npmjs.org/@honcho-ai/codex-honcho/-/codex-honcho-0.1.1.tgz";
       flake = false;
     };
     comin = {
@@ -83,29 +71,12 @@
       flake = false;
     };
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:soriPhoono/hermes-agent";
       inputs = {
         flake-parts.follows = "flake-parts";
         home-manager.follows = "home-manager";
-        nixpkgs.follows = "hermes-nixpkgs";
-        pyproject-build-systems.inputs.nixpkgs.follows = "nixpkgs";
-        pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
-        uv2nix.inputs.nixpkgs.follows = "nixpkgs";
+        nixpkgs.follows = "nixpkgs";
       };
-    };
-    hermes-agent-nix = {
-      url = "github:soriPhoono/hermes-agent-nix";
-      inputs.hermes-agent.follows = "hermes-agent";
-      inputs.flake-file.follows = "flake-file";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.home-manager.follows = "home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.pre-commit-hooks.follows = "pre-commit-hooks";
-      inputs.systems.follows = "systems";
-      inputs.treefmt-nix.follows = "treefmt-nix";
-    };
-    hermes-nixpkgs = {
-      url = "github:NixOS/nixpkgs/02c087f3fe673c9e317f206a627cb6b910336dbe";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -121,16 +92,12 @@
     import-tree = {
       url = "github:denful/import-tree";
     };
-    knowledge-work-plugins = {
-      url = "github:anthropics/knowledge-work-plugins/02ffa99ff00ce4d3046ccebabb8357cb39f3ab06";
-      flake = false;
-    };
     mattpocock-skills = {
       url = "github:mattpocock/skills/d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
       flake = false;
     };
     mem0 = {
-      url = "github:mem0ai/mem0/v2.2.1";
+      url = "github:mem0ai/mem0";
       flake = false;
     };
     nix-index-database = {
@@ -166,10 +133,6 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
-    rea = {
-      url = "github:morluto/rea/a56f7bb668ab23fec8d33f7af353ac7ed2fe1895";
-      flake = false;
-    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -182,10 +145,6 @@
         nur.follows = "nur";
         systems.follows = "systems";
       };
-    };
-    superpowers = {
-      url = "github:obra/superpowers/5bf4e78011075bcfc0dc295f0724994cd123ee71";
-      flake = false;
     };
     systems = {
       url = "github:nix-systems/default";
