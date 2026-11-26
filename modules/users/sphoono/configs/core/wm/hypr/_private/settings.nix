@@ -43,7 +43,6 @@ _: {
       };
 
       xwayland = {
-        force_zero_scaling = true;
         create_abstract_socket = true;
       };
 
