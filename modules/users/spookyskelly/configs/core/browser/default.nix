@@ -1,9 +1,10 @@
 { inputs, den, ... }: {
-  den.aspects.spookyskelly = {
+  flake-file.inputs.zen-browser.url = "github:0xc000022070/zen-browser-flake";
+  den.aspects.spookyskelly.core.browser = {
     includes = [
       den.aspects.nur
     ];
-    homeManager = {
+    homeManager = { ... }: {
       imports = [
         inputs.zen-browser.homeModules.twilight
 
@@ -21,6 +22,11 @@
           "x-scheme-handler/about" = browser;
           "x-scheme-handler/unknown" = browser;
         };
+      services.psd = {
+        enable = true;
+        resyncTimer = "10m";
+      };
+      stylix.targets.zen-browser.enable = false;
     };
   };
 }

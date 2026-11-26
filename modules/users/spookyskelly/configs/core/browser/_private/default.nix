@@ -1,19 +1,18 @@
-{
+{ pkgs, ... }: {
   imports = [
+    ./settings.nix
+    ./extensions.nix
     ./policies.nix
     ./search.nix
-    ./extensions.nix
-    ./settings.nix
   ];
-
   programs.zen-browser = {
     enable = true;
+    nativeMessagingHosts = [ pkgs.firefoxpwa ];
     setAsDefaultBrowser = true;
-    enablePrivateDesktopEntry = true;
+    enablePrivateDesktopEntry = false;
     profiles.default = {
       id = 0;
       isDefault = true;
-
       keyboardShortcuts = [
         {
           id = "zen-compact-mode-toggle";
@@ -37,14 +36,37 @@
           disabled = true;
         }
       ];
-
       spacesForce = true;
       spaces = {
+        Media = {
+          id = "44bbb567-fdce-4b77-bb48-c603ecc9ec92";
+          icon = "📹";
+          container = 6;
+          position = 1000;
+          theme = {
+            type = "gradient";
+            colors = [
+              {
+                algorithm = "floating";
+                type = "explicit-lightness";
+                red = 255;
+                green = 0;
+                blue = 127;
+                lightness = 35;
+                position = {
+                  x = 51;
+                  y = 97;
+                };
+              }
+            ];
+            opacity = 0.4;
+          };
+        };
         Personal = {
           id = "f1a2b3c4-d5e6-7890-abcd-ef1234567801";
           icon = "🏠";
           container = 1;
-          position = 1000;
+          position = 2000;
           theme = {
             type = "gradient";
             colors = [
@@ -68,7 +90,7 @@
           id = "a1b2c3d4-e5f6-7890-bcde-f12345678901";
           icon = "💼";
           container = 2;
-          position = 2000;
+          position = 3000;
           theme = {
             type = "gradient";
             colors = [
@@ -88,11 +110,11 @@
             opacity = 0.4;
           };
         };
-        Development = {
+        Artwork = {
           id = "b2c3d4e5-f6a7-8901-cdef-012345678902";
-          icon = "🛠️";
+          icon = "🖌";
           container = 3;
-          position = 3000;
+          position = 4000;
           theme = {
             type = "gradient";
             colors = [
@@ -116,7 +138,7 @@
           id = "c3d4e5f6-a7b8-9012-defa-123456789013";
           icon = "📚";
           container = 4;
-          position = 4000;
+          position = 5000;
           theme = {
             type = "gradient";
             colors = [
@@ -140,7 +162,7 @@
           id = "d4e5f6a7-b8c9-0123-efab-234567890124";
           icon = "🛒";
           container = 5;
-          position = 5000;
+          position = 6000;
           theme = {
             type = "gradient";
             colors = [
@@ -161,7 +183,6 @@
           };
         };
       };
-
       containersForce = true;
       containers = {
         Personal = {
@@ -174,7 +195,7 @@
           icon = "briefcase";
           id = 2;
         };
-        Development = {
+        Artwork = {
           color = "green";
           icon = "circle";
           id = 3;
@@ -188,6 +209,11 @@
           color = "yellow";
           icon = "cart";
           id = 5;
+        };
+        Media = {
+          color = "red";
+          icon = "fruit";
+          id = 6;
         };
       };
     };

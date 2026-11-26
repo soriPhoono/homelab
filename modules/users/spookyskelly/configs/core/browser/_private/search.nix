@@ -90,6 +90,33 @@
           icon = nixSnowflakeIcon;
           definedAliases = [ "@nf" ];
         };
+        "YouTube" = {
+          urls = [
+            {
+              template = "https://youtube.com/results";
+              params = [
+                {
+                  name = "search_query";
+                  value = "{searchTerms}";
+                }
+              ];
+            }
+          ];
+          definedAliases = [ "@yt" ];
+        };
+        "Youtube Music" = {
+          urls = [
+            {
+              template = "https://music.youtube.com/search";
+              params = [
+                {
+                  name = "q";
+                  value = "{searchTerms}";
+                }
+              ];
+            }
+          ];
+        };
         "google".metaData.hidden = true;
         "bing".metaData.hidden = true;
         "amazon".metaData.hidden = true;

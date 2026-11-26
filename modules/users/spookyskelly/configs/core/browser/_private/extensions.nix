@@ -12,7 +12,6 @@
       "cb15abdb-0514-4e09-8ce5-722cf1f4a20f" # Hide Extension Name
       "4ab93b88-151c-451b-a1b7-a1e0e28fa7f8" # No Sidebar Scrollbar
     ];
-
     extensions = {
       packages = with pkgs.nur.repos.rycee.firefox-addons; [
         ublock-origin
@@ -20,7 +19,6 @@
         privacy-badger
         decentraleyes
         metamask
-        dark-mode-webextension
       ];
     };
   };
