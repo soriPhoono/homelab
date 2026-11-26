@@ -30,6 +30,7 @@
       den.aspects.desktop.tools.partition-manager
       # -- External device interaction --
       den.aspects.core.hardware.hid.tablets.xp-pen
+      den.aspects.core.hardware.hid.tablets.weylus
       den.aspects.core.hardware.hid.controllers.xbox
       den.aspects.core.hardware.android
       # -- Hosting --
