@@ -25,9 +25,6 @@
                 { modulesPath, ... }:
                 {
                   imports = [ "${modulesPath}/virtualisation/qemu-vm.nix" ];
-                  # qemu-vm provides its own disk/filesystems; drop disko's
-                  # real-hardware layout (partitions, LUKS, mounts).
-                  disko.enableConfig = lib.mkForce false;
                   # No btrfs root to reset and no /persist subvolume either,
                   # so a host with core.impermanence runs as a plain one.
                   environment.persistence."/persist".enable = lib.mkForce false;
@@ -92,7 +89,14 @@
                   ];
                 }
               )
-            ];
+            ]
+            # qemu-vm provides its own disk/filesystems; drop disko's
+            # real-hardware layout (partitions, LUKS, mounts). Hosts without
+            # a disko layout declare their filesystems inline, and qemu-vm
+            # overrides those itself.
+            ++ lib.optional (host.options ? disko) {
+              disko.enableConfig = lib.mkForce false;
+            };
           };
         in
         vm.config.system.build.vm.overrideAttrs (old: {

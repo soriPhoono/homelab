@@ -26,7 +26,6 @@
         enable = true;
         resyncTimer = "10m";
       };
-      stylix.targets.zen-browser.enable = false;
     };
   };
 }
