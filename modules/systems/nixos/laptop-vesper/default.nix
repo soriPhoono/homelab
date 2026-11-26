@@ -69,6 +69,11 @@
     den.batteries.primary-user
     den.batteries.host-aspects
 
+    den.aspects.spookyskelly.core
+
+    den.aspects.spookyskelly.development
+    den.aspects.spookyskelly.development.desktop
+
     den.aspects.hosting.gaming.client
   ];
 }
