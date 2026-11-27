@@ -25,6 +25,11 @@
           PGID = "0";
         };
 
+        # Fixed, locally administered MAC for qbittorrent. Its IP on the
+        # shared `tailscale` network is assigned dynamically, so the egress
+        # kill switch below matches on this instead.
+        qbittorrentMac = "02:71:62:74:00:01";
+
         # One published media service: its state directory under /var/lib
         # and an oci-container exposed on the tailnet as
         # `<host>-<serviceName>`.
@@ -64,6 +69,7 @@
               "/var/lib/qbittorrent:/config"
               "${root}/downloads:/downloads"
             ];
+            extra.extraOptions = [ "--mac-address=${qbittorrentMac}" ];
           };
           prowlarr = {
             image = "linuxserver/prowlarr:2.5.2";
@@ -213,6 +219,30 @@
             ++ lib.optional (!onOwnFilesystem root) root;
 
           virtualisation.oci-containers.containers = lib.mapAttrs (_: s: s.container) services;
+
+          # Kill switch: qbittorrent may only leave the host through
+          # tailscale0. With an exit node set, Tailscale's table 52 routes
+          # its internet traffic there; without one, the traffic would fall
+          # back to the physical uplink and is dropped instead. Traffic to
+          # other containers on the bridge (docktail, the *arrs) is kept.
+          # DOCKER-USER runs ahead of Docker's own FORWARD rules and is
+          # never flushed by Docker; the rules are re-applied idempotently
+          # on every firewall start or reload.
+          networking.firewall.extraCommands = ''
+            iptables -w -N qbittorrent-egress 2>/dev/null || iptables -w -F qbittorrent-egress
+            iptables -w -A qbittorrent-egress -o tailscale0 -j RETURN
+            iptables -w -A qbittorrent-egress -o br-+ -j RETURN
+            iptables -w -A qbittorrent-egress -j DROP
+            iptables -w -N DOCKER-USER 2>/dev/null || true
+            iptables -w -C DOCKER-USER -m mac --mac-source ${qbittorrentMac} -j qbittorrent-egress 2>/dev/null \
+              || iptables -w -I DOCKER-USER -m mac --mac-source ${qbittorrentMac} -j qbittorrent-egress
+          '';
+
+          # Fail closed: never run qbittorrent without the kill switch.
+          systemd.services.docker-qbittorrent = {
+            after = [ "firewall.service" ];
+            requires = [ "firewall.service" ];
+          };
         };
       };
   };
