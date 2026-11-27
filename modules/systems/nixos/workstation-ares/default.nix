@@ -42,6 +42,7 @@
       # -- Hosting --
       den.aspects.hosting.docker
       den.aspects.hosting.podman
+      den.aspects.hosting.media
     ];
     nixos =
       { pkgs, ... }:
