@@ -9,7 +9,7 @@
     let
       obs-studio-mcp = pkgs.callPackage ./_private/packages/obs-studio-mcp.nix { };
       websocketPort = 4455;
-      passwordSecret = "obs/websocket-password";
+      passwordSecret = "mcp/obs/websocket-password";
     in
     {
       programs.obs-studio = {
