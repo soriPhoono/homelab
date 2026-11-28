@@ -9,13 +9,18 @@
 
   den.aspects.sphoono.development.agents.hermes = {
     homeManager =
-      { config, ... }:
+      { config, pkgs, ... }:
       {
         imports = [
           inputs.hermes-agent.homeManagerModules.default
         ];
 
         programs.hermes-agent.enable = true;
+
+        # The bundled google-workspace skill's OAuth setup script runs on the
+        # Hermes venv, and needs Google's auth libraries from the `google`
+        # extra. Its API calls run in the sandbox through gws, mounted below.
+        services.hermes-agent.extraDependencyGroups = [ "google" ];
 
         # Hermes is the top-level assistant and delegates project work to
         # OpenCode. With the gateway off and no backend this starts no
@@ -54,6 +59,10 @@
                 # paths and symlinks into the store.
                 "/nix/store:/nix/store:ro"
                 "${lib.getExe config.programs.opencode.package}:/usr/local/bin/opencode:ro"
+                # The Google Workspace CLI, which the google-workspace skill
+                # prefers over its Python fallback. Hermes mounts the skill's
+                # OAuth token into the container by itself.
+                "${lib.getExe pkgs.gws}:/usr/local/bin/gws:ro"
                 "${home}/.config/opencode:/root/.config/opencode:ro"
                 # The OAuth credentials. Writable, because OpenCode writes the
                 # refreshed token back.
